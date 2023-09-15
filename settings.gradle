@@ -1,2 +1,4 @@
 rootProject.name = 'cyan_business'
-include 'tax_pay_sys_service'
+//include 'tax_pay_sys'
+includeBuild 'tax_pay_sys'
+

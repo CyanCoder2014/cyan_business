@@ -1,5 +1,4 @@
 rootProject.name = 'cyan_business'
 include 'tax_pay_sys'
-include 'untitled'
 include 'discovery-server'
 

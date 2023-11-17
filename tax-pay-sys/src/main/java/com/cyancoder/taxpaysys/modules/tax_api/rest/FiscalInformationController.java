@@ -17,7 +17,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 @RestController
-@RequestMapping("/v2/api/fiscal-info")
+@RequestMapping("/v2/api/tax/fiscal-info")
 @Slf4j
 public class FiscalInformationController {
 

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v2/api/invoice")
+@RequestMapping("/v2/api/tax/invoice")
 @Slf4j
 public class InvoiceController {
 

@@ -19,7 +19,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 @RestController
-@RequestMapping("/v2/api/inquiry")
+@RequestMapping("/v2/api/tax/inquiry")
 @Slf4j
 public class InquiryController {
 

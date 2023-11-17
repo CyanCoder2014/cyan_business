@@ -19,7 +19,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 @RestController
-@RequestMapping("/v2/api/auth")
+@RequestMapping("/v2/api/tax/auth")
 @Slf4j
 public class AuthController {
 

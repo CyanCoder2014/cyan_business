@@ -2,4 +2,5 @@ rootProject.name = 'cyan_business'
 include 'tax-pay-sys'
 include 'discovery-server'
 include 'api-gateway'
+include 'factor-service'
 

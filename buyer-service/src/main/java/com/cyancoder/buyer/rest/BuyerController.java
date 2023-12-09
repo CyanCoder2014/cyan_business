@@ -6,9 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/buyerInfo")
+@RequestMapping("/v2/api/buyer")
 public class BuyerController {
-
 
 
     @GetMapping

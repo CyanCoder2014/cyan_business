@@ -6,12 +6,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/factorInfo")
+@RequestMapping("/v2/api/factor")
 public class FactorController {
 
 
 
-    @GetMapping
+    @GetMapping("/factorInfo")
     public String getInfo(){
         return "its work";
     }

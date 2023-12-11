@@ -23,6 +23,13 @@ ext {
 dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+//	implementation 'org.axonframework:axon-spring-boot-starter'
+
+
+
+
+
 }
 
 dependencyManagement {

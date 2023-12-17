@@ -1,7 +1,7 @@
-package com.cyancoder.buyer.command;
+package com.cyancoder.factor.command;
 
 
-import com.cyancoder.buyer.event.FactorCreatedEvent;
+import com.cyancoder.factor.event.FactorCreatedEvent;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;

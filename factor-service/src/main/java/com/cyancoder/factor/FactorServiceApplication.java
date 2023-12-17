@@ -1,4 +1,4 @@
-package com.cyancoder.buyer;
+package com.cyancoder.factor;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

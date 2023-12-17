@@ -1,4 +1,4 @@
-package com.cyancoder.buyer.command;
+package com.cyancoder.factor.command;
 
 
 import lombok.Builder;
@@ -11,7 +11,7 @@ public class CreateFactorCommand {
 
 
     @TargetAggregateIdentifier
-    private final String factorId;
+    private final Long factorId;
 
 
 

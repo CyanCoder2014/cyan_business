@@ -1,7 +1,8 @@
-rootProject.name = 'cyan_business'
+rootProject.name = 'root'
 include 'tax-pay-sys'
 include 'discovery-server'
 include 'api-gateway'
 include 'factor-service'
 include 'buyer-service'
+include 'generic'
 

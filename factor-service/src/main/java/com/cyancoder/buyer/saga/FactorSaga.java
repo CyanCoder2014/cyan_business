@@ -9,8 +9,10 @@ import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
+import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,10 +25,12 @@ public class FactorSaga {
 
     @Autowired
     private transient CommandGateway commandGateway;
+    @Autowired
+    private transient QueryGateway queryGateway;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "factorId")
-    public  void handle(FactorCreatedEvent factorCreatedEvent){
+    public void handle(FactorCreatedEvent factorCreatedEvent) {
 
         AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
                 .buyerId(factorCreatedEvent.getBuyerId())
@@ -37,7 +41,7 @@ public class FactorSaga {
             @Override
             public void onResult(@Nonnull CommandMessage<? extends AddOrEditBuyerCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
 
-                if (commandResultMessage.isExceptional()){
+                if (commandResultMessage.isExceptional()) {
                     // start compensating transaction
                 }
             }
@@ -47,12 +51,32 @@ public class FactorSaga {
 
 
     @SagaEventHandler(associationProperty = "factorId")
-    public  void handle(BuyerAddedEvent buyerAddedEvent){
+    public void handle(BuyerAddedEvent buyerAddedEvent) {
 
-        log.info("Buyer added: "+ buyerAddedEvent.getBuyerId());
+        log.info("Buyer added: " + buyerAddedEvent.getBuyerId());
 
 
+        fetchSellerDetaQuery fetchSellerDetaQuery = new fetchSellerDetaQuery(factorEwvwnt.getSellerID());
 
+        Seller sellerDetails = null;
+
+        try {
+            sellerDetails = queryGateway.query(fetchSellerDetaQuery,
+                    ResponseTypes.instanceOf(Seller.class).joun());
+
+        }catch (Exception e){
+
+
+            return;
+
+        }
+
+
+        if (sellerDetails = null){
+            //Satary compansation transaction
+
+            return;
+        }
 
     }
 

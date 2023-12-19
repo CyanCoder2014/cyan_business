@@ -3,6 +3,8 @@ package com.cyancoder.buyer.saga;
 
 import com.cyancoder.buyer.event.FactorCreatedEvent;
 import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
+import com.cyancoder.generic.event.BuyerAddedEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.CommandResultMessage;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.Nonnull;
 
 @Saga
+@Slf4j
 public class FactorSaga {
 
 
@@ -39,6 +42,14 @@ public class FactorSaga {
                 }
             }
         });
+
+    }
+
+
+    @SagaEventHandler(associationProperty = "factorId")
+    public  void handle(BuyerAddedEvent buyerAddedEvent){
+
+        log.info("Buyer added: "+ buyerAddedEvent.getBuyerId());
 
 
 

@@ -4,6 +4,7 @@ package com.cyancoder.buyer.query;
 import com.cyancoder.buyer.entity.BuyerEntity;
 import com.cyancoder.buyer.event.BuyerCreatedEvent;
 import com.cyancoder.buyer.repository.BuyerRepository;
+import com.cyancoder.generic.event.BuyerAddedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.eventhandling.EventHandler;
@@ -31,6 +32,18 @@ public class BuyerEventHandler {
 
         BuyerEntity buyerEntity = new BuyerEntity();
         BeanUtils.copyProperties(event, buyerEntity);
+
+        buyerRepository.save(buyerEntity); // need try catch
+
+    }
+
+
+    @EventHandler
+    public void on(BuyerAddedEvent event){
+
+        BuyerEntity buyerEntity = new BuyerEntity();
+        BeanUtils.copyProperties(event, buyerEntity);
+
 
         buyerRepository.save(buyerEntity); // need try catch
 

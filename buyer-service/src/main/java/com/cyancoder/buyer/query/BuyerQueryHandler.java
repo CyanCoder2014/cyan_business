@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,11 +26,12 @@ public class BuyerQueryHandler {
 
         List<BuyerEntity> storedFactors = buyerRepository.findAll();
 
-        storedFactors.forEach(item ->{
-            BuyerModel buyerModel = new BuyerModel();
-            BeanUtils.copyProperties(item, buyerModel);
-            factors.add(buyerModel);
-        });
+//        storedFactors.forEach(item ->{
+//            BuyerModel buyerModel = new BuyerModel();
+//            BeanUtils.copyProperties(item, buyerModel);
+//            factors.add(buyerModel);
+//        });
+        factors = storedFactors.stream().map(BuyerModel::new).collect(Collectors.toList());
 
         return factors;
 

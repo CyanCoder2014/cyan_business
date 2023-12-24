@@ -11,7 +11,7 @@ import org.axonframework.spring.stereotype.Aggregate;
 public class FactorAggregate {
 
     @AggregateIdentifier
-    private String factorId;
+    private Long factorId;
 
     public  FactorAggregate(){
 

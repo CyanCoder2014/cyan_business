@@ -2,8 +2,10 @@ package com.cyancoder.buyer.saga;
 
 
 import com.cyancoder.buyer.event.FactorCreatedEvent;
+import com.cyancoder.buyer.model.BuyerModel;
 import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
 import com.cyancoder.generic.event.BuyerAddedEvent;
+import com.cyancoder.generic.query.FetchBuyerQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
@@ -50,31 +52,31 @@ public class FactorSaga {
     }
 
 
+
     @SagaEventHandler(associationProperty = "factorId")
     public void handle(BuyerAddedEvent buyerAddedEvent) {
 
         log.info("Buyer added: " + buyerAddedEvent.getBuyerId());
 
 
-        fetchSellerDetaQuery fetchSellerDetaQuery = new fetchSellerDetaQuery(factorEwvwnt.getSellerID());
+        FetchBuyerQuery fetchBuyerQuery = new FetchBuyerQuery(buyerAddedEvent.getBuyerId());
 
-        Seller sellerDetails = null;
+        BuyerModel buyer = null;
 
         try {
-            sellerDetails = queryGateway.query(fetchSellerDetaQuery,
-                    ResponseTypes.instanceOf(Seller.class).joun());
+             buyer = queryGateway.query(fetchBuyerQuery,
+                    ResponseTypes.instanceOf(BuyerModel.class)).join();
 
         }catch (Exception e){
-
 
             return;
 
         }
 
 
-        if (sellerDetails = null){
-            //Satary compansation transaction
+        if (buyer == null){
 
+            //Start compensation transaction
             return;
         }
 

@@ -4,6 +4,7 @@ package com.cyancoder.buyer.query;
 import com.cyancoder.buyer.entity.BuyerEntity;
 import com.cyancoder.buyer.model.BuyerModel;
 import com.cyancoder.buyer.repository.BuyerRepository;
+import com.cyancoder.generic.query.FetchBuyerQuery;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.BeanUtils;
@@ -20,7 +21,7 @@ public class BuyerQueryHandler {
     private  final BuyerRepository buyerRepository;
 
     @QueryHandler
-    public List<BuyerModel> filterFactor(FilterBuyerQuery query){
+    public List<BuyerModel> filterBuyer(FilterBuyerQuery query){
 
         List<BuyerModel> factors = new ArrayList<>();
 
@@ -37,6 +38,19 @@ public class BuyerQueryHandler {
 
     }
 
+
+
+    @QueryHandler
+    public BuyerModel fetchBuyer(FetchBuyerQuery query){
+
+
+        BuyerEntity buyerDetail = buyerRepository.findByBuyerId(query.getBuyerId());
+
+        return BuyerModel.builder()
+                .id(buyerDetail.getId())
+                .build();
+
+    }
 
 
 

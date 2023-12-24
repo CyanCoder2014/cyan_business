@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BuyerRepository extends JpaRepository<BuyerEntity,Integer> {
 
-    BuyerEntity findByFactorId(Integer factorId);
+    BuyerEntity findByBuyerId(Long factorId);
 
     BuyerEntity findByFactorIdOrTitle(Integer factorId, String title);
 

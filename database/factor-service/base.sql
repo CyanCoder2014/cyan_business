@@ -33,6 +33,6 @@ ALTER TABLE `f_factors`
   ADD KEY if not exists `f_factors_buyer_id_index` (`buyer_id`);
 
 
---INSERT IGNORE INTO `users`
---(`id`, `username`, `name`, `email`, `password`, `state`, `created_on`) VALUES
---(1, 'admin', null, null, null, 1, null);
+# --INSERT IGNORE INTO `users`
+# --(`id`, `username`, `name`, `email`, `password`, `state`, `created_on`) VALUES
+# --(1, 'admin', null, null, null, 1, null);

@@ -2,12 +2,12 @@ SET NAMES 'utf8';
 SET CHARACTER SET utf8;
 
 CREATE TABLE if not exists `f_factor_items` (
-    id INT(11) NOT NULL AUTO_INCREMENT,
+    factor_item_id varchar(128) NOT NULL UNIQUE,
     factor_id varchar(10) NOT NULL,
     product_id timestamp NULL DEFAULT NULL,
-    amount INT(11) UNSIGNED NULL DEFAULT NULL,
+    amount DOUBLE NOT NULL,
     unit_id INT(11) UNSIGNED NULL DEFAULT NULL,
-    price  varchar(10) NULL DEFAULT NULL,
+    price  DOUBLE NOT NULL,
     discount DOUBLE NULL DEFAULT NULL,
     tax DOUBLE NULL DEFAULT NULL,
     other_charge DOUBLE NULL DEFAULT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE if not exists `f_factor_items` (
     deleted_at timestamp NULL DEFAULT NULL,
     status  varchar(10) NULL DEFAULT NULL,
 
-    CONSTRAINT id PRIMARY KEY (id)
+    CONSTRAINT id PRIMARY KEY (factor_item_id)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

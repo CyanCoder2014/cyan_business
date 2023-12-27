@@ -23,7 +23,7 @@ public class FactorQueryController {
 
 
     @GetMapping
-    public List<FactorModel> createFactor(@RequestBody CreateFactorReqModel createFactorReqModel){
+    public List<FactorModel> createFactor(){
 
         FilterFactorQuery filterFactorQuery = new FilterFactorQuery();
 

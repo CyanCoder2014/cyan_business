@@ -34,6 +34,9 @@ public class FactorSaga {
     @SagaEventHandler(associationProperty = "factorId")
     public void handle(FactorCreatedEvent factorCreatedEvent) {
 
+        log.info("saga started ");
+
+
         AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
                 .buyerId(factorCreatedEvent.getBuyerId())
                 .build();
@@ -53,7 +56,7 @@ public class FactorSaga {
 
 
 
-    @SagaEventHandler(associationProperty = "factorId")
+    @SagaEventHandler(associationProperty = "buyerId")
     public void handle(BuyerAddedEvent buyerAddedEvent) {
 
         log.info("Buyer added: " + buyerAddedEvent.getBuyerId());

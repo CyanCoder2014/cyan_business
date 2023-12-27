@@ -11,7 +11,11 @@ public class CreateFactorCommand {
 
 
     @TargetAggregateIdentifier
-    private final Long factorId;
+    private final String factorId;
+
+
+    private String code;
+    private String note;
 
 
 

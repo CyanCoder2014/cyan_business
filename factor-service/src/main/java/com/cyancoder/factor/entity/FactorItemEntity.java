@@ -3,7 +3,6 @@ package com.cyancoder.factor.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
 
 
 
@@ -15,11 +14,9 @@ import org.springframework.data.annotation.Id;
 public class FactorItemEntity {
 
 
-    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    private String factorId;
 
 
     private String code;

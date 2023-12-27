@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public interface FactorRepository extends JpaRepository<FactorEntity,Long> {
 
-    Optional<FactorEntity> findById(Long id);
+    Optional<FactorEntity> findByFactorId(String factorId);
 
-    FactorEntity findByIdOrCode(Long id, String code);
+    FactorEntity findByFactorIdOrCode(String factorId, String code);
 
 }

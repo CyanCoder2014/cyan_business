@@ -6,7 +6,10 @@ import lombok.Data;
 @Data
 public class FactorModel {
 
-    private Long id;
+
+    private String factorId;
+    private String code;
+    private String note;
 
 
 }

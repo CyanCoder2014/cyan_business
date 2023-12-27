@@ -1,15 +1,24 @@
 package com.cyancoder.factor.event;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FactorCreatedEvent {
 
-    private final  Long factorId;
+    private  String factorId;
 
 
-    private final  Long buyerId;
+    private String code;
+    private String note;
+
+
+    private Long buyerId;
+
 
 
 }

@@ -7,5 +7,9 @@ import lombok.Data;
 public class CreateFactorReqModel {
 
 
-    private Long id;
+    private String factorId;
+
+
+    private final String code;
+    private final String note;
 }

@@ -12,15 +12,17 @@ import java.util.Date;
 @Entity
 public class FactorEntity {
 
+//    private static final long serialVersionUID = 5313493413859894403L;
+
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
 
     @jakarta.persistence.Id
-    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+    @Column(name = "factor_id")
+    private String factorId;
 
 
-    @Column(name = "code")
     private String code;
 
 //    @ManyToOne
@@ -31,7 +33,6 @@ public class FactorEntity {
 //    @ManyToOne
 //    @JoinColumn(name = "product_id")
 //    private ProductEntity product;
-
 
 
 //    @Column(name = "pay_state")
@@ -48,8 +49,6 @@ public class FactorEntity {
 //    @ManyToOne
 //    @JoinColumn(name = "city_i")
 //    private CityEntity city;
-
-
 
 
 //    @Temporal(TemporalType.TIMESTAMP)
@@ -86,4 +85,8 @@ public class FactorEntity {
 //
 //    @Column(name = "tax_api_message")
 //    private String taxApiMessage;
+
+
+//    @Enumerated(EnumType.STRING)
+//    private OrderStatus orderStatus;
 }

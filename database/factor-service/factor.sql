@@ -6,8 +6,8 @@ CREATE TABLE if not exists `f_factors` (
     factor_id varchar(128) NOT NULL UNIQUE,
     code varchar(10) NOT NULL,
     factor_date timestamp NULL DEFAULT NULL,
-    seller_id INT(11) UNSIGNED NOT NULL,
-    buyer_id INT(11) UNSIGNED NOT NULL,
+    seller_id varchar(128) NULL DEFAULT NULL,
+    buyer_id varchar(128) NULL DEFAULT NULL,
     pay_state varchar(10) NULL DEFAULT NULL,
     payed DOUBLE NULL DEFAULT NULL,
     note varchar(255) NULL DEFAULT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE if not exists `f_factors` (
     deleted_at timestamp NULL DEFAULT NULL,
     status  varchar(10) NULL DEFAULT NULL,
 
-    CONSTRAINT id PRIMARY KEY (factor_id)
+    CONSTRAINT factor_id PRIMARY KEY (factor_id)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

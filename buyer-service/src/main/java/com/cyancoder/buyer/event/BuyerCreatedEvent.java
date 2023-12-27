@@ -8,7 +8,7 @@ import lombok.Data;
 @Builder
 public class BuyerCreatedEvent {
 
-    private final  Long buyerId;
+    private final  String buyerId;
 
 
 

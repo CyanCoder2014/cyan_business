@@ -11,7 +11,7 @@ public class AddOrEditBuyerCommand {
 
 
     @TargetAggregateIdentifier
-    private final Long buyerId;
+    private final String buyerId;
 
 
 }

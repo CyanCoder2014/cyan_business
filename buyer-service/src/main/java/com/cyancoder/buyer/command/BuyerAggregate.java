@@ -14,7 +14,7 @@ import org.axonframework.spring.stereotype.Aggregate;
 public class BuyerAggregate {
 
     @AggregateIdentifier
-    private Long buyerId;
+    private String buyerId;
 
     public BuyerAggregate(){
 

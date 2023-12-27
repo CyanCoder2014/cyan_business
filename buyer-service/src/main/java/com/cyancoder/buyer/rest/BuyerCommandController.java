@@ -9,7 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/v2/api/factor-service/factors")
+@RequestMapping("/v2/api/buyer-service/buyers")
 @RequiredArgsConstructor
 public class BuyerCommandController {
 
@@ -19,10 +19,10 @@ public class BuyerCommandController {
 
 
     @PostMapping
-    public String createFactor(@RequestBody CreateBuyerReqModel createBuyerReqModel){
+    public String createBuyer(@RequestBody CreateBuyerReqModel createBuyerReqModel){
         CreateBuyerCommand createBuyerCommand = CreateBuyerCommand.builder()
-//                .factorId(UUID.randomUUID().toString())
-//                .factorId(createFactorReqModel.getId())
+//                .buyerId(UUID.randomUUID().toString())
+//                .buyerId(createBuyerReqModel.getId())
                 .build();
 
         String response;

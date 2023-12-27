@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/v2/api/factor-service/factors")
+@RequestMapping("/v2/api/buyer-service/buyers")
 @RequiredArgsConstructor
 public class BuyerQueryController {
 
@@ -23,15 +23,15 @@ public class BuyerQueryController {
 
 
     @GetMapping
-    public List<BuyerModel> createFactor(@RequestBody CreateBuyerReqModel createBuyerReqModel){
+    public List<BuyerModel> createBuyer(@RequestBody CreateBuyerReqModel createBuyerReqModel){
 
         FilterBuyerQuery filterBuyerQuery = new FilterBuyerQuery();
 
-        List<BuyerModel> factors = queryGateway.query(filterBuyerQuery,
+        List<BuyerModel> buyers = queryGateway.query(filterBuyerQuery,
                 ResponseTypes.multipleInstancesOf(BuyerModel.class)).join();
 
 
-        return factors;
+        return buyers;
 
 
     }

@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class FetchBuyerQuery {
 
-    private Long buyerId;
+    private String buyerId;
 
 
 }

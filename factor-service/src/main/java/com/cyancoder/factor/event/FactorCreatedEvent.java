@@ -21,7 +21,7 @@ public class FactorCreatedEvent {
 
     private List<FactorItemModel> items;
 
-    private Long buyerId;
+    private String buyerId;
 
 
 

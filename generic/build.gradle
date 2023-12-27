@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.cyancoder'
-version = '0.0.1-SNAPSHOT'
+version = "0.0.1${new Random().nextInt(999)}-SNAPSHOT"
 
 java {
 	sourceCompatibility = '17'
@@ -22,13 +22,10 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation 'org.axonframework:axon-spring-boot-starter:4.9.0'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
 }

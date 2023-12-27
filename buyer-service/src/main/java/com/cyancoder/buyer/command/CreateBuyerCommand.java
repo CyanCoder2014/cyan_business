@@ -11,7 +11,7 @@ public class CreateBuyerCommand {
 
 
     @TargetAggregateIdentifier
-    private final Long factorId;
+    private final String buyerId;
 
 
 

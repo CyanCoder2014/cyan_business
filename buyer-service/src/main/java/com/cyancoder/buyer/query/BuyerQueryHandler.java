@@ -22,18 +22,18 @@ public class BuyerQueryHandler {
     @QueryHandler
     public List<BuyerModel> filterBuyer(FilterBuyerQuery query){
 
-        List<BuyerModel> factors = new ArrayList<>();
+        List<BuyerModel> buyers = new ArrayList<>();
 
-        List<BuyerEntity> storedFactors = buyerRepository.findAll();
+        List<BuyerEntity> storedBuyers = buyerRepository.findAll();
 
-//        storedFactors.forEach(item ->{
+//        storedBuyers.forEach(item ->{
 //            BuyerModel buyerModel = new BuyerModel();
 //            BeanUtils.copyProperties(item, buyerModel);
-//            factors.add(buyerModel);
+//            buyers.add(buyerModel);
 //        });
-        factors = storedFactors.stream().map(BuyerModel::new).collect(Collectors.toList());
+        buyers = storedBuyers.stream().map(BuyerModel::new).collect(Collectors.toList());
 
-        return factors;
+        return buyers;
 
     }
 

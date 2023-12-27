@@ -22,7 +22,7 @@ public class BuyerSaga {
     private transient CommandGateway commandGateway;
 
     @StartSaga
-    @SagaEventHandler(associationProperty = "factorId")
+    @SagaEventHandler(associationProperty = "buyerId")
     public  void handle(BuyerCreatedEvent buyerCreatedEvent){
 
         AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()

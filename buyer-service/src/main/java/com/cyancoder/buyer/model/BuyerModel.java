@@ -1,7 +1,7 @@
 package com.cyancoder.buyer.model;
 
 
-import com.cyancoder.buyer.BuyerEntity;
+import com.cyancoder.buyer.entity.BuyerEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +14,7 @@ import org.springframework.beans.BeanUtils;
 @Builder
 public class BuyerModel {
 
-    private Long id;
+    private String buyerId;
 
 
     public BuyerModel(BuyerEntity buyerEntity) {

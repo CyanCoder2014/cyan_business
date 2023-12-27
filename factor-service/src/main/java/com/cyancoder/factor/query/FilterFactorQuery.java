@@ -1,4 +1,4 @@
-package com.cyancoder.buyer.query;
+package com.cyancoder.factor.query;
 
 public class FilterFactorQuery {
 }

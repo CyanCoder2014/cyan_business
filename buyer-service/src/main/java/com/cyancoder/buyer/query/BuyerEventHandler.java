@@ -1,7 +1,7 @@
 package com.cyancoder.buyer.query;
 
 
-import com.cyancoder.buyer.BuyerEntity;
+import com.cyancoder.buyer.entity.BuyerEntity;
 import com.cyancoder.buyer.event.BuyerCreatedEvent;
 import com.cyancoder.buyer.repository.BuyerRepository;
 import com.cyancoder.generic.event.BuyerAddedEvent;

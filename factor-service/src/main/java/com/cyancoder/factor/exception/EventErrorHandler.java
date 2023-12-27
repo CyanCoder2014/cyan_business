@@ -1,4 +1,4 @@
-package com.cyancoder.buyer.exception;
+package com.cyancoder.factor.exception;
 
 import org.axonframework.eventhandling.EventMessage;
 import org.axonframework.eventhandling.EventMessageHandler;

@@ -1,4 +1,4 @@
-package com.cyancoder.buyer.exception;
+package com.cyancoder.factor.exception;
 
 
 import org.axonframework.commandhandling.CommandExecutionException;

@@ -1,7 +1,7 @@
 package com.cyancoder.buyer.query;
 
 
-import com.cyancoder.buyer.BuyerEntity;
+import com.cyancoder.buyer.entity.BuyerEntity;
 import com.cyancoder.buyer.model.BuyerModel;
 import com.cyancoder.buyer.repository.BuyerRepository;
 import com.cyancoder.generic.query.FetchBuyerQuery;
@@ -46,7 +46,7 @@ public class BuyerQueryHandler {
         BuyerEntity buyerDetail = buyerRepository.findByBuyerId(query.getBuyerId());
 
         return BuyerModel.builder()
-                .id(buyerDetail.getId())
+                .buyerId(buyerDetail.getBuyerId())
                 .build();
 
     }

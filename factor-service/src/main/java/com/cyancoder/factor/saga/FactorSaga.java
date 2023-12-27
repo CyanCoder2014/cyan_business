@@ -1,8 +1,8 @@
-package com.cyancoder.buyer.saga;
+package com.cyancoder.factor.saga;
 
 
-import com.cyancoder.buyer.event.FactorCreatedEvent;
-import com.cyancoder.buyer.model.BuyerModel;
+import com.cyancoder.factor.event.FactorCreatedEvent;
+import com.cyancoder.factor.model.BuyerModel;
 import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
 import com.cyancoder.generic.event.BuyerAddedEvent;
 import com.cyancoder.generic.query.FetchBuyerQuery;

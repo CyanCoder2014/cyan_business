@@ -1,8 +1,8 @@
-package com.cyancoder.buyer.rest;
+package com.cyancoder.factor.rest;
 
 
-import com.cyancoder.buyer.model.FactorModel;
-import com.cyancoder.buyer.query.FilterFactorQuery;
+import com.cyancoder.factor.model.FactorModel;
+import com.cyancoder.factor.query.FilterFactorQuery;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;

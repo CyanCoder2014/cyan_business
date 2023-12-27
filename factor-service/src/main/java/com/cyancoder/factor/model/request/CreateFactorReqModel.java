@@ -1,7 +1,7 @@
-package com.cyancoder.buyer.model.request;
+package com.cyancoder.factor.model.request;
 
 
-import com.cyancoder.buyer.model.FactorItemModel;
+import com.cyancoder.factor.model.FactorItemModel;
 import lombok.Data;
 
 import java.util.List;

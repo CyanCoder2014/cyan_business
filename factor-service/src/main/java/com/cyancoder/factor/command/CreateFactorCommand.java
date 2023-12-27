@@ -1,7 +1,7 @@
 package com.cyancoder.factor.command;
 
 
-import com.cyancoder.buyer.model.FactorItemModel;
+import com.cyancoder.factor.model.FactorItemModel;
 import lombok.Builder;
 import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;

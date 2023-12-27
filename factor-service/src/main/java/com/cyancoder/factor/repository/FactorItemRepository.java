@@ -1,6 +1,6 @@
-package com.cyancoder.buyer.repository;
+package com.cyancoder.factor.repository;
 
-import com.cyancoder.buyer.entity.FactorItemEntity;
+import com.cyancoder.factor.entity.FactorItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,7 +1,7 @@
-package com.cyancoder.buyer.event;
+package com.cyancoder.factor.event;
 
 
-import com.cyancoder.buyer.model.FactorItemModel;
+import com.cyancoder.factor.model.FactorItemModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

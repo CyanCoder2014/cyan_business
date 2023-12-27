@@ -1,9 +1,9 @@
-package com.cyancoder.buyer.query;
+package com.cyancoder.factor.query;
 
 
-import com.cyancoder.buyer.entity.FactorEntity;
-import com.cyancoder.buyer.model.FactorModel;
-import com.cyancoder.buyer.repository.FactorRepository;
+import com.cyancoder.factor.entity.FactorEntity;
+import com.cyancoder.factor.model.FactorModel;
+import com.cyancoder.factor.repository.FactorRepository;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.BeanUtils;

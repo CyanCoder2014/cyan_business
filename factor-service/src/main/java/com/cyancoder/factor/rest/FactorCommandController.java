@@ -1,8 +1,8 @@
-package com.cyancoder.buyer.rest;
+package com.cyancoder.factor.rest;
 
 
 import com.cyancoder.factor.command.CreateFactorCommand;
-import com.cyancoder.buyer.model.request.CreateFactorReqModel;
+import com.cyancoder.factor.model.request.CreateFactorReqModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;

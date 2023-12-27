@@ -1,12 +1,12 @@
-package com.cyancoder.buyer.query;
+package com.cyancoder.factor.query;
 
 
-import com.cyancoder.buyer.entity.FactorEntity;
-import com.cyancoder.buyer.entity.FactorItemEntity;
-import com.cyancoder.buyer.event.FactorCreatedEvent;
-import com.cyancoder.buyer.model.FactorItemModel;
-import com.cyancoder.buyer.repository.FactorItemRepository;
-import com.cyancoder.buyer.repository.FactorRepository;
+import com.cyancoder.factor.entity.FactorEntity;
+import com.cyancoder.factor.entity.FactorItemEntity;
+import com.cyancoder.factor.event.FactorCreatedEvent;
+import com.cyancoder.factor.model.FactorItemModel;
+import com.cyancoder.factor.repository.FactorItemRepository;
+import com.cyancoder.factor.repository.FactorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.config.ProcessingGroup;

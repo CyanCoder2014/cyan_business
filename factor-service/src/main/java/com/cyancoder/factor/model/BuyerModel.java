@@ -1,4 +1,4 @@
-package com.cyancoder.buyer.model;
+package com.cyancoder.factor.model;
 
 
 import lombok.Data;

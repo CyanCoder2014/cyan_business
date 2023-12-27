@@ -1,6 +1,6 @@
-package com.cyancoder.buyer.entity;
+package com.cyancoder.factor.entity;
 
-import com.cyancoder.buyer.model.Status;
+import com.cyancoder.factor.model.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 

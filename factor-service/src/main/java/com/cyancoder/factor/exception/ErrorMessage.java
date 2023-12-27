@@ -1,4 +1,4 @@
-package com.cyancoder.buyer.exception;
+package com.cyancoder.factor.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

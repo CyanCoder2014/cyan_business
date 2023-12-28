@@ -4,8 +4,14 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.0'
 }
 
+ext {
+	rndNum = new Random().nextInt(99)
+}
+
 group = 'com.cyancoder'
-version = "0.0.1${new Random().nextInt(999)}-SNAPSHOT"
+version = "0.0.1.${project.property('rndNum')}-SNAPSHOT"
+//version = "0.0.1.${parentNum}-SNAPSHOT"
+
 
 java {
 	sourceCompatibility = '17'
@@ -28,4 +34,7 @@ dependencies {
 }
 
 tasks.named('test') {
+	delete "buld/libs/*.jar"
+
 }
+

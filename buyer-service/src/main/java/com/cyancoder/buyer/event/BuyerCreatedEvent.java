@@ -11,6 +11,9 @@ public class BuyerCreatedEvent {
     private final  String buyerId;
 
 
+    private String note;
+
+
 
 
 }

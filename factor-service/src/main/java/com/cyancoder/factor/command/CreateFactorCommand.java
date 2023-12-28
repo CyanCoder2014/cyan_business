@@ -22,6 +22,7 @@ public class CreateFactorCommand {
 
     private List<FactorItemModel> items;
 
+    private String buyerId;
 
 
 }

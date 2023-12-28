@@ -15,4 +15,7 @@ public class FactorModel {
 
     private List<FactorItemModel> items;
 
+    private String buyerId;
+
+
 }

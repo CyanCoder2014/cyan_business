@@ -3,6 +3,7 @@ package com.cyancoder.factor.command;
 
 import com.cyancoder.factor.event.FactorCreatedEvent;
 import com.cyancoder.factor.model.FactorItemModel;
+import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -13,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import java.util.List;
 
 @Aggregate
+@Slf4j
 public class FactorAggregate {
 
     @AggregateIdentifier
@@ -23,6 +25,7 @@ public class FactorAggregate {
 
     private List<FactorItemModel> items;
 
+    private String buyerId;
 
     public  FactorAggregate(){
 
@@ -31,6 +34,8 @@ public class FactorAggregate {
     @CommandHandler
     public  FactorAggregate(CreateFactorCommand createFactorCommand){
 
+
+        log.info("createFactorCommand::: {}", createFactorCommand);
         // validations
 
         FactorCreatedEvent factorCreatedEvent = new FactorCreatedEvent();
@@ -46,6 +51,7 @@ public class FactorAggregate {
         this.code = factorCreatedEvent.getCode();
         this.note = factorCreatedEvent.getNote();
         this.items = factorCreatedEvent.getItems();
+        this.buyerId = factorCreatedEvent.getBuyerId();
 
 
 

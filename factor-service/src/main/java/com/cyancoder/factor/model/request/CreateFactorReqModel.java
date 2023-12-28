@@ -19,4 +19,7 @@ public class CreateFactorReqModel {
 
     private List<FactorItemModel> items;
 
+    private String buyerId;
+
+
 }

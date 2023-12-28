@@ -38,8 +38,12 @@ public class FactorSaga {
 
 
         AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
+//                .buyerId(factorCreatedEvent.getBuyerId())
                 .buyerId(factorCreatedEvent.getBuyerId())
                 .build();
+
+        log.info("addOrEditBuyerCommand: {} ",addOrEditBuyerCommand);
+
 
         commandGateway.send(addOrEditBuyerCommand, new CommandCallback<AddOrEditBuyerCommand, Object>() {
 

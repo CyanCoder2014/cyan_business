@@ -29,6 +29,7 @@ public class FactorCommandController {
                 .code(createFactorReqModel.getCode())
                 .note(createFactorReqModel.getNote())
                 .items(createFactorReqModel.getItems())
+                .buyerId(createFactorReqModel.getBuyerId())
                 .build();
 
 

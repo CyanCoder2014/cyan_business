@@ -24,10 +24,13 @@ public class FactorEntity {
 
     private String code;
 
-//    @ManyToOne
+    //    @ManyToOne
 //    @JoinColumn(name = "seller_id")
 //    private SellerEntity seller;
 
+//    @ManyToOne
+    @Column(name = "buyer_id")
+    private String buyerId;
 
 //    @ManyToOne
 //    @JoinColumn(name = "product_id")

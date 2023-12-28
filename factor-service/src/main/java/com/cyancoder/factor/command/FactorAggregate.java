@@ -2,7 +2,10 @@ package com.cyancoder.factor.command;
 
 
 import com.cyancoder.factor.event.FactorCreatedEvent;
+import com.cyancoder.factor.event.FactorFilteredEvent;
 import com.cyancoder.factor.model.FactorItemModel;
+import com.cyancoder.factor.query.FilterFactorQuery;
+import com.cyancoder.factor.query.GetBuyerQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -52,10 +55,34 @@ public class FactorAggregate {
         this.note = factorCreatedEvent.getNote();
         this.items = factorCreatedEvent.getItems();
         this.buyerId = factorCreatedEvent.getBuyerId();
+    }
 
 
 
 
+
+    @CommandHandler
+    public  FactorAggregate(SetBuyerRelationCommand setBuyerRelationCommand){
+
+
+        log.info("setBuyerRelationCommand::: {}", setBuyerRelationCommand);
+        // validations
+
+        FactorFilteredEvent factorFilteredEvent = new FactorFilteredEvent();
+        BeanUtils.copyProperties(setBuyerRelationCommand, factorFilteredEvent);
+
+        AggregateLifecycle.apply(factorFilteredEvent);
+
+    }
+
+
+    @EventSourcingHandler
+    public void on(FactorFilteredEvent factorFilteredEvent){
+        this.factorId = factorFilteredEvent.getFactorId();
+        this.code = factorFilteredEvent.getCode();
+        this.note = factorFilteredEvent.getNote();
+        this.items = factorFilteredEvent.getItems();
+        this.buyerId = factorFilteredEvent.getBuyerId();
     }
 
 

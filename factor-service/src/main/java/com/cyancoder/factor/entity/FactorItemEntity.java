@@ -20,6 +20,7 @@ public class FactorItemEntity {
 
     public FactorItemEntity(FactorItemModel itemModel){
         BeanUtils.copyProperties(itemModel, this);
+        this.setFactor(new FactorEntity(itemModel.getFactor()));
     }
 
 
@@ -27,8 +28,13 @@ public class FactorItemEntity {
     @Column(name = "factor_item_id")
     private String factorItemId;
 
-    @Column(name = "factor_id")
-    private String factorId;
+
+//    @Column(name = "factor_id")
+//    private String factorId;
+
+    @ManyToOne
+    @JoinColumn(name = "factor_id")
+    private FactorEntity factor;
 
     @Column(name = "product_id")
     private String productId;

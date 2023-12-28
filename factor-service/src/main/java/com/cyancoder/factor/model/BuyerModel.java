@@ -6,7 +6,8 @@ import lombok.Data;
 @Data
 public class BuyerModel {
 
-    private String factorId;
+    private String buyerId;
+    private String note;
 
 
 }

@@ -4,7 +4,9 @@ package com.cyancoder.factor.query;
 import com.cyancoder.factor.entity.FactorEntity;
 import com.cyancoder.factor.entity.FactorItemEntity;
 import com.cyancoder.factor.event.FactorCreatedEvent;
+import com.cyancoder.factor.event.FactorFilteredEvent;
 import com.cyancoder.factor.model.FactorItemModel;
+import com.cyancoder.factor.model.FactorModel;
 import com.cyancoder.factor.repository.FactorItemRepository;
 import com.cyancoder.factor.repository.FactorRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,15 +55,17 @@ public class FactorEventHandler {
 
             factorEntity.setCode(String.valueOf(lastCode + 1));
         }
+        log.info("event: {}",event);
 
 
         try{
             FactorEntity factor = factorRepository.save(factorEntity);
+            log.info("factorRepository.save: {}",factor);
 
             List<FactorItemModel> items = event.getItems();
             items.forEach(item->{
                 item.setFactorItemId(UUID.randomUUID().toString());
-                item.setFactorId(factor.getFactorId());
+                item.setFactor(new FactorModel(factor));
 
             });
             List<FactorItemEntity> factorItems = items.stream().map(FactorItemEntity::new).collect(Collectors.toList());
@@ -71,6 +75,17 @@ public class FactorEventHandler {
         }catch (Exception ignored){
 
         }
+
+    }
+
+
+
+    @EventHandler
+    public void on(FactorFilteredEvent event) {
+
+        log.info("@EventHandler called FactorFilteredEvent !!!!!!!!!!!!: {}",event);
+
+
 
     }
 }

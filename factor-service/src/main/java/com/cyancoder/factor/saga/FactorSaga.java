@@ -2,9 +2,10 @@ package com.cyancoder.factor.saga;
 
 
 import com.cyancoder.factor.event.FactorCreatedEvent;
-import com.cyancoder.factor.model.BuyerModel;
+import com.cyancoder.factor.event.FactorFilteredEvent;
+import com.cyancoder.factor.query.GetBuyerQuery;
 import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
-import com.cyancoder.generic.event.BuyerAddedEvent;
+import com.cyancoder.generic.model.Buyer;
 import com.cyancoder.generic.query.FetchBuyerQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandCallback;
@@ -19,6 +20,7 @@ import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.TimeUnit;
 
 @Saga
 @Slf4j
@@ -59,34 +61,48 @@ public class FactorSaga {
     }
 
 
-
-    @SagaEventHandler(associationProperty = "buyerId")
-    public void handle(BuyerAddedEvent buyerAddedEvent) {
-
-        log.info("Buyer added: " + buyerAddedEvent.getBuyerId());
-
-
-        FetchBuyerQuery fetchBuyerQuery = new FetchBuyerQuery(buyerAddedEvent.getBuyerId());
-
-        BuyerModel buyer = null;
-
-        try {
-             buyer = queryGateway.query(fetchBuyerQuery,
-                    ResponseTypes.instanceOf(BuyerModel.class)).join();
-
-        }catch (Exception e){
-
-            return;
-
-        }
-
-
-        if (buyer == null){
-
-            //Start compensation transaction
-            return;
-        }
-
-    }
+//    @StartSaga
+//    @SagaEventHandler(associationProperty = "buyerId")
+//    public void handle(FactorFilteredEvent factorFilteredEvent) {
+//
+//        log.info("Buyer get: " + factorFilteredEvent.getBuyerId());
+//
+//
+//        FetchBuyerQuery fetchBuyerQuery = new FetchBuyerQuery(factorFilteredEvent.getBuyerId());
+//
+//        Buyer buyer = null;
+//
+//        try {
+//             buyer = queryGateway.query(fetchBuyerQuery,
+//                    ResponseTypes.instanceOf(Buyer.class)).join();
+//
+//        }catch (Exception e){
+//
+//
+//        }
+//
+//
+//        if (buyer == null){
+//
+//            //Start compensation transaction
+//            return;
+//        }
+//
+//
+//
+//        GetBuyerQuery getBuyerQuery = GetBuyerQuery.builder()
+//                .buyerId(buyer.getBuyerId())
+//                .build();
+//        try{
+//
+//            commandGateway.sendAndWait(getBuyerQuery,10, TimeUnit.SECONDS);
+//
+//        }catch (Exception e){
+//            // start compensating transaction
+//        }
+//
+//
+//
+//    }
 
 }

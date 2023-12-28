@@ -1,16 +1,28 @@
 package com.cyancoder.factor.entity;
 
+import com.cyancoder.factor.model.FactorModel;
 import com.cyancoder.factor.model.Status;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
+import java.util.List;
 
 
 @Table(name = "f_factors")
 @Data
 @Entity
 public class FactorEntity {
+
+    public FactorEntity(FactorModel factorModel){
+        BeanUtils.copyProperties(factorModel, this);
+
+    }
+
+    public FactorEntity(){
+
+    }
 
 //    private static final long serialVersionUID = 5313493413859894403L;
 
@@ -24,6 +36,9 @@ public class FactorEntity {
 
     private String code;
 
+
+    @OneToMany(mappedBy = "factor")
+    private List<FactorItemEntity> items;
     //    @ManyToOne
 //    @JoinColumn(name = "seller_id")
 //    private SellerEntity seller;

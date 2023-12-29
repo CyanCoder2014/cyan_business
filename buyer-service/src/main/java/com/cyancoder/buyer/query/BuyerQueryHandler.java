@@ -27,13 +27,6 @@ public class BuyerQueryHandler {
 
         List<BuyerEntity> storedBuyers = buyerRepository.findAll();
 
-//        storedBuyers.forEach(item ->{
-//            BuyerModel buyerModel = new BuyerModel();
-//            BeanUtils.copyProperties(item, buyerModel);
-//            buyers.add(buyerModel);
-//        });
-//        buyers = storedBuyers.stream().map(BuyerModel::new).collect(Collectors.toList());//////////////
-
         return buyers;
 
     }

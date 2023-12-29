@@ -7,9 +7,16 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v2/api/factor-service/factors")
@@ -32,6 +39,18 @@ public class FactorQueryController {
 
         return factors;
 
+
+    }
+
+
+
+
+    @GetMapping("/userinfo")
+    public Object userInfoController() {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        Object jwt = authentication.getPrincipal();
+        return authentication;
 
     }
 

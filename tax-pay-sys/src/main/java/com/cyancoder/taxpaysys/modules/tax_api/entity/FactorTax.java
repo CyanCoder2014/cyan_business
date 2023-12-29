@@ -1,31 +1,28 @@
-package com.cyancoder.taxpaysys.modules.tax_api.entity.factor;
+package com.cyancoder.taxpaysys.modules.tax_api.entity;
 
 
-import com.cyancoder.taxpaysys.modules.tax_api.entity.*;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.*;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@Table(name = "c_sub_factor")
+@Table(name = "t_factor_tax")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-public class Factor  implements Serializable{
+public class FactorTax implements Serializable{
 
-    @jakarta.persistence.Id
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "sub_factor_id")
+    @Column(name = "factor_tax_id")
     private Long id;
 
 
@@ -150,7 +147,7 @@ public class Factor  implements Serializable{
     @Column(name = "tax_api_state")
     private Integer taxApiState;
 
-    @Column(name = "tax_api_state")
+    @Column(name = "tax_api_message")
     private String taxApiMessage;
 
     }

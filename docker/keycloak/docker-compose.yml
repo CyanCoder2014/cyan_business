@@ -20,26 +20,48 @@ services:
 #    networks:
 #      - keycloak-and-mysql-network
 
-  keycloak-w:
-    image: jboss/keycloak:16.1.0
-    ports:
-      - 8181:8080
-    restart: unless-stopped
-    environment:
-      # User and password for the Administration Console
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-      DB_VENDOR: mariodb
-#      DB_ADDR: mysql-kc
-      DB_PORT: 3306
-      # Same values as the mysql-kc service
-      DB_USER: root
-      DB_PASSWORD:
-      DB_DATABASE: cb_keycloak
-#    depends_on:
-#      - mysql-kc
+#  keycloak-w:
+#    image: jboss/keycloak:16.1.0
+#    ports:
+#      - 8181:8080
+##    restart: unless-stopped
+#    environment:
+#      # User and password for the Administration Console
+#      KEYCLOAK_USER: admin
+#      KEYCLOAK_PASSWORD: admin
+#      DB_VENDOR: mariadb
+##      DB_ADDR: mysql-kc
+#      DB_PORT: 3306
+#      # Same values as the mysql-kc service
+#      DB_USER: root
+#      DB_PASSWORD:
+#      DB_DATABASE: cb_keycloak
+##    depends_on:
+##      - mysql-kc
 #    networks:
 #      - keycloak-and-mysql-network
+
+
+  keycloak-w:
+    container_name: demo-keycloak
+#    image: jboss/keycloak:10.0.1
+    image: jboss/keycloak:16.1.0
+    restart: always
+    ports:
+      - 8180:8080
+    environment:
+      PROXY_ADDRESS_FORWARDING: "true"
+      DB_VENDOR: mariadb
+      DB_ADDR: demo-db
+      DB_DATABASE: cb_keycloak
+      DB_USER: root
+      DB_PASSWORD:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+#    depends_on:
+#      - demo_db
+#    networks:
+#      - demo_mesh
 
 #networks:
 #  keycloak-and-mysql-network:

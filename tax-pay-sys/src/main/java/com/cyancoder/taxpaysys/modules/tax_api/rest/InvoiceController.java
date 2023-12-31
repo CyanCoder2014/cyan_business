@@ -1,8 +1,8 @@
 package com.cyancoder.taxpaysys.modules.tax_api.rest;
 
 
-import com.cyancoder.taxpaysys.modules.tax_api.client.rest.InvoiceTaxClientController;
-import com.cyancoder.taxpaysys.modules.tax_api.client.service.InvoiceService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.rest.InvoiceTaxClientController;
+import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.InvoiceService;
 import com.cyancoder.taxpaysys.modules.tax_api.service.FactorService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;

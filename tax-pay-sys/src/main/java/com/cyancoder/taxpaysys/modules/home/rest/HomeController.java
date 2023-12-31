@@ -7,13 +7,14 @@ import com.cyancoder.taxpaysys.modules.home.dto.res.TestResponseModel;
 import com.cyancoder.taxpaysys.modules.home.service.ExternalFeignClientAsync;
 import com.cyancoder.taxpaysys.modules.home.service.ExternalService;
 import com.cyancoder.taxpaysys.modules.home.service.TicketService;
-import com.cyancoder.taxpaysys.modules.tax_api.client.service.ServerInformationService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.ServerInformationService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.service.FactorClientService;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.SellerUser;
 import com.cyancoder.taxpaysys.modules.tax_api.model.Header;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.auth.AuthRequestDataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.server_info.ServerInfoResponseModel;
-import com.cyancoder.taxpaysys.modules.tax_api.repository.FactorRepository;
+import com.cyancoder.taxpaysys.modules.tax_api.repository.FactorTaxRepository;
 import com.cyancoder.taxpaysys.util.CryptoUtils;
 import com.cyancoder.taxpaysys.util.Encryption;
 import com.cyancoder.taxpaysys.util.KeyUtil;
@@ -43,13 +44,10 @@ public class HomeController {
 
     private final ExternalService externalService;
 
-    private final TicketService ticketService;
-
-    private final ExternalFeignClient externalFeignClient;
 
     private final ServerInformationService serverInformationService;
 
-    private final FactorRepository factorRepository;
+    private final FactorClientService factorClientService;
 
     @GetMapping
     public ResponseEntity<String> home() throws InterruptedException {
@@ -146,10 +144,7 @@ public class HomeController {
         Date date2 = formatter2.parse(date_string2);
 
 
-        return factorRepository.findByCreatedOnBetween(date1,date2).stream()
-                .filter(i->i.getId()>276225)
-                .filter(i->i.getStatus().toString()!= "removed")
-                .toList();
+        return factorClientService.getFactors();
 //        return factorRepository.findAll(Pageable.ofSize(12)
 ////                .getSortOr(Sort.by(Sort.Direction.DESC, "id"))
 //        );

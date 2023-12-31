@@ -1,7 +1,7 @@
 package com.cyancoder.taxpaysys.modules.tax_api.rest;
 
 
-import com.cyancoder.taxpaysys.modules.tax_api.client.service.EconomicCodeService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.EconomicCodeService;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.eco_code.EconomicCodeResponseModel;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;

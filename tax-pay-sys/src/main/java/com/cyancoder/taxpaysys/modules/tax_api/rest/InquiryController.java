@@ -1,7 +1,7 @@
 package com.cyancoder.taxpaysys.modules.tax_api.rest;
 
 
-import com.cyancoder.taxpaysys.modules.tax_api.client.service.InquiryService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.InquiryService;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.ResponseModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponseModel;
 import jakarta.servlet.http.HttpServletRequest;

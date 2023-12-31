@@ -1,7 +1,7 @@
 package com.cyancoder.taxpaysys.modules.tax_api.rest;
 
 
-import com.cyancoder.taxpaysys.modules.tax_api.client.service.AuthService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.AuthService;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.SellerUser;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.auth.AuthResponseModel;
 import jakarta.servlet.http.HttpServletRequest;

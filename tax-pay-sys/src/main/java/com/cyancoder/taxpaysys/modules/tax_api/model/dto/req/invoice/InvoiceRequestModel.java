@@ -1,7 +1,7 @@
 package com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.invoice;
 
 
-import com.cyancoder.taxpaysys.modules.tax_api.client.service.ServerInformationService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.ServerInformationService;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.SellerUser;
 import com.cyancoder.taxpaysys.modules.tax_api.model.Header;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.DataModel;

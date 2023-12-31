@@ -36,7 +36,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/v2/api/tax-service")
 @RequiredArgsConstructor
 public class HomeController {
 

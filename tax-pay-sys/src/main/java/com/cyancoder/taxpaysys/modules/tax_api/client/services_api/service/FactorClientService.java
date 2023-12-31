@@ -20,11 +20,13 @@ public class FactorClientService {
 
     public Object getFactors()  {
 
-        try {
-            return new ResponseModel(factorClient.getItems());
-        } catch (Exception e) {
-            throw e;////////////////////
-        }
+        return factorClient.getItems();
+
+//        try {
+//            return new ResponseModel(factorClient.getItems());
+//        } catch (Exception e) {
+//            throw e;////////////////////
+//        }
     }
 
 

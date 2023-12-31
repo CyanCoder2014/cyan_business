@@ -2,14 +2,15 @@ SET NAMES 'utf8';
 SET CHARACTER SET utf8;
 
 CREATE TABLE if not exists `t_factor_tax` (
-                                         factor_tax_id INT(11) UNSIGNED NOT NULL UNIQUE,
+                                         factor_tax_id varchar(36) NOT NULL UNIQUE,
                                          factor_id varchar(128) NOT NULL UNIQUE,
 
-                                         tax_api_uid_first varchar(128) NOT NULL,
-                                         tax_api_reference_first varchar(128) NOT NULL,
+                                         tax_api_uid varchar(128) NOT NULL,
+                                         tax_api_reference varchar(128) NOT NULL,
 
-                                         tax_api_uid_last varchar(128) NOT NULL,
-                                         tax_api_reference_last varchar(128) NOT NULL,
+                                         successed_at timestamp NULL DEFAULT NULL,
+                                         tax_api_successed_uid varchar(128) NOT NULL,
+                                         tax_api_successed_reference varchar(128) NOT NULL,
 
                                          tax_api_correction_uid varchar(128) NOT NULL,
                                          tax_api_correction_reference varchar(128) NOT NULL,
@@ -21,8 +22,9 @@ CREATE TABLE if not exists `t_factor_tax` (
                                          tax_api_message varchar(128) NOT NULL,
 
                                          state varchar(10) NULL DEFAULT NULL,
-                                         created_by INT(11) UNSIGNED NULL DEFAULT NULL,
-                                         updated_by INT(11) UNSIGNED NULL DEFAULT NULL,
+                                         client_id varchar(36) NULL DEFAULT NULL,
+                                         created_by varchar(36) NULL DEFAULT NULL,
+                                         updated_by varchar(36) NULL DEFAULT NULL,
                                          created_at timestamp NULL DEFAULT NULL,
                                          updated_at timestamp NULL DEFAULT NULL,
                                          deleted_at timestamp NULL DEFAULT NULL,
@@ -33,4 +35,5 @@ CREATE TABLE if not exists `t_factor_tax` (
 
 
 ALTER TABLE `t_factor_tax`
-    ADD KEY if not exists `t_factor_tax_factor_tax_id_index` (`factor_tax_id`)
+    ADD KEY if not exists `t_factor_tax_factor_tax_id_index` (`factor_tax_id`),
+    ADD KEY if not exists `t_factor_tax_factor_id_index` (`factor_id`)

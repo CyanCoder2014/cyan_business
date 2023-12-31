@@ -42,6 +42,30 @@ public class FactorQueryController {
 
     }
 
+    @GetMapping(path = "/users")
+    public String getUserInfo(Model model) {
+
+        final DefaultOidcUser user = (DefaultOidcUser) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String dob = "";
+
+        OidcIdToken token = user.getIdToken();
+
+        Map<String, Object> customClaims = token.getClaims();
+
+        if (customClaims.containsKey("DOB")) {
+            dob = String.valueOf(customClaims.get("DOB"));
+        }
+
+        model.addAttribute("username", user.getName());
+        model.addAttribute("dob", dob);
+        return "userInfo";
+    }
+
+
+
 
 
 

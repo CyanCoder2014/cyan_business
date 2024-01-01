@@ -6,6 +6,7 @@ import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Date;
 import java.util.List;
@@ -16,11 +17,23 @@ import java.util.List;
 public class FactorClientService {
 
     private final FactorClient factorClient;
-
+    private final WebClient.Builder webClientBuilder;
 
     public Object getFactors()  {
 
-        return factorClient.getItems();
+
+        Object res = webClientBuilder.build().get()
+                .uri("http://factor-service/v2/api/factors"
+//                        , uriBuilder -> uriBuilder.queryParam("test", 222).build()
+                )
+                .retrieve()
+                .bodyToMono(Object.class)
+                .block();
+
+
+
+        return res;
+//        return factorClient.getItems();
 
 //        try {
 //            return new ResponseModel(factorClient.getItems());

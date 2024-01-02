@@ -4,5 +4,6 @@ include 'discovery-server'
 include 'api-gateway'
 include 'factor-service'
 include 'buyer-service'
+include 'client-service'
 include 'generic'
 

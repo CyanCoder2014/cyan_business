@@ -152,7 +152,7 @@ public class FactorService {
             body.setPrdis(factorModel.getFinalPrice()); // need to consider ************ // مبلغ قبل تخفیف
             body.setDis(factorModel.getDiscount()==null?BigDecimal.ZERO: factorModel.getDiscount()); // مبلغ تخفیف
             body.setAdis(factorModel.getFinalPrice()); // need to consider ************ مبلغ بعد تخفیف
-            body.setVra(BigDecimal.ZERO); // نرم مالیات بر ارزش افزوده *****************
+            body.setVra(BigDecimal.ZERO); //نرخ مالیات بر ارزش افزوده ***************** /////////////////
             body.setVam(factorModel.getTax()); // مبلع مالیات بر ارزش افزوده
 
             body.setTsstam(factorModel.getPricePlusTax()); // مبلغ کل

@@ -19,10 +19,12 @@ import com.cyancoder.taxpaysys.util.CryptoUtils;
 import com.cyancoder.taxpaysys.util.Encryption;
 import com.cyancoder.taxpaysys.util.KeyUtil;
 import com.cyancoder.taxpaysys.util.SignText;
+import jakarta.ws.rs.HeaderParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -131,7 +133,7 @@ public class HomeController {
 
 
     @GetMapping("/get-factors")
-    public Object getFactors() throws ParseException {
+    public Object getFactors(@RequestHeader("UniqueCode")String uniqueCode) throws ParseException {
 
 
         String date_string1 = "2023-05-01";
@@ -144,7 +146,7 @@ public class HomeController {
         Date date2 = formatter2.parse(date_string2);
 
 
-        return factorClientService.getFactors();
+        return factorClientService.getFactors(uniqueCode);
 //        return factorRepository.findAll(Pageable.ofSize(12)
 ////                .getSortOr(Sort.by(Sort.Direction.DESC, "id"))
 //        );

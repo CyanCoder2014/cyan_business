@@ -38,15 +38,16 @@ public class InvoiceController {
 
 
 
-    @GetMapping("send-invoice")
+    @GetMapping("send-invoice-async")
     List<Object> submitInvoice(HttpServletRequest request) throws Exception {
 
         return invoiceService.sendInvoice();
     }
 
 
-    @PostMapping("send-invoice-sync")
-    Object submitInvoiceSync(@RequestParam String basedOn,
+    @PostMapping("send-invoice")
+    Object submitInvoiceSync(@RequestHeader("UniqueCode")String uniqueCode,
+                             @RequestParam String basedOn,
                              @RequestParam String codeFrom,
                              @RequestParam String codeTo,
                              @RequestParam String fromDate,
@@ -71,7 +72,8 @@ public class InvoiceController {
 
 
     @PostMapping("invoice-correction")
-    Object invoiceCorrection(@RequestParam Long factorId,
+    Object invoiceCorrection(@RequestHeader("UniqueCode")String uniqueCode,
+                             @RequestParam Long factorId,
                              @RequestParam int seller
     ) throws Exception {
 
@@ -79,7 +81,8 @@ public class InvoiceController {
     }
 
     @PostMapping("invoice-cancellation")
-    Object invoiceCancellation(@RequestParam Long factorId,
+    Object invoiceCancellation(@RequestHeader("UniqueCode")String uniqueCode,
+                               @RequestParam Long factorId,
                              @RequestParam int seller
     ) throws Exception {
 

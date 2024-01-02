@@ -1,9 +1,9 @@
 package com.cyancoder.taxpaysys.modules.tax_api.client.services_api.service;
 
+import com.cyancoder.taxpaysys.config.OauthToken;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.ResponseModel;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.rest.FactorClient;
 import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel;
-import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.auth.OAuth2AuthenticationToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -23,23 +23,13 @@ import java.util.Map;
 public class FactorClientService {
 
     private final FactorClient factorClient;
-    private final WebClient.Builder webClientBuilder;
+    private final OauthToken oauthToken;
+//    private final WebClient.Builder webClientBuilder;
 
-    public Object getFactors()  {
+    public Object getFactors(String uniqueCode)  {
+        log.info("uniqueCode: {}",uniqueCode);
 
-//        Authentication authToken = SecurityContextHolder.getContext().getAuthentication();
-//        Map<String, Object> attributes = null;
-//        if (authToken instanceof OAuth2AuthenticationToken) {
-//            attributes = ((OAuth2AuthenticationToken) authToken).getPrincipal().getAttributes();
-//        } else if (authToken instanceof JwtAuthenticationToken) {
-//            attributes = ((JwtAuthenticationToken) authToken).getTokenAttributes();
-//
-//        }
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        JwtAuthenticationToken oauthToken = (JwtAuthenticationToken) authentication;
-
-        return factorClient.getItemsT("Bearer "+oauthToken.getToken().getTokenValue());
+        return factorClient.getItemsT("Bearer "+oauthToken.getToken());
     }
 
 

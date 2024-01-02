@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class FactorModel {
@@ -27,6 +28,9 @@ public class FactorModel {
 
 
     private ProductModel product;
+
+
+    private List<FactorItemModel> items;
 
 
     private String productName;

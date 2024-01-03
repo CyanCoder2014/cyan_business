@@ -13,7 +13,7 @@ CREATE TABLE if not exists `u_client_user` (
                                          deleted_at timestamp NULL DEFAULT NULL,
                                          status  varchar(10) NULL DEFAULT NULL,
 
-                                         CONSTRAINT u_client_user PRIMARY KEY (u_client_user)
+                                         CONSTRAINT client_user_id PRIMARY KEY (client_user_id)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

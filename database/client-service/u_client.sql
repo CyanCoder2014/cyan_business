@@ -4,8 +4,8 @@ SET CHARACTER SET utf8;
 CREATE TABLE if not exists `u_client` (
                                          client_id varchar(36) NOT NULL UNIQUE,
                                          name varchar(128) NOT NULL,
-                                         mobile varchar(128) NOT NULL,
-                                         email varchar(128) NOT NULL,
+                                         mobile varchar(128) NULL DEFAULT NULL,
+                                         email varchar(128) NULL DEFAULT NULL,
                                          note varchar(255) NULL DEFAULT NULL,
                                          expires_at timestamp NULL DEFAULT NULL,
                                          state varchar(10) NULL DEFAULT NULL,

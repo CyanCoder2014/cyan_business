@@ -146,22 +146,6 @@ public class HomeController {
     public Object getFactors(@RequestHeader("UniqueCode")String uniqueCode) throws ParseException {
 
 
-
-        Authentication authToken = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Object> attributes = null;
-        if (authToken instanceof OAuth2AuthenticationToken) {
-            attributes = ((OAuth2AuthenticationToken) authToken).getPrincipal().getAttributes();
-        } else if (authToken instanceof JwtAuthenticationToken) {
-            attributes = ((JwtAuthenticationToken) authToken).getTokenAttributes();
-
-        }
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-        return attributes.get("resource_access");
-
-
-
-
 //        String date_string1 = "2023-05-01";
 //        SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
 ////        formatter1.setTimeZone(TimeZone.getTimeZone("teh"));
@@ -172,7 +156,7 @@ public class HomeController {
 //        Date date2 = formatter2.parse(date_string2);
 //
 //
-//        return factorClientService.getFactors(uniqueCode);
+        return factorClientService.getFactors(uniqueCode);
 ////        return factorRepository.findAll(Pageable.ofSize(12)
 //////                .getSortOr(Sort.by(Sort.Direction.DESC, "id"))
 ////        );

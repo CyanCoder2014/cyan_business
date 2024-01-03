@@ -59,6 +59,7 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.0.2'
 
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.0.RELEASE'
 //	implementation 'org.springframework.security.oauth:spring-security-oauth2-client'
 //	compile group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: '5.0.0.RELEASE'
 

@@ -4,6 +4,7 @@ import com.cyancoder.taxpaysys.config.OauthToken;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.ResponseModel;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.rest.FactorClient;
 import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel;
+import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel_;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -26,7 +27,7 @@ public class FactorClientService {
     private final OauthToken oauthToken;
 //    private final WebClient.Builder webClientBuilder;
 
-    public Object getFactors(String uniqueCode)  {
+    public List<FactorModel_> getFactors(String uniqueCode)  {
         log.info("uniqueCode: {}",uniqueCode);
 
         return factorClient.getItemsT("Bearer "+oauthToken.getToken());

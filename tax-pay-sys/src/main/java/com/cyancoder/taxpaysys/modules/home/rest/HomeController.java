@@ -7,6 +7,7 @@ import com.cyancoder.taxpaysys.modules.home.dto.res.TestResponseModel;
 import com.cyancoder.taxpaysys.modules.home.service.ExternalFeignClientAsync;
 import com.cyancoder.taxpaysys.modules.home.service.ExternalService;
 import com.cyancoder.taxpaysys.modules.home.service.TicketService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.auth.OAuth2AuthenticationToken;
 import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.ServerInformationService;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.service.FactorClientService;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.SellerUser;
@@ -19,10 +20,16 @@ import com.cyancoder.taxpaysys.util.CryptoUtils;
 import com.cyancoder.taxpaysys.util.Encryption;
 import com.cyancoder.taxpaysys.util.KeyUtil;
 import com.cyancoder.taxpaysys.util.SignText;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.HeaderParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +43,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/v2/api/tax-service")
@@ -133,23 +141,41 @@ public class HomeController {
 
 
     @GetMapping("/get-factors")
+    @RolesAllowed({ "ROLE_cyan-business_user" })
+//    @PreAuthorize("hasAuthority('user')")
     public Object getFactors(@RequestHeader("UniqueCode")String uniqueCode) throws ParseException {
 
 
-        String date_string1 = "2023-05-01";
-        SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
-//        formatter1.setTimeZone(TimeZone.getTimeZone("teh"));
-        Date date1 = formatter1.parse(date_string1);
 
-        String date_string2 = "2023-12-20";
-        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
-        Date date2 = formatter2.parse(date_string2);
+        Authentication authToken = SecurityContextHolder.getContext().getAuthentication();
+        Map<String, Object> attributes = null;
+        if (authToken instanceof OAuth2AuthenticationToken) {
+            attributes = ((OAuth2AuthenticationToken) authToken).getPrincipal().getAttributes();
+        } else if (authToken instanceof JwtAuthenticationToken) {
+            attributes = ((JwtAuthenticationToken) authToken).getTokenAttributes();
+
+        }
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+        return attributes.get("resource_access");
 
 
-        return factorClientService.getFactors(uniqueCode);
-//        return factorRepository.findAll(Pageable.ofSize(12)
-////                .getSortOr(Sort.by(Sort.Direction.DESC, "id"))
-//        );
+
+
+//        String date_string1 = "2023-05-01";
+//        SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
+////        formatter1.setTimeZone(TimeZone.getTimeZone("teh"));
+//        Date date1 = formatter1.parse(date_string1);
+//
+//        String date_string2 = "2023-12-20";
+//        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
+//        Date date2 = formatter2.parse(date_string2);
+//
+//
+//        return factorClientService.getFactors(uniqueCode);
+////        return factorRepository.findAll(Pageable.ofSize(12)
+//////                .getSortOr(Sort.by(Sort.Direction.DESC, "id"))
+////        );
 
     }
 

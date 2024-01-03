@@ -2,6 +2,7 @@ package com.cyancoder.taxpaysys.modules.tax_api.model;
 
 
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
+@JsonFormat
 public class FactorModel {
 
 
@@ -18,6 +20,11 @@ public class FactorModel {
 
 
     private Long id;//////////////////////////
+
+    private String factorId;
+    private String note;
+    private Object buyer;
+    private String buyerId;
 
 
     private String code;
@@ -30,7 +37,8 @@ public class FactorModel {
     private ProductModel product;
 
 
-    private List<FactorItemModel> items;
+//    private List<FactorItemModel> items;
+    private Object items;
 
 
     private String productName;
@@ -87,10 +95,10 @@ public class FactorModel {
     private Date editedOn;
 
 
-    @Enumerated(EnumType.STRING)////////////////////
+//    @Enumerated(EnumType.STRING)////////////////////
     private State state;
 
-    @Enumerated(EnumType.STRING)//////////////////////////
+//    @Enumerated(EnumType.STRING)//////////////////////////
     private Status status;
 
 

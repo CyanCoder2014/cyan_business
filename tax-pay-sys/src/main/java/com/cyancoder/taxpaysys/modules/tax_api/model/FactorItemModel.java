@@ -2,6 +2,7 @@ package com.cyancoder.taxpaysys.modules.tax_api.model;
 
 
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Data;
@@ -15,9 +16,9 @@ public class FactorItemModel {
 
     private String factorItemId;
 
-    private FactorModel factor;////////////////////
+    private Object factor;////////////////////
 
-    private ProductModel product;
+    private Object product;//////////////
 
     private BigDecimal amount;
 

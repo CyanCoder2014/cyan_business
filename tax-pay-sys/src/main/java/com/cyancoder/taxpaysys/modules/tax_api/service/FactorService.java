@@ -73,7 +73,7 @@ public class FactorService {
         List<FactorModel> factorModelList;
         if (basedOn.equals("factor_code"))
             factorModelList =
-                    factorClientService.findByCodeBetween(codeFrom,codeTo)
+                    factorClientService.getFactors(codeFrom,codeTo)
                             .stream()
                             .filter(i->i.getId()>276225)
                             .filter(i->i.getStatus().toString()!= "removed")
@@ -89,7 +89,7 @@ public class FactorService {
             Date toDate = toDateObj.parse(toDateStr);
 
             factorModelList =
-                    factorClientService.findByCreatedOnBetween(fromDate,toDate)
+                    factorClientService.getFactors(fromDate,toDate)
                             .stream()
                             .filter(i->i.getId()>276225)
                             .filter(i->i.getStatus().toString()!= "removed")
@@ -181,7 +181,7 @@ public class FactorService {
             IntStream.range(0, length).forEach(i-> {
 
                 String FactorCode = invoiceList.get(i).getHeader().getInno();
-                List<FactorModel> factorModels = factorClientService.findByCode(FactorCode.toString())
+                List<FactorModel> factorModels = factorClientService.getFactors(FactorCode.toString())
                         .stream()
                         .filter(item->item.getStatus().toString()!= "removed")
                         .toList();
@@ -269,7 +269,7 @@ public class FactorService {
 
         List<FactorModel> factorModelList;
         factorModelList =
-                factorClientService.findById(factorId.toString())
+                factorClientService.getFactors(factorId.toString())
                         .stream()
                         .filter(i->i.getId()>276225)
                         .filter(i->i.getStatus().toString()!= "removed")
@@ -355,7 +355,7 @@ public class FactorService {
             IntStream.range(0, length).forEach(i-> {
 
                 String FactorCode = invoiceList.get(i).getHeader().getInno();
-                List<FactorModel> factorModels = factorClientService.findByCode(FactorCode.toString())
+                List<FactorModel> factorModels = factorClientService.getFactors(FactorCode.toString())
                         .stream()
                         .filter(item->item.getStatus().toString()!= "removed")
                         .toList();
@@ -391,7 +391,7 @@ public class FactorService {
 
         List<FactorModel> factorModelList;
         factorModelList =
-                factorClientService.findById(factorId.toString())
+                factorClientService.getFactors(factorId.toString())
                         .stream()
                         .filter(i->i.getId()>276225)
                         .filter(i->i.getStatus().toString()!= "removed")
@@ -479,7 +479,7 @@ public class FactorService {
             IntStream.range(0, length).forEach(i-> {
 
                 String FactorCode = invoiceList.get(i).getHeader().getInno();
-                List<FactorModel> factorModels = factorClientService.findByCode(FactorCode.toString())
+                List<FactorModel> factorModels = factorClientService.getFactors(FactorCode.toString())
                         .stream()
                         .filter(item->item.getStatus().toString()!= "removed")
                         .toList();

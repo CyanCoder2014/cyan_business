@@ -3,7 +3,7 @@ SET CHARACTER SET utf8;
 
 CREATE TABLE if not exists `u_company` (
                                          company_id varchar(36) NOT NULL UNIQUE,
-                                         client_id varchar(36) NOT NULL UNIQUE,
+                                         client_id varchar(36) NOT NULL,
                                          name varchar(128) NOT NULL,
                                          nationalCode INT(11) UNSIGNED NOT NULL,
                                          economicCode varchar(10) NOT NULL,

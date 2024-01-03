@@ -3,7 +3,7 @@ SET CHARACTER SET utf8;
 
 CREATE TABLE if not exists `p_product` (
                                          product_id varchar(36) NOT NULL UNIQUE,
-                                         unit_id varchar(36) NOT NULL UNIQUE,
+                                         unit_id varchar(36) NOT NULL,
                                          code varchar(10) NOT NULL,
                                          name varchar(10) NOT NULL,
                                          note varchar(128) NULL DEFAULT NULL,

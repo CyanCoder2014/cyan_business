@@ -38,7 +38,7 @@ public class InquiryService {
         Random rnd = new Random();
         Header header = new Header("2023-cyanbusiness-inq-2320011"+ rnd.nextInt(10));
         if (header.getString("Authorization") == "")
-            authService.setTokenInHeader(header, seller);
+            authService.setTokenInHeader(header,  uniqueCode,  privateKey);
         return header;
     }
 

@@ -30,7 +30,7 @@ public class InvoiceRequestModel  {
 //    @Autowired
     ServerInformationService serverInformationService;
 
-    public InvoiceRequestModel(Header header, String packetType, DataModel data, ServerInfoPubKeyModel serverKey, SellerUser seller) throws Exception {
+    public InvoiceRequestModel(Header header, String packetType, DataModel data, ServerInfoPubKeyModel serverKey, String privateKey) throws Exception {
 
         this.time = 1;
 
@@ -60,23 +60,23 @@ public class InvoiceRequestModel  {
                 .build();
 
 
-        this.setDataSignature(data,seller);
-        this.setSignature(header,seller);
+        this.setDataSignature(data,privateKey);
+        this.setSignature(header,privateKey);
     }
 
 
-    protected void setSignature(Header header,SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    protected void setSignature(Header header,String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         String normalJsonStr = CryptoUtils.normalJson(packet, header);
-        this.signature = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(seller));
+        this.signature = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(privateKey));
 
     }
 
 
-    protected void setDataSignature(DataModel data,SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    protected void setDataSignature(DataModel data,String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         String normalJsonStr = CryptoUtils.normalJson(data, null);
-        this.packet.setDataSignature(SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(seller)));
+        this.packet.setDataSignature(SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(privateKey)));
 
     }
 

@@ -9,10 +9,12 @@ import com.cyancoder.taxpaysys.modules.content.dto.InvoiceHeaderDto;
 import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.auth.Token;
 import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.AuthService;
 import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.ServerInformationService;
+import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.service.CompanyClientService;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.service.FactorClientService;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.FactorTaxEntity;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.PayState;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.SellerUser;
+import com.cyancoder.taxpaysys.modules.tax_api.model.CompanyModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.Header;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.invoice.BodyItems;
@@ -28,6 +30,7 @@ import com.cyancoder.taxpaysys.modules.transfer.config.ApiConfig;
 import com.cyancoder.taxpaysys.modules.transfer.dto.AsyncResponseModel;
 import com.cyancoder.taxpaysys.modules.transfer.impl.encrypter.DefaultEncrypter;
 import com.cyancoder.taxpaysys.modules.transfer.impl.signatory.InMemorySignatory;
+import com.cyancoder.taxpaysys.util.Encrypt;
 import com.cyancoder.taxpaysys.util.KeyUtil;
 import com.cyancoder.taxpaysys.util.TaxUtils;
 import jakarta.transaction.Transactional;
@@ -50,20 +53,21 @@ public class FactorService {
     private final FactorTaxRepository factorTaxRepository;
 
     private final FactorClientService factorClientService;
+    private final CompanyClientService companyClientService;
 
     private final AuthService authService;
     private final ServerInformationService serverInformationService;
 
     private TaxApi taxApi;
 
-    public Object getFactorsToSubmit(String basedOn, String codeFrom, String codeTo,
+    public Object getFactorsToSubmit(String uniqueCode, String basedOn, String codeFrom, String codeTo,
                                      String fromDateInput,String toDateInput,
-                                     int seller) throws Exception {
+                                     String companyId) throws Exception {
 
 
 
-        SellerUser sellerEnm = SellerUser.getSellerById(seller);
-        setData(sellerEnm);
+//        SellerUser sellerEnm = SellerUser.getSellerById(seller);
+        setData(uniqueCode, companyId);
 
 
         List<FactorModel> factorModelList;
@@ -206,12 +210,26 @@ public class FactorService {
 
 
 
-    private void setData(SellerUser seller) throws Exception {
+    private void setData(String uniqueCode, String companyId) throws Exception {
+
+
+        CompanyModel companyModel = companyClientService.getCompany(companyId);
+
+
+        if (companyModel.getUniqueCode() != Encrypt.hash(uniqueCode))
+            throw new Exception("uniqueCode or companyId is not corrected!");
+
+        if (companyModel.getPk() != null)
+            throw new Exception("pKey is not corrected!");
+
+
+        String privateKey = Encrypt.decrypt(companyModel.getPk(), uniqueCode);
+
 
         Random rnd = new Random();
         Header headerHttp = new Header("2023-cyanbusiness-fin-2320011"+ rnd.nextInt(10));
-        if (headerHttp.getString("Authorization") == "" || authService.getSeller() != seller)
-            authService.setTokenInHeader(headerHttp, seller);
+//        if (headerHttp.getString("Authorization") == "" || authService.getSeller() != seller)
+            authService.setTokenInHeader(headerHttp, uniqueCode, privateKey);
 
         HeaderItems headerItems = HeaderItems.builder().build();
         BodyItems bodyItems = BodyItems.builder().build();
@@ -220,15 +238,15 @@ public class FactorService {
         ServerInfoResponseModel response = serverInformationService.getServerInformation();
         ServerInfoPubKeyModel serverKey = response.successResponse != null ? response.successResponse.result.data.publicKeys[0] : null;
 
-        InvoiceRequestModel bodyHttp = new InvoiceRequestModel(headerHttp, "INVOICE.V01", data, serverKey,seller);
+        InvoiceRequestModel bodyHttp = new InvoiceRequestModel(headerHttp, "INVOICE.V01", data, serverKey,privateKey);
 
         ApiConfig apiConfig = new ApiConfig()
                 .baseUrl("https://tp.tax.gov.ir/req/api/self-tsp")
                 .encrypter(new DefaultEncrypter(serverKey.key!= null?serverKey.key: KeyUtil.getOrgPublicKey(), serverKey.id!=null?serverKey.id:KeyUtil.getOrgKeyId()))
 //                .signatory(new InMemorySignatory(KeyUtil.getStringPrivateKey("cyan"), null));
-                .signatory(new InMemorySignatory(KeyUtil.getStringPrivateKey(seller), null));
+                .signatory(new InMemorySignatory(privateKey, null));
         TransferApi transferApi = new ObjectTransferApiImpl(apiConfig);
-        this.taxApi = new DefaultTaxApiClient(transferApi, KeyUtil.getClientId(seller));
+        this.taxApi = new DefaultTaxApiClient(transferApi, uniqueCode);
 
 
         this.taxApi.setAuthInfo(Token.getInstance().getToken());
@@ -243,11 +261,11 @@ public class FactorService {
 
 
 
-    public Object factorCorrection(Long factorId,
-                                     int seller) throws Exception {
+    public Object factorCorrection(String uniqueCode, Long factorId,
+                                     String companyId) throws Exception {
 
-        SellerUser sellerEnm = SellerUser.getSellerById(seller);
-        setData(sellerEnm);
+//        SellerUser sellerEnm = SellerUser.getSellerById(seller);
+        setData(uniqueCode, companyId);
 
         List<FactorModel> factorModelList;
         factorModelList =
@@ -365,11 +383,11 @@ public class FactorService {
     }
 
 
-    public Object factorCancellation(Long factorId,
-                                     int seller) throws Exception {
+    public Object factorCancellation(String uniqueCode, Long factorId,
+                                     String companyId) throws Exception {
 
-        SellerUser sellerEnm = SellerUser.getSellerById(seller);
-        setData(sellerEnm);
+//        SellerUser sellerEnm = SellerUser.getSellerById(seller);
+        setData(uniqueCode, companyId);
 
         List<FactorModel> factorModelList;
         factorModelList =

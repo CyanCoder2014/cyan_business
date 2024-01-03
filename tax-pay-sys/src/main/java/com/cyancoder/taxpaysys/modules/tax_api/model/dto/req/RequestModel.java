@@ -19,7 +19,7 @@ import java.security.spec.InvalidKeySpecException;
 @JsonFormat
 public class RequestModel {
 
-    public RequestModel(Header header, String packetType, DataModel data, SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public RequestModel(Header header, String packetType, DataModel data, String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
         this.time = 1;
         this.packet = PacketModel.builder()
                 .uid(null)
@@ -32,17 +32,17 @@ public class RequestModel {
                 .fiscalId("")
                 .dataSignature("")
                 .build();
-        this.setSignature(header,seller);
+        this.setSignature(header,privateKey);
     }
 
     private int time;
     private PacketModel packet;
     private String signature;
 
-    protected void setSignature(Header header, SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    protected void setSignature(Header header, String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         String normalJsonStr = CryptoUtils.normalJson(packet, header);
-        this.signature = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(seller));
+        this.signature = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(privateKey));
 
     }
 }

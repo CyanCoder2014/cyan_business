@@ -27,15 +27,15 @@ public class AuthService {
     private final AuthTaxClientController authTaxClientController;
 
 
-    private SellerUser seller = null;
+    private String uniqueCode = null;
+    private String privateKey = null;
 
-    public AuthResponseModel getToken(SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public AuthResponseModel getToken(String uniqueCode) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        log.warn("seller: {}",String.valueOf(seller));
         Random rnd = new Random();
         Header header = new Header("2023-cyanbusiness-aut-2320011"+ rnd.nextInt(10));
-        AuthRequestDataModel data = AuthRequestDataModel.builder().username(KeyUtil.getClientId(seller)).build();
-        RequestModel body = new RequestModel(header, "GET_TOKEN", data, seller);
+        AuthRequestDataModel data = AuthRequestDataModel.builder().username(uniqueCode).build();
+        RequestModel body = new RequestModel(header, "GET_TOKEN", data, privateKey);
 
         try {
             return new AuthResponseModel(authTaxClientController.getToken(header.getContentType(),header.getString("requestTraceId"),
@@ -49,7 +49,7 @@ public class AuthService {
 
     public String setToken() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        AuthResponseModel authResponseModel = getToken(getSeller());
+        AuthResponseModel authResponseModel = getToken(uniqueCode);
         log.warn("AuthService -> setToken authResponseModel: {}", authResponseModel.successResponse);
         Token
              .getInstance()
@@ -60,19 +60,26 @@ public class AuthService {
 
 
 
-    public void setTokenInHeader(Header header, SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
-        setSeller(seller);
+    public void setTokenInHeader(Header header, String uniqueCode, String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+        setCode(uniqueCode);
+        setKey(privateKey);
         setToken();
         if (header != null)
             header.put("Authorization",Token.getInstance().getToken());
     }
 
-    public SellerUser getSeller() {
-        return seller;
+    public String getCode() {
+        return uniqueCode;
+    }
+ public String getKey() {
+        return privateKey;
     }
 
-    public void setSeller(SellerUser seller) {
-        this.seller = seller;
+    public void setCode(String uniqueCode) {
+        this.uniqueCode = uniqueCode;
+    }
+    public void setKey(String privateKey) {
+        this.privateKey = privateKey;
     }
 
 

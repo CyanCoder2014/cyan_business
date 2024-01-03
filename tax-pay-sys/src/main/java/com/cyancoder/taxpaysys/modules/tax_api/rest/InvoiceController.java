@@ -52,13 +52,13 @@ public class InvoiceController {
                              @RequestParam String codeTo,
                              @RequestParam String fromDate,
                              @RequestParam String toDate,
-                             @RequestParam int seller
+                             @RequestParam String companyId
                              ) throws Exception {
 
 
 
-            return factorService.getFactorsToSubmit(basedOn, codeFrom, codeTo,
-                                                    fromDate,toDate,seller); // for test
+            return factorService.getFactorsToSubmit(uniqueCode, basedOn, codeFrom, codeTo,
+                                                    fromDate,toDate,companyId); // for test
 
 //        return invoiceTaxClientController.sendInvoiceNormal(
 //                header.getString("Content-Type"),
@@ -74,19 +74,19 @@ public class InvoiceController {
     @PostMapping("invoice-correction")
     Object invoiceCorrection(@RequestHeader("UniqueCode")String uniqueCode,
                              @RequestParam Long factorId,
-                             @RequestParam int seller
+                             @RequestParam String companyId
     ) throws Exception {
 
-        return factorService.factorCorrection(factorId,seller);
+        return factorService.factorCorrection(uniqueCode, factorId,companyId);
     }
 
     @PostMapping("invoice-cancellation")
     Object invoiceCancellation(@RequestHeader("UniqueCode")String uniqueCode,
                                @RequestParam Long factorId,
-                             @RequestParam int seller
+                             @RequestParam String companyId
     ) throws Exception {
 
-        return factorService.factorCancellation(factorId,seller);
+        return factorService.factorCancellation(uniqueCode, factorId,companyId);
     }
 
 

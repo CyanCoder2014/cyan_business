@@ -2,7 +2,6 @@ package com.cyancoder.taxpaysys.modules.tax_api.client.services_api;
 
 
 import com.cyancoder.taxpaysys.modules.tax_api.model.CompanyModel;
-import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel_;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestCompanyModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestModel;
 import org.springframework.cloud.openfeign.FeignClient;

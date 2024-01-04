@@ -20,18 +20,18 @@ public class FactorItemModel {
 
     private Object product;//////////////
 
-    private BigDecimal amount;
+    private Double amount;
 
     private String unit;//////
 
-    private BigDecimal price;
+    private Double price;
 
 
-    private BigDecimal discount;
+    private Double discount;
 
-    private BigDecimal tax;
+    private Double tax;
 
-    private BigDecimal other_charge;
+    private Double other_charge;
 
     private String detail;
 

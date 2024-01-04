@@ -4,7 +4,6 @@ import com.cyancoder.taxpaysys.config.OauthToken;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.ResponseModel;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.rest.FactorClient;
 import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel;
-import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel_;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestFactorModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ public class FactorClientService {
 
 
 
-    public List<FactorModel_> getFactors(RequestFactorModel requestFactorModel) {
+    public List<FactorModel> getFactors(RequestFactorModel requestFactorModel) {
 
         return factorClient.getItems("Bearer "+oauthToken.getToken(),requestFactorModel);
 //        try {

@@ -20,6 +20,6 @@ public interface CompanyClient {
 ////    public List<AbstractReadWriteAccess.Item> getItems(@RequestParam Long userId);
 
     @GetMapping(value = "/v2/api/client-service/companies/")
-    public CompanyModel getItem(@RequestHeader("Authorization") String token,
-                                @RequestBody RequestCompanyModel body);
+    CompanyModel getItem(@RequestHeader("Authorization") String token,
+                         @RequestBody RequestCompanyModel body);
 }

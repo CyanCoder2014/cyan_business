@@ -6,7 +6,7 @@ CREATE TABLE if not exists `f_factors` (
     factor_id varchar(36) NOT NULL UNIQUE,
     code varchar(10) NOT NULL,
     factor_date timestamp NULL DEFAULT NULL,
-    seller_id varchar(36) NULL DEFAULT NULL,
+    company_id varchar(36) NULL DEFAULT NULL,
     buyer_id varchar(36) NULL DEFAULT NULL,
     pay_type varchar(10) NULL DEFAULT NULL,
     payed DOUBLE NULL DEFAULT NULL,
@@ -26,4 +26,5 @@ CREATE TABLE if not exists `f_factors` (
 
 ALTER TABLE `f_factors`
   ADD KEY if not exists `f_factors_seller_id_index` (`seller_id`),
-  ADD KEY if not exists `f_factors_buyer_id_index` (`buyer_id`);
+  ADD KEY if not exists `f_factors_buyer_id_index` (`buyer_id`),
+  ADD KEY if not exists `f_factors_company_id_index` (`company_id`)

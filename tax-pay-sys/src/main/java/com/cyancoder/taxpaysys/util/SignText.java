@@ -1,6 +1,7 @@
 package com.cyancoder.taxpaysys.util;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.Base64;
 
@@ -11,7 +12,7 @@ public class SignText {
     public static String getSignedText(String text, String algorithm, PrivateKey
             privateKey) throws UnsupportedEncodingException, NoSuchAlgorithmException,
             InvalidKeyException, SignatureException {
-        byte[] data = text.getBytes("UTF8");
+        byte[] data = text.getBytes(StandardCharsets.UTF_8);
         Signature sig = Signature.getInstance(algorithm == null ? " SHA256WITHRSA"
                 : algorithm);
         sig.initSign(privateKey);

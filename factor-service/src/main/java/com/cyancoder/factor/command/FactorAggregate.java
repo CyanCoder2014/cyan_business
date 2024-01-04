@@ -5,7 +5,6 @@ import com.cyancoder.factor.event.FactorCreatedEvent;
 import com.cyancoder.factor.event.FactorFilteredEvent;
 import com.cyancoder.factor.model.BuyerModel;
 import com.cyancoder.factor.model.FactorItemModel;
-import com.cyancoder.factor.query.FilterFactorQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -28,6 +27,7 @@ public class FactorAggregate {
 
     private List<FactorItemModel> items;
 
+    private String companyId;
     private BuyerModel buyer;
 
     private Date factorDate;
@@ -65,6 +65,7 @@ public class FactorAggregate {
         this.state = factorCreatedEvent.getState();
         this.note = factorCreatedEvent.getNote();
         this.items = factorCreatedEvent.getItems();
+        this.companyId = factorCreatedEvent.getCompanyId();
         this.buyer = factorCreatedEvent.getBuyer();
     }
 
@@ -97,6 +98,7 @@ public class FactorAggregate {
         this.state = factorFilteredEvent.getState();
         this.note = factorFilteredEvent.getNote();
         this.items = factorFilteredEvent.getItems();
+        this.companyId = factorFilteredEvent.getCompanyId();
         this.buyer = factorFilteredEvent.getBuyer();
     }
 

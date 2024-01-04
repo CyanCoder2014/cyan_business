@@ -36,11 +36,8 @@ public class BuyerQueryHandler {
     @QueryHandler
     public Buyer fetchBuyer(FetchBuyerQuery query){
 
-        log.info("query::::: {}",query);
-
 
         BuyerEntity buyerEntity = buyerRepository.findByBuyerId(query.getBuyerId());
-        log.info("buyerEntity::::: {}",query);
 
         return Buyer.builder()
                 .buyerId(buyerEntity.getBuyerId())

@@ -12,6 +12,7 @@ import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.ServerInfo
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.service.FactorClientService;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.general.SellerUser;
 import com.cyancoder.taxpaysys.modules.tax_api.model.Header;
+import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestFactorModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.auth.AuthRequestDataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.server_info.ServerInfoResponseModel;
@@ -81,7 +82,7 @@ public class HomeController {
 
         Header header = new Header("1231232");
         AuthRequestDataModel data = AuthRequestDataModel.builder().username("A119W2").build();
-        RequestModel body = new RequestModel(header, "GET_TOKEN", data, SellerUser.cyan);
+        RequestModel body = new RequestModel(header, "GET_TOKEN", data, "");
 
         String normalJsonStr = CryptoUtils.normalJson(body.getPacket(), header);
         String ex = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(SellerUser.cyan));
@@ -100,7 +101,7 @@ public class HomeController {
 
         Header header = new Header("1231232");
         AuthRequestDataModel data = AuthRequestDataModel.builder().username("A119W2").build();
-        RequestModel body = new RequestModel(header, "GET_TOKEN", data,SellerUser.cyan);
+        RequestModel body = new RequestModel(header, "GET_TOKEN", data,"");
 
         String normalJsonStr = CryptoUtils.normalJson(body.getPacket(), header);
         String ex = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(SellerUser.cyan));
@@ -119,7 +120,7 @@ public class HomeController {
 
 
 
-        ServerInfoResponseModel response = serverInformationService.getServerInformation();
+        ServerInfoResponseModel response = serverInformationService.getServerInformation(KeyUtil.getStringPrivateKey(SellerUser.cyan));
         String serverKey = response.successResponse != null ? response.successResponse.result.data.publicKeys[0].key  : null;
 
         String encryptString = Encryption.encrypt("",KeyUtil.getServerPublicKey(serverKey));
@@ -156,7 +157,8 @@ public class HomeController {
 //        Date date2 = formatter2.parse(date_string2);
 //
 //
-        return factorClientService.getFactors(uniqueCode);
+        RequestFactorModel requestFactorModel = new RequestFactorModel();
+        return factorClientService.getFactors(requestFactorModel);
 ////        return factorRepository.findAll(Pageable.ofSize(12)
 //////                .getSortOr(Sort.by(Sort.Direction.DESC, "id"))
 ////        );

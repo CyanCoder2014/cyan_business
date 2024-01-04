@@ -25,13 +25,13 @@ public class ServerInformationService {
     private final ServerInformationClientController serverInformationClientController;
 
 
-    public ServerInfoResponseModel getServerInformation() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public ServerInfoResponseModel getServerInformation(String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         Random rnd = new Random();
         Header header = new Header("2023-cyanbusiness-srv-2320011"+ rnd.nextInt(10));
 
         FiscalInfoRequestDataModel data = FiscalInfoRequestDataModel.builder().build();
-        RequestModel body = new RequestModel(header, "GET_SERVER_INFORMATION", data, SellerUser.cyan);
+        RequestModel body = new RequestModel(header, "GET_SERVER_INFORMATION", data, privateKey);
 
         log.info("header: {}", header);
         log.info("body: {}", body);

@@ -2,7 +2,9 @@ package com.cyancoder.taxpaysys.modules.tax_api.rest;
 
 
 import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.ServerInformationService;
+import com.cyancoder.taxpaysys.modules.tax_api.entity.general.SellerUser;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.server_info.ServerInfoResponseModel;
+import com.cyancoder.taxpaysys.util.KeyUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,7 @@ public class ServerInformationController {
     @GetMapping("/get-info")
     Object getFiscalInfo(HttpServletRequest request) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        ServerInfoResponseModel response = serverInformationService.getServerInformation();
+        ServerInfoResponseModel response = serverInformationService.getServerInformation(KeyUtil.getStringPrivateKey(SellerUser.cyan));///////////////
         return response.successResponse != null ? response.successResponse.result.data  : response;
     }
 

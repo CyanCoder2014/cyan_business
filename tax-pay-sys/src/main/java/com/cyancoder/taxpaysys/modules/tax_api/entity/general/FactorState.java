@@ -5,5 +5,5 @@ public enum FactorState {
 
     cash,
     credit,
-    unknown;
+    unknown
 }

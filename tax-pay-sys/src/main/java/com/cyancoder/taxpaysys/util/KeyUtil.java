@@ -19,7 +19,7 @@ public class KeyUtil {
     private KeyUtil(){}
 
 
-    private static  String CLIENT_ID_CYAN = "";
+    private static final String CLIENT_ID_CYAN = "";
     private final static String PRIVATE_KEY_CYAN = "";
     private final static String PUBLIC_KEY_CYAN = "";
 
@@ -39,9 +39,8 @@ public class KeyUtil {
 
     public static String getClientId(SellerUser seller){
         String clientKey = CLIENT_ID_CYAN;
-        switch (seller){
-            case cyan : clientKey = CLIENT_ID_CYAN;
-                break;
+        if (seller == SellerUser.cyan) {
+            clientKey = CLIENT_ID_CYAN;
         }
         return clientKey;
 
@@ -61,9 +60,8 @@ public class KeyUtil {
 
     public static String getStringPrivateKey(SellerUser seller){
         String privateKey = PRIVATE_KEY_CYAN;
-        switch (seller){
-            case cyan : privateKey = PRIVATE_KEY_CYAN;
-                break;
+        if (seller == SellerUser.cyan) {
+            privateKey = PRIVATE_KEY_CYAN;
         }
         privateKey = privateKey.replace("-----BEGIN PRIVATE KEY-----", "");
         privateKey = privateKey.replace("-----END PRIVATE KEY-----", "");
@@ -80,8 +78,8 @@ public class KeyUtil {
     }
     public static PrivateKey getPrivateKey(SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         String privateKey = PRIVATE_KEY_CYAN;
-        switch (seller){
-            case cyan : privateKey = PRIVATE_KEY_CYAN;
+        if (seller == SellerUser.cyan) {
+            privateKey = PRIVATE_KEY_CYAN;
         }
         // Read in the key into a String
         StringBuilder pkcs8Lines = new StringBuilder();

@@ -36,46 +36,7 @@ public class FactorQueryController {
         List<FactorModel> factors = queryGateway.query(filterFactorQuery,
                 ResponseTypes.multipleInstancesOf(FactorModel.class)).join();
 
-
         return factors;
-
-
-    }
-
-    @GetMapping(path = "/users")
-    public String getUserInfo(Model model) {
-
-        final DefaultOidcUser user = (DefaultOidcUser) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-
-        String dob = "";
-
-        OidcIdToken token = user.getIdToken();
-
-        Map<String, Object> customClaims = token.getClaims();
-
-        if (customClaims.containsKey("DOB")) {
-            dob = String.valueOf(customClaims.get("DOB"));
-        }
-
-        model.addAttribute("username", user.getName());
-        model.addAttribute("dob", dob);
-        return "userInfo";
-    }
-
-
-
-
-
-
-    @GetMapping("/userinfo")
-    public Object userInfoController() {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        Object jwt = authentication.getPrincipal();
-        return authentication;
-
     }
 
 

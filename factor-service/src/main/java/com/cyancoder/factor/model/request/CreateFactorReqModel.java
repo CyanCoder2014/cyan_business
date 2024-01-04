@@ -26,6 +26,7 @@ public class CreateFactorReqModel {
 
     private List<FactorItemModel> items;
 
+    private String companyId;
     private BuyerModel buyer;
 
     private String factorDate;

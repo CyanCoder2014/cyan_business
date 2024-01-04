@@ -35,17 +35,14 @@ public class FactorEntity {
     @Column(name = "factor_id")
     private String factorId;
 
-
     private String code;
-
 
     @OneToMany(mappedBy = "factor")
     private List<FactorItemEntity> items;
-    //    @ManyToOne
-//    @JoinColumn(name = "seller_id")
-//    private SellerEntity seller;
 
-//    @ManyToOne
+    @Column(name = "company_id")
+    private String companyId;
+
     @Column(name = "buyer_id")
     private String buyerId;
 

@@ -15,7 +15,7 @@ public class Header extends HashMap<String, Object> {
         Map<String,Object> header = this;
 //        header.put("Content-Type","application/json");
         header.put("requestTraceId",requestTraceId != null ? requestTraceId : "1231232");
-        header.put("timestamp",new String(String.valueOf(timestamp)));
+        header.put("timestamp", String.valueOf(timestamp));
     }
 
     public String getString(Object key) {

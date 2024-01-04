@@ -14,7 +14,7 @@ public enum Unit {
 
     public final String label;
 
-    private Unit(String label) {
+    Unit(String label) {
         this.label = label;
     }
 }

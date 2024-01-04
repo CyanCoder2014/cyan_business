@@ -12,5 +12,5 @@ public enum State {
     cash,
     period,
     all,
-    unknown;
+    unknown
 }

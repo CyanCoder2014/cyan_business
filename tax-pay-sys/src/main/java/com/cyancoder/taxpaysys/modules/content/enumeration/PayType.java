@@ -5,5 +5,5 @@ public enum PayType {
     CREDIT,
     ELECTRONIC,
     FACILITY,
-    OFFSET;
+    OFFSET
 }

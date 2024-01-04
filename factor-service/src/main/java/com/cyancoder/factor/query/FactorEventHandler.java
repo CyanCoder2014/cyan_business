@@ -58,7 +58,7 @@ public class FactorEventHandler {
         if (factorEntity.getCode() == null) {
             long lastCode;
             try {
-                lastCode = Long.parseLong(factorRepository.findTopByOrderByCodeDesc().getCode());
+                lastCode = Long.parseLong(factorRepository.findTopByCompanyIdOrderByCodeDesc(event.getCompanyId()).getCode());
             } catch (Exception e) {
                 lastCode = 1000000000;
             }
@@ -68,6 +68,12 @@ public class FactorEventHandler {
         log.info("event: {}", event);
 
 
+        ////************* before send data to gateway need to check buyer availability ************/////
+//        BuyerEntity buyerEntityOld = buyerRepository.findFirstByNationalCode(event.getNationalCode());
+//        BuyerEntity buyerEntityOld = buyerRepository.findByBuyerId(event.getBuyerId());
+//        if (!event.isAddNew() && buyerEntityOld != null){
+//            buyerEntity.setBuyerId(buyerEntityOld.getBuyerId());
+//        }
         AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
                 .buyerId(event.getBuyer().getBuyerId() != null ? event.getBuyer().getBuyerId() : UUID.randomUUID().toString())
                 .nationalCode(event.getBuyer().getNationalCode())
@@ -83,23 +89,8 @@ public class FactorEventHandler {
         log.info("addOrEditBuyerCommand: {} ", addOrEditBuyerCommand);
 
 
-        commandGateway.send(addOrEditBuyerCommand, (commandMessage, commandResultMessage) -> {
-
-            if (commandResultMessage.isExceptional()) {
-                // start compensating transaction
-
-            } else {
-
-                log.info("commandMessage: {}", commandMessage);
-                log.info("commandResultMessage: {}", commandResultMessage.getPayload());
-
-                if (commandResultMessage.getPayload() != null)
-                    factorEntity.setBuyerId(commandResultMessage.getPayload().toString());
-            }
-        });
-
-        log.info("factorEntity:::::::::: {}", factorEntity);
-
+        String id = commandGateway.sendAndWait(addOrEditBuyerCommand);
+        factorEntity.setBuyerId(id);
 
         try {
             FactorEntity factor = factorRepository.save(factorEntity);
@@ -109,46 +100,43 @@ public class FactorEventHandler {
             List<FactorItemModel> items = event.getItems();
             items.forEach(item -> {
 
-                if (item.getProduct()!=null){
+
+                if (item.getProduct() != null) {
                     ProductEntity productEntity = new ProductEntity(item.getProduct());
-                    productEntity.setProductId(UUID.randomUUID().toString());////////
+
+
+                    if (item.getProduct().getProductId() != null)
+                        productEntity.setProductId(item.getProduct().getProductId());
+                    else
+                        productEntity.setProductId(UUID.randomUUID().toString());
 
                     UnitEntity unitEntity = new UnitEntity();
-                    unitEntity.setUnitId("121212");//////// unit repository
-                    unitEntity.setName("sds");//////// unit repository
-                    unitEntity = unitRepository.save(unitEntity);
-                    log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@ {}", unitEntity);
+                    if (item.getProduct().getUnit() != null) {
+                        if (item.getProduct().getUnit().getUnitId() != null)
+                            unitEntity.setUnitId(item.getProduct().getUnit().getUnitId());
+                        else
+                            unitEntity.setUnitId(UUID.randomUUID().toString());
 
+
+                        unitEntity.setName(item.getProduct().getUnit().getName());
+                        unitEntity.setCode(item.getProduct().getUnit().getCode());
+                        unitEntity = unitRepository.save(unitEntity);
+                    }
 
                     productEntity.setUnit(unitEntity);
-                    log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@productEntity {}", productEntity);
                     productEntity = productRepository.save(productEntity);
-                    log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@productEntity {}", productEntity);
                     item.setProduct(new ProductModel(productEntity));
                 }
 
 
                 item.setFactorItemId(UUID.randomUUID().toString());
-                item.setFactor(new FactorModel(factor,""));
-
-                log.info("item {}", item);
-
+                item.setFactor(new FactorModel(factor, ""));
 
 
             });
             List<FactorItemEntity> factorItems = items.stream().map(FactorItemEntity::new).collect(Collectors.toList());
-//            List<FactorItemEntity> factorItems = items.stream().map(itemModel -> {
-//
-//                FactorItemEntity factorItemEntity = new FactorItemEntity();
-//
-//                return factorItemEntity;
-//
-//            }).collect(Collectors.toList());
 
-//            factorItems.forEach(item->{});
-            log.info("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS::: {}", factorItems);
-            factorItems = factorItemRepository.saveAll(factorItems);
-            log.info("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS::: {}", factorItems);
+            factorItemRepository.saveAll(factorItems);
 
 
         } catch (Exception e) {

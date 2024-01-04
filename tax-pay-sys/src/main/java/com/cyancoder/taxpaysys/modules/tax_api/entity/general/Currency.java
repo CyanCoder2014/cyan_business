@@ -17,9 +17,7 @@ public enum Currency {
     BWP,
     BZD,
     BRL,
-    unknown;
-
-
+    unknown
 
 
 }

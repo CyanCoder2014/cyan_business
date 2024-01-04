@@ -21,8 +21,8 @@ public class DefaultEncrypter implements Encrypter {
 
     private static final String ENCRYPT_ALGO = "AES/GCM/NoPadding";
     private static final int TAG_LENGTH_BIT = 128;
-    private String encryptionKeyId;
-    private PublicKey taxOrgPublicKey;
+    private final String encryptionKeyId;
+    private final PublicKey taxOrgPublicKey;
 
     private static final ObjectMapper mapper = new ObjectMapper();
 

@@ -4,5 +4,5 @@ public enum PersonType {
     LEGAL,
     REAL,
     FOREIGNERS,
-    FOREIGN_TRAVELERS;
+    FOREIGN_TRAVELERS
 }

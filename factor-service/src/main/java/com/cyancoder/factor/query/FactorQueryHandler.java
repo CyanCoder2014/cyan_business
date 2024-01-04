@@ -34,7 +34,19 @@ public class FactorQueryHandler {
 
         List<FactorModel> factors = new ArrayList<>();
 
-        List<FactorEntity> storedFactors = factorRepository.findAll();
+
+        List<FactorEntity> storedFactors = new ArrayList<>();
+
+        if (query.getFactorId() != null)
+            storedFactors = factorRepository.findByCompanyIdAndFactorId(query.getCompanyId(),
+                    query.getFactorId());
+        if (query.getCodeFrom() != null && query.getCodeFrom()!= null)
+            storedFactors = factorRepository.findByCompanyIdAndCodeBetween(query.getCompanyId(),
+                    query.getCodeFrom(),query.getCodeTo());
+        else if (query.getFromDate() != null && query.getToDate()!= null)
+            storedFactors = factorRepository.findByCompanyIdAndCodeBetween(query.getCompanyId(),
+                    query.getCodeFrom(),query.getCodeTo());
+
 
         storedFactors.forEach(item -> {
             FactorModel factorModel = new FactorModel(item);

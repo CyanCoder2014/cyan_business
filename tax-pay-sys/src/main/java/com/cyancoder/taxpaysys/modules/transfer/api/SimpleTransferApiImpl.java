@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class SimpleTransferApiImpl implements TransferApi {
 
-    private static Logger logger = Logger.getLogger(SimpleTransferApiImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(SimpleTransferApiImpl.class.getName());
 
     private final ApiConfig config;
 

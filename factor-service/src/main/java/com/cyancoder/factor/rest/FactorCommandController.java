@@ -40,6 +40,7 @@ public class FactorCommandController {
                 .state(createFactorReqModel.getState())
                 .note(createFactorReqModel.getNote())
                 .items(createFactorReqModel.getItems())
+                .companyId(createFactorReqModel.getCompanyId())
                 .buyer(createFactorReqModel.getBuyer())
                 .build();
 
@@ -48,7 +49,7 @@ public class FactorCommandController {
 
         try{
             response = commandGateway.sendAndWait(createFactorCommand);
-            log.info("commandGateway -> sendAndWait (createFactorCommand)");
+            log.info("!commandGateway -> sendAndWait (createFactorCommand) {}",createFactorCommand);
 
         }catch (Exception e){
             response = e.getLocalizedMessage();

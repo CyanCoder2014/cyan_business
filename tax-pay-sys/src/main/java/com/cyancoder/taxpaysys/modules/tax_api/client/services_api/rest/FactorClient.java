@@ -15,6 +15,6 @@ public interface FactorClient {
 
 
     @GetMapping(value = "/v2/api/factor-service/factors")
-    public List<FactorModel> getItems(@RequestHeader("Authorization") String token,
-                                        @RequestBody RequestFactorModel requestFactorModel);
+    List<FactorModel> getItems(@RequestHeader("Authorization") String token,
+                               @RequestBody RequestFactorModel requestFactorModel);
 }

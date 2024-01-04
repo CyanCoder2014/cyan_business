@@ -87,8 +87,7 @@ public class CryptoUtils {
     }
     private static void flatMap(Map<String, Object> result, String rootKey,
                                 Object input) {
-        if (input instanceof Collection) {
-            Collection list = (Collection) input;
+        if (input instanceof Collection list) {
             int i = 0;
             for (Object e : list) {
                 String key = getKey(rootKey, "E" + i++);

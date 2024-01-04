@@ -15,6 +15,6 @@ public enum OperatorType {
     IS_NOT_NULL,
     PATTERN;
 
-    private OperatorType() {
+    OperatorType() {
     }
 }

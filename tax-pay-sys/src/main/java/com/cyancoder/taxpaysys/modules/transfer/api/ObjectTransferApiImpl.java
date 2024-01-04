@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 public class ObjectTransferApiImpl implements TransferApi {
 
-    private static Logger logger = Logger.getLogger(ObjectTransferApiImpl.class.getName());
+    private static final Logger logger = Logger.getLogger(ObjectTransferApiImpl.class.getName());
 
     private final ApiConfig config;
 

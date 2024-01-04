@@ -3,6 +3,7 @@ package com.cyancoder.taxpaysys.modules.transfer.impl.signatory;
 import com.cyancoder.taxpaysys.modules.transfer.exception.TaxApiException;
 import com.cyancoder.taxpaysys.modules.transfer.interfaces.Signatory;
 
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -13,9 +14,9 @@ import java.util.Base64;
 
 public class InMemorySignatory implements Signatory {
 
-    private PrivateKey privateKey;
+    private final PrivateKey privateKey;
 
-    private String keyId;
+    private final String keyId;
 
     public InMemorySignatory(String base64PrivateKey, String keyId) {
         try {
@@ -29,7 +30,7 @@ public class InMemorySignatory implements Signatory {
     @Override
     public String sign(String text) {
         try {
-            byte[] data = text.getBytes("UTF8");
+            byte[] data = text.getBytes(StandardCharsets.UTF_8);
             Signature sig = Signature.getInstance("SHA256WITHRSA");
             sig.initSign(privateKey);
             sig.update(data);

@@ -4,5 +4,5 @@ public enum Status {
 
     in_use,
     removed,
-    unknown;
+    unknown
 }

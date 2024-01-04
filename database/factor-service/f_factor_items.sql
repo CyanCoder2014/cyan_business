@@ -4,7 +4,7 @@ SET CHARACTER SET utf8;
 CREATE TABLE if not exists `f_factor_items` (
     factor_item_id varchar(36) NOT NULL UNIQUE,
     factor_id varchar(36) NOT NULL,
-    product_id timestamp NULL DEFAULT NULL,
+    product_id varchar(36) NOT NULL,
     amount DOUBLE NOT NULL,
     price  DOUBLE NOT NULL,
     discount DOUBLE NULL DEFAULT NULL,

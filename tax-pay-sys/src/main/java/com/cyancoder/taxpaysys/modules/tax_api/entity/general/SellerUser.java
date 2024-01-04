@@ -6,13 +6,10 @@ public enum SellerUser {
 
 
     public static SellerUser getSellerById(int sellerId) {
-        switch (sellerId) {
-            case 1:
-                return SellerUser.cyan;
-            default:
-                return null;
-
+        if (sellerId == 1) {
+            return SellerUser.cyan;
         }
+        return null;
     }
 
 

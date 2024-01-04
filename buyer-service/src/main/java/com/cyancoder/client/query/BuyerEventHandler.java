@@ -42,18 +42,15 @@ public class BuyerEventHandler {
         buyerEntity.setPostCode(event.getPostCode());
         buyerEntity.setCityId(event.getCityId());
 
-        BuyerEntity buyerEntityOld = buyerRepository.findFirstByNationalCode(event.getNationalCode());
-        if (event.isAddNew() && buyerEntityOld != null) {
-            buyerEntityOld.setNationalCode(event.getNationalCode());
-            buyerEntityOld.setEconomicCode(event.getEconomicCode());
-            buyerEntityOld.setBuyerType(event.getBuyerType());
-            buyerEntityOld.setTell(event.getTell());
-            buyerEntityOld.setAddress(event.getAddress());
-            buyerEntityOld.setPostCode(event.getPostCode());
-            buyerEntityOld.setCityId(event.getCityId());
-            buyerRepository.save(buyerEntityOld); // need try catch
-        } else
-            buyerRepository.save(buyerEntity); // need try catch
+//        BuyerEntity buyerEntityOld = buyerRepository.findFirstByNationalCode(event.getNationalCode());
+//        BuyerEntity buyerEntityOld = buyerRepository.findByBuyerId(event.getBuyerId());
+//        if (!event.isAddNew() && buyerEntityOld != null){
+//            buyerEntity.setBuyerId(buyerEntityOld.getBuyerId());
+//        }
+
+
+        buyerRepository.save(buyerEntity); // need try catch
+
 
     }
 

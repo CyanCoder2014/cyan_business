@@ -19,11 +19,10 @@ public class FactorItemModel {
     public FactorItemModel(FactorItemEntity factorItemEntity){
         BeanUtils.copyProperties(factorItemEntity, this);
 
-//        ProductModel productModel = new ProductModel();
-//        if (productModel.getProductId()!=null){
-//            buyerModel.setBuyerId(factorEntity.getProductId());
-//            this.setBuyer(buyerModel);
-//        }
+        if (factorItemEntity.getProduct()!=null){
+            ProductModel productModel = new ProductModel(factorItemEntity.getProduct());
+            this.setProduct(productModel);
+        }
     }
 
 

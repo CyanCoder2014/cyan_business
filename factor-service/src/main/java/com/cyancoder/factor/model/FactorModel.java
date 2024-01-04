@@ -37,6 +37,7 @@ public class FactorModel {
 
     private List<FactorItemModel> items;
 
+    private String companyId;
     private BuyerModel buyer;
 
     private Date factorDate;

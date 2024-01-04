@@ -60,12 +60,12 @@ public class CompanyEntity {
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    private Date createdOn;
+    private Date createdAt;
 
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "edited_at")
-    private Date editedOn;
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     @CreatedBy
     @Column(name = "created_by")

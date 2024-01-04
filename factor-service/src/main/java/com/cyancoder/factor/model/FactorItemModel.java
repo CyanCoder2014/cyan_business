@@ -18,15 +18,20 @@ public class FactorItemModel {
 
     public FactorItemModel(FactorItemEntity factorItemEntity){
         BeanUtils.copyProperties(factorItemEntity, this);
+
+//        ProductModel productModel = new ProductModel();
+//        if (productModel.getProductId()!=null){
+//            buyerModel.setBuyerId(factorEntity.getProductId());
+//            this.setBuyer(buyerModel);
+//        }
     }
 
 
 
     private String factorItemId;
-    private FactorModel factor;/////////////////////////////
-    private String productId;
+    private FactorModel factor;
+    private ProductModel product;
     private Double amount;
-    private String unitId;
     private Double price;
     private Double discount;
     private Double tax;

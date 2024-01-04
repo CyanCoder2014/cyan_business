@@ -1,10 +1,10 @@
 SET NAMES 'utf8';
 SET CHARACTER SET utf8;
 
-CREATE TABLE if not exists `f_unit` (
+CREATE TABLE if not exists `f_units` (
                                          unit_id varchar(36) NOT NULL UNIQUE,
-                                         code varchar(10) NOT NULL,
-                                         name varchar(10) NOT NULL,
+                                         code varchar(128) NULL DEFAULT NULL,
+                                         name varchar(128) NOT NULL,
                                          state varchar(10) NULL DEFAULT NULL,
                                          client_id varchar(36) NULL DEFAULT NULL,
                                          created_by varchar(36) NULL DEFAULT NULL,
@@ -18,5 +18,5 @@ CREATE TABLE if not exists `f_unit` (
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-ALTER TABLE `f_unit`
-    ADD KEY if not exists `f_unit_unit_id_index` (`unit_id`)
+ALTER TABLE `f_units`
+    ADD KEY if not exists `f_units_unit_id_index` (`unit_id`)

@@ -6,6 +6,7 @@ import com.cyancoder.factor.model.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.beans.BeanUtils;
@@ -18,11 +19,17 @@ import java.util.Date;
 @Table(name = "f_factor_items")
 @Data
 @Entity
+@Slf4j
 public class FactorItemEntity {
 
     public FactorItemEntity(FactorItemModel itemModel){
         BeanUtils.copyProperties(itemModel, this);
         this.setFactor(new FactorEntity(itemModel.getFactor()));
+        this.setProduct(new ProductEntity(itemModel.getProduct()));
+
+        log.info("this itemModel {}", itemModel.getProduct());
+        log.info("this {}", this.getProduct());
+        log.info("this {}", this);
     }
 
 
@@ -31,17 +38,16 @@ public class FactorItemEntity {
     private String factorItemId;
 
 
-//    @Column(name = "factor_id")
-//    private String factorId;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private ProductEntity product;
 
     @ManyToOne
     @JoinColumn(name = "factor_id")
     private FactorEntity factor;
-
-    @Column(name = "product_id")
-    private String productId;
-    @Column(name = "unit_id")
-    private String unitId;
+//
+//    @Column(name = "product_id")
+//    private String productId;
 
 
     private Double amount;
@@ -62,12 +68,12 @@ public class FactorItemEntity {
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
-    private Date createdOn;
+    private Date createdAt;
 
     @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "edited_at")
-    private Date editedOn;
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
 
     @Enumerated(EnumType.STRING)

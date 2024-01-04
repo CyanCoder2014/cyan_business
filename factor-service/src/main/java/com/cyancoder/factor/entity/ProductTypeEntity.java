@@ -1,5 +1,6 @@
-package com.cyancoder.client.entity;
+package com.cyancoder.factor.entity;
 
+import com.cyancoder.factor.model.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -8,40 +9,22 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.util.Date;
 
 
-@Table(name = "b_buyer")
+@Table(name = "f_product_types")
 @Data
 @Entity
-public class BuyerEntity {
+public class ProductTypeEntity {
 
 
     @Id
-    @Column(name = "buyer_id")
-    private String buyerId;
+    @Column(name = "product_type_id")
+    private String productTypeId;
 
-    @Column(name = "national_code")
-    private Long nationalCode;
 
-    @Column(name = "economic_code")
-    private String economicCode;
-
-    @Column(name = "buyer_type")
-    private String buyerType;
-    private String tell;
-    private String address;
-
-    @Column(name = "post_code")
-    private String postCode;
-
-    @Column(name = "city_id")
-    private String cityId;
+    private String code;
+    private String name;
     private String note;
 
-//    @ManyToOne
-//    @JoinColumn(name = "city_i")
-//    private CityEntity city;
-
-
-
+    private String state;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -63,9 +46,7 @@ public class BuyerEntity {
 
 //    @Enumerated(EnumType.STRING)
 //    private State state;
-//
-//    @Enumerated(EnumType.STRING)
-//    private Status status;
 
-
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }

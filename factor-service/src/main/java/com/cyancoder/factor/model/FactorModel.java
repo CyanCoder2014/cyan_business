@@ -15,12 +15,20 @@ public class FactorModel {
     public FactorModel(FactorEntity factorEntity){
         BeanUtils.copyProperties(factorEntity, this);
         this.setItems(factorEntity.getItems().stream().map(FactorItemModel::new).collect(Collectors.toList()));
+
+
+
+
         BuyerModel buyerModel = new BuyerModel();
         if (factorEntity.getBuyerId()!=null){
             buyerModel.setBuyerId(factorEntity.getBuyerId());
             this.setBuyer(buyerModel);
         }
 
+    }
+
+    public FactorModel(FactorEntity factorEntity, String State){
+        BeanUtils.copyProperties(factorEntity, this);
     }
 
 

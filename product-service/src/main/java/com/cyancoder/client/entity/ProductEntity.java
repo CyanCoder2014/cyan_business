@@ -28,7 +28,7 @@ public class ProductEntity {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_on")
-    private Date createdOn;
+    private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "edited_on")

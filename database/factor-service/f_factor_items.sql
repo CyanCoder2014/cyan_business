@@ -6,7 +6,6 @@ CREATE TABLE if not exists `f_factor_items` (
     factor_id varchar(36) NOT NULL,
     product_id timestamp NULL DEFAULT NULL,
     amount DOUBLE NOT NULL,
-    unit_id varchar(36) NULL DEFAULT NULL,
     price  DOUBLE NOT NULL,
     discount DOUBLE NULL DEFAULT NULL,
     tax DOUBLE NULL DEFAULT NULL,
@@ -27,5 +26,4 @@ CREATE TABLE if not exists `f_factor_items` (
 
 ALTER TABLE `f_factor_items`
   ADD KEY if not exists `f_factor_items_factor_id_index` (`factor_id`),
-  ADD KEY if not exists `f_factor_items_product_id_index` (`product_id`),
-  ADD KEY if not exists `f_factor_items_unit_id_index` (`unit_id`)
+  ADD KEY if not exists `f_factor_items_product_id_index` (`product_id`)

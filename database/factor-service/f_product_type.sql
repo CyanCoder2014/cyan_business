@@ -1,10 +1,10 @@
 SET NAMES 'utf8';
 SET CHARACTER SET utf8;
 
-CREATE TABLE if not exists `f_product_type` (
+CREATE TABLE if not exists `f_product_types` (
                                          product_type_id varchar(36) NULL DEFAULT NULL,
-                                         code varchar(10) NOT NULL,
-                                         name varchar(10) NOT NULL,
+                                         code varchar(128) NULL DEFAULT NULL,
+                                         name varchar(128) NOT NULL,
                                          note varchar(128) NULL DEFAULT NULL,
                                          state varchar(10) NULL DEFAULT NULL,
                                          client_id varchar(36) NULL DEFAULT NULL,
@@ -19,5 +19,5 @@ CREATE TABLE if not exists `f_product_type` (
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-ALTER TABLE `f_product_type`
-    ADD KEY if not exists `f_product_type_product_type_id_index` (`product_type_id`)
+ALTER TABLE `f_product_types`
+    ADD KEY if not exists `f_product_types_product_type_id_index` (`product_type_id`)

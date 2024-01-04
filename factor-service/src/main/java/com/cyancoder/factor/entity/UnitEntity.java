@@ -1,47 +1,40 @@
-package com.cyancoder.client.entity;
+package com.cyancoder.factor.entity;
 
+import com.cyancoder.factor.model.ProductModel;
+import com.cyancoder.factor.model.Status;
+import com.cyancoder.factor.model.UnitModel;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
 
 
-@Table(name = "b_buyer")
+@Table(name = "f_units")
 @Data
 @Entity
-public class BuyerEntity {
+@NoArgsConstructor
+@AllArgsConstructor
+public class UnitEntity {
 
+
+    public UnitEntity(UnitModel unitModel){
+        BeanUtils.copyProperties(unitModel, this);
+
+    }
 
     @Id
-    @Column(name = "buyer_id")
-    private String buyerId;
+    @Column(name = "unit_id")
+    private String unitId;
 
-    @Column(name = "national_code")
-    private Long nationalCode;
+    private String code;
+    private String name;
 
-    @Column(name = "economic_code")
-    private String economicCode;
-
-    @Column(name = "buyer_type")
-    private String buyerType;
-    private String tell;
-    private String address;
-
-    @Column(name = "post_code")
-    private String postCode;
-
-    @Column(name = "city_id")
-    private String cityId;
-    private String note;
-
-//    @ManyToOne
-//    @JoinColumn(name = "city_i")
-//    private CityEntity city;
-
-
-
+    private String state;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
@@ -63,9 +56,7 @@ public class BuyerEntity {
 
 //    @Enumerated(EnumType.STRING)
 //    private State state;
-//
-//    @Enumerated(EnumType.STRING)
-//    private Status status;
 
-
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }

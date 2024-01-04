@@ -97,7 +97,7 @@ public class FactorModel {
 //
 //    private String economicCode;
 //
-//    private Date createdOn;
+//    private Date createdAt;
 //
 //    private Date editedOn;
 //

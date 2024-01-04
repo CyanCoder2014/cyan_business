@@ -2,6 +2,8 @@ package com.cyancoder.client.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
 
@@ -16,7 +18,22 @@ public class BuyerEntity {
     @Column(name = "buyer_id")
     private String buyerId;
 
+    @Column(name = "national_code")
+    private Long nationalCode;
 
+    @Column(name = "economic_code")
+    private String economicCode;
+
+    @Column(name = "buyer_type")
+    private String buyerType;
+    private String tell;
+    private String address;
+
+    @Column(name = "post_code")
+    private String postCode;
+
+    @Column(name = "city_id")
+    private String cityId;
     private String note;
 
 //    @ManyToOne
@@ -26,12 +43,14 @@ public class BuyerEntity {
 
 
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_on")
+    @Column(name = "created_at")
     private Date createdOn;
 
+    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "edited_on")
+    @Column(name = "edited_at")
     private Date editedOn;
 
 //        @ManyToOne

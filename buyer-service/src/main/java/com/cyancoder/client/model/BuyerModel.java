@@ -16,7 +16,15 @@ public class BuyerModel {
 
     private String buyerId;
 
-
+    private Long nationalCode;
+    private String economicCode;
+    private String buyerType;
+    private String tell;
+    private String address;
+    private String postCode;
+    private String cityId;
+    private String note;
+    private boolean addNew;
     public BuyerModel(BuyerEntity buyerEntity) {
         BeanUtils.copyProperties(buyerEntity, this);
     }

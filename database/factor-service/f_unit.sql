@@ -1,12 +1,10 @@
 SET NAMES 'utf8';
 SET CHARACTER SET utf8;
 
-CREATE TABLE if not exists `p_product` (
-                                         product_id varchar(36) NOT NULL UNIQUE,
-                                         unit_id varchar(36) NOT NULL,
+CREATE TABLE if not exists `f_unit` (
+                                         unit_id varchar(36) NOT NULL UNIQUE,
                                          code varchar(10) NOT NULL,
                                          name varchar(10) NOT NULL,
-                                         note varchar(128) NULL DEFAULT NULL,
                                          state varchar(10) NULL DEFAULT NULL,
                                          client_id varchar(36) NULL DEFAULT NULL,
                                          created_by varchar(36) NULL DEFAULT NULL,
@@ -16,10 +14,9 @@ CREATE TABLE if not exists `p_product` (
                                          deleted_at timestamp NULL DEFAULT NULL,
                                          status  varchar(10) NULL DEFAULT NULL,
 
-                                         CONSTRAINT product_id PRIMARY KEY (product_id)
+                                         CONSTRAINT unit_id PRIMARY KEY (unit_id)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-ALTER TABLE `p_product`
-    ADD KEY if not exists `p_product_product_id_index` (`product_id`),
-    ADD KEY if not exists `p_product_unit_id_index` (`unit_id`)
+ALTER TABLE `f_unit`
+    ADD KEY if not exists `f_unit_unit_id_index` (`unit_id`)

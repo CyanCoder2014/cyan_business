@@ -26,8 +26,6 @@ public class FactorQueryHandler {
 
     private final FactorRepository factorRepository;
 
-    private final CommandGateway commandGateway;/////////////////////
-
     private final QueryGateway queryGateway;
 
 
@@ -41,23 +39,12 @@ public class FactorQueryHandler {
         storedFactors.forEach(item -> {
             FactorModel factorModel = new FactorModel(item);
 
-
-            if (factorModel.getBuyerId() != null) {
-
-//                SetBuyerRelationCommand setBuyerRelationCommand = SetBuyerRelationCommand.builder()
-//                        .factorId(UUID.randomUUID().toString())
-//                        .code(factorModel.getCode())
-//                        .buyerId(factorModel.getBuyerId())
-//                        .build();
-//                try {
-//                    commandGateway.sendAndWait(setBuyerRelationCommand);
-//                } catch (Exception e) {}
-
-
+            if (factorModel.getBuyer() != null) {
                 GetBuyerQuery getBuyerQuery = GetBuyerQuery.builder()
                         .factorId(factorModel.getFactorId())
-                        .buyerId(factorModel.getBuyerId())
+                        .buyer(factorModel.getBuyer())
                         .build();
+
                 Buyer buyer = queryGateway.query(getBuyerQuery,
                         ResponseTypes.instanceOf(Buyer.class)).join();
 
@@ -66,25 +53,20 @@ public class FactorQueryHandler {
                     BeanUtils.copyProperties(buyer, model);
                     factorModel.setBuyer(model);
                 }
-
             }
-
 
             factors.add(factorModel);
         });
 
-
         return factors;
-
     }
 
 
     @QueryHandler
     public Buyer getBuyer(GetBuyerQuery query) {
 
-        log.info("@QueryHandler called getBuyer !!!!!!!!!!!!!!: {}", query);
 
-        FetchBuyerQuery fetchBuyerQuery = new FetchBuyerQuery(query.getBuyerId());
+        FetchBuyerQuery fetchBuyerQuery = new FetchBuyerQuery(query.getBuyer().getBuyerId());
 
         Buyer buyer = null;
 
@@ -94,7 +76,7 @@ public class FactorQueryHandler {
 
         } catch (Exception e) {
 
-            log.error("eeeeeeeee: {}" + e);
+            log.error("Exception: {}" + e);
 
         }
         return buyer;

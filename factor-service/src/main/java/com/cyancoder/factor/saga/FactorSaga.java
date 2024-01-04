@@ -31,19 +31,19 @@ public class FactorSaga {
         log.info("saga started ");
 
 
-        AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
-                .buyerId(factorCreatedEvent.getBuyerId())
-                .build();
-
-        log.info("addOrEditBuyerCommand: {} ",addOrEditBuyerCommand);
-
-
-        commandGateway.send(addOrEditBuyerCommand, (commandMessage, commandResultMessage) -> {
-
-            if (commandResultMessage.isExceptional()) {
-                // start compensating transaction
-            }
-        });
+//        AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
+//                .buyerId(factorCreatedEvent.getBuyerId())
+//                .build();
+//
+//        log.info("addOrEditBuyerCommand: {} ",addOrEditBuyerCommand);
+//
+//
+//        commandGateway.send(addOrEditBuyerCommand, (commandMessage, commandResultMessage) -> {
+//
+//            if (commandResultMessage.isExceptional()) {
+//                // start compensating transaction
+//            }
+//        });
 
     }
 

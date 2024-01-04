@@ -4,6 +4,8 @@ import com.cyancoder.factor.model.FactorModel;
 import com.cyancoder.factor.model.Status;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
@@ -47,6 +49,19 @@ public class FactorEntity {
     @Column(name = "buyer_id")
     private String buyerId;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "factor_date")
+    private Date factorDate;
+
+    @Column(name = "pay_type")
+    private String payType;
+
+    private Double payed;
+
+
+    private String state;
+    private String note;
+
 //    @ManyToOne
 //    @JoinColumn(name = "product_id")
 //    private ProductEntity product;
@@ -56,7 +71,6 @@ public class FactorEntity {
 //    @Enumerated(EnumType.STRING)
 //    private PayState payState;
 
-    private String note;
 
 //    @ManyToOne
 //    @JoinColumn(name = "buyer_id")
@@ -68,12 +82,14 @@ public class FactorEntity {
 //    private CityEntity city;
 
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_on")
+    @Column(name = "created_at")
     private Date createdOn;
 
+    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "edited_on")
+    @Column(name = "edited_at")
     private Date editedOn;
 
 //        @ManyToOne

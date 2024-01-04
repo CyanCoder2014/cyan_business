@@ -18,28 +18,48 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class BuyerEventHandler {
 
 
-    private  final BuyerRepository buyerRepository;
+    private final BuyerRepository buyerRepository;
 
 
-    @ExceptionHandler(value=Exception.class) // need to consider: add it to main method
+    @ExceptionHandler(value = Exception.class) // need to consider: add it to main method
     public void handle(Exception exception) throws Exception {
         // log
         throw exception;
     }
 
     @EventHandler
-    public void on(BuyerCreatedEvent event){
+    public void on(BuyerCreatedEvent event) {
 
         BuyerEntity buyerEntity = new BuyerEntity();
-        BeanUtils.copyProperties(event, buyerEntity);
+//        BeanUtils.copyProperties(event, buyerEntity);
 
-        buyerRepository.save(buyerEntity); // need try catch
+        buyerEntity.setBuyerId(event.getBuyerId());
+        buyerEntity.setNationalCode(event.getNationalCode());
+        buyerEntity.setEconomicCode(event.getEconomicCode());
+        buyerEntity.setBuyerType(event.getBuyerType());
+        buyerEntity.setTell(event.getTell());
+        buyerEntity.setAddress(event.getAddress());
+        buyerEntity.setPostCode(event.getPostCode());
+        buyerEntity.setCityId(event.getCityId());
+
+        BuyerEntity buyerEntityOld = buyerRepository.findFirstByNationalCode(event.getNationalCode());
+        if (event.isAddNew() && buyerEntityOld != null) {
+            buyerEntityOld.setNationalCode(event.getNationalCode());
+            buyerEntityOld.setEconomicCode(event.getEconomicCode());
+            buyerEntityOld.setBuyerType(event.getBuyerType());
+            buyerEntityOld.setTell(event.getTell());
+            buyerEntityOld.setAddress(event.getAddress());
+            buyerEntityOld.setPostCode(event.getPostCode());
+            buyerEntityOld.setCityId(event.getCityId());
+            buyerRepository.save(buyerEntityOld); // need try catch
+        } else
+            buyerRepository.save(buyerEntity); // need try catch
 
     }
 
 
     @EventHandler
-    public void on(BuyerAddedEvent event){
+    public void on(BuyerAddedEvent event) {
 
         BuyerEntity buyerEntity = new BuyerEntity();
         BeanUtils.copyProperties(event, buyerEntity);

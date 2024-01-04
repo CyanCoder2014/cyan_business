@@ -3,9 +3,9 @@ package com.cyancoder.factor.command;
 
 import com.cyancoder.factor.event.FactorCreatedEvent;
 import com.cyancoder.factor.event.FactorFilteredEvent;
+import com.cyancoder.factor.model.BuyerModel;
 import com.cyancoder.factor.model.FactorItemModel;
 import com.cyancoder.factor.query.FilterFactorQuery;
-import com.cyancoder.factor.query.GetBuyerQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -14,6 +14,7 @@ import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Date;
 import java.util.List;
 
 @Aggregate
@@ -24,11 +25,17 @@ public class FactorAggregate {
     private String factorId;
 
     private String code;
-    private String note;
 
     private List<FactorItemModel> items;
 
-    private String buyerId;
+    private BuyerModel buyer;
+
+    private Date factorDate;
+    private String payType;
+    private Double payed;
+    private String state;
+    private String note;
+
 
     public  FactorAggregate(){
 
@@ -52,9 +59,13 @@ public class FactorAggregate {
     public void on(FactorCreatedEvent factorCreatedEvent){
         this.factorId = factorCreatedEvent.getFactorId();
         this.code = factorCreatedEvent.getCode();
+        this.factorDate = factorCreatedEvent.getFactorDate();
+        this.payType = factorCreatedEvent.getPayType();
+        this.payed = factorCreatedEvent.getPayed();
+        this.state = factorCreatedEvent.getState();
         this.note = factorCreatedEvent.getNote();
         this.items = factorCreatedEvent.getItems();
-        this.buyerId = factorCreatedEvent.getBuyerId();
+        this.buyer = factorCreatedEvent.getBuyer();
     }
 
 
@@ -80,9 +91,13 @@ public class FactorAggregate {
     public void on(FactorFilteredEvent factorFilteredEvent){
         this.factorId = factorFilteredEvent.getFactorId();
         this.code = factorFilteredEvent.getCode();
+        this.factorDate = factorFilteredEvent.getFactorDate();
+        this.payType = factorFilteredEvent.getPayType();
+        this.payed = factorFilteredEvent.getPayed();
+        this.state = factorFilteredEvent.getState();
         this.note = factorFilteredEvent.getNote();
         this.items = factorFilteredEvent.getItems();
-        this.buyerId = factorFilteredEvent.getBuyerId();
+        this.buyer = factorFilteredEvent.getBuyer();
     }
 
 

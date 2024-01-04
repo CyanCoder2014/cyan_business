@@ -1,5 +1,6 @@
 package com.cyancoder.factor.query;
 
+import com.cyancoder.factor.model.BuyerModel;
 import com.cyancoder.factor.model.FactorItemModel;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class GetBuyerQuery {
 
     private List<FactorItemModel> items;
 
-    private String buyerId;
+    private BuyerModel buyer;
 
 
 }

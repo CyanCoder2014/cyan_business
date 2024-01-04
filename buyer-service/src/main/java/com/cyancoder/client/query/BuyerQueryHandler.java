@@ -44,6 +44,13 @@ public class BuyerQueryHandler {
 
         return Buyer.builder()
                 .buyerId(buyerEntity.getBuyerId())
+                .nationalCode(buyerEntity.getNationalCode())
+                .economicCode(buyerEntity.getEconomicCode())
+                .buyerType(buyerEntity.getBuyerType())
+                .tell(buyerEntity.getTell())
+                .address(buyerEntity.getAddress())
+                .postCode(buyerEntity.getPostCode())
+                .cityId(buyerEntity.getCityId())
                 .build();
 
     }

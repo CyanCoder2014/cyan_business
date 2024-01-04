@@ -1,6 +1,7 @@
 package com.cyancoder.factor.command;
 
 
+import com.cyancoder.factor.model.BuyerModel;
 import com.cyancoder.factor.model.FactorItemModel;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +11,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class SetBuyerRelationCommand {
+public class SetBuyerRelationCommand {////////////////////////////////// temp
 
 
     @TargetAggregateIdentifier
@@ -22,7 +23,7 @@ public class SetBuyerRelationCommand {
 
     private List<FactorItemModel> items;
 
-    private String buyerId;
+    private BuyerModel buyer;
 
 
 }

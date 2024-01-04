@@ -8,7 +8,7 @@ CREATE TABLE if not exists `f_factors` (
     factor_date timestamp NULL DEFAULT NULL,
     seller_id varchar(36) NULL DEFAULT NULL,
     buyer_id varchar(36) NULL DEFAULT NULL,
-    pay_state varchar(10) NULL DEFAULT NULL,
+    pay_type varchar(10) NULL DEFAULT NULL,
     payed DOUBLE NULL DEFAULT NULL,
     note varchar(255) NULL DEFAULT NULL,
     state varchar(10) NULL DEFAULT NULL,

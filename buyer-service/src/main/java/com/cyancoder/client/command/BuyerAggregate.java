@@ -17,6 +17,16 @@ public class BuyerAggregate {
     @AggregateIdentifier
     private String buyerId;
 
+    private Long nationalCode;
+    private String economicCode;
+    private String buyerType;
+    private String tell;
+    private String address;
+    private String postCode;
+    private String cityId;
+    private String note;
+    private boolean addNew;
+
     public BuyerAggregate(){
 
     }
@@ -43,6 +53,14 @@ public class BuyerAggregate {
 
         BuyerCreatedEvent buyerCreatedEvent = BuyerCreatedEvent.builder()
                 .buyerId(addOrEditBuyerCommand.getBuyerId())
+                .nationalCode(addOrEditBuyerCommand.getNationalCode())
+                .economicCode(addOrEditBuyerCommand.getEconomicCode())
+                .buyerType(addOrEditBuyerCommand.getBuyerType())
+                .tell(addOrEditBuyerCommand.getTell())
+                .address(addOrEditBuyerCommand.getAddress())
+                .postCode(addOrEditBuyerCommand.getPostCode())
+                .cityId(addOrEditBuyerCommand.getCityId())
+                .addNew(addOrEditBuyerCommand.isAddNew())
                 .build();
 
         AggregateLifecycle.apply(buyerCreatedEvent);

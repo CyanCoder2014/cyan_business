@@ -2,6 +2,8 @@ package com.cyancoder.taxpaysys.modules.tax_api.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
@@ -47,12 +49,14 @@ public class FactorTaxEntity {
     private String clientId;
 
 
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_on")
+    @Column(name = "created_at")
     private Date createdOn;
 
+    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "edited_on")
+    @Column(name = "edited_at")
     private Date editedOn;
 
 //        @ManyToOne

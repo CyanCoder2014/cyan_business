@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface FactorTaxRepository extends JpaRepository<FactorTaxEntity, String> {
 
-    List<FactorTaxEntity> findByCreatedOnBetween(Date startOn, Date endOn);
+    List<FactorTaxEntity> findByCreatedAtBetween(Date startOn, Date endOn);
 
 
     List<FactorTaxEntity> findByTaxApiUid(String taxApiUid);

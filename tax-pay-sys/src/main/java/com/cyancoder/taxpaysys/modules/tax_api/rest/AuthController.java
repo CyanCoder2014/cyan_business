@@ -27,13 +27,13 @@ public class AuthController {
     AuthService authService;
 
 
-    @GetMapping("/get-token")
-    Object getToken(@RequestParam int seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
-
-        SellerUser sellerEnm = SellerUser.getSellerById(seller);
-        AuthResponseModel response = authService.getToken(sellerEnm);
-        return response.successResponse != null ? response.successResponse.result.data  : response;
-    }
+//    @GetMapping("/get-token")
+//    Object getToken(@RequestParam int seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+//
+//        SellerUser sellerEnm = SellerUser.getSellerById(seller);
+//        AuthResponseModel response = authService.getToken(sellerEnm);
+//        return response.successResponse != null ? response.successResponse.result.data  : response;
+//    }
 
 
     @GetMapping("/set-token")

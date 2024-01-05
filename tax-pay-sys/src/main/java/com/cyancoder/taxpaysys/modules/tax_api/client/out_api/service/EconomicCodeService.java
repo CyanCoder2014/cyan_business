@@ -30,13 +30,13 @@ public class EconomicCodeService {
 
     public EconomicCodeResponseModel getFiscalInformation(String uniqueCode, String companyId, String nationalCode) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        CompanyModel companyModel = companyClientService.getCompany(companyId);
+        CompanyModel companyModel = companyClientService.getCompany(companyId,uniqueCode);
 
         Random rnd = new Random();
         Header header = new Header("2023-cyanbusiness-eco-2320011"+ rnd.nextInt(10));
 
         EconomicCodeRequestDataModel data = EconomicCodeRequestDataModel.builder().economicCode(nationalCode).build();
-        RequestModel body = new RequestModel(header, "GET_ECONOMIC_CODE_INFORMATION", data, companyModel.getPk());
+        RequestModel body = new RequestModel(header, "GET_ECONOMIC_CODE_INFORMATION", data, companyModel.getPk(uniqueCode));
 
         log.info("header: {}", header);
         log.info("body: {}", body);

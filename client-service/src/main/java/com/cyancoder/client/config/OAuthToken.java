@@ -29,6 +29,8 @@ public class OAuthToken {
         return oauthToken.getToken().getTokenValue();
     }
 
+
+
     @Bean
     @Scope("request")
     public String getAttribute(String name) {

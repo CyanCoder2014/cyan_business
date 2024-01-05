@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 
 @Service
 @RequiredArgsConstructor
@@ -16,14 +18,19 @@ public class CompanyClientService {
 
     private final CompanyClient companyClient;
     private final OauthToken oauthToken;
-//    private final WebClient.Builder webClientBuilder;
 
-    public CompanyModel getCompany(String companyId)  {
-
+    public CompanyModel getCompany(String companyId, String uniqueCode)  {
 //        new RequestCompanyModel(companyId)
-        return companyClient.getItem("Bearer "+oauthToken.getToken(),
+        CompanyModel companyModel = companyClient.getItem("Bearer "+oauthToken.getToken(),
                 companyId,"",""
-                );
+        );
+
+
+        if (!Objects.equals(companyModel.getClientId(), oauthToken.getAttribute("client_id")))
+            throw new RuntimeException("Wrong Client!");
+
+
+        return companyModel;
     }
 
 

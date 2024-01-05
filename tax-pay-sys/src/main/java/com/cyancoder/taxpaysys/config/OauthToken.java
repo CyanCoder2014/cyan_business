@@ -20,4 +20,14 @@ public class OauthToken {
         return oauthToken.getToken().getTokenValue();
 
     }
+
+    @Bean
+    @Scope("request")
+    public String getAttribute(String name) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        JwtAuthenticationToken oauthToken = (JwtAuthenticationToken) authentication;
+        return oauthToken.getTokenAttributes().get(name).toString();
+    }
+
+
 }

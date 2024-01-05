@@ -15,7 +15,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 @RestController
-@RequestMapping("/v2/api/tax-service/company-data")
+@RequestMapping("/v2/api/tax-service/person-data")
 @Slf4j
 public class EconomicCodeController {
 

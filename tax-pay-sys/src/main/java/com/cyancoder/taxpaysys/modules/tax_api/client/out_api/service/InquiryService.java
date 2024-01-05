@@ -47,7 +47,7 @@ public class InquiryService {
 
     public InquiryResponseModel getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        CompanyModel companyModel = companyClientService.getCompany(companyId);
+        CompanyModel companyModel = companyClientService.getCompany(companyId, uniqueCode);
         Header header = defineHeader(uniqueCode, companyModel.getPk());
         InquiryByUidDataModel data = InquiryByUidDataModel.builder().build();
         RequestUidItemModel uid1 = RequestUidItemModel.builder()
@@ -72,7 +72,7 @@ public class InquiryService {
 
     public InquiryResponseModel getInquiryByReferenceNumber(String uniqueCode, String companyId, String reference) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        CompanyModel companyModel = companyClientService.getCompany(companyId);
+        CompanyModel companyModel = companyClientService.getCompany(companyId, uniqueCode);
         Header header = defineHeader(uniqueCode, companyModel.getPk());
         InquiryByReferenceNumberDataModel data = InquiryByReferenceNumberDataModel.builder().build();
         data.setReferenceNumber(new ArrayList<>());

@@ -66,7 +66,7 @@ public class FactorService {
                                      String companyId) throws Exception {
 
 
-        CompanyModel companyModel = companyClientService.getCompany(companyId);
+        CompanyModel companyModel = companyClientService.getCompany(companyId, uniqueCode);
         setData(uniqueCode, companyModel);
 
 

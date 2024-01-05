@@ -29,9 +29,7 @@ public class FactorQueryController {
 
 
     @GetMapping
-    public List<FactorModel> getFactor(){
-
-        FilterFactorQuery filterFactorQuery = new FilterFactorQuery();
+    public List<FactorModel> getFactor(@RequestBody FilterFactorQuery filterFactorQuery){
 
         List<FactorModel> factors = queryGateway.query(filterFactorQuery,
                 ResponseTypes.multipleInstancesOf(FactorModel.class)).join();

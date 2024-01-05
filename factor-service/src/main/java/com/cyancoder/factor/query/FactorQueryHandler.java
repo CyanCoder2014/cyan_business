@@ -48,18 +48,17 @@ public class FactorQueryHandler {
                     query.getCodeFrom(),query.getCodeTo());
         else if (query.getFromDate() != null && query.getToDate()!= null){
 
-            String fromDateStr = query.getCodeFrom() != "" ? query.getCodeFrom() : "2023-05-01";   // need to consider
+            String fromDateStr = query.getFromDate() != "" ? query.getFromDate() : "2023-05-01";   // need to consider
             SimpleDateFormat fromDateObj = new SimpleDateFormat("yyyy-MM-dd");
             Date fromDate = fromDateObj.parse(fromDateStr);
 
-            String toDateStr = query.getCodeTo() != "" ? query.getCodeTo() : "2025-06-01";   // need to consider
+            String toDateStr = query.getToDate() != "" ? query.getToDate() : "2025-06-01";   // need to consider
             SimpleDateFormat toDateObj = new SimpleDateFormat("yyyy-MM-dd");
             Date toDate = toDateObj.parse(toDateStr);
 
             storedFactors = factorRepository.findByCompanyIdAndCreatedAtBetween(query.getCompanyId(),
                     fromDate,toDate);
         }
-
 
 
         storedFactors.forEach(item -> {

@@ -7,6 +7,7 @@ import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestFactorModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -31,7 +32,14 @@ public class FactorClientService {
 
     public List<FactorModel> getFactors(RequestFactorModel requestFactorModel) {
 
-        return factorClient.getItems("Bearer "+oauthToken.getToken(),requestFactorModel);
+        return factorClient.getItems(
+                "Bearer "+oauthToken.getToken(),
+                requestFactorModel.getCompanyId(),
+                requestFactorModel.getCodeFrom(),
+                requestFactorModel.getCodeTo(),
+                requestFactorModel.getFromDate(),
+                requestFactorModel.getToDate(),
+                requestFactorModel.getFactorId());
 //        try {
 //            return new ResponseModel(factorClient.getItems("Bearer "+oauthToken.getToken(),requestFactorModel));
 //        } catch (Exception e) {

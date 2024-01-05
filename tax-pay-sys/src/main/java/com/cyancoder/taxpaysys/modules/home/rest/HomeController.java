@@ -31,10 +31,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -144,7 +141,8 @@ public class HomeController {
     @GetMapping("/get-factors")
     @RolesAllowed({ "ROLE_cyan-business_user" })
 //    @PreAuthorize("hasAuthority('user')")
-    public Object getFactors(@RequestHeader("UniqueCode")String uniqueCode) throws ParseException {
+    public Object getFactors(@RequestHeader("UniqueCode")String uniqueCode,
+                             @RequestBody RequestFactorModel requestFactorModel) throws ParseException {
 
 
 //        String date_string1 = "2023-05-01";
@@ -157,7 +155,6 @@ public class HomeController {
 //        Date date2 = formatter2.parse(date_string2);
 //
 //
-        RequestFactorModel requestFactorModel = new RequestFactorModel();
         return factorClientService.getFactors(requestFactorModel);
 ////        return factorRepository.findAll(Pageable.ofSize(12)
 //////                .getSortOr(Sort.by(Sort.Direction.DESC, "id"))

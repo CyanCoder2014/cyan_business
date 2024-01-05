@@ -37,6 +37,7 @@ public class FactorQueryHandler {
 
         List<FactorModel> factors = new ArrayList<>();
 
+        log.info("query::: {}",query);
 
         List<FactorEntity> storedFactors = new ArrayList<>();
 

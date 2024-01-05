@@ -4,6 +4,7 @@ package com.cyancoder.factor.rest;
 import com.cyancoder.factor.model.FactorModel;
 import com.cyancoder.factor.query.FilterFactorQuery;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.core.env.Environment;
@@ -21,6 +22,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v2/api/factor-service/factors")
 @RequiredArgsConstructor
+@Slf4j
 public class FactorQueryController {
 
 
@@ -29,7 +31,21 @@ public class FactorQueryController {
 
 
     @GetMapping
-    public List<FactorModel> getFactor(@RequestBody FilterFactorQuery filterFactorQuery){
+    public List<FactorModel> getFactor(
+            @RequestParam String companyId,
+            @RequestParam String codeFrom,
+            @RequestParam String codeTo,
+            @RequestParam String fromDate,
+            @RequestParam String toDate,
+            @RequestParam String factorId){
+
+        FilterFactorQuery filterFactorQuery = new FilterFactorQuery();
+        filterFactorQuery.setCompanyId(companyId==""?null:companyId);
+        filterFactorQuery.setCodeFrom(codeFrom==""?null:codeFrom);
+        filterFactorQuery.setCodeTo(codeTo==""?null:codeTo);
+        filterFactorQuery.setFromDate(fromDate==""?null:fromDate);
+        filterFactorQuery.setToDate(toDate==""?null:toDate);
+        filterFactorQuery.setFactorId(factorId==""?null:factorId);
 
         List<FactorModel> factors = queryGateway.query(filterFactorQuery,
                 ResponseTypes.multipleInstancesOf(FactorModel.class)).join();

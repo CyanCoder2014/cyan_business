@@ -12,10 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.core.env.Environment;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,8 +27,17 @@ public class CompanyQueryController {
 
 
     @GetMapping("/")
-    public CompanyModel getCompany(@RequestBody GetCompanyReqModel getCompanyReqModel){
+    public CompanyModel getCompany(
+            @RequestParam String companyId,
+            @RequestParam String nationalCode,
+            @RequestParam String uniqueCode
+//            @RequestBody GetCompanyReqModel getCompanyReqModel
+    ){
 
+        GetCompanyReqModel getCompanyReqModel =new GetCompanyReqModel();
+        getCompanyReqModel.setCompanyId(companyId==""?null:companyId);
+        getCompanyReqModel.setNationalCode(nationalCode==""?null:Long.getLong(nationalCode));
+        getCompanyReqModel.setUniqueCode(uniqueCode==""?null:uniqueCode);
         FilterCompanyQuery filterCompanyQuery = new FilterCompanyQuery(getCompanyReqModel);
 
         CompanyModel companies = queryGateway.query(filterCompanyQuery,

@@ -8,6 +8,7 @@ import com.cyancoder.taxpaysys.util.KeyUtil;
 import com.cyancoder.taxpaysys.util.SignText;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -17,6 +18,7 @@ import java.security.spec.InvalidKeySpecException;
 
 @Data
 @JsonFormat
+@Slf4j
 public class RequestModel {
 
     public RequestModel(Header header, String packetType, DataModel data, String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
@@ -40,6 +42,10 @@ public class RequestModel {
     private String signature;
 
     protected void setSignature(Header header, String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+
+        log.info("privateKey {}",privateKey);
+        log.info("packet {}",packet);
+        log.info("header {}",header);
 
         String normalJsonStr = CryptoUtils.normalJson(packet, header);
         this.signature = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(privateKey));

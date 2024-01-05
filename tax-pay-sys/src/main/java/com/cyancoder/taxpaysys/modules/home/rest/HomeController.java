@@ -144,17 +144,6 @@ public class HomeController {
     public Object getFactors(@RequestHeader("UniqueCode")String uniqueCode,
                              @RequestBody RequestFactorModel requestFactorModel) throws ParseException {
 
-
-//        String date_string1 = "2023-05-01";
-//        SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
-////        formatter1.setTimeZone(TimeZone.getTimeZone("teh"));
-//        Date date1 = formatter1.parse(date_string1);
-//
-//        String date_string2 = "2023-12-20";
-//        SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
-//        Date date2 = formatter2.parse(date_string2);
-//
-//
         return factorClientService.getFactors(requestFactorModel);
 ////        return factorRepository.findAll(Pageable.ofSize(12)
 //////                .getSortOr(Sort.by(Sort.Direction.DESC, "id"))

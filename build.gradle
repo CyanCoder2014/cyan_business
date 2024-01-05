@@ -1,7 +1,8 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.1.3'
-	id 'io.spring.dependency-management' version '1.1.3'
+	id 'org.springframework.boot' version '3.0.2'
+	id 'io.spring.dependency-management' version '1.1.0'
+
 }
 
 group = 'com.cyancoder'
@@ -22,6 +23,13 @@ ext {
 dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+//	implementation 'org.axonframework:axon-spring-boot-starter'
+
+
+
+
+
 }
 
 dependencyManagement {
@@ -33,3 +41,6 @@ dependencyManagement {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+
+

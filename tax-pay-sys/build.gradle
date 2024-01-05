@@ -56,9 +56,9 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2'
 	implementation 'org.apache.commons:commons-crypto:1.2.0'
 
-	implementation 'org.apache.commons:commons-lang3:3.12.0'
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.1'
-	implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+	implementation 'org.apache.commons:commons-lang3:3.0'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
+	implementation 'com.squareup.okhttp3:okhttp:4.9.1'
 
 	implementation 'com.github.eloyzone:jalali-calendar:1.0.0'
 

@@ -13,29 +13,15 @@ import java.util.Date;
 @Data
 public class FactorItemModel {
 
-
     private String factorItemId;
-
-    private Object factor;////////////////////
-
-    private Object product;//////////////
-
+    private FactorModel factor;
+    private ProductModel product;
     private Double amount;
-
-    private String unit;//////
-
     private Double price;
-
-
     private Double discount;
-
     private Double tax;
-
     private Double other_charge;
-
     private String detail;
 
-
     private String state;
-
 }

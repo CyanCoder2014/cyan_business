@@ -21,6 +21,8 @@ CREATE TABLE if not exists `t_factor_tax` (
                                          tax_api_state varchar(128) NOT NULL,
                                          tax_api_message varchar(128) NOT NULL,
 
+                                         tax_api_data varchar(3500) NOT NULL,
+
                                          state varchar(10) NULL DEFAULT NULL,
                                          client_id varchar(36) NULL DEFAULT NULL,
                                          created_by varchar(36) NULL DEFAULT NULL,

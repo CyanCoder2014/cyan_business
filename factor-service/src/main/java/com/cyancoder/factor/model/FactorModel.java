@@ -46,6 +46,9 @@ public class FactorModel {
     private String state;
     private String note;
 
+    private Date createdAt;
+
+
 
 
 }

@@ -19,7 +19,7 @@ import java.security.spec.InvalidKeySpecException;
 @JsonFormat
 public class InquiryByUidRequestModel {
 
-    public InquiryByUidRequestModel(Header header, String packetType, InquiryByUidDataModel data, SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public InquiryByUidRequestModel(Header header, String packetType, InquiryByUidDataModel data, String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
         this.time = 1;
         this.packet = InquiryByUidPacketModel.builder()
                 .uid(null)
@@ -32,17 +32,17 @@ public class InquiryByUidRequestModel {
                 .fiscalId("")
                 .dataSignature("")
                 .build();
-        this.setSignature(header,seller);
+        this.setSignature(privateKey);
     }
 
     private int time;
     private InquiryByUidPacketModel packet;
     private String signature;
 
-    protected void setSignature(Header header,SellerUser seller) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    protected void setSignature(Header header,String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         String normalJsonStr = CryptoUtils.normalJson(packet, header);
-        this.signature = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(seller));
+        this.signature = SignText.getSignedText(normalJsonStr, "SHA256WITHRSA", KeyUtil.getPrivateKey(privateKey));
 
     }
 }

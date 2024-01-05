@@ -2,9 +2,7 @@ package com.cyancoder.taxpaysys.modules.tax_api.rest;
 
 
 import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.rest.InvoiceTaxClientController;
-import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.InvoiceService;
 import com.cyancoder.taxpaysys.modules.tax_api.service.FactorService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +20,9 @@ public class InvoiceController {
 
 
 
-
-    @Autowired
-    private InvoiceService invoiceService;
+//
+//    @Autowired
+//    private InvoiceService invoiceService;
     @Autowired
     private InvoiceTaxClientController invoiceTaxClientController;
 //    @Autowired
@@ -38,11 +36,11 @@ public class InvoiceController {
 
 
 
-    @GetMapping("send-invoice-async")
-    List<Object> submitInvoice(HttpServletRequest request) throws Exception {
-
-        return invoiceService.sendInvoice();
-    }
+//    @GetMapping("send-invoice-async")
+//    List<Object> submitInvoice(HttpServletRequest request) throws Exception {
+//
+//        return invoiceService.sendInvoice();
+//    }
 
 
     @PostMapping("send-invoice")
@@ -71,23 +69,23 @@ public class InvoiceController {
 
 
 
-    @PostMapping("invoice-correction")
-    Object invoiceCorrection(@RequestHeader("UniqueCode")String uniqueCode,
-                             @RequestParam Long factorId,
-                             @RequestParam String companyId
-    ) throws Exception {
-
-        return factorService.factorCorrection(uniqueCode, factorId,companyId);
-    }
-
-    @PostMapping("invoice-cancellation")
-    Object invoiceCancellation(@RequestHeader("UniqueCode")String uniqueCode,
-                               @RequestParam Long factorId,
-                             @RequestParam String companyId
-    ) throws Exception {
-
-        return factorService.factorCancellation(uniqueCode, factorId,companyId);
-    }
+//    @PostMapping("invoice-correction")
+//    Object invoiceCorrection(@RequestHeader("UniqueCode")String uniqueCode,
+//                             @RequestParam Long factorId,
+//                             @RequestParam String companyId
+//    ) throws Exception {
+//
+//        return factorService.factorCorrection(uniqueCode, factorId,companyId);
+//    }
+//
+//    @PostMapping("invoice-cancellation")
+//    Object invoiceCancellation(@RequestHeader("UniqueCode")String uniqueCode,
+//                               @RequestParam Long factorId,
+//                             @RequestParam String companyId
+//    ) throws Exception {
+//
+//        return factorService.factorCancellation(uniqueCode, factorId,companyId);
+//    }
 
 
 }

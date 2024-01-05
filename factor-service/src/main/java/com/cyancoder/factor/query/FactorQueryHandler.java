@@ -16,7 +16,10 @@ import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -30,7 +33,7 @@ public class FactorQueryHandler {
 
 
     @QueryHandler
-    public List<FactorModel> filterFactor(FilterFactorQuery query) {
+    public List<FactorModel> filterFactor(FilterFactorQuery query) throws ParseException {
 
         List<FactorModel> factors = new ArrayList<>();
 
@@ -43,9 +46,20 @@ public class FactorQueryHandler {
         if (query.getCodeFrom() != null && query.getCodeFrom()!= null)
             storedFactors = factorRepository.findByCompanyIdAndCodeBetween(query.getCompanyId(),
                     query.getCodeFrom(),query.getCodeTo());
-        else if (query.getFromDate() != null && query.getToDate()!= null)
-            storedFactors = factorRepository.findByCompanyIdAndCodeBetween(query.getCompanyId(),
-                    query.getCodeFrom(),query.getCodeTo());
+        else if (query.getFromDate() != null && query.getToDate()!= null){
+
+            String fromDateStr = query.getCodeFrom() != "" ? query.getCodeFrom() : "2023-05-01";   // need to consider
+            SimpleDateFormat fromDateObj = new SimpleDateFormat("yyyy-MM-dd");
+            Date fromDate = fromDateObj.parse(fromDateStr);
+
+            String toDateStr = query.getCodeTo() != "" ? query.getCodeTo() : "2025-06-01";   // need to consider
+            SimpleDateFormat toDateObj = new SimpleDateFormat("yyyy-MM-dd");
+            Date toDate = toDateObj.parse(toDateStr);
+
+            storedFactors = factorRepository.findByCompanyIdAndCreatedAtBetween(query.getCompanyId(),
+                    fromDate,toDate);
+        }
+
 
 
         storedFactors.forEach(item -> {

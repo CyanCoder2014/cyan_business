@@ -27,5 +27,6 @@ public class FactorModel {
     private Double payed;
     private String state;
     private String note;
+    private Date createdAt;
 
 }

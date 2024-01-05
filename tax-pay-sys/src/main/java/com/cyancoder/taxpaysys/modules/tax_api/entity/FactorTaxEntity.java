@@ -45,6 +45,9 @@ public class FactorTaxEntity {
     @Column(name = "tax_api_message")
     private String taxApiMessage;
 
+    @Column(name = "tax_api_data")
+    private String taxApiData;
+
     @Column(name = "client_id")
     private String clientId;
 

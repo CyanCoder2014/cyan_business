@@ -7,7 +7,14 @@ import lombok.Data;
 public class BuyerModel {
 
     private String buyerId;
-    private String note;
 
+    private Long nationalCode;
+    private String economicCode;
+    private String buyerType;
+    private String tell;
+    private String address;
+    private String postCode;
+    private String cityId;
+    private String note;
 
 }

@@ -11,7 +11,7 @@ public interface FactorRepository extends JpaRepository<FactorEntity,String> {
 
     List<FactorEntity> findByCompanyIdAndFactorId(String CompanyId, String factorId);
 
-    List<FactorEntity> findByCreatedOnBetween(String CompanyId, Date startOn, Date endOn);
+    List<FactorEntity> findByCompanyIdAndCreatedAtBetween(String CompanyId, Date startOn, Date endOn);
 
     List<FactorEntity> findByCompanyIdAndCodeBetween(String CompanyId, String codeFrom, String codeTo);
 

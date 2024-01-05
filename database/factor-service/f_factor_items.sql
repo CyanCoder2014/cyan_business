@@ -25,5 +25,6 @@ CREATE TABLE if not exists `f_factor_items` (
 
 
 ALTER TABLE `f_factor_items`
+  ADD KEY if not exists `f_factor_items_factor_item_id_index` (`factor_item_id`),
   ADD KEY if not exists `f_factor_items_factor_id_index` (`factor_id`),
   ADD KEY if not exists `f_factor_items_product_id_index` (`product_id`)

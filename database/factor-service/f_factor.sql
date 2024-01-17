@@ -4,9 +4,9 @@ SET CHARACTER SET utf8;
 
 CREATE TABLE if not exists `f_factors` (
     factor_id varchar(36) NOT NULL UNIQUE,
-    code varchar(10) NOT NULL,
+    code varchar(64) NOT NULL,
     factor_date timestamp NULL DEFAULT NULL,
-    company_id varchar(36) NULL DEFAULT NULL,
+    company_id varchar(64) NULL DEFAULT NULL,
     buyer_id varchar(36) NULL DEFAULT NULL,
     pay_type varchar(10) NULL DEFAULT NULL,
     payed DOUBLE NULL DEFAULT NULL,

@@ -93,7 +93,7 @@ public class FactorService {
             header.setTaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
             header.setIndatim(factorModel.getFactorDate().toInstant().toEpochMilli()); // تاریخ و زمان صدور
             header.setIndati2m(factorModel.getCreatedAt().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
-            header.setInty(1); // نوع صورتحساب
+            header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
 //            header.setIrtaxid(getTaxId(factorSerial,factor.getFactorDate().toInstant(),sellerEnm)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
             header.setInp(1); // الگوی صورتحساب
@@ -103,7 +103,7 @@ public class FactorService {
 
 
             //******** buyer **********//
-            header.setTob(factorModel.getBuyer().getBuyerType().toString().trim().equals("legal") ? 2 : 1);  // نوع شخص خریدار
+            header.setTob(factorModel.getBuyer().getBuyerType().trim().equals("legal") ? 2 : 1);  // نوع شخص خریدار
             header.setBid(String.valueOf(factorModel.getBuyer().getNationalCode()));  // شناسه ملی خریدار
 //            header.setTinb(factor.getEconomicCode());  //  شماره اقتصادی خریدار
             header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
@@ -271,7 +271,7 @@ public class FactorService {
 //            header.setTaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), sellerEnm)); // شماره منحصر به فرد مالیاتی
 //            header.setIndatim(factorModel.getFactorDate().toInstant().toEpochMilli()); // تاریخ و زمان صدور
 //            header.setIndati2m(factorModel.getCreatedOn().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
-//            header.setInty(1); // نوع صورتحساب
+//            header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
 //            header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
 //            header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), sellerEnm)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
 //            header.setInp(1); // الگوی صورتحساب
@@ -392,7 +392,7 @@ public class FactorService {
 //            header.setTaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), sellerEnm)); // شماره منحصر به فرد مالیاتی
 //            header.setIndatim(factorModel.getFactorDate().toInstant().toEpochMilli()); // تاریخ و زمان صدور
 //            header.setIndati2m(factorModel.getCreatedOn().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
-//            header.setInty(1); // نوع صورتحساب
+//            header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
 //            header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
 //            header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), sellerEnm)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
 //            header.setInp(1); // الگوی صورتحساب

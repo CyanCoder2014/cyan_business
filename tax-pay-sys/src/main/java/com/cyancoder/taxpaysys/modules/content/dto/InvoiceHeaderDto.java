@@ -1,8 +1,11 @@
 package com.cyancoder.taxpaysys.modules.content.dto;
 
 
+import lombok.ToString;
+
 import java.math.BigDecimal;
 
+@ToString
 public class InvoiceHeaderDto {
 
     /**

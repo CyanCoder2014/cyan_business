@@ -50,13 +50,14 @@ public class InvoiceController {
                              @RequestParam String codeTo,
                              @RequestParam String fromDate,
                              @RequestParam String toDate,
+                             @RequestParam String factorId,
                              @RequestParam String companyId
                              ) throws Exception {
 
 
 
             return factorService.getFactorsToSubmit(uniqueCode, basedOn, codeFrom, codeTo,
-                                                    fromDate,toDate,companyId); // for test
+                                                    fromDate,toDate,factorId,companyId); // for test
 
 //        return invoiceTaxClientController.sendInvoiceNormal(
 //                header.getString("Content-Type"),

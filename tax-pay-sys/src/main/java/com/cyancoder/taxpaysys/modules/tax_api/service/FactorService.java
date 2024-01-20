@@ -62,7 +62,7 @@ public class FactorService {
     private TaxApi taxApi;
 
     public Object getFactorsToSubmit(String uniqueCode, String basedOn, String codeFrom, String codeTo,
-                                     String fromDateInput, String toDateInput,
+                                     String fromDateInput, String toDateInput, String factorId,
                                      String companyId) throws Exception {
 
 
@@ -79,7 +79,7 @@ public class FactorService {
             requestFactorModel.setFromDate(fromDateInput);
             requestFactorModel.setToDate(toDateInput);
 //        }
-//        requestFactorModel.setFactorId(factorId);
+        requestFactorModel.setFactorId(factorId);
         factorModelList = factorClientService.getFactors(requestFactorModel);
 
 

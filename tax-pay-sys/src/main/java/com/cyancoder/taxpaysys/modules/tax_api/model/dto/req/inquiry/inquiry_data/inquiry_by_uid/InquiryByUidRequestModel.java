@@ -32,7 +32,7 @@ public class InquiryByUidRequestModel {
                 .fiscalId("")
                 .dataSignature("")
                 .build();
-        this.setSignature(header,privateKey);
+        this.setSignature(header, privateKey);
     }
 
     private int time;

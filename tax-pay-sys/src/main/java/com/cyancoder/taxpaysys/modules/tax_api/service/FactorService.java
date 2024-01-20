@@ -72,14 +72,16 @@ public class FactorService {
 
         List<FactorModel> factorModelList = new ArrayList<>();
         RequestFactorModel requestFactorModel = new RequestFactorModel(companyId);
-        if (basedOn.equals("factor_code")) {
+//        if (basedOn.equals("factor_code")) {
             requestFactorModel.setCodeFrom(codeFrom);
-            requestFactorModel.setCodeFrom(codeTo);
-        } else {
+            requestFactorModel.setCodeTo(codeTo);
+//        } else {
             requestFactorModel.setFromDate(fromDateInput);
             requestFactorModel.setToDate(toDateInput);
-            factorModelList = factorClientService.getFactors(requestFactorModel);
-        }
+//        }
+//        requestFactorModel.setFactorId(factorId);
+        factorModelList = factorClientService.getFactors(requestFactorModel);
+
 
         log.info("factorModelList : {}", factorModelList);
 
@@ -171,7 +173,7 @@ public class FactorService {
 
 
         int length = 0;
-        if (responseModel.getResult() != null) {
+        if (responseModel != null && responseModel.getResult() != null) {
             length = responseModel.getResult().size();
             IntStream.range(0, length).forEach(i -> {
 

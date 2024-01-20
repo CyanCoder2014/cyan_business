@@ -106,13 +106,15 @@ public class FactorService {
 
 
             //******** buyer **********//
-            header.setTob(factorModel.getBuyer().getBuyerType().trim().equals("legal") ? 2 : 1);  // نوع شخص خریدار
-            header.setBid(String.valueOf(factorModel.getBuyer().getNationalCode()));  // شناسه ملی خریدار
+            if (!factorModel.getState().trim().equals("type2")){
+                header.setTob(factorModel.getBuyer().getBuyerType().trim().equals("legal") ? 2 : 1);  // نوع شخص خریدار
+                header.setBid(String.valueOf(factorModel.getBuyer().getNationalCode()));  // شناسه ملی خریدار
 //            header.setTinb(factor.getEconomicCode());  //  شماره اقتصادی خریدار
-            header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
+                header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
 //            header.setSbc(null);  //    کد شعبه فروشنده
-            header.setBpc(factorModel.getBuyer().getPostCode());  //  کدپستی خریدار
+                header.setBpc(factorModel.getBuyer().getPostCode());  //  کدپستی خریدار
 //            header.setBbc(null);  //    کد شعبه خریدار
+            }
 
 
             header.setTprdis(BigDecimal.ZERO);  // مجموع مبلغ قبل کسر تخفیف
@@ -139,12 +141,12 @@ public class FactorService {
                 body.setTsstam(BigDecimal.valueOf(Math.round(body.getAdis().doubleValue()+body.getVam().doubleValue()))); // مبلغ کل
                 bodyList.add(body);
 
-                header.setTprdis(BigDecimal.valueOf(header.getTprdis().doubleValue()+(Math.round(body.getPrdis().doubleValue()))));// need to consider ************ مجموع مبلغ قبل کسر تخفیف
-                header.setTdis(BigDecimal.valueOf(header.getTdis().doubleValue()+(Math.round(factorItemModel.getDiscount()))));// مجموع تخفیفات
-                header.setTadis(BigDecimal.valueOf(header.getTprdis().doubleValue()- header.getTdis().doubleValue())); // need to consider ************  مجموع مبلغ بعد کسر تخفیف
-                header.setTvam(BigDecimal.valueOf(header.getTvam().doubleValue()+factorItemModel.getTax()));// need to consider ************  مجموع مالیات
+                header.setTprdis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue())+(Math.round(body.getPrdis().doubleValue()))));// need to consider ************ مجموع مبلغ قبل کسر تخفیف
+                header.setTdis(BigDecimal.valueOf(Math.round(header.getTdis().doubleValue())+(Math.round(factorItemModel.getDiscount()))));// مجموع تخفیفات
+                header.setTadis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue()- header.getTdis().doubleValue()))); // need to consider ************  مجموع مبلغ بعد کسر تخفیف
+                header.setTvam(BigDecimal.valueOf(Math.round(header.getTvam().doubleValue()+factorItemModel.getTax())));// need to consider ************  مجموع مالیات
                 header.setTodam(BigDecimal.ZERO); // مجوع سایر عوارض
-                header.setTbill(BigDecimal.valueOf(header.getTadis().doubleValue()+header.getTvam().doubleValue()));// need to consider ************ مجموع
+                header.setTbill(BigDecimal.valueOf(Math.round(header.getTadis().doubleValue()+header.getTvam().doubleValue())));// need to consider ************ مجموع صورت حساب
             });
 
 

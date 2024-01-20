@@ -3,12 +3,12 @@ SET CHARACTER SET utf8;
 
 CREATE TABLE if not exists `b_buyer` (
                                          buyer_id varchar(36) NOT NULL UNIQUE,
-                                         national_code INT(255) UNSIGNED NOT NULL,
+                                         national_code INT(255) UNSIGNED NULL DEFAULT NULL,
                                          economic_code varchar(64) NULL DEFAULT NULL,
                                          buyer_type varchar(10) NULL DEFAULT NULL,
                                          tell varchar(64) NULL DEFAULT NULL,
                                          address varchar(255) NULL DEFAULT NULL,
-                                         post_code varchar(10) NOT NULL,
+                                         post_code varchar(128) NULL DEFAULT NULL,
                                          city_id varchar(36) NULL DEFAULT NULL,
                                          note varchar(255) NULL DEFAULT NULL,
                                          state varchar(10) NULL DEFAULT NULL,

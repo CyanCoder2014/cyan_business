@@ -6,22 +6,22 @@ CREATE TABLE if not exists `t_factor_tax` (
                                          factor_id varchar(128) NOT NULL,
 
                                          tax_api_uid varchar(128) NOT NULL,
-                                         tax_api_reference varchar(128) NOT NULL,
+                                         tax_api_reference varchar(128) NULL DEFAULT NULL,
 
                                          successed_at timestamp NULL DEFAULT NULL,
-                                         tax_api_successed_uid varchar(128) NOT NULL,
-                                         tax_api_successed_reference varchar(128) NOT NULL,
+                                         tax_api_successed_uid varchar(128) NULL DEFAULT NULL,
+                                         tax_api_successed_reference varchar(128) NULL DEFAULT NULL,
 
-                                         tax_api_correction_uid varchar(128) NOT NULL,
-                                         tax_api_correction_reference varchar(128) NOT NULL,
+                                         tax_api_correction_uid varchar(128) NULL DEFAULT NULL,
+                                         tax_api_correction_reference varchar(128) NULL DEFAULT NULL,
 
-                                         tax_api_cancellation_uid varchar(128) NOT NULL,
-                                         tax_api_cancellation_reference varchar(128) NOT NULL,
+                                         tax_api_cancellation_uid varchar(128) NULL DEFAULT NULL,
+                                         tax_api_cancellation_reference varchar(128) NULL DEFAULT NULL,
 
-                                         tax_api_state varchar(128) NOT NULL,
-                                         tax_api_message varchar(128) NOT NULL,
+                                         tax_api_state varchar(128) NULL DEFAULT NULL,
+                                         tax_api_message varchar(128) NULL DEFAULT NULL,
 
-                                         tax_api_data varchar(3500) NOT NULL,
+                                         tax_api_data varchar(3500) NULL DEFAULT NULL,
 
                                          state varchar(10) NULL DEFAULT NULL,
                                          client_id varchar(36) NULL DEFAULT NULL,

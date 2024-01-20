@@ -1,8 +1,11 @@
 package com.cyancoder.taxpaysys.modules.content.dto;
 
 
+import lombok.ToString;
+
 import java.util.List;
 
+@ToString
 public class InvoiceDto {
 
     private InvoiceHeaderDto header;
@@ -44,4 +47,5 @@ public class InvoiceDto {
     public void setExtension(List<InvoiceExtension> extension) {
         this.extension = extension;
     }
+
 }

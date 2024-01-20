@@ -202,7 +202,7 @@ public class FactorService {
 
         String companyId = companyModel.getCompanyId();
 
-        if (companyModel.getUniqueCode() != Encrypt.hash(uniqueCode))
+        if (companyModel.getUniqueCode().equals(Encrypt.hash(uniqueCode)))
             throw new Exception("uniqueCode or companyId is not corrected!");
 
         if (companyModel.getPk() != null)

@@ -55,7 +55,7 @@ public class InquiryService {
                 .fiscalId(uniqueCode)
                 .build();
         data.add(uid1);
-        InquiryByUidRequestModel body = new InquiryByUidRequestModel(header, "INQUIRY_BY_UID", data, companyModel.getPk());
+        InquiryByUidRequestModel body = new InquiryByUidRequestModel(header, "INQUIRY_BY_UID", data, companyModel.getPk(uniqueCode));
 
         try {
             return new InquiryResponseModel(inquiryClientController.getInquiryByUid(
@@ -77,7 +77,7 @@ public class InquiryService {
         InquiryByReferenceNumberDataModel data = InquiryByReferenceNumberDataModel.builder().build();
         data.setReferenceNumber(new ArrayList<>());
         data.getReferenceNumber().add(reference);  // for test
-        RequestModel body = new RequestModel(header, "INQUIRY_BY_REFERENCE_NUMBER", data, companyModel.getPk());
+        RequestModel body = new RequestModel(header, "INQUIRY_BY_REFERENCE_NUMBER", data, companyModel.getPk(uniqueCode));
 
         try {
             return new InquiryResponseModel(inquiryClientController.getInquiryByReferenceNumber(

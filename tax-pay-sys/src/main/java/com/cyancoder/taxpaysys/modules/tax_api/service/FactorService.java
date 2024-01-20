@@ -183,6 +183,7 @@ public class FactorService {
                 List<FactorModel> factorModels = factorClientService.getFactors(requestFactorModel);
                 FactorTaxEntity factor = new FactorTaxEntity();//////////////////////factors.get(0);
 
+                factor.setFactorTaxId(UUID.randomUUID().toString());
                 factor.setFactorId(factorModels.get(i).getFactorId());
                 factor.setTaxApiUid(responseModel.getResult().get(i).getUid());
                 factor.setTaxApiReference(responseModel.getResult().get(i).getReferenceNumber());

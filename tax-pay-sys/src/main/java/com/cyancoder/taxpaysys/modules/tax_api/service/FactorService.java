@@ -203,7 +203,7 @@ public class FactorService {
 
         String companyId = companyModel.getCompanyId();
 
-        if (companyModel.getUniqueCode().equals(Encrypt.hash(uniqueCode))){
+        if (!companyModel.getUniqueCode().equals(Encrypt.hash(uniqueCode))){
 
             log.warn("companyModel : {}", companyModel);
             log.warn("companyModel.getUniqueCode() : {}",companyModel.getUniqueCode());

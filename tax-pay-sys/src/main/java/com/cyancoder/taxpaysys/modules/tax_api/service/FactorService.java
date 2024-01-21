@@ -137,7 +137,7 @@ public class FactorService {
                 body.setDis(factorItemModel.getDiscount() == null ? BigDecimal.ZERO : BigDecimal.valueOf(factorItemModel.getDiscount())); // مبلغ تخفیف
                 body.setAdis(BigDecimal.valueOf(Math.round(body.getPrdis().doubleValue()-factorItemModel.getDiscount()))); // need to consider ************ مبلغ بعد تخفیف
                 body.setVra(BigDecimal.valueOf(Math.round(factorItemModel.getTax()*100))); //نرخ مالیات بر ارزش افزوده ***************** /////////////////
-                body.setVam(BigDecimal.valueOf(Math.round(factorItemModel.getTax()*body.getAdis().doubleValue()))); // مبلع مالیات بر ارزش افزوده
+                body.setVam(BigDecimal.valueOf(Math.floor(factorItemModel.getTax()*body.getAdis().doubleValue()))); // مبلع مالیات بر ارزش افزوده
                 body.setTsstam(BigDecimal.valueOf(Math.round(body.getAdis().doubleValue()+body.getVam().doubleValue()))); // مبلغ کل
                 bodyList.add(body);
 

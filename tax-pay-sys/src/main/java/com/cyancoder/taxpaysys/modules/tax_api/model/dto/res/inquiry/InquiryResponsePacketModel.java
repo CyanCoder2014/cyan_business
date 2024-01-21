@@ -9,5 +9,6 @@ public class InquiryResponsePacketModel {
     public String encryptionKeyId;
     public String symmetricKey;
     public String iv;
+    public String status;
 
 }

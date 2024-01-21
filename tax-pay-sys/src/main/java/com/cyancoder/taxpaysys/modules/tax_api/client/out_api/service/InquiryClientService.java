@@ -2,18 +2,14 @@ package com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service;
 
 import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.rest.InquiryClientController;
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.service.CompanyClientService;
-import com.cyancoder.taxpaysys.modules.tax_api.entity.general.SellerUser;
 import com.cyancoder.taxpaysys.modules.tax_api.model.CompanyModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.Header;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.inquiry_by_uid.InquiryByUidRequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.InquiryByReferenceNumberDataModel;
-import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.InquiryByTimeRangeDataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.inquiry_by_uid.InquiryByUidDataModel;
-import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.InquiryDataByTimeModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.inquiry_by_uid.RequestUidItemModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponseModel;
-import com.cyancoder.taxpaysys.util.KeyUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +25,7 @@ import java.util.Random;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InquiryService {
+public class InquiryClientService {
 
     private final InquiryClientController inquiryClientController;
     private final CompanyClientService companyClientService;

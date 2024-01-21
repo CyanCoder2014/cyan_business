@@ -1,9 +1,12 @@
 package com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry;
 
 
+import lombok.ToString;
+
 import java.util.ArrayList;
 
-public class InquiryDataModel extends ArrayList<Object> {
+@ToString
+public class InquiryDataModel  {
 
 //    public Object[] referenceNumber;
 

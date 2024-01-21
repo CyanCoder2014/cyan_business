@@ -19,7 +19,7 @@ CREATE TABLE if not exists `t_factor_tax` (
                                          tax_api_cancellation_reference varchar(128) NULL DEFAULT NULL,
 
                                          tax_api_state varchar(128) NULL DEFAULT NULL,
-                                         tax_api_message varchar(128) NULL DEFAULT NULL,
+                                         tax_api_message varchar(1000) NULL DEFAULT NULL,
 
                                          tax_api_data varchar(3500) NULL DEFAULT NULL,
 

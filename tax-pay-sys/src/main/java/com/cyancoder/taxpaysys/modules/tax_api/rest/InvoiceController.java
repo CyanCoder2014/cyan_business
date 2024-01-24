@@ -15,12 +15,10 @@ import java.util.List;
 public class InvoiceController {
 
 
-
 //    private TaxApi taxApi;
 
 
-
-//
+    //
 //    @Autowired
 //    private InvoiceService invoiceService;
     @Autowired
@@ -35,7 +33,6 @@ public class InvoiceController {
     private FactorService factorService;
 
 
-
 //    @GetMapping("send-invoice-async")
 //    List<Object> submitInvoice(HttpServletRequest request) throws Exception {
 //
@@ -44,7 +41,7 @@ public class InvoiceController {
 
 
     @PostMapping("send-invoice")
-    Object submitInvoiceSync(@RequestHeader("UniqueCode")String uniqueCode,
+    Object submitInvoiceSync(@RequestHeader("UniqueCode") String uniqueCode,
                              @RequestParam String basedOn,
                              @RequestParam String codeFrom,
                              @RequestParam String codeTo,
@@ -52,12 +49,16 @@ public class InvoiceController {
                              @RequestParam String toDate,
                              @RequestParam String factorId,
                              @RequestParam String companyId
-                             ) throws Exception {
+    ) throws Exception {
+
+        Object res = factorService.getFactorsToSubmit(uniqueCode, basedOn, codeFrom, codeTo,
+                fromDate, toDate, factorId, companyId);
 
 
+        if (res == null)
+            throw new Exception("فاکتوری جهت ارسال یافت نشد");
 
-            return factorService.getFactorsToSubmit(uniqueCode, basedOn, codeFrom, codeTo,
-                                                    fromDate,toDate,factorId,companyId); // for test
+        return res; // for test
 
 //        return invoiceTaxClientController.sendInvoiceNormal(
 //                header.getString("Content-Type"),
@@ -67,7 +68,6 @@ public class InvoiceController {
 //                bodyHttp
 //        );
     }
-
 
 
 //    @PostMapping("invoice-correction")

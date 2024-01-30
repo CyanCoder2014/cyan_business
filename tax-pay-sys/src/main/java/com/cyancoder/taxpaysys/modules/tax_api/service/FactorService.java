@@ -168,6 +168,11 @@ public class FactorService {
 
         log.info("invoiceList: {}", invoiceList);
 
+
+        if (invoiceList.size() == 0)
+            throw new Exception("فاکتوری جهت ارسال یافت نشد");
+
+
         AsyncResponseModel responseModel =
                 taxApi.sendInvoices(invoiceList);
 

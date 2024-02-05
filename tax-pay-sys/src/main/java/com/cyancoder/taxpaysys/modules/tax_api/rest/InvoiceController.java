@@ -70,23 +70,59 @@ public class InvoiceController {
     }
 
 
-//    @PostMapping("invoice-correction")
-//    Object invoiceCorrection(@RequestHeader("UniqueCode")String uniqueCode,
-//                             @RequestParam Long factorId,
-//                             @RequestParam String companyId
-//    ) throws Exception {
-//
-//        return factorService.factorCorrection(uniqueCode, factorId,companyId);
-//    }
-//
-//    @PostMapping("invoice-cancellation")
-//    Object invoiceCancellation(@RequestHeader("UniqueCode")String uniqueCode,
-//                               @RequestParam Long factorId,
-//                             @RequestParam String companyId
-//    ) throws Exception {
-//
-//        return factorService.factorCancellation(uniqueCode, factorId,companyId);
-//    }
+    @PostMapping("invoice-correction")
+    Object invoiceCorrection(@RequestHeader("UniqueCode") String uniqueCode,
+                             @RequestParam String factorId,
+                             @RequestParam String companyId
+    ) throws Exception {
 
+        return factorService.factorCorrection(uniqueCode, null, null, null,
+                null, null, factorId, companyId);
+    }
+
+
+    @PostMapping("invoice-correction")
+    Object invoiceCorrection(@RequestHeader("UniqueCode") String uniqueCode,
+                             @RequestParam String basedOn,
+                             @RequestParam String codeFrom,
+                             @RequestParam String codeTo,
+                             @RequestParam String fromDate,
+                             @RequestParam String toDate,
+                             @RequestParam String factorId,
+                             @RequestParam String companyId
+    ) throws Exception {
+
+        return factorService.factorCorrection(uniqueCode, basedOn, codeFrom, codeTo,
+                fromDate, toDate, factorId, companyId);
+    }
+
+
+
+
+    @PostMapping("invoice-cancellation")
+    Object invoiceCancellation(@RequestHeader("UniqueCode") String uniqueCode,
+                             @RequestParam String factorId,
+                             @RequestParam String companyId
+    ) throws Exception {
+
+        return factorService.factorCancellation(uniqueCode, null, null, null,
+                null, null, factorId, companyId);
+    }
+
+
+    @PostMapping("invoice-cancellation")
+    Object invoiceCancellation(@RequestHeader("UniqueCode") String uniqueCode,
+                             @RequestParam String basedOn,
+                             @RequestParam String codeFrom,
+                             @RequestParam String codeTo,
+                             @RequestParam String fromDate,
+                             @RequestParam String toDate,
+                             @RequestParam String factorId,
+                             @RequestParam String companyId
+    ) throws Exception {
+
+        return factorService.factorCancellation(uniqueCode, basedOn, codeFrom, codeTo,
+                fromDate, toDate, factorId, companyId);
+    }
 
 }

@@ -81,8 +81,8 @@ public class InvoiceController {
     }
 
 
-    @PostMapping("invoice-correction")
-    Object invoiceCorrection(@RequestHeader("UniqueCode") String uniqueCode,
+    @PostMapping("invoice-correction-list")
+    Object invoiceCorrectionList(@RequestHeader("UniqueCode") String uniqueCode,
                              @RequestParam String basedOn,
                              @RequestParam String codeFrom,
                              @RequestParam String codeTo,
@@ -110,8 +110,8 @@ public class InvoiceController {
     }
 
 
-    @PostMapping("invoice-cancellation")
-    Object invoiceCancellation(@RequestHeader("UniqueCode") String uniqueCode,
+    @PostMapping("invoice-cancellation-list")
+    Object invoiceCancellationList(@RequestHeader("UniqueCode") String uniqueCode,
                              @RequestParam String basedOn,
                              @RequestParam String codeFrom,
                              @RequestParam String codeTo,

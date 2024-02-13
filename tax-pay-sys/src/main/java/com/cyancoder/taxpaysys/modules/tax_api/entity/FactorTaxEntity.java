@@ -44,7 +44,21 @@ public class FactorTaxEntity {
     private String taxApiSuccessesUid;
 
     @Column(name = "tax_api_successed_reference")
-    private String taxApiDuccessesReference;
+    private String taxApiSuccessesReference;
+
+
+
+    @Column(name = "tax_api_correction_uid")
+    private String taxApiCorrectionUid;
+
+    @Column(name = "tax_api_correction_reference")
+    private String taxApiCorrectionReference;
+
+    @Column(name = "tax_api_cancellation_uid")
+    private String taxApiCancellationUid;
+
+    @Column(name = "tax_api_cancellation_reference")
+    private String taxApiCancellationReference;
 
 
     @Column(name = "tax_api_state")

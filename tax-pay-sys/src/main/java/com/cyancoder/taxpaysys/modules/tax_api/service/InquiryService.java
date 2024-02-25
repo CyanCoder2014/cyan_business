@@ -36,6 +36,8 @@ public class InquiryService {
         InquiryResponseModel responce; /////// need to consider
         responce = inquiryClientService.getInquiryByUid(uniqueCode, companyId, uid);
 
+        log.info("getInquiryByUid responce: {}",responce);
+
         try {
             Optional<FactorTaxEntity> factorTaxEntity = factorTaxRepository.findByTaxApiUid(uid);
 

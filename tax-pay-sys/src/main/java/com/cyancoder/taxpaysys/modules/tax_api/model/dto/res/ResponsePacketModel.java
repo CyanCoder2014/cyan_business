@@ -2,9 +2,8 @@ package com.cyancoder.taxpaysys.modules.tax_api.model.dto.res;
 
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.DataModel;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
 
-@Data
+@JsonFormat
 public class ResponsePacketModel {
 
     public String uid;

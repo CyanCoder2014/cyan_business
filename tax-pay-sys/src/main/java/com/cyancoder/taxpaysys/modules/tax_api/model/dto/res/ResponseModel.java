@@ -1,8 +1,11 @@
 package com.cyancoder.taxpaysys.modules.tax_api.model.dto.res;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@JsonFormat
+@Data
+@NoArgsConstructor
 public class ResponseModel{
 
 

@@ -43,9 +43,9 @@ public class InquiryService {
 
             if (factorTaxEntity.isPresent()) {
                 FactorTaxEntity factor = factorTaxEntity.get();
-                if (responce.successResponse.result.status.equals("SUCCESS"))
+                if (responce.successResponse.get(0).status.equals("SUCCESS"))
                     factor.setSuccessesAt(new Date());
-                factor.setTaxApiMessage(responce.successResponse.result.data.toString());
+                factor.setTaxApiMessage(responce.successResponse.get(0).data.toString());
                 factorTaxRepository.save(factor);
             }
         } catch (Exception ignored) {}

@@ -6,16 +6,18 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 public class InquiryResponseModel  {
 
 
-    public InquiryResultModel successResponse;
+    public List<InquiryResponsePacketModel> successResponse;
 
     public int errorCode = 0;
     public String errormessage;
 
-    public InquiryResponseModel(InquiryResultModel result){
+    public InquiryResponseModel(List<InquiryResponsePacketModel> result){
 //        super(result);
         this.successResponse = result;
     }

@@ -30,7 +30,7 @@ public class InquiryController {
                            @RequestParam String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         InquiryResponseModel response = inquiryService.getInquiryByUid(uniqueCode, companyId, uid);
-        return response.successResponse != null ? response.successResponse.result.data  : response;
+        return response.successResponse != null ? response.successResponse.get(0)  : response;
     }
 
     @GetMapping("/get-by-reference")

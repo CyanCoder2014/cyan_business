@@ -4,12 +4,14 @@ import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.rest.InquiryClient
 import com.cyancoder.taxpaysys.modules.tax_api.client.services_api.service.CompanyClientService;
 import com.cyancoder.taxpaysys.modules.tax_api.model.CompanyModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.Header;
+import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.DataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.inquiry_by_uid.InquiryByUidRequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.InquiryByReferenceNumberDataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.inquiry_by_uid.InquiryByUidDataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.inquiry_by_uid.RequestUidItemModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponseModel;
+import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponsePacketModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -53,13 +56,22 @@ public class InquiryClientService {
         data.add(uid1);
         InquiryByUidRequestModel body = new InquiryByUidRequestModel(header, "INQUIRY_BY_UID", data, companyModel.getPk(uniqueCode));
 
+        log.info("InquiryClientService:getInquiryByUid:header:: {}",header);
+        log.info("InquiryClientService:getInquiryByUid:data:: {}",data);
+        log.info("InquiryClientService:getInquiryByUid:body:: {}",body);
+        DataModel tempRes = inquiryClientController.getInquiryByUid(
+                header.getContentType(),
+                header.getString("requestTraceId"),
+                header.getString("timestamp"),
+                "Bearer "+header.getString("Authorization"),
+                body);
+        log.info("InquiryClientService:getInquiryByUid:tempRes: {}",tempRes);
+
+
         try {
-            return new InquiryResponseModel(inquiryClientController.getInquiryByUid(
-                    header.getContentType(),
-                    header.getString("requestTraceId"),
-                    header.getString("timestamp"),
-                    "Bearer "+header.getString("Authorization"),
-                    body));
+
+            List<InquiryResponsePacketModel> res = new ArrayList<>();
+            return new InquiryResponseModel(res);
         } catch (Exception e) {
             return new InquiryResponseModel(0, e.getMessage());
         }

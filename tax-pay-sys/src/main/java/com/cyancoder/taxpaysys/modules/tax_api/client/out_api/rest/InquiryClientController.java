@@ -1,6 +1,7 @@
 package com.cyancoder.taxpaysys.modules.tax_api.client.out_api.rest;
 
 
+import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.DataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.inquiry_by_uid.InquiryByUidRequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponsePacketModel;
@@ -18,11 +19,11 @@ public interface InquiryClientController {
 
 
     @PostMapping(value = "/INQUIRY_BY_UID", consumes = "application/json",produces = "application/json")
-    List<InquiryResponsePacketModel> getInquiryByUid(@RequestHeader("Content-Type") String contentType,
-                                                     @RequestHeader("requestTraceId") String requestTraceId,
-                                                     @RequestHeader("timestamp") String timestamp,
-                                                     @RequestHeader("Authorization") String token,
-                                                     @RequestBody InquiryByUidRequestModel body);
+    DataModel getInquiryByUid(@RequestHeader("Content-Type") String contentType,
+                              @RequestHeader("requestTraceId") String requestTraceId,
+                              @RequestHeader("timestamp") String timestamp,
+                              @RequestHeader("Authorization") String token,
+                              @RequestBody InquiryByUidRequestModel body);
 
     @PostMapping(value = "/INQUIRY_BY_REFERENCE_NUMBER", consumes = "application/json",produces = "application/json")
     Object getInquiryByReferenceNumber(@RequestHeader("Content-Type") String contentType,

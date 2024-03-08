@@ -56,7 +56,8 @@ public class InquiryClientService {
         data.add(uid1);
         InquiryByUidRequestModel body = new InquiryByUidRequestModel(header, "INQUIRY_BY_UID", data, companyModel.getPk(uniqueCode));
 
-        log.info("InquiryClientService:getInquiryByUid:header:: {}",header);
+        log.info("InquiryClientService:getInquiryByUid:uid:: {}",uid);
+        log.info("InquiryClientService:getInquiryByUid:uid1:: {}",uid1);
         log.info("InquiryClientService:getInquiryByUid:data:: {}",data);
         log.info("InquiryClientService:getInquiryByUid:body:: {}",body);
         DataModel tempRes = inquiryClientController.getInquiryByUid(

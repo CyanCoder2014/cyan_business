@@ -22,7 +22,7 @@ public interface InquiryClientController {
                                        @RequestBody InquiryByUidRequestModel body);
 
     @PostMapping(value = "/INQUIRY_BY_REFERENCE_NUMBER", consumes = "application/json",produces = "application/json")
-    InquiryResultModel getInquiryByReferenceNumber(@RequestHeader("Content-Type") String contentType,
+    Object getInquiryByReferenceNumber(@RequestHeader("Content-Type") String contentType,
                                     @RequestHeader("requestTraceId") String requestTraceId,
                                     @RequestHeader("timestamp") String timestamp,
                                     @RequestHeader("Authorization") String token,

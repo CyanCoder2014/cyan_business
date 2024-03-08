@@ -66,7 +66,7 @@ public class InquiryClientService {
     }
 
 
-    public InquiryResponseModel getInquiryByReferenceNumber(String uniqueCode, String companyId, String reference) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public Object getInquiryByReferenceNumber(String uniqueCode, String companyId, String reference) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         CompanyModel companyModel = companyClientService.getCompany(companyId, uniqueCode);
         Header header = defineHeader(uniqueCode, companyModel.getPk());
@@ -76,7 +76,7 @@ public class InquiryClientService {
         RequestModel body = new RequestModel(header, "INQUIRY_BY_REFERENCE_NUMBER", data, companyModel.getPk(uniqueCode));
 
         try {
-            return new InquiryResponseModel(inquiryClientController.getInquiryByReferenceNumber(
+            return (inquiryClientController.getInquiryByReferenceNumber(
                     header.getContentType(),
                     header.getString("requestTraceId"),
                     header.getString("timestamp"),

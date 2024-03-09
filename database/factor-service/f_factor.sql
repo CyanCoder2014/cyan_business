@@ -18,6 +18,7 @@ CREATE TABLE if not exists `f_factors` (
     created_at timestamp NULL DEFAULT NULL,
     updated_at timestamp NULL DEFAULT NULL,
     deleted_at timestamp NULL DEFAULT NULL,
+    deleted INT(1) NULL DEFAULT NULL,
     status  varchar(10) NULL DEFAULT NULL,
 
     CONSTRAINT factor_id PRIMARY KEY (factor_id)

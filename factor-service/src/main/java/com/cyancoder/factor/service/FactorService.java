@@ -168,13 +168,13 @@ public class FactorService {
 //    public FactorModel editFactor(FactorModel factorModel){
 //        return new FactorModel();
 //    }
-//
-//
-//
-//
-//    public FactorModel removeFactor(FactorModel factorModel){
-//        return new FactorModel();
-//    }
+
+
+
+    public String removeFactor(String factorId){
+        factorRepository.deleteById(factorId);
+        return factorId;
+    }
 
 
 }

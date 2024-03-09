@@ -52,5 +52,12 @@ public class FactorCommandController {
 
     }
 
+    @DeleteMapping
+    public Object createFactor(@RequestParam String factorId) {
+
+        return factorService.removeFactor(factorId);
+
+    }
+
 
 }

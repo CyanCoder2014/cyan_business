@@ -19,7 +19,7 @@ public interface InquiryClientController {
 
 
     @PostMapping(value = "/INQUIRY_BY_UID", consumes = "application/json",produces = "application/json")
-    DataModel getInquiryByUid(@RequestHeader("Content-Type") String contentType,
+    Object getInquiryByUid(@RequestHeader("Content-Type") String contentType,
                               @RequestHeader("requestTraceId") String requestTraceId,
                               @RequestHeader("timestamp") String timestamp,
                               @RequestHeader("Authorization") String token,

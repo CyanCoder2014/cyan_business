@@ -42,7 +42,7 @@ public class AuthService {
                     header.getString("timestamp"),
                     body));
         } catch (Exception e) {
-            return new AuthResponseModel(0, e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 

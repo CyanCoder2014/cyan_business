@@ -44,7 +44,7 @@ public class InquiryClientService {
         return header;
     }
 
-    public InquiryResponseModel getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public Object getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         CompanyModel companyModel = companyClientService.getCompany(companyId, uniqueCode);
         Header header = defineHeader(uniqueCode, companyModel.getPk(uniqueCode));
@@ -60,7 +60,7 @@ public class InquiryClientService {
         log.info("InquiryClientService:getInquiryByUid:uid1:: {}",uid1);
         log.info("InquiryClientService:getInquiryByUid:data:: {}",data);
         log.info("InquiryClientService:getInquiryByUid:body:: {}",body);
-        DataModel tempRes = inquiryClientController.getInquiryByUid(
+        Object tempRes = inquiryClientController.getInquiryByUid(
                 header.getContentType(),
                 header.getString("requestTraceId"),
                 header.getString("timestamp"),
@@ -69,13 +69,14 @@ public class InquiryClientService {
         log.info("InquiryClientService:getInquiryByUid:tempRes: {}",tempRes);
 
 
-        try {
-
-            List<InquiryResponsePacketModel> res = new ArrayList<>();
-            return new InquiryResponseModel(res);
-        } catch (Exception e) {
-            return new InquiryResponseModel(0, e.getMessage());
-        }
+        return tempRes;
+//        try {
+//
+//            List<InquiryResponsePacketModel> res = new ArrayList<>();
+//            return new InquiryResponseModel(res);
+//        } catch (Exception e) {
+//            return new InquiryResponseModel(0, e.getMessage());
+//        }
     }
 
 

@@ -32,23 +32,23 @@ public class InquiryService {
     private final FactorTaxRepository factorTaxRepository;
 
 
-    public InquiryResponseModel getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
-        InquiryResponseModel responce; /////// need to consider
+    public Object getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+        Object responce; /////// need to consider
         responce = inquiryClientService.getInquiryByUid(uniqueCode, companyId, uid);
 
         log.info("getInquiryByUid responce: {}",responce);
 
-        try {
-            Optional<FactorTaxEntity> factorTaxEntity = factorTaxRepository.findByTaxApiUid(uid);
-
-            if (factorTaxEntity.isPresent()) {
-                FactorTaxEntity factor = factorTaxEntity.get();
-                if (responce.successResponse.get(0).status.equals("SUCCESS"))
-                    factor.setSuccessesAt(new Date());
-                factor.setTaxApiMessage(responce.successResponse.get(0).data.toString());
-                factorTaxRepository.save(factor);
-            }
-        } catch (Exception ignored) {}
+//        try {
+//            Optional<FactorTaxEntity> factorTaxEntity = factorTaxRepository.findByTaxApiUid(uid);
+//
+//            if (factorTaxEntity.isPresent()) {
+//                FactorTaxEntity factor = factorTaxEntity.get();
+//                if (responce.successResponse.get(0).status.equals("SUCCESS"))
+//                    factor.setSuccessesAt(new Date());
+//                factor.setTaxApiMessage(responce.successResponse.get(0).data.toString());
+//                factorTaxRepository.save(factor);
+//            }
+//        } catch (Exception ignored) {}
 
         return responce;
     }

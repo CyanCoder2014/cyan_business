@@ -29,8 +29,9 @@ public class InquiryController {
                            @RequestParam String companyId,
                            @RequestParam String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        InquiryResponseModel response = inquiryService.getInquiryByUid(uniqueCode, companyId, uid);
-        return response.successResponse != null ? response.successResponse.get(0)  : response;
+        return inquiryService.getInquiryByUid(uniqueCode, companyId, uid);
+//        InquiryResponseModel response = inquiryService.getInquiryByUid(uniqueCode, companyId, uid);
+//        return response.successResponse != null ? response.successResponse.get(0)  : response;
     }
 
     @GetMapping("/get-by-reference")

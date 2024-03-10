@@ -12,6 +12,7 @@ import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_dat
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.inquiry.inquiry_data.inquiry_by_uid.RequestUidItemModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponseModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponsePacketModel;
+import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResultModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,12 +40,12 @@ public class InquiryClientService {
     private Header defineHeader(String uniqueCode, String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
         Random rnd = new Random();
         Header header = new Header("2023-cyanbusiness-inq-2320011"+ rnd.nextInt(10));
-        if (header.getString("Authorization") == "")
+//        if (header.getString("Authorization") == "") // need to consider
             authService.setTokenInHeader(header,  uniqueCode, privateKey);
         return header;
     }
 
-    public Object getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public InquiryResultModel getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         CompanyModel companyModel = companyClientService.getCompany(companyId, uniqueCode);
         Header header = defineHeader(uniqueCode, companyModel.getPk(uniqueCode));
@@ -60,7 +61,7 @@ public class InquiryClientService {
         log.info("InquiryClientService:getInquiryByUid:uid1:: {}",uid1);
         log.info("InquiryClientService:getInquiryByUid:data:: {}",data);
         log.info("InquiryClientService:getInquiryByUid:body:: {}",body);
-        Object tempRes = inquiryClientController.getInquiryByUid(
+        InquiryResultModel tempRes = inquiryClientController.getInquiryByUid(
                 header.getContentType(),
                 header.getString("requestTraceId"),
                 header.getString("timestamp"),

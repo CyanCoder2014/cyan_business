@@ -13,7 +13,13 @@ import java.util.List;
 @JsonFormat
 public class InquiryDataModel  {
 
-    public List<ErrorObject> errors;
-    public List<ErrorObject> warning;
+    public String referenceNumber;
+    public String uid;
+    public InquiryInnerDataModel data;
+    public String packetType;
+    public String fiscalId;
+    public String sign;
+    public String status;
+
 
 }

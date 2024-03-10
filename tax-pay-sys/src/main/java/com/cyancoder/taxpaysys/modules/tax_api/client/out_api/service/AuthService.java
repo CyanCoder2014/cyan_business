@@ -64,7 +64,7 @@ public class AuthService {
         setCode(uniqueCode);
         setKey(privateKey);
         setToken();
-        if (header != null)
+//        if (header != null) // need to consider !!!!!!!
             header.put("Authorization",Token.getInstance().getToken());
     }
 

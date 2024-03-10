@@ -19,14 +19,14 @@ public interface InquiryClientController {
 
 
     @PostMapping(value = "/INQUIRY_BY_UID", consumes = "application/json",produces = "application/json")
-    Object getInquiryByUid(@RequestHeader("Content-Type") String contentType,
+    InquiryResultModel getInquiryByUid(@RequestHeader("Content-Type") String contentType,
                               @RequestHeader("requestTraceId") String requestTraceId,
                               @RequestHeader("timestamp") String timestamp,
                               @RequestHeader("Authorization") String token,
                               @RequestBody InquiryByUidRequestModel body);
 
     @PostMapping(value = "/INQUIRY_BY_REFERENCE_NUMBER", consumes = "application/json",produces = "application/json")
-    Object getInquiryByReferenceNumber(@RequestHeader("Content-Type") String contentType,
+    InquiryResultModel getInquiryByReferenceNumber(@RequestHeader("Content-Type") String contentType,
                                     @RequestHeader("requestTraceId") String requestTraceId,
                                     @RequestHeader("timestamp") String timestamp,
                                     @RequestHeader("Authorization") String token,

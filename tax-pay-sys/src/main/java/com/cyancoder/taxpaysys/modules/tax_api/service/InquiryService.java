@@ -6,7 +6,9 @@ import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.InquiryCli
 import com.cyancoder.taxpaysys.modules.tax_api.entity.FactorTaxEntity;
 import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.FactorTaxModel;
+import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryDataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponseModel;
+import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResultModel;
 import com.cyancoder.taxpaysys.modules.tax_api.repository.FactorTaxRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,25 +34,25 @@ public class InquiryService {
     private final FactorTaxRepository factorTaxRepository;
 
 
-    public Object getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
-        Object responce; /////// need to consider
+    public List<InquiryDataModel> getInquiryByUid(String uniqueCode, String companyId, String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+        InquiryResultModel responce; /////// need to consider
         responce = inquiryClientService.getInquiryByUid(uniqueCode, companyId, uid);
 
         log.info("getInquiryByUid responce: {}",responce);
 
-//        try {
-//            Optional<FactorTaxEntity> factorTaxEntity = factorTaxRepository.findByTaxApiUid(uid);
-//
-//            if (factorTaxEntity.isPresent()) {
-//                FactorTaxEntity factor = factorTaxEntity.get();
-//                if (responce.successResponse.get(0).status.equals("SUCCESS"))
-//                    factor.setSuccessesAt(new Date());
-//                factor.setTaxApiMessage(responce.successResponse.get(0).data.toString());
-//                factorTaxRepository.save(factor);
-//            }
-//        } catch (Exception ignored) {}
+        try {
+            Optional<FactorTaxEntity> factorTaxEntity = factorTaxRepository.findByTaxApiUid(uid);
 
-        return responce;
+            if (factorTaxEntity.isPresent() && responce.result.data.size() > 0) {
+                FactorTaxEntity factor = factorTaxEntity.get();
+                if (responce.result.data.get(0).status.equals("SUCCESS"))
+                    factor.setSuccessesAt(new Date());
+                factor.setTaxApiMessage(responce.result.data.get(0).data.toString());
+                factorTaxRepository.save(factor);
+            }
+        } catch (Exception ignored) {}
+
+        return responce.result.data;
     }
 
 

@@ -1,5 +1,6 @@
 package com.cyancoder.factor.helper;
 
+import com.cyancoder.factor.model.BuyerModel;
 import com.cyancoder.factor.model.request.CreateFactorReqModel;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -53,28 +54,29 @@ public class ExcelHelper<T extends CreateFactorReqModel> {
             while (rows.hasNext()) {
                 Row currentRow = rows.next();
                 // skip header
-                if (rowNumber < 8) {
+                if (rowNumber < 1) {
                     rowNumber++;
                     continue;
                 }
 
                 Iterator<Cell> cellsInRow = currentRow.iterator();
 
-                if (currentRow.getCell(14) == null) {
-                    rowNumber++;
-                    continue;
-                }
-                if (currentRow.getCell(14).getCellType() != CellType.STRING) {
-                    ((XSSFCell) currentRow.getCell(14)).setCellType(CellType.STRING);
-                }
-
-                String num = currentRow.getCell(14).getStringCellValue();
-                if(num.equals("جمع") || num.equals("")) {
-                    rowNumber++;
-                    continue;
-                }
+//                if (currentRow.getCell(14) == null) {
+//                    rowNumber++;
+//                    continue;
+//                }
+//                if (currentRow.getCell(14).getCellType() != CellType.STRING) {
+//                    ((XSSFCell) currentRow.getCell(14)).setCellType(CellType.STRING);
+//                }
+//
+//                String num = currentRow.getCell(14).getStringCellValue();
+//                if(num.equals("جمع") || num.equals("")) {
+//                    rowNumber++;
+//                    continue;
+//                }
 
                 T model = (T) new CreateFactorReqModel();
+                BuyerModel buyer = new BuyerModel();
 
                 int cellIdx = 0;
                 while (cellsInRow.hasNext()) {
@@ -86,33 +88,42 @@ public class ExcelHelper<T extends CreateFactorReqModel> {
                     switch (cellIdx) {
                         case 0:
                             ((XSSFCell) currentCell).setCellType(CellType.STRING);
-                            model.setNote(currentCell.getStringCellValue().replaceAll(",", ""));
+//                            model.setCompanyId(currentCell.getStringCellValue().replaceAll(",", ""));
+                            model.setCompanyId(currentCell.getStringCellValue());
                             break;
 
-                        case 1, 2:
+                        case 1:
                             if (!currentCell.getStringCellValue().equals("")) {
-                                model.setNote(currentCell.getStringCellValue());
+                                model.setCode(currentCell.getStringCellValue());
+                            }
+                            break;
+
+                        case  2:
+                            if (!currentCell.getStringCellValue().equals("")) {
+                                model.setFactorDate(currentCell.getStringCellValue());////////////
                             }
                             break;
 
                         case 3:
                             if (currentCell.getCellType() == CellType.NUMERIC) {
-                                model.setNote(String.valueOf(currentCell.getNumericCellValue()));
-                            } else {
-                                model.setNote(currentCell.getStringCellValue());
+                                buyer.setNationalCode(Long.parseLong(String.valueOf(currentCell.getNumericCellValue())));/////////
+                                model.setBuyer(buyer);
                             }
                             break;
 
                         case 4:
-                            model.setNote(currentCell.getStringCellValue());
+                            buyer.setBuyerType((String.valueOf(currentCell.getNumericCellValue())));/////////
+                            model.setBuyer(buyer);
                             break;
 
                         case 5:
-                            model.setNote(currentCell.getStringCellValue());
+//                            buyer = model.getBuyer();//////////////////
+                            buyer.setPostCode((String.valueOf(currentCell.getNumericCellValue())));/////////
+                            model.setBuyer(buyer);
                             break;
 
                         case 6:
-                            model.setNote(currentCell.getStringCellValue());
+//                            model.setItems(currentCell.getStringCellValue());
                             break;
 
                         case 7:
@@ -151,9 +162,9 @@ public class ExcelHelper<T extends CreateFactorReqModel> {
                             model.setNote(currentCell.getStringCellValue());
                             break;
 
-//                        case 14:
-//                            model.setLoadingDate(currentCell.getStringCellValue());
-//                            break;
+                        case 14:
+                            model.setNote(currentCell.getStringCellValue());
+                            break;
 
                         default:
                             break;

@@ -9,6 +9,7 @@ import com.cyancoder.factor.model.FactorItemModel;
 import com.cyancoder.factor.model.FactorModel;
 import com.cyancoder.factor.model.ProductModel;
 import com.cyancoder.factor.model.request.CreateFactorReqModel;
+import com.cyancoder.factor.model.request.UpdateFactorReqModel;
 import com.cyancoder.factor.repository.FactorItemRepository;
 import com.cyancoder.factor.repository.FactorRepository;
 import com.cyancoder.factor.repository.ProductRepository;
@@ -40,7 +41,6 @@ public class FactorService {
 
 
     public Object addFactor(CreateFactorReqModel createFactorReqModel) throws ParseException {
-
 
 
         String factorDateStr = createFactorReqModel.getFactorDate();   // to consider
@@ -102,10 +102,6 @@ public class FactorService {
 //        factorEntity.setBuyerId(id);
 
 
-
-
-
-
         try {
             FactorEntity factor = factorRepository.save(factorEntity);
             log.info("factorRepository.save: {}", factor);
@@ -163,15 +159,40 @@ public class FactorService {
     }
 
 
+    public Object editFactor(UpdateFactorReqModel updateFactorReqModel)  throws ParseException {
+        FactorEntity factor = factorRepository.findByFactorId(updateFactorReqModel.getFactorId());
+
+        String buyerId = updateFactorReqModel.getBuyer().getBuyerId();
+        String factorDateStr = updateFactorReqModel.getFactorDate();   // to consider
+        SimpleDateFormat fromDateObj = new SimpleDateFormat("yyyy-MM-dd");
+        Date factorDate = fromDateObj.parse(factorDateStr);
+
+        factor.setCode(updateFactorReqModel.getCode());
+        factor.setCompanyId(updateFactorReqModel.getCompanyId());
+        factor.setFactorDate(factorDate);
+        factor.setPayType(updateFactorReqModel.getPayType());
+        factor.setPayed(updateFactorReqModel.getPayed());
+        factor.setState(updateFactorReqModel.getState());
+        factor.setNote(updateFactorReqModel.getNote());
+        factor.setBuyerId(buyerId);
+
+        AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
+                .buyerId(buyerId)
+                .nationalCode(updateFactorReqModel.getBuyer().getNationalCode())
+                .economicCode(updateFactorReqModel.getBuyer().getEconomicCode())
+                .buyerType(updateFactorReqModel.getBuyer().getBuyerType())
+                .tell(updateFactorReqModel.getBuyer().getTell())
+                .address(updateFactorReqModel.getBuyer().getAddress())
+                .postCode(updateFactorReqModel.getBuyer().getPostCode())
+                .cityId(updateFactorReqModel.getBuyer().getCityId())
+                .addNew(updateFactorReqModel.getBuyer().isAddNew())
+                .build();
+
+        return factor;
+    }
 
 
-//    public FactorModel editFactor(FactorModel factorModel){
-//        return new FactorModel();
-//    }
-
-
-
-    public String removeFactor(String factorId){
+    public String removeFactor(String factorId) {
         factorRepository.deleteById(factorId);
         return factorId;
     }

@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-public interface FactorRepository extends JpaRepository<FactorEntity,String> {
+public interface FactorRepository extends JpaRepository<FactorEntity, String> {
 
     List<FactorEntity> findByCompanyIdAndFactorId(String CompanyId, String factorId);
 
@@ -18,7 +18,11 @@ public interface FactorRepository extends JpaRepository<FactorEntity,String> {
     List<FactorEntity> findByCompanyId(String CompanyId);
 
     FactorEntity findByCompanyIdAndFactorIdOrCode(String CompanyId, String factorId, String code);
+
+    FactorEntity findByFactorId(String factorId);
+
     FactorEntity findTopByCompanyIdOrderByFactorIdDesc(String CompanyId);
+
     FactorEntity findTopByCompanyIdOrderByCodeDesc(String CompanyId);
 
 

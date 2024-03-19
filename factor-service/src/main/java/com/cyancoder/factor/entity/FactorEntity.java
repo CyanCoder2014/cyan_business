@@ -5,7 +5,9 @@ import com.cyancoder.factor.model.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Where;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
@@ -15,6 +17,8 @@ import java.util.List;
 @Table(name = "f_factors")
 @Data
 @Entity
+@SQLDelete(sql = "UPDATE f_factors SET deleted = 1 WHERE factor_id=?")
+@Where(clause = "deleted != 1")
 public class FactorEntity {
 
     public FactorEntity(FactorModel factorModel){
@@ -119,4 +123,8 @@ public class FactorEntity {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @Column(name = "deleted")
+    private boolean deleted = Boolean.FALSE;
+
 }

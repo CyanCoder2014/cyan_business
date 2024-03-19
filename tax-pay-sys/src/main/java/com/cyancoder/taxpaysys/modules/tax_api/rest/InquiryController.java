@@ -2,6 +2,7 @@ package com.cyancoder.taxpaysys.modules.tax_api.rest;
 
 
 import com.cyancoder.taxpaysys.modules.tax_api.entity.FactorTaxEntity;
+import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryDataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.inquiry.InquiryResponseModel;
 import com.cyancoder.taxpaysys.modules.tax_api.service.InquiryService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +26,13 @@ public class InquiryController {
 
 
     @GetMapping("/get-by-uid")
-    Object getInquiryByUid(@RequestHeader("UniqueCode")String uniqueCode,
-                           @RequestParam String companyId,
-                           @RequestParam String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    List<InquiryDataModel> getInquiryByUid(@RequestHeader("UniqueCode")String uniqueCode,
+                                           @RequestParam String companyId,
+                                           @RequestParam String uid) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        InquiryResponseModel response = inquiryService.getInquiryByUid(uniqueCode, companyId, uid);
-        return response.successResponse != null ? response.successResponse.result.data  : response;
+        return inquiryService.getInquiryByUid(uniqueCode, companyId, uid);
+//        InquiryResponseModel response = inquiryService.getInquiryByUid(uniqueCode, companyId, uid);
+//        return response.successResponse != null ? response.successResponse.get(0)  : response;
     }
 
     @GetMapping("/get-by-reference")
@@ -39,8 +41,8 @@ public class InquiryController {
                                        @RequestParam String reference
                                        ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        InquiryResponseModel response = inquiryService.getInquiryByReferenceNumber(uniqueCode, companyId, reference);
-        return response.successResponse != null ? response.successResponse.result.data  : response;
+        return inquiryService.getInquiryByReferenceNumber(uniqueCode, companyId, reference);
+//        return response.successResponse != null ? response.successResponse.result.data  : response;
     }
 
 //    @GetMapping("/get-by-time")

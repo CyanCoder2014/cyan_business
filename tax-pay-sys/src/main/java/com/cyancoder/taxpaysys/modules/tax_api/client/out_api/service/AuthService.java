@@ -42,7 +42,7 @@ public class AuthService {
                     header.getString("timestamp"),
                     body));
         } catch (Exception e) {
-            return new AuthResponseModel(0, e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -64,7 +64,7 @@ public class AuthService {
         setCode(uniqueCode);
         setKey(privateKey);
         setToken();
-        if (header != null)
+//        if (header != null) // need to consider !!!!!!!
             header.put("Authorization",Token.getInstance().getToken());
     }
 

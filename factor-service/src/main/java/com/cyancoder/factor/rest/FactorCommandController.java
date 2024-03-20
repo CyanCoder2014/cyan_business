@@ -57,7 +57,7 @@ public class FactorCommandController {
     }
 
 
-    @PostMapping
+    @PostMapping("/import-excel")
     public Object createFactorsWithExcel(@RequestParam("file") MultipartFile file) {
 
 

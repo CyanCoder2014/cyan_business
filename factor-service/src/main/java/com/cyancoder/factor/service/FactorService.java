@@ -18,7 +18,9 @@ import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -38,6 +40,9 @@ public class FactorService {
     private final FactorItemRepository factorItemRepository;
     private final ProductRepository productRepository;
     private final UnitRepository unitRepository;
+
+    private  final Environment env;
+    private  final CommandGateway commandGateway;
 
 
     public Object addFactor(CreateFactorReqModel createFactorReqModel) throws ParseException {
@@ -98,8 +103,8 @@ public class FactorService {
         log.info("temp: {} ", addOrEditBuyerCommand);
 
 
-//        String id = commandGateway.sendAndWait(addOrEditBuyerCommand);
-//        factorEntity.setBuyerId(id);
+        String id = commandGateway.sendAndWait(addOrEditBuyerCommand);
+        factorEntity.setBuyerId(id);
 
 
         try {

@@ -12,7 +12,7 @@ import java.util.List;
 public class InquiryInnerDataModel {
 
 
-    public List<ErrorObject> errors;
+    public List<ErrorObject> error;
     public List<ErrorObject> warning;
 
 }

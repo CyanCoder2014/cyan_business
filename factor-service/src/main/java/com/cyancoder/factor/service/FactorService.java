@@ -15,6 +15,7 @@ import com.cyancoder.factor.repository.FactorRepository;
 import com.cyancoder.factor.repository.ProductRepository;
 import com.cyancoder.factor.repository.UnitRepository;
 import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -165,35 +166,10 @@ public class FactorService {
 
 
     public Object editFactor(UpdateFactorReqModel updateFactorReqModel)  throws ParseException {
-        FactorEntity factor = factorRepository.findByFactorId(updateFactorReqModel.getFactorId());
-
-        String buyerId = updateFactorReqModel.getBuyer().getBuyerId();
-        String factorDateStr = updateFactorReqModel.getFactorDate();   // to consider
-        SimpleDateFormat fromDateObj = new SimpleDateFormat("yyyy-MM-dd");
-        Date factorDate = fromDateObj.parse(factorDateStr);
-
-        factor.setCode(updateFactorReqModel.getCode());
-        factor.setCompanyId(updateFactorReqModel.getCompanyId());
-        factor.setFactorDate(factorDate);
-        factor.setPayType(updateFactorReqModel.getPayType());
-        factor.setPayed(updateFactorReqModel.getPayed());
-        factor.setState(updateFactorReqModel.getState());
-        factor.setNote(updateFactorReqModel.getNote());
-        factor.setBuyerId(buyerId);
-
-        AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
-                .buyerId(buyerId)
-                .nationalCode(updateFactorReqModel.getBuyer().getNationalCode())
-                .economicCode(updateFactorReqModel.getBuyer().getEconomicCode())
-                .buyerType(updateFactorReqModel.getBuyer().getBuyerType())
-                .tell(updateFactorReqModel.getBuyer().getTell())
-                .address(updateFactorReqModel.getBuyer().getAddress())
-                .postCode(updateFactorReqModel.getBuyer().getPostCode())
-                .cityId(updateFactorReqModel.getBuyer().getCityId())
-                .addNew(updateFactorReqModel.getBuyer().isAddNew())
-                .build();
-
-        return factor;
+        factorRepository.deleteById(updateFactorReqModel.getFactorId());
+        ObjectMapper mapper = new ObjectMapper();
+        CreateFactorReqModel createFactorReqModel = mapper.convertValue(updateFactorReqModel, CreateFactorReqModel.class);
+        return this.addFactor(createFactorReqModel);
     }
 
 

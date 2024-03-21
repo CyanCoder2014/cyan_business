@@ -8,13 +8,12 @@ import java.util.List;
 
 @Data
 public class UpdateFactorReqModel {
+
     private String factorId;
-
     private String code;
-
+    private List<FactorItemModel> items;
     private String companyId;
     private BuyerModel buyer;
-
     private String factorDate;
     private String payType;
     private Double payed;

@@ -1,5 +1,7 @@
 package com.cyancoder.factor.service;
 
+import com.cyancoder.factor.client.services_api.entity.FactorTaxEntity;
+import com.cyancoder.factor.client.services_api.service.TaxClientService;
 import com.cyancoder.factor.command.CreateFactorCommand;
 import com.cyancoder.factor.entity.FactorEntity;
 import com.cyancoder.factor.entity.FactorItemEntity;
@@ -9,6 +11,7 @@ import com.cyancoder.factor.model.FactorItemModel;
 import com.cyancoder.factor.model.FactorModel;
 import com.cyancoder.factor.model.ProductModel;
 import com.cyancoder.factor.model.request.CreateFactorReqModel;
+import com.cyancoder.factor.model.request.RequestTaxModel;
 import com.cyancoder.factor.model.request.UpdateFactorReqModel;
 import com.cyancoder.factor.repository.FactorItemRepository;
 import com.cyancoder.factor.repository.FactorRepository;
@@ -44,6 +47,7 @@ public class FactorService {
 
     private  final Environment env;
     private  final CommandGateway commandGateway;
+    private final TaxClientService taxClientService;
 
 
     public Object addFactor(CreateFactorReqModel createFactorReqModel) throws ParseException {
@@ -165,15 +169,26 @@ public class FactorService {
     }
 
 
-    public Object editFactor(UpdateFactorReqModel updateFactorReqModel)  throws ParseException {
-        factorRepository.deleteById(updateFactorReqModel.getFactorId());
+    public Object editFactor(UpdateFactorReqModel updateFactorReqModel) throws Exception {
+        String factorId = updateFactorReqModel.getFactorId();
+
+        List<FactorTaxEntity> factorTaxEntities = taxClientService.getReferences(new RequestTaxModel(factorId));
+        if (!factorTaxEntities.isEmpty()) {
+            throw new Exception("Can not Update Factor!");
+        }
+
+        factorRepository.deleteById(factorId);
         ObjectMapper mapper = new ObjectMapper();
         CreateFactorReqModel createFactorReqModel = mapper.convertValue(updateFactorReqModel, CreateFactorReqModel.class);
         return this.addFactor(createFactorReqModel);
     }
 
 
-    public String removeFactor(String factorId) {
+    public String removeFactor(String factorId) throws Exception {
+        List<FactorTaxEntity> factorTaxEntities = taxClientService.getReferences(new RequestTaxModel(factorId));
+        if (!factorTaxEntities.isEmpty()) {
+            throw new Exception("Can not Remove Factor!");
+        }
         factorRepository.deleteById(factorId);
         return factorId;
     }

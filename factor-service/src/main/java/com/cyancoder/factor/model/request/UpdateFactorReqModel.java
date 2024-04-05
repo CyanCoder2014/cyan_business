@@ -19,4 +19,8 @@ public class UpdateFactorReqModel {
     private Double payed;
     private String state;
     private String note;
+
+    private String type;
+    private String pattern;
+    private String contractId;
 }

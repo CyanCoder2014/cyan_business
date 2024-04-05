@@ -105,6 +105,7 @@ public class FactorService {
             header.setTins(String.valueOf(companyModel.getNationalCode())); // شماره اقتصادی فروشنده
 
             if (factorModel.getPattern().trim().equals("pattern4")) {
+                header.setInp(4);
                 header.setCrn(Integer.valueOf(factorModel.getContractId()));
             }
 
@@ -308,6 +309,7 @@ public class FactorService {
             header.setTins(String.valueOf(companyModel.getNationalCode())); // شماره اقتصادی فروشنده
 
             if (factorModel.getPattern().trim().equals("pattern4")) {
+                header.setInp(4);
                 header.setCrn(Integer.valueOf(factorModel.getContractId()));
             }
 

@@ -99,13 +99,17 @@ public class FactorService {
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
 //            header.setIrtaxid(getTaxId(factorSerial,factor.getFactorDate().toInstant(),sellerEnm)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
-            header.setInp(1); // الگوی صورتحساب
+            header.setInp(1); // الگوی صورتحساب  // ///////////////get from factor // پیمانکاری:4
             header.setIns(1); // موضوع صورتحساب ++++++++++++++++++
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده
             header.setTins(String.valueOf(companyModel.getNationalCode())); // شماره اقتصادی فروشنده
 
+            if (factorModel.getPattern().trim().equals("pattern4")) {
+                header.setCrn(Integer.valueOf(factorModel.getContractId()));
+            }
 
-            //******** buyer **********//
+
+                //******** buyer **********//
             if (!factorModel.getState().trim().equals("type2")){
                 header.setTob(factorModel.getBuyer().getBuyerType().trim().equals("legal") ? 2 : 1);  // نوع شخص خریدار
                 header.setBid(String.valueOf(factorModel.getBuyer().getNationalCode()));  // شناسه ملی خریدار
@@ -303,6 +307,9 @@ public class FactorService {
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده
             header.setTins(String.valueOf(companyModel.getNationalCode())); // شماره اقتصادی فروشنده
 
+            if (factorModel.getPattern().trim().equals("pattern4")) {
+                header.setCrn(Integer.valueOf(factorModel.getContractId()));
+            }
 
             //******** buyer **********//
             if (!factorModel.getState().trim().equals("type2")){

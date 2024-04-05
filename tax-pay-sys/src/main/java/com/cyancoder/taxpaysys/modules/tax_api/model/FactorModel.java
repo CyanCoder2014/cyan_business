@@ -29,4 +29,8 @@ public class FactorModel {
     private String note;
     private Date createdAt;
 
+    private String type;
+    private String pattern;
+    private String contractId;
+
 }

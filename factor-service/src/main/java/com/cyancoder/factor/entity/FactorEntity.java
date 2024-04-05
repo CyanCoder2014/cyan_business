@@ -127,4 +127,12 @@ public class FactorEntity {
     @Column(name = "deleted")
     private boolean deleted = Boolean.FALSE;
 
+
+    private String type;
+
+    private String pattern;
+
+    @Column(name = "contract_id")
+    private String contractId;
+
 }

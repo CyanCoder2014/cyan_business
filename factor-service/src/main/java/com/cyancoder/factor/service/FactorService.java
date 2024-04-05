@@ -67,6 +67,11 @@ public class FactorService {
                 .items(createFactorReqModel.getItems())
                 .companyId(createFactorReqModel.getCompanyId())
                 .buyer(createFactorReqModel.getBuyer())
+
+                .type(createFactorReqModel.getType())
+                .pattern(createFactorReqModel.getPattern())
+                .contractId(createFactorReqModel.getContractId())
+
                 .build();
 
 

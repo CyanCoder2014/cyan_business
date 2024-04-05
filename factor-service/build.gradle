@@ -39,6 +39,9 @@ dependencies {
 //	testImplementation 'io.projectreactor:reactor-test'
 //    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.apache.poi:poi-ooxml:4.1.2'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     implementation project(':generic')
 }

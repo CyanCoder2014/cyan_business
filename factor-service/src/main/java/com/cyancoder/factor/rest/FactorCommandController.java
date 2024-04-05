@@ -47,12 +47,12 @@ public class FactorCommandController {
     }
 
     @PutMapping
-    public Object createFactor(@RequestBody UpdateFactorReqModel updateFactorReqModel) throws ParseException {
+    public Object createFactor(@RequestBody UpdateFactorReqModel updateFactorReqModel) throws Exception {
         return factorService.editFactor(updateFactorReqModel);
     }
 
     @DeleteMapping
-    public Object createFactor(@RequestParam String factorId) {
+    public Object createFactor(@RequestParam String factorId) throws Exception {
         return factorService.removeFactor(factorId);
     }
 

@@ -32,6 +32,7 @@ public class ExcelService {
 
             data.forEach(item -> {
                 try {
+                    factorService.removeFactorByCode(item.getCode());
                     factorService.addFactor(item);
                 } catch (ParseException e) {
                     throw new RuntimeException(e);

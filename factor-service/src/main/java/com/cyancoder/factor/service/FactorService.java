@@ -199,4 +199,8 @@ public class FactorService {
     }
 
 
+    public String removeFactorByCode(String factorCode) {
+        factorRepository.deleteAllByCode(factorCode);
+        return factorCode;
+    }
 }

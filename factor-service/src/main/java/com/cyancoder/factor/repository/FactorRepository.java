@@ -2,6 +2,7 @@ package com.cyancoder.factor.repository;
 
 import com.cyancoder.factor.entity.FactorEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -25,5 +26,6 @@ public interface FactorRepository extends JpaRepository<FactorEntity, String> {
 
     FactorEntity findTopByCompanyIdOrderByCodeDesc(String CompanyId);
 
-
+    @Transactional
+    void deleteAllByCode(String code);
 }

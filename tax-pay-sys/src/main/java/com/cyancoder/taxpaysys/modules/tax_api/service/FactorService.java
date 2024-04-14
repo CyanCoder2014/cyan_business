@@ -38,6 +38,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -73,11 +74,11 @@ public class FactorService {
         List<FactorModel> factorModelList = new ArrayList<>();
         RequestFactorModel requestFactorModel = new RequestFactorModel(companyId);
 //        if (basedOn.equals("factor_code")) {
-            requestFactorModel.setCodeFrom(codeFrom);
-            requestFactorModel.setCodeTo(codeTo);
+        requestFactorModel.setCodeFrom(codeFrom);
+        requestFactorModel.setCodeTo(codeTo);
 //        } else {
-            requestFactorModel.setFromDate(fromDateInput);
-            requestFactorModel.setToDate(toDateInput);
+        requestFactorModel.setFromDate(fromDateInput);
+        requestFactorModel.setToDate(toDateInput);
 //        }
         requestFactorModel.setFactorId(factorId);
         factorModelList = factorClientService.getFactors(requestFactorModel);
@@ -106,16 +107,19 @@ public class FactorService {
 
             if (factorModel.getPattern().trim().equals("pattern4")) {
                 header.setInp(4);
-                header.setCrn(Integer.valueOf(factorModel.getContractId()));
+                header.setCrn(Integer.valueOf(factorModel.getContractId())); // شماره قرارداد
             }
 
 
-                //******** buyer **********//
-            if (!factorModel.getState().trim().equals("type2")){
+            //******** buyer **********//
+            if (!factorModel.getState().trim().equals("type2")) {
                 header.setTob(factorModel.getBuyer().getBuyerType().trim().equals("legal") ? 2 : 1);  // نوع شخص خریدار
                 header.setBid(String.valueOf(factorModel.getBuyer().getNationalCode()));  // شناسه ملی خریدار
-//            header.setTinb(factor.getEconomicCode());  //  شماره اقتصادی خریدار
-                header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
+                if (!factorModel.getBuyer().getBuyerType().trim().equals("legal") && !ObjectUtils.isEmpty(factorModel.getBuyer().getEconomicCode()))
+                    header.setTinb(String.valueOf(factorModel.getBuyer().getEconomicCode()));  //  شماره اقتصادی خریدار
+                else
+                    header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
+
 //            header.setSbc(null);  //    کد شعبه فروشنده
                 header.setBpc(factorModel.getBuyer().getPostCode());  //  کدپستی خریدار
 //            header.setBbc(null);  //    کد شعبه خریدار
@@ -138,20 +142,20 @@ public class FactorService {
                 body.setMu(factorItemModel.getProduct().getUnit().getCode()); // واحد اندازه گیری - کیلو گرم
                 body.setAm(factorItemModel.getAmount()); // مقدار
                 body.setFee(BigDecimal.valueOf(factorItemModel.getPrice())); // مبلع واحد
-                body.setPrdis(BigDecimal.valueOf(Math.round(factorItemModel.getAmount()*factorItemModel.getPrice()))); // need to consider ************ // مبلغ قبل تخفیف
+                body.setPrdis(BigDecimal.valueOf(Math.round(factorItemModel.getAmount() * factorItemModel.getPrice()))); // need to consider ************ // مبلغ قبل تخفیف
                 body.setDis(factorItemModel.getDiscount() == null ? BigDecimal.ZERO : BigDecimal.valueOf(factorItemModel.getDiscount())); // مبلغ تخفیف
-                body.setAdis(BigDecimal.valueOf(Math.round(body.getPrdis().doubleValue()-factorItemModel.getDiscount()))); // need to consider ************ مبلغ بعد تخفیف
-                body.setVra(BigDecimal.valueOf(Math.round(factorItemModel.getTax()*100))); //نرخ مالیات بر ارزش افزوده ***************** /////////////////
-                body.setVam(BigDecimal.valueOf(Math.floor(factorItemModel.getTax()*body.getAdis().doubleValue()))); // مبلع مالیات بر ارزش افزوده
-                body.setTsstam(BigDecimal.valueOf(Math.round(body.getAdis().doubleValue()+body.getVam().doubleValue()))); // مبلغ کل
+                body.setAdis(BigDecimal.valueOf(Math.round(body.getPrdis().doubleValue() - factorItemModel.getDiscount()))); // need to consider ************ مبلغ بعد تخفیف
+                body.setVra(BigDecimal.valueOf(Math.round(factorItemModel.getTax() * 100))); //نرخ مالیات بر ارزش افزوده ***************** /////////////////
+                body.setVam(BigDecimal.valueOf(Math.floor(factorItemModel.getTax() * body.getAdis().doubleValue()))); // مبلع مالیات بر ارزش افزوده
+                body.setTsstam(BigDecimal.valueOf(Math.round(body.getAdis().doubleValue() + body.getVam().doubleValue()))); // مبلغ کل
                 bodyList.add(body);
 
-                header.setTprdis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue())+(Math.round(body.getPrdis().doubleValue()))));// need to consider ************ مجموع مبلغ قبل کسر تخفیف
-                header.setTdis(BigDecimal.valueOf(Math.round(header.getTdis().doubleValue())+(Math.round(factorItemModel.getDiscount()))));// مجموع تخفیفات
-                header.setTadis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue()- header.getTdis().doubleValue()))); // need to consider ************  مجموع مبلغ بعد کسر تخفیف
-                header.setTvam(BigDecimal.valueOf(Math.round(header.getTvam().doubleValue()+body.getVam().doubleValue())));// need to consider ************  مجموع مالیات
+                header.setTprdis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue()) + (Math.round(body.getPrdis().doubleValue()))));// need to consider ************ مجموع مبلغ قبل کسر تخفیف
+                header.setTdis(BigDecimal.valueOf(Math.round(header.getTdis().doubleValue()) + (Math.round(factorItemModel.getDiscount()))));// مجموع تخفیفات
+                header.setTadis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue() - header.getTdis().doubleValue()))); // need to consider ************  مجموع مبلغ بعد کسر تخفیف
+                header.setTvam(BigDecimal.valueOf(Math.round(header.getTvam().doubleValue() + body.getVam().doubleValue())));// need to consider ************  مجموع مالیات
                 header.setTodam(BigDecimal.ZERO); // مجوع سایر عوارض
-                header.setTbill(BigDecimal.valueOf(Math.round(header.getTadis().doubleValue()+header.getTvam().doubleValue())));// need to consider ************ مجموع صورت حساب
+                header.setTbill(BigDecimal.valueOf(Math.round(header.getTadis().doubleValue() + header.getTvam().doubleValue())));// need to consider ************ مجموع صورت حساب
             });
 
 
@@ -218,10 +222,10 @@ public class FactorService {
 
         String companyId = companyModel.getCompanyId();
 
-        if (!companyModel.getUniqueCode().equals(Encrypt.hash(uniqueCode))){
-            log.warn("companyModel.getUniqueCode() : {}",companyModel.getUniqueCode());
-            log.warn("uniqueCode : {}",uniqueCode);
-            log.warn("Encrypt.hash(uniqueCode) : {}",Encrypt.hash(uniqueCode));
+        if (!companyModel.getUniqueCode().equals(Encrypt.hash(uniqueCode))) {
+            log.warn("companyModel.getUniqueCode() : {}", companyModel.getUniqueCode());
+            log.warn("uniqueCode : {}", uniqueCode);
+            log.warn("Encrypt.hash(uniqueCode) : {}", Encrypt.hash(uniqueCode));
             throw new Exception("uniqueCode or companyId is not corrected!");
 
         }
@@ -267,11 +271,9 @@ public class FactorService {
     }
 
 
-
-
     public Object factorCorrection(String uniqueCode, String basedOn, String codeFrom, String codeTo,
-                                     String fromDateInput, String toDateInput, String factorId,
-                                     String companyId) throws Exception {
+                                   String fromDateInput, String toDateInput, String factorId,
+                                   String companyId) throws Exception {
 
 
         CompanyModel companyModel = companyClientService.getCompany(companyId, uniqueCode);
@@ -297,12 +299,12 @@ public class FactorService {
             Long factorSerial = Long.valueOf(factorModel.getCode());
 
             InvoiceHeaderDto header = new InvoiceHeaderDto();
-            header.setTaxid(getTaxId(factorSerial+1000000000L,factorModel.getFactorDate().toInstant(),uniqueCode)); // شماره منحصر به فرد مالیاتی
+            header.setTaxid(getTaxId(factorSerial + 1000000000L, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
             header.setIndatim(factorModel.getFactorDate().toInstant().toEpochMilli()); // تاریخ و زمان صدور
             header.setIndati2m(factorModel.getCreatedAt().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
-            header.setIrtaxid(getTaxId(factorSerial,factorModel.getFactorDate().toInstant(),uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
+            header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
 //            header.setInp(1); // الگوی صورتحساب
             header.setIns(2); // موضوع صورتحساب ++++++++++++++++++
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده
@@ -310,15 +312,17 @@ public class FactorService {
 
             if (factorModel.getPattern().trim().equals("pattern4")) {
                 header.setInp(4);
-                header.setCrn(Integer.valueOf(factorModel.getContractId()));
+                header.setCrn(Integer.valueOf(factorModel.getContractId())); // شماره قرارداد
             }
 
             //******** buyer **********//
-            if (!factorModel.getState().trim().equals("type2")){
+            if (!factorModel.getState().trim().equals("type2")) {
                 header.setTob(factorModel.getBuyer().getBuyerType().trim().equals("legal") ? 2 : 1);  // نوع شخص خریدار
                 header.setBid(String.valueOf(factorModel.getBuyer().getNationalCode()));  // شناسه ملی خریدار
-//            header.setTinb(factor.getEconomicCode());  //  شماره اقتصادی خریدار
-                header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
+                if (!factorModel.getBuyer().getBuyerType().trim().equals("legal") && !ObjectUtils.isEmpty(factorModel.getBuyer().getEconomicCode()))
+                    header.setTinb(String.valueOf(factorModel.getBuyer().getEconomicCode()));  //  شماره اقتصادی خریدار
+                else
+                    header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
 //            header.setSbc(null);  //    کد شعبه فروشنده
                 header.setBpc(factorModel.getBuyer().getPostCode());  //  کدپستی خریدار
 //            header.setBbc(null);  //    کد شعبه خریدار
@@ -341,20 +345,20 @@ public class FactorService {
                 body.setMu(factorItemModel.getProduct().getUnit().getCode()); // واحد اندازه گیری - کیلو گرم
                 body.setAm(factorItemModel.getAmount()); // مقدار
                 body.setFee(BigDecimal.valueOf(factorItemModel.getPrice())); // مبلع واحد
-                body.setPrdis(BigDecimal.valueOf(Math.round(factorItemModel.getAmount()*factorItemModel.getPrice()))); // need to consider ************ // مبلغ قبل تخفیف
+                body.setPrdis(BigDecimal.valueOf(Math.round(factorItemModel.getAmount() * factorItemModel.getPrice()))); // need to consider ************ // مبلغ قبل تخفیف
                 body.setDis(factorItemModel.getDiscount() == null ? BigDecimal.ZERO : BigDecimal.valueOf(factorItemModel.getDiscount())); // مبلغ تخفیف
-                body.setAdis(BigDecimal.valueOf(Math.round(body.getPrdis().doubleValue()-factorItemModel.getDiscount()))); // need to consider ************ مبلغ بعد تخفیف
-                body.setVra(BigDecimal.valueOf(Math.round(factorItemModel.getTax()*100))); //نرخ مالیات بر ارزش افزوده ***************** /////////////////
-                body.setVam(BigDecimal.valueOf(Math.floor(factorItemModel.getTax()*body.getAdis().doubleValue()))); // مبلع مالیات بر ارزش افزوده
-                body.setTsstam(BigDecimal.valueOf(Math.round(body.getAdis().doubleValue()+body.getVam().doubleValue()))); // مبلغ کل
+                body.setAdis(BigDecimal.valueOf(Math.round(body.getPrdis().doubleValue() - factorItemModel.getDiscount()))); // need to consider ************ مبلغ بعد تخفیف
+                body.setVra(BigDecimal.valueOf(Math.round(factorItemModel.getTax() * 100))); //نرخ مالیات بر ارزش افزوده ***************** /////////////////
+                body.setVam(BigDecimal.valueOf(Math.floor(factorItemModel.getTax() * body.getAdis().doubleValue()))); // مبلع مالیات بر ارزش افزوده
+                body.setTsstam(BigDecimal.valueOf(Math.round(body.getAdis().doubleValue() + body.getVam().doubleValue()))); // مبلغ کل
                 bodyList.add(body);
 
-                header.setTprdis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue())+(Math.round(body.getPrdis().doubleValue()))));// need to consider ************ مجموع مبلغ قبل کسر تخفیف
-                header.setTdis(BigDecimal.valueOf(Math.round(header.getTdis().doubleValue())+(Math.round(factorItemModel.getDiscount()))));// مجموع تخفیفات
-                header.setTadis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue()- header.getTdis().doubleValue()))); // need to consider ************  مجموع مبلغ بعد کسر تخفیف
-                header.setTvam(BigDecimal.valueOf(Math.round(header.getTvam().doubleValue()+body.getVam().doubleValue())));// need to consider ************  مجموع مالیات
+                header.setTprdis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue()) + (Math.round(body.getPrdis().doubleValue()))));// need to consider ************ مجموع مبلغ قبل کسر تخفیف
+                header.setTdis(BigDecimal.valueOf(Math.round(header.getTdis().doubleValue()) + (Math.round(factorItemModel.getDiscount()))));// مجموع تخفیفات
+                header.setTadis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue() - header.getTdis().doubleValue()))); // need to consider ************  مجموع مبلغ بعد کسر تخفیف
+                header.setTvam(BigDecimal.valueOf(Math.round(header.getTvam().doubleValue() + body.getVam().doubleValue())));// need to consider ************  مجموع مالیات
                 header.setTodam(BigDecimal.ZERO); // مجوع سایر عوارض
-                header.setTbill(BigDecimal.valueOf(Math.round(header.getTadis().doubleValue()+header.getTvam().doubleValue())));// need to consider ************ مجموع صورت حساب
+                header.setTbill(BigDecimal.valueOf(Math.round(header.getTadis().doubleValue() + header.getTvam().doubleValue())));// need to consider ************ مجموع صورت حساب
             });
 
 
@@ -416,13 +420,9 @@ public class FactorService {
     }
 
 
-
-
-
-
     public Object factorCancellation(String uniqueCode, String basedOn, String codeFrom, String codeTo,
-                                   String fromDateInput, String toDateInput, String factorId,
-                                   String companyId) throws Exception {
+                                     String fromDateInput, String toDateInput, String factorId,
+                                     String companyId) throws Exception {
 
 
         CompanyModel companyModel = companyClientService.getCompany(companyId, uniqueCode);
@@ -448,12 +448,12 @@ public class FactorService {
             Long factorSerial = Long.valueOf(factorModel.getCode());
 
             InvoiceHeaderDto header = new InvoiceHeaderDto();
-            header.setTaxid(getTaxId(factorSerial+2000000000L,factorModel.getFactorDate().toInstant(),uniqueCode)); // شماره منحصر به فرد مالیاتی
+            header.setTaxid(getTaxId(factorSerial + 2000000000L, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
             header.setIndatim(factorModel.getFactorDate().toInstant().toEpochMilli()); // تاریخ و زمان صدور
             header.setIndati2m(factorModel.getCreatedAt().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
-            header.setIrtaxid(getTaxId(factorSerial,factorModel.getFactorDate().toInstant(),uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
+            header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
             header.setInp(1); // الگوی صورتحساب
             header.setIns(3); // موضوع صورتحساب ++++++++++++++++++
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده
@@ -461,12 +461,14 @@ public class FactorService {
 
 
             //******** buyer **********//
-            if (!factorModel.getState().trim().equals("type2")){
+            if (!factorModel.getState().trim().equals("type2")) {
                 header.setTob(factorModel.getBuyer().getBuyerType().trim().equals("legal") ? 2 : 1);  // نوع شخص خریدار
                 header.setBid(String.valueOf(factorModel.getBuyer().getNationalCode()));  // شناسه ملی خریدار
-//            header.setTinb(factor.getEconomicCode());  //  شماره اقتصادی خریدار
-                header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
-//            header.setSbc(null);  //    کد شعبه فروشنده
+                if (!factorModel.getBuyer().getBuyerType().trim().equals("legal") && !ObjectUtils.isEmpty(factorModel.getBuyer().getEconomicCode()))
+                    header.setTinb(String.valueOf(factorModel.getBuyer().getEconomicCode()));  //  شماره اقتصادی خریدار
+                else
+                    header.setTinb(String.valueOf(factorModel.getBuyer().getNationalCode()));  //  شماره اقتصادی خریدار
+                //            header.setSbc(null);  //    کد شعبه فروشنده
                 header.setBpc(factorModel.getBuyer().getPostCode());  //  کدپستی خریدار
 //            header.setBbc(null);  //    کد شعبه خریدار
             }
@@ -488,20 +490,20 @@ public class FactorService {
                 body.setMu(factorItemModel.getProduct().getUnit().getCode()); // واحد اندازه گیری - کیلو گرم
                 body.setAm(factorItemModel.getAmount()); // مقدار
                 body.setFee(BigDecimal.valueOf(factorItemModel.getPrice())); // مبلع واحد
-                body.setPrdis(BigDecimal.valueOf(Math.round(factorItemModel.getAmount()*factorItemModel.getPrice()))); // need to consider ************ // مبلغ قبل تخفیف
+                body.setPrdis(BigDecimal.valueOf(Math.round(factorItemModel.getAmount() * factorItemModel.getPrice()))); // need to consider ************ // مبلغ قبل تخفیف
                 body.setDis(factorItemModel.getDiscount() == null ? BigDecimal.ZERO : BigDecimal.valueOf(factorItemModel.getDiscount())); // مبلغ تخفیف
-                body.setAdis(BigDecimal.valueOf(Math.round(body.getPrdis().doubleValue()-factorItemModel.getDiscount()))); // need to consider ************ مبلغ بعد تخفیف
-                body.setVra(BigDecimal.valueOf(Math.round(factorItemModel.getTax()*100))); //نرخ مالیات بر ارزش افزوده ***************** /////////////////
-                body.setVam(BigDecimal.valueOf(Math.floor(factorItemModel.getTax()*body.getAdis().doubleValue()))); // مبلع مالیات بر ارزش افزوده
-                body.setTsstam(BigDecimal.valueOf(Math.round(body.getAdis().doubleValue()+body.getVam().doubleValue()))); // مبلغ کل
+                body.setAdis(BigDecimal.valueOf(Math.round(body.getPrdis().doubleValue() - factorItemModel.getDiscount()))); // need to consider ************ مبلغ بعد تخفیف
+                body.setVra(BigDecimal.valueOf(Math.round(factorItemModel.getTax() * 100))); //نرخ مالیات بر ارزش افزوده ***************** /////////////////
+                body.setVam(BigDecimal.valueOf(Math.floor(factorItemModel.getTax() * body.getAdis().doubleValue()))); // مبلع مالیات بر ارزش افزوده
+                body.setTsstam(BigDecimal.valueOf(Math.round(body.getAdis().doubleValue() + body.getVam().doubleValue()))); // مبلغ کل
                 bodyList.add(body);
 
-                header.setTprdis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue())+(Math.round(body.getPrdis().doubleValue()))));// need to consider ************ مجموع مبلغ قبل کسر تخفیف
-                header.setTdis(BigDecimal.valueOf(Math.round(header.getTdis().doubleValue())+(Math.round(factorItemModel.getDiscount()))));// مجموع تخفیفات
-                header.setTadis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue()- header.getTdis().doubleValue()))); // need to consider ************  مجموع مبلغ بعد کسر تخفیف
-                header.setTvam(BigDecimal.valueOf(Math.round(header.getTvam().doubleValue()+body.getVam().doubleValue())));// need to consider ************  مجموع مالیات
+                header.setTprdis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue()) + (Math.round(body.getPrdis().doubleValue()))));// need to consider ************ مجموع مبلغ قبل کسر تخفیف
+                header.setTdis(BigDecimal.valueOf(Math.round(header.getTdis().doubleValue()) + (Math.round(factorItemModel.getDiscount()))));// مجموع تخفیفات
+                header.setTadis(BigDecimal.valueOf(Math.round(header.getTprdis().doubleValue() - header.getTdis().doubleValue()))); // need to consider ************  مجموع مبلغ بعد کسر تخفیف
+                header.setTvam(BigDecimal.valueOf(Math.round(header.getTvam().doubleValue() + body.getVam().doubleValue())));// need to consider ************  مجموع مالیات
                 header.setTodam(BigDecimal.ZERO); // مجوع سایر عوارض
-                header.setTbill(BigDecimal.valueOf(Math.round(header.getTadis().doubleValue()+header.getTvam().doubleValue())));// need to consider ************ مجموع صورت حساب
+                header.setTbill(BigDecimal.valueOf(Math.round(header.getTadis().doubleValue() + header.getTvam().doubleValue())));// need to consider ************ مجموع صورت حساب
             });
 
 
@@ -561,13 +563,6 @@ public class FactorService {
 
         return responseModel;
     }
-
-
-
-
-
-
-
 
 
 }

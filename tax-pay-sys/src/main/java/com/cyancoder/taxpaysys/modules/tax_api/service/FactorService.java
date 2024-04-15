@@ -105,7 +105,7 @@ public class FactorService {
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده
             header.setTins(String.valueOf(companyModel.getNationalCode())); // شماره اقتصادی فروشنده
 
-            if (factorModel.getPattern().trim().equals("pattern4")) {
+            if (!ObjectUtils.isEmpty(factorModel.getPattern()) && factorModel.getPattern().equals("pattern4")) {
                 header.setInp(4);
                 header.setCrn(Integer.valueOf(factorModel.getContractId())); // شماره قرارداد
             }
@@ -310,7 +310,7 @@ public class FactorService {
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده
             header.setTins(String.valueOf(companyModel.getNationalCode())); // شماره اقتصادی فروشنده
 
-            if (factorModel.getPattern().trim().equals("pattern4")) {
+            if (!ObjectUtils.isEmpty(factorModel.getPattern()) && factorModel.getPattern().equals("pattern4")) {
                 header.setInp(4);
                 header.setCrn(Integer.valueOf(factorModel.getContractId())); // شماره قرارداد
             }
@@ -459,6 +459,10 @@ public class FactorService {
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده
             header.setTins(String.valueOf(companyModel.getNationalCode())); // شماره اقتصادی فروشنده
 
+            if (!ObjectUtils.isEmpty(factorModel.getPattern()) && factorModel.getPattern().equals("pattern4")) {
+                header.setInp(4);
+                header.setCrn(Integer.valueOf(factorModel.getContractId())); // شماره قرارداد
+            }
 
             //******** buyer **********//
             if (!factorModel.getState().trim().equals("type2")) {

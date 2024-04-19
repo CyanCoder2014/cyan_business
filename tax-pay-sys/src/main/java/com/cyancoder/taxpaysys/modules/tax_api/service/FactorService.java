@@ -62,7 +62,7 @@ public class FactorService {
 
     private TaxApi taxApi;
 
-    public Object getFactorsToSubmit(String uniqueCode, String basedOn, String codeFrom, String codeTo,
+    public List<FactorTaxEntity> getFactorsToSubmit(String uniqueCode, String basedOn, String codeFrom, String codeTo,
                                      String fromDateInput, String toDateInput, String factorId,
                                      String companyId) throws Exception {
 
@@ -188,32 +188,36 @@ public class FactorService {
         log.info("responseModel: {}", responseModel);
 
 
+        List<FactorTaxEntity> factorTaxEntities = new ArrayList<>();
         int length = 0;
         if (responseModel != null && responseModel.getResult() != null) {
             length = responseModel.getResult().size();
             IntStream.range(0, length).forEach(i -> {
+                try {
+                    String FactorCode = invoiceList.get(i).getHeader().getInno();
+                    requestFactorModel.setCodeFrom(FactorCode);
+                    requestFactorModel.setCodeTo(FactorCode);
+                    List<FactorModel> factorModels = factorClientService.getFactors(requestFactorModel);
+                    FactorTaxEntity factor = new FactorTaxEntity();//////////////////////factors.get(0);
 
-                String FactorCode = invoiceList.get(i).getHeader().getInno();
-                requestFactorModel.setCodeFrom(FactorCode);
-                requestFactorModel.setCodeTo(FactorCode);
-                List<FactorModel> factorModels = factorClientService.getFactors(requestFactorModel);
-                FactorTaxEntity factor = new FactorTaxEntity();//////////////////////factors.get(0);
+                    factor.setFactorTaxId(UUID.randomUUID().toString());
+                    factor.setFactorId(factorModels.get(0).getFactorId());/////////
+                    factor.setTaxApiUid(responseModel.getResult().get(i).getUid());
+                    factor.setTaxApiReference(responseModel.getResult().get(i).getReferenceNumber());
+                    factor.setTaxApiState("Sent");
+                    factor.setTaxApiMessage(null);
+                    factor.setTaxApiData(invoiceList.get(i).toString());
 
-                factor.setFactorTaxId(UUID.randomUUID().toString());
-                factor.setFactorId(factorModels.get(i).getFactorId());
-                factor.setTaxApiUid(responseModel.getResult().get(i).getUid());
-                factor.setTaxApiReference(responseModel.getResult().get(i).getReferenceNumber());
-                factor.setTaxApiState("Sent");
-                factor.setTaxApiMessage(null);
-                factor.setTaxApiData(invoiceList.get(i).toString());
-
-                log.info("factor-u: {}", factor);
-
-                factorTaxRepository.save(factor);
+                    log.info("factor-u: {}", factor);
+                    factorTaxEntities.add(factorTaxRepository.save(factor));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             });
+
         }
 
-        return responseModel;
+        return factorTaxEntities;
     }
 
 

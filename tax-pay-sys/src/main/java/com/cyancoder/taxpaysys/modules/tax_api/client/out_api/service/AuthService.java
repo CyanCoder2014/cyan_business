@@ -49,6 +49,7 @@ public class AuthService {
 
     public String setToken() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
+        //////// if uniqecode is same or token is working (or set time)
         AuthResponseModel authResponseModel = getToken(uniqueCode);
         log.warn("AuthService -> setToken authResponseModel: {}", authResponseModel.successResponse);
         Token

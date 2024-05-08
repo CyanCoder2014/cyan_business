@@ -28,4 +28,6 @@ CREATE TABLE if not exists `f_factors` (
 ALTER TABLE `f_factors`
   ADD KEY if not exists `f_factors_factor_id_index` (`factor_id`),
   ADD KEY if not exists `f_factors_buyer_id_index` (`buyer_id`),
-  ADD KEY if not exists `f_factors_company_id_index` (`company_id`)
+  ADD KEY if not exists `f_factors_company_id_index` (`company_id`);
+
+--  ALTER TABLE `f_factors` ADD UNIQUE `unique_code_company_index`(`code`, `company_id`);

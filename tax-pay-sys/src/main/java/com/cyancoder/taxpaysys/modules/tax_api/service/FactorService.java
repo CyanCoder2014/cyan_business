@@ -35,6 +35,7 @@ import com.cyancoder.taxpaysys.util.Encrypt;
 import com.cyancoder.taxpaysys.util.KeyUtil;
 import com.cyancoder.taxpaysys.util.TaxUtils;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -179,7 +180,7 @@ public class FactorService {
 
 
         if (invoiceList.size() == 0)
-            throw new Exception("فاکتوری جهت ارسال یافت نشد");
+            throw new BadRequestException("فاکتوری جهت ارسال یافت نشد");
 
 
         AsyncResponseModel responseModel =

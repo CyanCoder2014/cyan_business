@@ -10,11 +10,9 @@ public class TokenService {
     @Cacheable(cacheManager = "cacheManager", cacheNames = "default")
     public String getToken(){
 
-
-
+        // todo: implement method...
 
         return null;
-
     }
 
 

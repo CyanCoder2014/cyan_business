@@ -10,6 +10,7 @@ import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.auth.AuthResponseMo
 import com.cyancoder.taxpaysys.util.KeyUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class AuthService {
     private String uniqueCode = null;
     private String privateKey = null;
 
+    @Cacheable(cacheManager = "cacheManager", cacheNames = "default")
     public AuthResponseModel getToken(String uniqueCode) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         Random rnd = new Random();

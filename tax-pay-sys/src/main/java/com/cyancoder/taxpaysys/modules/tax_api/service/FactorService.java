@@ -310,7 +310,7 @@ public class FactorService {
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
             header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
-//            header.setInp(1); // الگوی صورتحساب
+            header.setInp(1); // الگوی صورتحساب
             header.setIns(2); // موضوع صورتحساب ++++++++++++++++++
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده
             header.setTins(String.valueOf(companyModel.getNationalCode())); // شماره اقتصادی فروشنده
@@ -409,6 +409,8 @@ public class FactorService {
 
                 factor.setFactorTaxId(UUID.randomUUID().toString());
                 factor.setFactorId(factorModels.get(i).getFactorId());
+                factor.setTaxApiUid(responseModel.getResult().get(i).getUid());
+                factor.setTaxApiReference(responseModel.getResult().get(i).getReferenceNumber());
                 factor.setTaxApiCorrectionUid(responseModel.getResult().get(i).getUid());
                 factor.setTaxApiCorrectionReference(responseModel.getResult().get(i).getReferenceNumber());
                 factor.setTaxApiState("Correction");
@@ -558,6 +560,8 @@ public class FactorService {
 
                 factor.setFactorTaxId(UUID.randomUUID().toString());
                 factor.setFactorId(factorModels.get(i).getFactorId());
+                factor.setTaxApiUid(responseModel.getResult().get(i).getUid());
+                factor.setTaxApiReference(responseModel.getResult().get(i).getReferenceNumber());
                 factor.setTaxApiCancellationUid(responseModel.getResult().get(i).getUid());
                 factor.setTaxApiCancellationReference(responseModel.getResult().get(i).getReferenceNumber());
                 factor.setTaxApiState("Cancel");

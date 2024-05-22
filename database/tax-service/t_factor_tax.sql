@@ -5,7 +5,7 @@ CREATE TABLE if not exists `t_factor_tax` (
                                          factor_tax_id varchar(36) NOT NULL UNIQUE,
                                          factor_id varchar(128) NOT NULL,
 
-                                         tax_api_uid varchar(128) NOT NULL,
+                                         tax_api_uid varchar(128) NULL DEFAULT NULL,
                                          tax_api_reference varchar(128) NULL DEFAULT NULL,
 
                                          successed_at timestamp NULL DEFAULT NULL,

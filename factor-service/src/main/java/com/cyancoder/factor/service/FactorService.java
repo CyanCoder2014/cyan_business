@@ -177,10 +177,10 @@ public class FactorService {
     public Object editFactor(UpdateFactorReqModel updateFactorReqModel) throws Exception {
         String factorId = updateFactorReqModel.getFactorId();
 
-        List<FactorTaxEntity> factorTaxEntities = taxClientService.getReferences(new RequestTaxModel(factorId));
-        if (!factorTaxEntities.isEmpty()) {
-            throw new Exception("Can not Update Factor!");
-        }
+//        List<FactorTaxEntity> factorTaxEntities = taxClientService.getReferences(new RequestTaxModel(factorId));
+//        if (!factorTaxEntities.isEmpty()) {
+//            throw new Exception("Can not Update Factor!");
+//        }
 
         factorRepository.deleteById(factorId);
         ObjectMapper mapper = new ObjectMapper();

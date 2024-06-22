@@ -26,6 +26,7 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -177,10 +178,10 @@ public class FactorService {
     public Object editFactor(UpdateFactorReqModel updateFactorReqModel) throws Exception {
         String factorId = updateFactorReqModel.getFactorId();
 
-//        List<FactorTaxEntity> factorTaxEntities = taxClientService.getReferences(new RequestTaxModel(factorId));
-//        if (!factorTaxEntities.isEmpty()) {
-//            throw new Exception("Can not Update Factor!");
-//        }
+        List<FactorTaxEntity> factorTaxEntities = taxClientService.getReferences(new RequestTaxModel(factorId));
+        if (!factorTaxEntities.stream().filter(i-> !ObjectUtils.isEmpty(i.getSuccessesAt())).toList().isEmpty()) {
+            throw new Exception("Can not Update Factor!");
+        }
 
         factorRepository.deleteById(factorId);
         ObjectMapper mapper = new ObjectMapper();
@@ -191,7 +192,8 @@ public class FactorService {
 
     public String removeFactor(String factorId) throws Exception {
         List<FactorTaxEntity> factorTaxEntities = taxClientService.getReferences(new RequestTaxModel(factorId));
-        if (!factorTaxEntities.isEmpty()) {
+
+        if (!factorTaxEntities.stream().filter(i-> !ObjectUtils.isEmpty(i.getSuccessesAt())).toList().isEmpty()) {
             throw new Exception("Can not Remove Factor!");
         }
         factorRepository.deleteById(factorId);

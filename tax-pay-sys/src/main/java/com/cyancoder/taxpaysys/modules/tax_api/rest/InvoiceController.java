@@ -106,8 +106,8 @@ public class InvoiceController {
                              @RequestParam String companyId
     ) throws Exception {
 
-        return factorService.factorCancellation(uniqueCode, null, null, null,
-                null, null, factorId, companyId);
+        return factorService.factorCancellation(uniqueCode, "", "", "",
+                "", "", factorId, companyId);
     }
 
 

@@ -7,10 +7,12 @@ import com.cyancoder.taxpaysys.modules.tax_api.model.Header;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.auth.AuthRequestDataModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.RequestModel;
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.auth.AuthResponseModel;
+import com.cyancoder.taxpaysys.util.Encrypt;
 import com.cyancoder.taxpaysys.util.KeyUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -27,11 +30,12 @@ public class AuthService {
 
     private final AuthTaxClientController authTaxClientController;
 
+    private final StringRedisTemplate redisTemplate;
 
     private String uniqueCode = null;
     private String privateKey = null;
 
-    @Cacheable(cacheManager = "cacheManager", cacheNames = "default")
+//    @Cacheable(cacheManager = "cacheManager", cacheNames = "default")
     public AuthResponseModel getToken(String uniqueCode) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         Random rnd = new Random();
@@ -51,14 +55,24 @@ public class AuthService {
 
     public String setToken() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
-        //////// if uniqecode is same or token is working (or set time)
+        String encryptedToken = redisTemplate.opsForValue().get(uniqueCode);
+
+        if (encryptedToken != null) {
+            String decryptedToken = Encrypt.decrypt(encryptedToken,uniqueCode);
+            return decryptedToken;
+        }
+
         AuthResponseModel authResponseModel = getToken(uniqueCode);
         log.warn("AuthService -> setToken authResponseModel: {}", authResponseModel.successResponse);
         Token
-             .getInstance()
-             .setToken(authResponseModel.successResponse != null ? authResponseModel.successResponse.result.data.token : "");
+                .getInstance()
+                .setToken(authResponseModel.successResponse != null ? authResponseModel.successResponse.result.data.token : "");
+        String newToken = Token.getInstance().getToken();
 
-        return Token.getInstance().getToken();
+        String encryptedNewToken = Encrypt.encrypt(newToken,uniqueCode);
+        redisTemplate.opsForValue().set(uniqueCode, encryptedNewToken, 60, TimeUnit.SECONDS);
+
+        return newToken;
     }
 
 

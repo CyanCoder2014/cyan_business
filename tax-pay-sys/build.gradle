@@ -78,6 +78,8 @@ dependencies {
 //	implementation 'com.fasterxml.jackson.core:jackson-core:2.5.2'
 
 
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.2.0'
+
 
 }
 

@@ -171,7 +171,7 @@ public class InvoiceHeaderDto {
     /**
      * contractRegistrationNumber
      */
-    private Long crn;
+    private String crn;
 
 
     public Long getIndati2m() {
@@ -430,11 +430,11 @@ public class InvoiceHeaderDto {
         this.bpn = bpn;
     }
 
-    public Long getCrn() {
+    public String getCrn() {
         return crn;
     }
 
-    public void setCrn(Long crn) {
+    public void setCrn(String crn) {
         this.crn = crn;
     }
 }

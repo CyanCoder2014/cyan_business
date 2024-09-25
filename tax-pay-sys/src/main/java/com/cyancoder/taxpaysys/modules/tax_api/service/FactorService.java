@@ -108,7 +108,7 @@ public class FactorService {
 
             if (!ObjectUtils.isEmpty(factorModel.getPattern()) && factorModel.getPattern().equals("pattern4")) {
                 header.setInp(4);
-                header.setCrn(Long.valueOf(factorModel.getContractId())); // شماره قرارداد
+                header.setCrn(String.valueOf(factorModel.getContractId())); // شماره قرارداد
             }
 
 
@@ -317,7 +317,7 @@ public class FactorService {
 
             if (!ObjectUtils.isEmpty(factorModel.getPattern()) && factorModel.getPattern().equals("pattern4")) {
                 header.setInp(4);
-                header.setCrn(Long.valueOf(factorModel.getContractId())); // شماره قرارداد
+                header.setCrn(String.valueOf(factorModel.getContractId())); // شماره قرارداد
             }
 
             //******** buyer **********//
@@ -468,7 +468,7 @@ public class FactorService {
 
             if (!ObjectUtils.isEmpty(factorModel.getPattern()) && factorModel.getPattern().equals("pattern4")) {
                 header.setInp(4);
-                header.setCrn(Long.valueOf(factorModel.getContractId())); // شماره قرارداد
+                header.setCrn(String.valueOf(factorModel.getContractId())); // شماره قرارداد
             }
 
             //******** buyer **********//

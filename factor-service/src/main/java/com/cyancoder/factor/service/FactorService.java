@@ -216,10 +216,22 @@ public class FactorService {
                 Sort.by(PageableModel.SortOrder.ASC.equals(pageableModel.sortOrder()) ? Sort.Direction.ASC: Sort.Direction.DESC ,
                         pageableModel.sortKey()));
 
-        return factorRepository.findByCompanyIdAndCreatedAtBetweenAndCodeBetween(filter.companyId(),
-                filter.startDate(),  filter.endDate(),
-                 filter.codeFrom(),  filter.codeTo(),
-                pageable);
+
+        Page<FactorEntity> pageableFactors = null;
+
+        if (!ObjectUtils.isEmpty(filter.codeFrom()) && !ObjectUtils.isEmpty(filter.codeTo()))
+            pageableFactors = factorRepository.findByCompanyIdAndCodeBetween(filter.companyId(),
+                    filter.codeFrom(),filter.codeTo(),pageable);
+        else
+            pageableFactors = factorRepository.findByCompanyIdAndCreatedAtBetween(filter.companyId(),
+                    filter.startDate(),filter.endDate(),pageable);
+
+        return pageableFactors;
+
+//        return factorRepository.findByCompanyIdAndCreatedAtBetweenAndCodeBetween(filter.companyId(),
+//                filter.startDate(),  filter.endDate(),
+//                 filter.codeFrom(),  filter.codeTo(),
+//                pageable);
     }
 
 }

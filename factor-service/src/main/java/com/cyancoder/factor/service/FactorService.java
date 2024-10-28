@@ -218,13 +218,16 @@ public class FactorService {
 
 
         Page<FactorEntity> pageableFactors = null;
+        log.info("filter::: {}", filter);
 
         if (!ObjectUtils.isEmpty(filter.codeFrom()) && !ObjectUtils.isEmpty(filter.codeTo()))
             pageableFactors = factorRepository.findByCompanyIdAndCodeBetween(filter.companyId(),
                     filter.codeFrom(),filter.codeTo(),pageable);
-        else
+        else if (!ObjectUtils.isEmpty(filter.startDate()) && !ObjectUtils.isEmpty(filter.endDate()))
             pageableFactors = factorRepository.findByCompanyIdAndCreatedAtBetween(filter.companyId(),
                     filter.startDate(),filter.endDate(),pageable);
+        else
+            pageableFactors = factorRepository.findByCompanyId(filter.companyId(), pageable);
 
         return pageableFactors;
 

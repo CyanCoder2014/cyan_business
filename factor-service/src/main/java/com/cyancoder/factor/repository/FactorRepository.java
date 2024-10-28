@@ -44,4 +44,7 @@ public interface FactorRepository extends JpaRepository<FactorEntity, String> {
     Page<FactorEntity> findByCompanyIdAndCodeBetween(String CompanyId, String codeFrom, String codeTo,
                                                      Pageable pageable);
 
+    Page<FactorEntity> findByCompanyId(String CompanyId, Pageable pageable);
+
+
 }

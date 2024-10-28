@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/v2/api/factor-service/")
+@RequestMapping("/v2/api/factor-service/factors")
 @RequiredArgsConstructor
 @Slf4j
 public class FactorQueryController {
@@ -36,7 +36,7 @@ public class FactorQueryController {
     private  final FactorService factorService;
 
 
-    @GetMapping("factors")
+    @GetMapping()
     public List<FactorModel> getFactor(
             @RequestParam String companyId,
             @RequestParam String codeFrom,
@@ -60,7 +60,7 @@ public class FactorQueryController {
     }
 
 
-    @GetMapping("getFactorsPaginated")
+    @GetMapping("getFactorsPaginated/byFilter")
     public Page<FactorEntity> getFactorsByBuyer(FactorFilterModel filter, PageableModel pageableModel){
         return factorService.getFactorByFilter(filter, pageableModel);
     }

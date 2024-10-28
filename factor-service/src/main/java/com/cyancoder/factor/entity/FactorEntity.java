@@ -2,6 +2,7 @@ package com.cyancoder.factor.entity;
 
 import com.cyancoder.factor.model.FactorModel;
 import com.cyancoder.factor.model.Status;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -42,6 +43,7 @@ public class FactorEntity {
     private String code;
 
     @OneToMany(mappedBy = "factor")
+    @JsonManagedReference
     private List<FactorItemEntity> items;
 
     @Column(name = "company_id")

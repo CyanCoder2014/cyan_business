@@ -1,8 +1,12 @@
 package com.cyancoder.factor.rest;
 
 
+import com.cyancoder.factor.entity.FactorEntity;
+import com.cyancoder.factor.model.FactorFilterModel;
 import com.cyancoder.factor.model.FactorModel;
+import com.cyancoder.factor.model.PageableModel;
 import com.cyancoder.factor.query.FilterFactorQuery;
+import com.cyancoder.factor.service.FactorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
@@ -12,6 +16,7 @@ import org.springframework.core.env.Environment;
 //import org.springframework.security.core.context.SecurityContextHolder;
 //import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 //import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.data.domain.Page;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/v2/api/factor-service/factors")
+@RequestMapping("/v2/api/factor-service/")
 @RequiredArgsConstructor
 @Slf4j
 public class FactorQueryController {
@@ -28,9 +33,10 @@ public class FactorQueryController {
 
     private  final Environment env;
     private  final QueryGateway queryGateway;
+    private  final FactorService factorService;
 
 
-    @GetMapping
+    @GetMapping("factors")
     public List<FactorModel> getFactor(
             @RequestParam String companyId,
             @RequestParam String codeFrom,
@@ -51,6 +57,12 @@ public class FactorQueryController {
                 ResponseTypes.multipleInstancesOf(FactorModel.class)).join();
 
         return factors;
+    }
+
+
+    @GetMapping("getFactorsPaginated")
+    public Page<FactorEntity> getFactorsByBuyer(FactorFilterModel filter, PageableModel pageableModel){
+        return factorService.getFactorByFilter(filter, pageableModel);
     }
 
 

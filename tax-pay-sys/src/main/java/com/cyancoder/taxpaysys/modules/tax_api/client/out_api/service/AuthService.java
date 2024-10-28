@@ -70,7 +70,7 @@ public class AuthService {
         String newToken = Token.getInstance().getToken();
 
         String encryptedNewToken = Encrypt.encrypt(newToken,uniqueCode);
-        redisTemplate.opsForValue().set(uniqueCode, encryptedNewToken, 60, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(uniqueCode, encryptedNewToken, 120, TimeUnit.SECONDS);
 
         return newToken;
     }

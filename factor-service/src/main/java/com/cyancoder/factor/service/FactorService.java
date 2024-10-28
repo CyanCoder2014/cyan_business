@@ -7,9 +7,7 @@ import com.cyancoder.factor.entity.FactorEntity;
 import com.cyancoder.factor.entity.FactorItemEntity;
 import com.cyancoder.factor.entity.ProductEntity;
 import com.cyancoder.factor.entity.UnitEntity;
-import com.cyancoder.factor.model.FactorItemModel;
-import com.cyancoder.factor.model.FactorModel;
-import com.cyancoder.factor.model.ProductModel;
+import com.cyancoder.factor.model.*;
 import com.cyancoder.factor.model.request.CreateFactorReqModel;
 import com.cyancoder.factor.model.request.RequestTaxModel;
 import com.cyancoder.factor.model.request.UpdateFactorReqModel;
@@ -19,12 +17,17 @@ import com.cyancoder.factor.repository.ProductRepository;
 import com.cyancoder.factor.repository.UnitRepository;
 import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.cj.x.protobuf.MysqlxCrud;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -205,4 +208,18 @@ public class FactorService {
         factorRepository.deleteAllByCode(factorCode);
         return factorCode;
     }
+
+
+    public Page<FactorEntity> getFactorByFilter(FactorFilterModel filter, PageableModel pageableModel)  {
+
+        Pageable pageable = PageRequest.of(pageableModel.page(), pageableModel.pageSize(),
+                Sort.by(PageableModel.SortOrder.ASC.equals(pageableModel.sortOrder()) ? Sort.Direction.ASC: Sort.Direction.DESC ,
+                        pageableModel.sortKey()));
+
+        return factorRepository.findByCompanyIdAndCreatedAtBetweenAndCodeBetween(filter.companyId(),
+                filter.startDate(),  filter.endDate(),
+                 filter.codeFrom(),  filter.codeTo(),
+                pageable);
+    }
+
 }

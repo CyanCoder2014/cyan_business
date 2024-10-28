@@ -1,6 +1,8 @@
 package com.cyancoder.factor.repository;
 
 import com.cyancoder.factor.entity.FactorEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,4 +30,11 @@ public interface FactorRepository extends JpaRepository<FactorEntity, String> {
 
     @Transactional
     void deleteAllByCode(String code);
+
+
+    Page<FactorEntity> findByCompanyIdAndCreatedAtBetweenAndCodeBetween(String CompanyId,
+                                                                        Date startOn, Date endOn,
+                                                                        String codeFrom, String codeTo,
+                                                                        Pageable pageable);
+
 }

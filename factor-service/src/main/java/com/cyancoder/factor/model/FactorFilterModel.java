@@ -1,6 +1,7 @@
 package com.cyancoder.factor.model;
 
 import lombok.Builder;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -12,7 +13,7 @@ public record FactorFilterModel(
         String buyerId,
         String state,
         String type,
-        Date startDate,
-        Date endDate
+        @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+        @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate
 ) {
 }

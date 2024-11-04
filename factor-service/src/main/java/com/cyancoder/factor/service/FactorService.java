@@ -18,7 +18,7 @@ import com.cyancoder.factor.repository.UnitRepository;
 import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mysql.cj.x.protobuf.MysqlxCrud;
-import jakarta.transaction.Transactional;
+import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -29,6 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.text.ParseException;
@@ -39,7 +40,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 @Slf4j
 @RequiredArgsConstructor
 public class FactorService {
@@ -54,7 +54,8 @@ public class FactorService {
     private final TaxClientService taxClientService;
 
 
-    public Object addFactor(CreateFactorReqModel createFactorReqModel) throws ParseException {
+    @Transactional
+    public FactorEntity addFactor(CreateFactorReqModel createFactorReqModel) throws ParseException {
 
 
         String factorDateStr = createFactorReqModel.getFactorDate();   // to consider
@@ -78,8 +79,6 @@ public class FactorService {
 
                 .build();
 
-
-        Object response = null;
 
         FactorEntity factorEntity = new FactorEntity();
         BeanUtils.copyProperties(createFactorCommand, factorEntity);
@@ -165,20 +164,22 @@ public class FactorService {
             });
             List<FactorItemEntity> factorItems = items.stream().map(FactorItemEntity::new).collect(Collectors.toList());
 
-            response = factorItemRepository.saveAll(factorItems);
-
+            List<FactorItemEntity> factorItemEntityList = factorItemRepository.saveAll(factorItems);
+            factorEntity.setItems(factorItemEntityList);
 
         } catch (Exception e) {
             log.info("Exception::: {}", e);
+            throw e;
 
         }
 
 
-        return response;
+        return factorEntity;
     }
 
 
-    public Object editFactor(UpdateFactorReqModel updateFactorReqModel) throws Exception {
+    @Transactional
+    public FactorEntity editFactor(UpdateFactorReqModel updateFactorReqModel) throws Exception {
         String factorId = updateFactorReqModel.getFactorId();
 
         List<FactorTaxEntity> factorTaxEntities = taxClientService.getReferences(new RequestTaxModel(factorId));

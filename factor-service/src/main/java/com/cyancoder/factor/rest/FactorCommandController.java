@@ -42,12 +42,12 @@ public class FactorCommandController {
     private final ExcelService excelService;
 
     @PostMapping
-    public Object createFactor(@RequestBody CreateFactorReqModel createFactorReqModel) throws ParseException {
+    public FactorEntity createFactor(@RequestBody CreateFactorReqModel createFactorReqModel) throws ParseException {
         return factorService.addFactor(createFactorReqModel);
     }
 
     @PutMapping
-    public Object createFactor(@RequestBody UpdateFactorReqModel updateFactorReqModel) throws Exception {
+    public FactorEntity createFactor(@RequestBody UpdateFactorReqModel updateFactorReqModel) throws Exception {
         return factorService.editFactor(updateFactorReqModel);
     }
 

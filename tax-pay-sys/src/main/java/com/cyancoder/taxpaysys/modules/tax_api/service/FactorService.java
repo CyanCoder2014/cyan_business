@@ -461,6 +461,9 @@ public class FactorService {
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
             header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
+            if(uniqueCode.equals("A2GR39"))
+                header.setIrtaxid("A2GR3904D79003B9ACA0D1"); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
+
             header.setInp(1); // الگوی صورتحساب
             header.setIns(3); // موضوع صورتحساب ++++++++++++++++++
 //            header.setTins(factor.getSeller().getEconomicCode().replace("-","")); // شماره اقتصادی فروشنده

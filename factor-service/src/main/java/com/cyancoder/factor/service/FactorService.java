@@ -213,7 +213,7 @@ public class FactorService {
 
     public Page<FactorEntity> getFactorByFilter(FactorFilterModel filter, PageableModel pageableModel)  {
 
-        Pageable pageable = PageRequest.of(pageableModel.page(), pageableModel.pageSize(),
+        Pageable pageable = PageRequest.of(pageableModel.page(), ObjectUtils.isEmpty(pageableModel.pageSize())?10000:pageableModel.pageSize(),
                 Sort.by(PageableModel.SortOrder.ASC.equals(pageableModel.sortOrder()) ? Sort.Direction.ASC: Sort.Direction.DESC ,
                         pageableModel.sortKey()));
 

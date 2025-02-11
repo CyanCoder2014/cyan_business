@@ -304,8 +304,8 @@ public class FactorService {
             Long factorSerial = Long.valueOf(factorModel.getCode());
 
             InvoiceHeaderDto header = new InvoiceHeaderDto();
-            header.setTaxid(getTaxId(factorSerial + 1000000000L, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
-            header.setIndatim(factorModel.getFactorDate().toInstant().toEpochMilli()); // تاریخ و زمان صدور
+            header.setTaxid(getTaxId(factorSerial + 1000000000L, new Date().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
+            header.setIndatim(new Date().toInstant().toEpochMilli()); // تاریخ و زمان صدور
             header.setIndati2m(factorModel.getCreatedAt().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
@@ -455,14 +455,12 @@ public class FactorService {
             Long factorSerial = Long.valueOf(factorModel.getCode());
 
             InvoiceHeaderDto header = new InvoiceHeaderDto();
-            header.setTaxid(getTaxId(factorSerial + 2000000000L, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
-            header.setIndatim(factorModel.getFactorDate().toInstant().toEpochMilli()); // تاریخ و زمان صدور
+            header.setTaxid(getTaxId(factorSerial + 2000000000L, new Date().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
+            header.setIndatim(new Date().toInstant().toEpochMilli()); // تاریخ و زمان صدور
             header.setIndati2m(factorModel.getCreatedAt().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
             header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
-            if(uniqueCode.equals("A2GR39"))
-                header.setIrtaxid("A2GR3904D79003B9ACA0D1"); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
 
             header.setInp(1); // الگوی صورتحساب
             header.setIns(3); // موضوع صورتحساب ++++++++++++++++++

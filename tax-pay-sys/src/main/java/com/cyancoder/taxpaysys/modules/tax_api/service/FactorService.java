@@ -44,6 +44,9 @@ import org.springframework.util.ObjectUtils;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -303,10 +306,14 @@ public class FactorService {
 
             Long factorSerial = Long.valueOf(factorModel.getCode());
 
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime dayBefore = now.minus(1, ChronoUnit.DAYS);
+            Date dayBeforeDate = Date.from(dayBefore.atZone(ZoneId.systemDefault()).toInstant());
+
             InvoiceHeaderDto header = new InvoiceHeaderDto();
-            header.setTaxid(getTaxId(factorSerial + 1000000000L, new Date().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
-            header.setIndatim(new Date().toInstant().toEpochMilli()); // تاریخ و زمان صدور
-            header.setIndati2m(new Date().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
+            header.setTaxid(getTaxId(factorSerial + 1000000000L, dayBeforeDate.toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
+            header.setIndatim(dayBeforeDate.toInstant().toEpochMilli()); // تاریخ و زمان صدور
+            header.setIndati2m(dayBeforeDate.toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
             header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع
@@ -454,10 +461,15 @@ public class FactorService {
 
             Long factorSerial = Long.valueOf(factorModel.getCode());
 
+
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime dayBefore = now.minus(1, ChronoUnit.DAYS);
+            Date dayBeforeDate = Date.from(dayBefore.atZone(ZoneId.systemDefault()).toInstant());
+
             InvoiceHeaderDto header = new InvoiceHeaderDto();
-            header.setTaxid(getTaxId(factorSerial + 2000000000L, new Date().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
-            header.setIndatim(new Date().toInstant().toEpochMilli()); // تاریخ و زمان صدور
-            header.setIndati2m(new Date().toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
+            header.setTaxid(getTaxId(factorSerial + 2000000000L,dayBeforeDate.toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی
+            header.setIndatim(dayBeforeDate.toInstant().toEpochMilli()); // تاریخ و زمان صدور
+            header.setIndati2m(dayBeforeDate.toInstant().toEpochMilli()); //تاریخ و زمان ایجاد
             header.setInty(factorModel.getState().trim().equals("type2") ? 2 : 1); // نوع صورتحساب
             header.setInno(factorModel.getCode());  //  سریال صورتحساب   ****************
             header.setIrtaxid(getTaxId(factorSerial, factorModel.getFactorDate().toInstant(), uniqueCode)); // شماره منحصر به فرد مالیاتی صورتحساب مرجع

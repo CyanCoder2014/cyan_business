@@ -254,8 +254,57 @@ public class FactorService {
         BodyItems bodyItems = BodyItems.builder().build();
         InvoiceRequestDataModel data = new InvoiceRequestDataModel(headerItems, bodyItems);
 
+//        ServerInfoResponseModel response = serverInformationService.getServerInformation(privateKey);
+//        ServerInfoPubKeyModel serverKey = null;
+//        try
+//        {
+//            serverKey = response.successResponse != null ? response.successResponse.result.data.publicKeys[0] : null;
+//            if (ObjectUtils.isEmpty(serverKey))
+//                throw new RuntimeException("serverKey. is null");
+//
+//
+//        } catch (Exception e) {
+//            response = serverInformationService.getServerInformation(privateKey);
+//            serverKey = response.successResponse != null ? response.successResponse.result.data.publicKeys[0] : null;
+//        }
+
+
+
+        int retryCount = 0;
+        int maxRetries = 5;
+        long delayMillis = 30_000; // 30 seconds
         ServerInfoResponseModel response = serverInformationService.getServerInformation(privateKey);
-        ServerInfoPubKeyModel serverKey = response.successResponse != null ? response.successResponse.result.data.publicKeys[0] : null;
+        ServerInfoPubKeyModel serverKey = null;
+
+        while (retryCount < maxRetries) {
+            try {
+                serverKey = response.successResponse != null ?
+                        response.successResponse.result.data.publicKeys[0] : null;
+
+                if (!ObjectUtils.isEmpty(serverKey)) {
+                    break; // Successfully got the serverKey
+                } else {
+                    throw new RuntimeException("serverKey is null");
+                }
+
+            } catch (Exception e) {
+                retryCount++;
+                if (retryCount >= maxRetries) {
+                    throw new RuntimeException("Failed to retrieve serverKey after " + maxRetries + " attempts", e);
+                }
+                try {
+                    Thread.sleep(delayMillis);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Thread was interrupted during sleep", ie);
+                }
+
+                // Retry getting server information
+                response = serverInformationService.getServerInformation(privateKey);
+            }
+        }
+
+
 
         InvoiceRequestModel bodyHttp = new InvoiceRequestModel(headerHttp, "INVOICE.V01", data, serverKey, privateKey);
 

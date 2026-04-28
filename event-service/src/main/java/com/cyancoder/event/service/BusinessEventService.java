@@ -1,9 +1,12 @@
 package com.cyancoder.event.service;
 
 import com.cyancoder.event.entity.BusinessEvent;
+import com.cyancoder.event.model.BusinessEventEnvelope;
 import com.cyancoder.event.model.BusinessEventRequest;
 import com.cyancoder.event.repository.BusinessEventRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -15,10 +18,19 @@ public class BusinessEventService {
 
     private final BusinessEventRepository repository;
     private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final String topic;
 
-    public BusinessEventService(BusinessEventRepository repository, ObjectMapper objectMapper) {
+    public BusinessEventService(
+            BusinessEventRepository repository,
+            ObjectMapper objectMapper,
+            KafkaTemplate<String, String> kafkaTemplate,
+            @Value("${business.events.topic}") String topic
+    ) {
         this.repository = repository;
         this.objectMapper = objectMapper;
+        this.kafkaTemplate = kafkaTemplate;
+        this.topic = topic;
     }
 
     public BusinessEvent publish(BusinessEventRequest request) {
@@ -35,7 +47,9 @@ public class BusinessEventService {
         } catch (Exception ex) {
             throw new IllegalArgumentException("invalid event payload", ex);
         }
-        return repository.save(event);
+        BusinessEvent saved = repository.save(event);
+        publishToKafka(saved, request.payload());
+        return saved;
     }
 
     public List<BusinessEvent> list(String sourceService, String entityType, String entityKey, String actionType) {
@@ -52,5 +66,23 @@ public class BusinessEventService {
             return repository.findByActionTypeOrderByOccurredAtDesc(actionType);
         }
         return repository.findAll().stream().sorted((left, right) -> right.getOccurredAt().compareTo(left.getOccurredAt())).toList();
+    }
+
+    private void publishToKafka(BusinessEvent event, java.util.Map<String, Object> payload) {
+        try {
+            BusinessEventEnvelope envelope = new BusinessEventEnvelope(
+                    event.getEventKey(),
+                    event.getSourceService(),
+                    event.getEntityType(),
+                    event.getEntityKey(),
+                    event.getActionType(),
+                    event.getTitle(),
+                    event.getOccurredAt(),
+                    payload
+            );
+            kafkaTemplate.send(topic, event.getEntityKey(), objectMapper.writeValueAsString(envelope));
+        } catch (Exception ex) {
+            throw new IllegalStateException("failed to publish business event to kafka", ex);
+        }
     }
 }

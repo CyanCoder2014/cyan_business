@@ -24,6 +24,13 @@ And a shared integration event hub:
 
 - `event-service`
 
+And Kafka-driven automation consumers:
+
+- `crm-automation-service`
+- `finance-automation-service`
+- `inventory-automation-service`
+- `report-automation-service`
+
 It provides reusable validators and operators for business submissions before persistence.
 
 ## Services
@@ -274,6 +281,7 @@ Purpose:
 - cross-service integration history
 - foundation for automation and BPM consumers
 - one stable event seam for content, shop, CRM, finance, and inventory actions
+- Kafka event fan-out producer
 
 Main API:
 
@@ -289,6 +297,11 @@ Storage:
 
 - H2 file database `./data/event-db`
 
+Kafka:
+
+- publishes to topic `business-events`
+- default bootstrap server `localhost:9092`
+
 Event fields:
 
 - `eventKey`
@@ -299,6 +312,50 @@ Event fields:
 - `title`
 - `payloadJson`
 - `occurredAt`
+
+### `crm-automation-service`
+
+Purpose:
+
+- consume Kafka business events relevant to CRM
+- store lead/customer activity automation actions
+
+Main API:
+
+- `GET /api/crm-automation-service/actions`
+
+### `finance-automation-service`
+
+Purpose:
+
+- consume Kafka business events relevant to finance
+- store settlement/accounting automation actions
+
+Main API:
+
+- `GET /api/finance-automation-service/actions`
+
+### `inventory-automation-service`
+
+Purpose:
+
+- consume Kafka business events relevant to inventory
+- store stock side-effect automation actions
+
+Main API:
+
+- `GET /api/inventory-automation-service/actions`
+
+### `report-automation-service`
+
+Purpose:
+
+- consume all Kafka business events
+- store report/projection feed records for later analytics or denormalized views
+
+Main API:
+
+- `GET /api/report-automation-service/records`
 
 ## Reporting Source Types
 
@@ -324,6 +381,10 @@ The API gateway now routes:
 - `/api/report-service/**`
 - `/api/processor-service/**`
 - `/api/event-service/**`
+- `/api/crm-automation-service/**`
+- `/api/finance-automation-service/**`
+- `/api/inventory-automation-service/**`
+- `/api/report-automation-service/**`
 
 ## Submission Processing
 
@@ -364,6 +425,14 @@ Published event shape:
 - `title`
 - `payload`
 
+Kafka flow:
+
+- business service persists entity
+- business service posts event to `event-service`
+- `event-service` persists event
+- `event-service` publishes JSON envelope to Kafka topic `business-events`
+- automation services consume with separate consumer groups
+
 Action types currently used:
 
 - `CREATE`
@@ -394,6 +463,10 @@ Recommended future BPM usage:
 - `inventory-service`: stock reservation, manufacturing, warehouse workflows
 - `processor-service`: externalized rule execution for BPM-driven submissions
 - `event-service`: BPM and automation consumers can poll or bridge from this stream
+- `crm-automation-service`: CRM side effects and customer activity consumers
+- `finance-automation-service`: settlement and accounting consumers
+- `inventory-automation-service`: stock reservation and inventory consumers
+- `report-automation-service`: reporting/projection consumers
 
 ## Important Limitations
 
@@ -405,6 +478,7 @@ Recommended future BPM usage:
 - processor execution is synchronous and HTTP-based
 - processor definitions currently store rule JSON directly rather than normalized relational rule tables
 - event publishing is synchronous HTTP after persistence and is not a transactional outbox yet
+- Kafka fan-out starts after `event-service` persistence, not from originating service transactions
 
 ## Next Logical Step
 
@@ -415,3 +489,4 @@ If this platform is kept and expanded inside this repo, the next useful addition
 - content/page rendering composition beyond raw content entities
 - normalized processor/rule authoring UI
 - BPM bridge endpoints for external orchestration
+- transactional outbox and retry handling for event publication

@@ -4,6 +4,7 @@ import com.cyancoder.finance.entity.FinanceTransaction;
 import com.cyancoder.finance.repository.FinanceTransactionRepository;
 import com.cyancoder.finance.service.EventPublisherSupport;
 import com.cyancoder.finance.service.ProcessorSupport;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ public class FinanceController {
     }
 
     @PostMapping
+    @Transactional
     public FinanceTransaction create(@RequestParam(required = false) String processorKey, @RequestBody FinanceTransaction transaction) {
         transaction = processorSupport.apply(processorKey, "FINANCE", transaction, FinanceTransaction.class);
         FinanceTransaction saved = repository.save(transaction);
@@ -43,6 +45,7 @@ public class FinanceController {
     }
 
     @PutMapping("/{transactionKey}")
+    @Transactional
     public FinanceTransaction update(@PathVariable String transactionKey, @RequestParam(required = false) String processorKey, @RequestBody FinanceTransaction input) {
         input = processorSupport.apply(processorKey, "FINANCE", input, FinanceTransaction.class);
         FinanceTransaction existing = repository.findByTransactionKey(transactionKey).orElseThrow();
@@ -60,6 +63,7 @@ public class FinanceController {
     }
 
     @DeleteMapping("/{transactionKey}")
+    @Transactional
     public void delete(@PathVariable String transactionKey) {
         repository.findByTransactionKey(transactionKey).ifPresent(existing -> {
             repository.delete(existing);

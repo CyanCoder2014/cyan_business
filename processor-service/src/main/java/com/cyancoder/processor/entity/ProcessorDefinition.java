@@ -13,11 +13,9 @@ public class ProcessorDefinition {
     @Column(unique = true, nullable = false)
     private String processorKey;
     private String targetType;
-    @Lob
-    @Column(length = 20000)
+    @Column(columnDefinition = "TEXT")
     private String validatorsJson;
-    @Lob
-    @Column(length = 20000)
+    @Column(columnDefinition = "TEXT")
     private String operatorsJson;
     private String description;
     private boolean active = true;

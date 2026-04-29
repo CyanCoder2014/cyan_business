@@ -13,7 +13,25 @@ java {
 }
 
 repositories {
+	maven { url 'https://mirror-maven.runflare.com/maven2/' }
+	maven { url 'https://mirror-maven.runflare.com/android/maven2/' }
+	maven { url 'https://mirror-maven.runflare.com/gradle-plugins/' }
 	mavenCentral()
+}
+
+allprojects {
+	repositories {
+		maven { url 'https://mirror-maven.runflare.com/maven2/' }
+		maven { url 'https://mirror-maven.runflare.com/android/maven2/' }
+		maven { url 'https://mirror-maven.runflare.com/gradle-plugins/' }
+		mavenCentral()
+	}
+}
+
+subprojects {
+	configurations.configureEach {
+		resolutionStrategy.force 'org.projectlombok:lombok:1.18.34'
+	}
 }
 
 ext {
@@ -41,6 +59,4 @@ dependencyManagement {
 tasks.named('test') {
 	useJUnitPlatform()
 }
-
-
 

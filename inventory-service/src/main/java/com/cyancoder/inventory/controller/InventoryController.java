@@ -4,6 +4,7 @@ import com.cyancoder.inventory.entity.InventoryItem;
 import com.cyancoder.inventory.repository.InventoryItemRepository;
 import com.cyancoder.inventory.service.EventPublisherSupport;
 import com.cyancoder.inventory.service.ProcessorSupport;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ public class InventoryController {
     }
 
     @PostMapping
+    @Transactional
     public InventoryItem create(@RequestParam(required = false) String processorKey, @RequestBody InventoryItem item) {
         item = processorSupport.apply(processorKey, "INVENTORY", item, InventoryItem.class);
         InventoryItem saved = repository.save(item);
@@ -43,6 +45,7 @@ public class InventoryController {
     }
 
     @PutMapping("/{itemKey}")
+    @Transactional
     public InventoryItem update(@PathVariable String itemKey, @RequestParam(required = false) String processorKey, @RequestBody InventoryItem input) {
         input = processorSupport.apply(processorKey, "INVENTORY", input, InventoryItem.class);
         InventoryItem existing = repository.findByItemKey(itemKey).orElseThrow();
@@ -58,6 +61,7 @@ public class InventoryController {
     }
 
     @DeleteMapping("/{itemKey}")
+    @Transactional
     public void delete(@PathVariable String itemKey) {
         repository.findByItemKey(itemKey).ifPresent(existing -> {
             repository.delete(existing);

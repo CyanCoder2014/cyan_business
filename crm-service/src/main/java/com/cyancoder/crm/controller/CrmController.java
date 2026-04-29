@@ -4,6 +4,7 @@ import com.cyancoder.crm.entity.CrmRecord;
 import com.cyancoder.crm.repository.CrmRecordRepository;
 import com.cyancoder.crm.service.EventPublisherSupport;
 import com.cyancoder.crm.service.ProcessorSupport;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ public class CrmController {
     }
 
     @PostMapping
+    @Transactional
     public CrmRecord create(@RequestParam(required = false) String processorKey, @RequestBody CrmRecord record) {
         record = processorSupport.apply(processorKey, "CRM", record, CrmRecord.class);
         CrmRecord saved = repository.save(record);
@@ -43,6 +45,7 @@ public class CrmController {
     }
 
     @PutMapping("/{recordKey}")
+    @Transactional
     public CrmRecord update(@PathVariable String recordKey, @RequestParam(required = false) String processorKey, @RequestBody CrmRecord input) {
         input = processorSupport.apply(processorKey, "CRM", input, CrmRecord.class);
         CrmRecord existing = repository.findByRecordKey(recordKey).orElseThrow();
@@ -61,6 +64,7 @@ public class CrmController {
     }
 
     @DeleteMapping("/{recordKey}")
+    @Transactional
     public void delete(@PathVariable String recordKey) {
         repository.findByRecordKey(recordKey).ifPresent(existing -> {
             repository.delete(existing);

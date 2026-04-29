@@ -18,8 +18,7 @@ public class ReportAutomationRecord {
     private String actionType;
     @Column(length = 2000)
     private String summary;
-    @Lob
-    @Column(length = 20000)
+    @Column(columnDefinition = "TEXT")
     private String payloadJson;
     private Instant createdAt;
     @PrePersist

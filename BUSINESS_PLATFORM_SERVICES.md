@@ -427,10 +427,10 @@ Published event shape:
 
 Kafka flow:
 
-- business service persists entity
-- business service posts event to `event-service`
-- `event-service` persists event
-- `event-service` publishes JSON envelope to Kafka topic `business-events`
+- business service persists entity and local outbox record in one transaction
+- business service outbox dispatcher posts to `event-service`
+- `event-service` persists event row idempotently
+- `event-service` Kafka outbox dispatcher publishes JSON envelope to topic `business-events`
 - automation services consume with separate consumer groups
 
 Action types currently used:
@@ -478,7 +478,9 @@ Recommended future BPM usage:
 - processor execution is synchronous and HTTP-based
 - processor definitions currently store rule JSON directly rather than normalized relational rule tables
 - event publishing is synchronous HTTP after persistence and is not a transactional outbox yet
-- Kafka fan-out starts after `event-service` persistence, not from originating service transactions
+- business services now use local outbox delivery to `event-service`
+- `event-service` now uses its own Kafka outbox delivery to `business-events`
+- cross-service delivery is retryable, but still split across multiple databases and processes
 
 ## Next Logical Step
 

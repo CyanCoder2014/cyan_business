@@ -28,8 +28,8 @@ repositories {
 }
 
 dependencies {
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
+	compileOnly 'org.projectlombok:lombok:1.18.34'
+	annotationProcessor 'org.projectlombok:lombok:1.18.34'
 	implementation 'org.axonframework:axon-spring-boot-starter:4.9.0'
 }
 
@@ -37,4 +37,3 @@ tasks.named('test') {
 	delete "buld/libs/*.jar"
 
 }
-

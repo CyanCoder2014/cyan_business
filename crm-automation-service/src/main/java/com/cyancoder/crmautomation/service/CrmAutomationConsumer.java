@@ -4,7 +4,6 @@ import com.cyancoder.crmautomation.entity.CrmAutomationAction;
 import com.cyancoder.crmautomation.model.BusinessEventEnvelope;
 import com.cyancoder.crmautomation.repository.CrmAutomationActionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 

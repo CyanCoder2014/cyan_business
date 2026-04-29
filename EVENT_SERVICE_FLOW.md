@@ -17,9 +17,10 @@ It stores business events emitted by:
 
 1. A business service accepts a create, update, or delete request.
 2. Optional submission processing runs through `processor-service`.
-3. The business entity is persisted in the local service database.
-4. The service publishes an event to `event-service`.
-5. `event-service` stores the event in `business_events`.
+3. The business entity and a local outbox record are persisted in the same service database transaction.
+4. The local outbox dispatcher retries delivery to `event-service`.
+5. `event-service` stores the event in `business_events` idempotently by `eventKey`.
+6. `event-service` Kafka dispatcher retries publication to Kafka.
 
 ## Event Contract
 
@@ -122,11 +123,13 @@ This event stream is intended to support later:
 
 ## Current Limitation
 
-This is not an outbox implementation yet.
+This is now a two-stage outbox flow.
 
-The current pattern is:
+Current pattern:
 
-- save entity first
-- publish event over HTTP second
+- origin service transaction writes business entity + local outbox
+- origin outbox retries HTTP delivery to `event-service`
+- `event-service` writes event row
+- `event-service` outbox retries Kafka publication
 
-That means event publication is visible and centralized, but not transactionally atomic with the originating service database write.
+This is much stronger than direct post-save publishing, but it is still not a single distributed transaction across origin database, `event-service`, and Kafka.

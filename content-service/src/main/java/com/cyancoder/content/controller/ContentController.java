@@ -4,6 +4,7 @@ import com.cyancoder.content.entity.ContentEntry;
 import com.cyancoder.content.repository.ContentEntryRepository;
 import com.cyancoder.content.service.EventPublisherSupport;
 import com.cyancoder.content.service.ProcessorSupport;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ public class ContentController {
     }
 
     @PostMapping
+    @Transactional
     public ContentEntry create(@RequestParam(required = false) String processorKey, @RequestBody ContentEntry entry) {
         entry = processorSupport.apply(processorKey, "CONTENT", entry, ContentEntry.class);
         ContentEntry saved = repository.save(entry);
@@ -48,6 +50,7 @@ public class ContentController {
     }
 
     @PutMapping("/{key}")
+    @Transactional
     public ContentEntry update(@PathVariable String key, @RequestParam(required = false) String processorKey, @RequestBody ContentEntry input) {
         input = processorSupport.apply(processorKey, "CONTENT", input, ContentEntry.class);
         ContentEntry existing = repository.findByKey(key).orElseThrow();
@@ -68,6 +71,7 @@ public class ContentController {
     }
 
     @DeleteMapping("/{key}")
+    @Transactional
     public void delete(@PathVariable String key) {
         repository.findByKey(key).ifPresent(existing -> {
             repository.delete(existing);

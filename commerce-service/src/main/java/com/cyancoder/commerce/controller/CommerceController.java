@@ -4,6 +4,7 @@ import com.cyancoder.commerce.entity.CommerceDocument;
 import com.cyancoder.commerce.repository.CommerceDocumentRepository;
 import com.cyancoder.commerce.service.EventPublisherSupport;
 import com.cyancoder.commerce.service.ProcessorSupport;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ public class CommerceController {
     }
 
     @PostMapping
+    @Transactional
     public CommerceDocument create(@RequestParam(required = false) String processorKey, @RequestBody CommerceDocument document) {
         document = processorSupport.apply(processorKey, "COMMERCE", document, CommerceDocument.class);
         CommerceDocument saved = repository.save(document);
@@ -43,6 +45,7 @@ public class CommerceController {
     }
 
     @PutMapping("/{documentKey}")
+    @Transactional
     public CommerceDocument update(@PathVariable String documentKey, @RequestParam(required = false) String processorKey, @RequestBody CommerceDocument input) {
         input = processorSupport.apply(processorKey, "COMMERCE", input, CommerceDocument.class);
         CommerceDocument existing = repository.findByDocumentKey(documentKey).orElseThrow();
@@ -61,6 +64,7 @@ public class CommerceController {
     }
 
     @DeleteMapping("/{documentKey}")
+    @Transactional
     public void delete(@PathVariable String documentKey) {
         repository.findByDocumentKey(documentKey).ifPresent(existing -> {
             repository.delete(existing);

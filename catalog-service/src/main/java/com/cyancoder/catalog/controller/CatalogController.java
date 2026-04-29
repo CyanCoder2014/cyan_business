@@ -4,6 +4,7 @@ import com.cyancoder.catalog.entity.CatalogItem;
 import com.cyancoder.catalog.repository.CatalogItemRepository;
 import com.cyancoder.catalog.service.EventPublisherSupport;
 import com.cyancoder.catalog.service.ProcessorSupport;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.LinkedHashMap;
@@ -25,6 +26,7 @@ public class CatalogController {
     }
 
     @PostMapping
+    @Transactional
     public CatalogItem create(@RequestParam(required = false) String processorKey, @RequestBody CatalogItem item) {
         item = processorSupport.apply(processorKey, "CATALOG", item, CatalogItem.class);
         CatalogItem saved = repository.save(item);
@@ -43,6 +45,7 @@ public class CatalogController {
     }
 
     @PutMapping("/{itemKey}")
+    @Transactional
     public CatalogItem update(@PathVariable String itemKey, @RequestParam(required = false) String processorKey, @RequestBody CatalogItem input) {
         input = processorSupport.apply(processorKey, "CATALOG", input, CatalogItem.class);
         CatalogItem existing = repository.findByItemKey(itemKey).orElseThrow();
@@ -61,6 +64,7 @@ public class CatalogController {
     }
 
     @DeleteMapping("/{itemKey}")
+    @Transactional
     public void delete(@PathVariable String itemKey) {
         repository.findByItemKey(itemKey).ifPresent(existing -> {
             repository.delete(existing);

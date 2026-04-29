@@ -6,16 +6,33 @@ This repository now uses Kafka for downstream automation consumption.
 
 Current event path:
 
-1. business service saves local entity
-2. business service posts event to `event-service`
-3. `event-service` stores event in its local database
-4. `event-service` publishes a JSON envelope to Kafka topic `business-events`
+1. business service saves local entity and local outbox row in one transaction
+2. business service outbox dispatcher retries post to `event-service`
+3. `event-service` stores event in its local database idempotently
+4. `event-service` Kafka dispatcher retries publish of JSON envelope to topic `business-events`
 5. automation microservices consume independently with separate consumer groups
 
 ## Kafka Topic
 
 - topic: `business-events`
 - bootstrap server default: `localhost:9092`
+- local Docker compose: [docker/kafka/docker-compose.yml](/Users/farid/Projects/naviya/old-cyan/cyan_business/docker/kafka/docker-compose.yml:1)
+
+## Local Startup
+
+Start Kafka:
+
+```bash
+docker compose -f docker/kafka/docker-compose.yml up -d
+```
+
+Then start:
+
+- `event-service`
+- `crm-automation-service`
+- `finance-automation-service`
+- `inventory-automation-service`
+- `report-automation-service`
 
 ## Producer
 
@@ -118,13 +135,14 @@ Purpose:
 
 ## Current Limitation
 
-This is Kafka-based fan-out, but it is still not a full outbox architecture.
+This is now Kafka-based fan-out with layered outbox delivery.
 
-The current write order is:
+The current durable write order is:
 
 1. origin service writes its entity
-2. origin service calls `event-service`
-3. `event-service` writes event row
-4. `event-service` publishes to Kafka
+2. origin service writes local outbox row
+3. origin service outbox delivers to `event-service`
+4. `event-service` writes event row
+5. `event-service` Kafka outbox publishes to Kafka
 
-So the durable integration seam is stronger than direct polling, but the originating entity write and emitted Kafka message are still not transactionally atomic.
+So the integration seam is retryable at both boundaries, but the full chain is still not a single atomic distributed transaction.

@@ -1,3 +1,22 @@
+pluginManagement {
+    repositories {
+        maven { url 'https://mirror-maven.runflare.com/gradle-plugins/' }
+        maven { url 'https://mirror-maven.runflare.com/maven2/' }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        maven { url 'https://mirror-maven.runflare.com/maven2/' }
+        maven { url 'https://mirror-maven.runflare.com/android/maven2/' }
+        maven { url 'https://mirror-maven.runflare.com/gradle-plugins/' }
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'root'
 include 'tax-pay-sys'
 include 'discovery-server'
@@ -7,6 +26,7 @@ include 'buyer-service'
 include 'client-service'
 include 'product-service'
 include 'generic'
+include 'dynamic-entity-core'
 include 'sso-common'
 include 'sso-auth-service'
 include 'sso-user-service'

@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface BusinessEventRepository extends JpaRepository<BusinessEvent, Long> {
     Optional<BusinessEvent> findByEventKey(String eventKey);
+    List<BusinessEvent> findTop50ByKafkaPublishedFalseOrderByOccurredAtAsc();
     List<BusinessEvent> findBySourceServiceOrderByOccurredAtDesc(String sourceService);
     List<BusinessEvent> findByEntityTypeOrderByOccurredAtDesc(String entityType);
     List<BusinessEvent> findByEntityKeyOrderByOccurredAtDesc(String entityKey);

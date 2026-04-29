@@ -24,8 +24,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     implementation 'com.github.eloyzone:jalali-calendar:1.0.0'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
@@ -40,6 +40,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
     implementation project(':generic')
+    implementation files(project(':generic').sourceSets.main.output.classesDirs)
+    implementation project(':dynamic-entity-core')
 }
 
 dependencyManagement {

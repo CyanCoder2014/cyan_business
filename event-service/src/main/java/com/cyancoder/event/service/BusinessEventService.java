@@ -5,12 +5,11 @@ import com.cyancoder.event.model.BusinessEventEnvelope;
 import com.cyancoder.event.model.BusinessEventRequest;
 import com.cyancoder.event.repository.BusinessEventRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -18,24 +17,20 @@ public class BusinessEventService {
 
     private final BusinessEventRepository repository;
     private final ObjectMapper objectMapper;
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final String topic;
 
-    public BusinessEventService(
-            BusinessEventRepository repository,
-            ObjectMapper objectMapper,
-            KafkaTemplate<String, String> kafkaTemplate,
-            @Value("${business.events.topic}") String topic
-    ) {
+    public BusinessEventService(BusinessEventRepository repository, ObjectMapper objectMapper) {
         this.repository = repository;
         this.objectMapper = objectMapper;
-        this.kafkaTemplate = kafkaTemplate;
-        this.topic = topic;
     }
 
     public BusinessEvent publish(BusinessEventRequest request) {
+        String eventKey = request.eventKey() == null || request.eventKey().isBlank() ? UUID.randomUUID().toString() : request.eventKey();
+        BusinessEvent existing = repository.findByEventKey(eventKey).orElse(null);
+        if (existing != null) {
+            return existing;
+        }
         BusinessEvent event = new BusinessEvent();
-        event.setEventKey(request.eventKey() == null || request.eventKey().isBlank() ? UUID.randomUUID().toString() : request.eventKey());
+        event.setEventKey(eventKey);
         event.setSourceService(request.sourceService());
         event.setEntityType(request.entityType());
         event.setEntityKey(request.entityKey());
@@ -47,9 +42,7 @@ public class BusinessEventService {
         } catch (Exception ex) {
             throw new IllegalArgumentException("invalid event payload", ex);
         }
-        BusinessEvent saved = repository.save(event);
-        publishToKafka(saved, request.payload());
-        return saved;
+        return repository.save(event);
     }
 
     public List<BusinessEvent> list(String sourceService, String entityType, String entityKey, String actionType) {
@@ -68,9 +61,12 @@ public class BusinessEventService {
         return repository.findAll().stream().sorted((left, right) -> right.getOccurredAt().compareTo(left.getOccurredAt())).toList();
     }
 
-    private void publishToKafka(BusinessEvent event, java.util.Map<String, Object> payload) {
+    public BusinessEventEnvelope toEnvelope(BusinessEvent event) {
         try {
-            BusinessEventEnvelope envelope = new BusinessEventEnvelope(
+            Map<String, Object> payload = event.getPayloadJson() == null || event.getPayloadJson().isBlank()
+                    ? Map.of()
+                    : objectMapper.readValue(event.getPayloadJson(), Map.class);
+            return new BusinessEventEnvelope(
                     event.getEventKey(),
                     event.getSourceService(),
                     event.getEntityType(),
@@ -80,9 +76,8 @@ public class BusinessEventService {
                     event.getOccurredAt(),
                     payload
             );
-            kafkaTemplate.send(topic, event.getEntityKey(), objectMapper.writeValueAsString(envelope));
         } catch (Exception ex) {
-            throw new IllegalStateException("failed to publish business event to kafka", ex);
+            throw new IllegalStateException("failed to map business event envelope", ex);
         }
     }
 }

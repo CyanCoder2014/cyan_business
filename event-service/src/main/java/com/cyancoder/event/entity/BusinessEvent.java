@@ -30,16 +30,22 @@ public class BusinessEvent {
     @Column(length = 2000)
     private String title;
 
-    @Lob
-    @Column(length = 20000)
+    @Column(columnDefinition = "TEXT")
     private String payloadJson;
 
     private Instant occurredAt;
+    private boolean kafkaPublished;
+    private Integer kafkaAttemptCount;
+    private Instant kafkaLastAttemptAt;
+    private Instant kafkaPublishedAt;
 
     @PrePersist
     public void onCreate() {
         if (occurredAt == null) {
             occurredAt = Instant.now();
+        }
+        if (kafkaAttemptCount == null) {
+            kafkaAttemptCount = 0;
         }
     }
 
@@ -113,5 +119,37 @@ public class BusinessEvent {
 
     public void setOccurredAt(Instant occurredAt) {
         this.occurredAt = occurredAt;
+    }
+
+    public boolean isKafkaPublished() {
+        return kafkaPublished;
+    }
+
+    public void setKafkaPublished(boolean kafkaPublished) {
+        this.kafkaPublished = kafkaPublished;
+    }
+
+    public Integer getKafkaAttemptCount() {
+        return kafkaAttemptCount;
+    }
+
+    public void setKafkaAttemptCount(Integer kafkaAttemptCount) {
+        this.kafkaAttemptCount = kafkaAttemptCount;
+    }
+
+    public Instant getKafkaLastAttemptAt() {
+        return kafkaLastAttemptAt;
+    }
+
+    public void setKafkaLastAttemptAt(Instant kafkaLastAttemptAt) {
+        this.kafkaLastAttemptAt = kafkaLastAttemptAt;
+    }
+
+    public Instant getKafkaPublishedAt() {
+        return kafkaPublishedAt;
+    }
+
+    public void setKafkaPublishedAt(Instant kafkaPublishedAt) {
+        this.kafkaPublishedAt = kafkaPublishedAt;
     }
 }

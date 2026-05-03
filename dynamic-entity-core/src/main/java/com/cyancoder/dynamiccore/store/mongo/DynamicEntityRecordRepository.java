@@ -7,5 +7,8 @@ import java.util.Optional;
 
 public interface DynamicEntityRecordRepository extends MongoRepository<DynamicEntityRecordDocument, String> {
     Optional<DynamicEntityRecordDocument> findByServiceKeyAndEntityKeyAndRecordKey(String serviceKey, String entityKey, String recordKey);
+    Optional<DynamicEntityRecordDocument> findFirstByServiceKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(String serviceKey, String entityKey, String recordKey);
     List<DynamicEntityRecordDocument> findByServiceKeyAndEntityKeyOrderByCreatedAtDesc(String serviceKey, String entityKey);
+    void deleteByServiceKeyAndEntityKeyAndRecordKey(String serviceKey, String entityKey, String recordKey);
+    void deleteAllByServiceKeyAndEntityKeyAndRecordKey(String serviceKey, String entityKey, String recordKey);
 }

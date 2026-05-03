@@ -23,7 +23,7 @@ public class CrmDynamicTemplateConfig {
                             "recordType":{"id":"recordType","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["LEAD"]}}]},
                             "fullName":{"id":"fullName","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
                             "companyName":{"id":"companyName","type":"string"},
-                            "email":{"id":"email","type":"string","validations":[{"validation":"REGEX","order":1,"validationParams":{"pattern":"^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"},"validationMessage":"invalid email"}]},
+                            "email":{"id":"email","type":"string","validations":[{"validation":"REGEX","order":1,"validationParams":{"pattern":"^[^@\\\\s]+@[^@\\\\s]+\\\\.[^@\\\\s]+$"},"validationMessage":"invalid email"}]},
                             "mobile":{"id":"mobile","type":"string"},
                             "status":{"id":"status","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["NEW","QUALIFIED","CONTACTED","WON","LOST"]}}]},
                             "source":{"id":"source","type":"string"},

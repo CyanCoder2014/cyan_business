@@ -69,6 +69,11 @@ public class DynamicRuntimeService {
         return definitionRepository.findByServiceKeyAndEntityKey(properties.getServiceKey(), entityKey).orElseThrow();
     }
 
+    public void deleteDefinition(String entityKey) {
+        getDefinition(entityKey);
+        definitionRepository.deleteByServiceKeyAndEntityKey(properties.getServiceKey(), entityKey);
+    }
+
     public List<DynamicEntityTemplate> listTemplates() {
         return templateRegistry.list();
     }
@@ -101,6 +106,13 @@ public class DynamicRuntimeService {
         return new DynamicValidationResult(applyNonFieldDefaults(definition, result.data()), result.errors());
     }
 
+    public DynamicEntityRecordDocument submitMap(String entityKey, String recordKey, Map<String, Object> input, boolean strict) {
+        DynamicRecordRequest request = new DynamicRecordRequest();
+        request.setRecordKey(recordKey);
+        request.setData(input);
+        return submit(entityKey, request, strict);
+    }
+
     public DynamicEntityRecordDocument submit(String entityKey, DynamicRecordRequest request, boolean strict) {
         StoredEntityDefinition stored = getDefinition(entityKey);
         EntityDefinitionModel definition = definitionParser.parse(stored.getDefinitionJson());
@@ -111,14 +123,19 @@ public class DynamicRuntimeService {
         }
         Map<String, Object> resolved = applyNonFieldDefaults(definition, result.data());
         Map<String, Object> operated = operatorEngine.apply(definition.getFields(), definition.getOperations(), new LinkedHashMap<>(resolved));
-        DynamicEntityRecordDocument document = new DynamicEntityRecordDocument();
+        String resolvedRecordKey = request.getRecordKey() == null || request.getRecordKey().isBlank() ? UUID.randomUUID().toString() : request.getRecordKey();
+        DynamicEntityRecordDocument document = recordRepository
+                .findFirstByServiceKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(properties.getServiceKey(), entityKey, resolvedRecordKey)
+                .orElseGet(DynamicEntityRecordDocument::new);
         document.setServiceKey(properties.getServiceKey());
         document.setEntityKey(entityKey);
-        document.setRecordKey(request.getRecordKey() == null || request.getRecordKey().isBlank() ? UUID.randomUUID().toString() : request.getRecordKey());
+        document.setRecordKey(resolvedRecordKey);
         document.setData(operated);
         document.setRelations(definition.getRelationDefinitions());
         document.setStatus("ACTIVE");
-        document.setCreatedAt(Instant.now());
+        if (document.getCreatedAt() == null) {
+            document.setCreatedAt(Instant.now());
+        }
         document.setUpdatedAt(Instant.now());
         return recordRepository.save(document);
     }
@@ -139,12 +156,29 @@ public class DynamicRuntimeService {
         return recordRepository.save(updated);
     }
 
+    public DynamicEntityRecordDocument replace(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict) {
+        DynamicEntityRecordDocument existing = getRecord(entityKey, recordKey);
+        DynamicRecordRequest replaceRequest = new DynamicRecordRequest();
+        replaceRequest.setRecordKey(recordKey);
+        replaceRequest.setData(request.getData());
+        DynamicEntityRecordDocument replaced = submit(entityKey, replaceRequest, strict);
+        replaced.setId(existing.getId());
+        replaced.setCreatedAt(existing.getCreatedAt());
+        replaced.setUpdatedAt(Instant.now());
+        return recordRepository.save(replaced);
+    }
+
     public DynamicEntityRecordDocument getRecord(String entityKey, String recordKey) {
-        return recordRepository.findByServiceKeyAndEntityKeyAndRecordKey(properties.getServiceKey(), entityKey, recordKey).orElseThrow();
+        return recordRepository.findFirstByServiceKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(properties.getServiceKey(), entityKey, recordKey).orElseThrow();
     }
 
     public List<DynamicEntityRecordDocument> listRecords(String entityKey) {
         return recordRepository.findByServiceKeyAndEntityKeyOrderByCreatedAtDesc(properties.getServiceKey(), entityKey);
+    }
+
+    public void deleteRecord(String entityKey, String recordKey) {
+        getRecord(entityKey, recordKey);
+        recordRepository.deleteAllByServiceKeyAndEntityKeyAndRecordKey(properties.getServiceKey(), entityKey, recordKey);
     }
 
     private Map<String, Object> mergeForValidation(EntityDefinitionModel definition, Map<String, Object> input) {

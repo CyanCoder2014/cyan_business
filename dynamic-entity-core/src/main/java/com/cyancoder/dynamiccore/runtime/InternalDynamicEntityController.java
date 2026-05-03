@@ -31,6 +31,11 @@ public class InternalDynamicEntityController {
         return runtimeService.getDefinition(entityKey);
     }
 
+    @DeleteMapping("/definitions/{entityKey}")
+    public void deleteDefinition(@PathVariable String entityKey) {
+        runtimeService.deleteDefinition(entityKey);
+    }
+
     @GetMapping("/templates")
     public List<DynamicEntityTemplate> listTemplates() {
         return runtimeService.listTemplates();
@@ -52,9 +57,24 @@ public class InternalDynamicEntityController {
         return ResponseEntity.status(result.valid() ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(result);
     }
 
+    @PostMapping("/submit/{entityKey}")
+    public DynamicEntityRecordDocument submitMap(@PathVariable String entityKey, @RequestBody Map<String, Object> input, @RequestParam(required = false) String recordKey) {
+        return runtimeService.submitMap(entityKey, recordKey, input, true);
+    }
+
     @PostMapping("/records/{entityKey}")
     public DynamicEntityRecordDocument submit(@PathVariable String entityKey, @RequestBody DynamicRecordRequest request) {
         return runtimeService.submit(entityKey, request, true);
+    }
+
+    @PutMapping("/records/{entityKey}/{recordKey}")
+    public DynamicEntityRecordDocument replace(@PathVariable String entityKey, @PathVariable String recordKey, @RequestBody DynamicRecordRequest request) {
+        return runtimeService.replace(entityKey, recordKey, request, true);
+    }
+
+    @PatchMapping("/records/{entityKey}/{recordKey}")
+    public DynamicEntityRecordDocument update(@PathVariable String entityKey, @PathVariable String recordKey, @RequestBody DynamicRecordRequest request) {
+        return runtimeService.update(entityKey, recordKey, request, true);
     }
 
     @GetMapping("/records/{entityKey}")
@@ -65,5 +85,10 @@ public class InternalDynamicEntityController {
     @GetMapping("/records/{entityKey}/{recordKey}")
     public DynamicEntityRecordDocument getRecord(@PathVariable String entityKey, @PathVariable String recordKey) {
         return runtimeService.getRecord(entityKey, recordKey);
+    }
+
+    @DeleteMapping("/records/{entityKey}/{recordKey}")
+    public void deleteRecord(@PathVariable String entityKey, @PathVariable String recordKey) {
+        runtimeService.deleteRecord(entityKey, recordKey);
     }
 }

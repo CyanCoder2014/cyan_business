@@ -1,12 +1,14 @@
 package com.cyancoder.dynamiccore.store.mongo;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.Map;
 
 @Document("dynamic_entity_records")
+@CompoundIndex(name = "uk_dynamic_entity_record", def = "{'serviceKey': 1, 'entityKey': 1, 'recordKey': 1}", unique = true)
 public class DynamicEntityRecordDocument {
     @Id
     private String id;

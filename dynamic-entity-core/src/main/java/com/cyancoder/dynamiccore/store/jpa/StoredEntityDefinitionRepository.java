@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface StoredEntityDefinitionRepository extends JpaRepository<StoredEntityDefinition, Long> {
     Optional<StoredEntityDefinition> findByServiceKeyAndEntityKey(String serviceKey, String entityKey);
     List<StoredEntityDefinition> findByServiceKeyOrderByEntityKeyAsc(String serviceKey);
+    void deleteByServiceKeyAndEntityKey(String serviceKey, String entityKey);
 }

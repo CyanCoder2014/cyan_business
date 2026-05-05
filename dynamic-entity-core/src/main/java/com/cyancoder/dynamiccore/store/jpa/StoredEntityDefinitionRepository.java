@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StoredEntityDefinitionRepository extends JpaRepository<StoredEntityDefinition, Long> {
-    Optional<StoredEntityDefinition> findByServiceKeyAndEntityKey(String serviceKey, String entityKey);
-    List<StoredEntityDefinition> findByServiceKeyOrderByEntityKeyAsc(String serviceKey);
-    void deleteByServiceKeyAndEntityKey(String serviceKey, String entityKey);
+    Optional<StoredEntityDefinition> findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(String serviceKey, String tenantKey, String siteKey, String entityKey);
+    List<StoredEntityDefinition> findByServiceKeyAndTenantKeyAndSiteKeyOrderByEntityKeyAsc(String serviceKey, String tenantKey, String siteKey);
+    void deleteByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(String serviceKey, String tenantKey, String siteKey, String entityKey);
 }

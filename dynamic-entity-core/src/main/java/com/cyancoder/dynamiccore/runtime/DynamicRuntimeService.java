@@ -49,10 +49,13 @@ public class DynamicRuntimeService {
 
     public StoredEntityDefinition saveDefinition(DynamicEntityDefinitionRequest request) {
         EntityDefinitionModel model = definitionParser.parse(request.getDefinitionJson());
+        DynamicScope scope = DynamicScopeResolver.fromRequest(request.getTenantKey(), request.getSiteKey());
         StoredEntityDefinition definition = definitionRepository
-                .findByServiceKeyAndEntityKey(properties.getServiceKey(), request.getEntityKey())
+                .findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), request.getEntityKey())
                 .orElseGet(StoredEntityDefinition::new);
         definition.setServiceKey(properties.getServiceKey());
+        definition.setTenantKey(scope.tenantKey());
+        definition.setSiteKey(scope.siteKey());
         definition.setEntityKey(request.getEntityKey());
         definition.setEntityType(model.getEntityType());
         definition.setTitle(model.getTitle());
@@ -61,17 +64,17 @@ public class DynamicRuntimeService {
         return definitionRepository.save(definition);
     }
 
-    public List<StoredEntityDefinition> listDefinitions() {
-        return definitionRepository.findByServiceKeyOrderByEntityKeyAsc(properties.getServiceKey());
+    public List<StoredEntityDefinition> listDefinitions(DynamicScope scope) {
+        return definitionRepository.findByServiceKeyAndTenantKeyAndSiteKeyOrderByEntityKeyAsc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey());
     }
 
-    public StoredEntityDefinition getDefinition(String entityKey) {
-        return definitionRepository.findByServiceKeyAndEntityKey(properties.getServiceKey(), entityKey).orElseThrow();
+    public StoredEntityDefinition getDefinition(String entityKey, DynamicScope scope) {
+        return definitionRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey).orElseThrow();
     }
 
-    public void deleteDefinition(String entityKey) {
-        getDefinition(entityKey);
-        definitionRepository.deleteByServiceKeyAndEntityKey(properties.getServiceKey(), entityKey);
+    public void deleteDefinition(String entityKey, DynamicScope scope) {
+        getDefinition(entityKey, scope);
+        definitionRepository.deleteByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey);
     }
 
     public List<DynamicEntityTemplate> listTemplates() {
@@ -82,7 +85,7 @@ public class DynamicRuntimeService {
         return templateRegistry.get(templateKey);
     }
 
-    public StoredEntityDefinition createFromTemplate(String templateKey, String entityKeyOverride) {
+    public StoredEntityDefinition createFromTemplate(String templateKey, String entityKeyOverride, DynamicScope scope) {
         DynamicEntityTemplate template = getTemplate(templateKey);
         EntityDefinitionModel model = definitionParser.parse(template.getDefinitionJson());
         String resolvedEntityKey = entityKeyOverride == null || entityKeyOverride.isBlank()
@@ -94,27 +97,31 @@ public class DynamicRuntimeService {
 
         DynamicEntityDefinitionRequest request = new DynamicEntityDefinitionRequest();
         request.setEntityKey(resolvedEntityKey);
+        request.setTenantKey(scope.tenantKey());
+        request.setSiteKey(scope.siteKey());
         request.setDefinitionJson(definitionParser.write(model));
         return saveDefinition(request);
     }
 
-    public DynamicValidationResult validate(String entityKey, Map<String, Object> input, boolean strict) {
-        StoredEntityDefinition stored = getDefinition(entityKey);
+    public DynamicValidationResult validate(String entityKey, Map<String, Object> input, boolean strict, DynamicScope scope) {
+        StoredEntityDefinition stored = getDefinition(entityKey, scope);
         EntityDefinitionModel definition = definitionParser.parse(stored.getDefinitionJson());
         Map<String, Object> merged = mergeForValidation(definition, input);
         DynamicValidationResult result = validationEngine.validate(properties.getServiceKey(), entityKey, definition.getFields(), definition.getValidations(), merged, !strict);
         return new DynamicValidationResult(applyNonFieldDefaults(definition, result.data()), result.errors());
     }
 
-    public DynamicEntityRecordDocument submitMap(String entityKey, String recordKey, Map<String, Object> input, boolean strict) {
+    public DynamicEntityRecordDocument submitMap(String entityKey, String recordKey, Map<String, Object> input, boolean strict, DynamicScope scope) {
         DynamicRecordRequest request = new DynamicRecordRequest();
         request.setRecordKey(recordKey);
+        request.setTenantKey(scope.tenantKey());
+        request.setSiteKey(scope.siteKey());
         request.setData(input);
-        return submit(entityKey, request, strict);
+        return submit(entityKey, request, strict, scope);
     }
 
-    public DynamicEntityRecordDocument submit(String entityKey, DynamicRecordRequest request, boolean strict) {
-        StoredEntityDefinition stored = getDefinition(entityKey);
+    public DynamicEntityRecordDocument submit(String entityKey, DynamicRecordRequest request, boolean strict, DynamicScope scope) {
+        StoredEntityDefinition stored = getDefinition(entityKey, scope);
         EntityDefinitionModel definition = definitionParser.parse(stored.getDefinitionJson());
         Map<String, Object> merged = mergeForValidation(definition, request.getData());
         DynamicValidationResult result = validationEngine.validate(properties.getServiceKey(), entityKey, definition.getFields(), definition.getValidations(), merged, !strict);
@@ -125,9 +132,11 @@ public class DynamicRuntimeService {
         Map<String, Object> operated = operatorEngine.apply(definition.getFields(), definition.getOperations(), new LinkedHashMap<>(resolved));
         String resolvedRecordKey = request.getRecordKey() == null || request.getRecordKey().isBlank() ? UUID.randomUUID().toString() : request.getRecordKey();
         DynamicEntityRecordDocument document = recordRepository
-                .findFirstByServiceKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(properties.getServiceKey(), entityKey, resolvedRecordKey)
+                .findFirstByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey, resolvedRecordKey)
                 .orElseGet(DynamicEntityRecordDocument::new);
         document.setServiceKey(properties.getServiceKey());
+        document.setTenantKey(scope.tenantKey());
+        document.setSiteKey(scope.siteKey());
         document.setEntityKey(entityKey);
         document.setRecordKey(resolvedRecordKey);
         document.setData(operated);
@@ -140,45 +149,49 @@ public class DynamicRuntimeService {
         return recordRepository.save(document);
     }
 
-    public DynamicEntityRecordDocument update(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict) {
-        DynamicEntityRecordDocument existing = getRecord(entityKey, recordKey);
+    public DynamicEntityRecordDocument update(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict, DynamicScope scope) {
+        DynamicEntityRecordDocument existing = getRecord(entityKey, recordKey, scope);
         DynamicRecordRequest mergedRequest = new DynamicRecordRequest();
         mergedRequest.setRecordKey(recordKey);
+        mergedRequest.setTenantKey(scope.tenantKey());
+        mergedRequest.setSiteKey(scope.siteKey());
         Map<String, Object> data = new LinkedHashMap<>(existing.getData() == null ? Map.of() : existing.getData());
         if (request.getData() != null) {
             data.putAll(request.getData());
         }
         mergedRequest.setData(data);
-        DynamicEntityRecordDocument updated = submit(entityKey, mergedRequest, strict);
+        DynamicEntityRecordDocument updated = submit(entityKey, mergedRequest, strict, scope);
         updated.setId(existing.getId());
         updated.setCreatedAt(existing.getCreatedAt());
         updated.setUpdatedAt(Instant.now());
         return recordRepository.save(updated);
     }
 
-    public DynamicEntityRecordDocument replace(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict) {
-        DynamicEntityRecordDocument existing = getRecord(entityKey, recordKey);
+    public DynamicEntityRecordDocument replace(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict, DynamicScope scope) {
+        DynamicEntityRecordDocument existing = getRecord(entityKey, recordKey, scope);
         DynamicRecordRequest replaceRequest = new DynamicRecordRequest();
         replaceRequest.setRecordKey(recordKey);
+        replaceRequest.setTenantKey(scope.tenantKey());
+        replaceRequest.setSiteKey(scope.siteKey());
         replaceRequest.setData(request.getData());
-        DynamicEntityRecordDocument replaced = submit(entityKey, replaceRequest, strict);
+        DynamicEntityRecordDocument replaced = submit(entityKey, replaceRequest, strict, scope);
         replaced.setId(existing.getId());
         replaced.setCreatedAt(existing.getCreatedAt());
         replaced.setUpdatedAt(Instant.now());
         return recordRepository.save(replaced);
     }
 
-    public DynamicEntityRecordDocument getRecord(String entityKey, String recordKey) {
-        return recordRepository.findFirstByServiceKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(properties.getServiceKey(), entityKey, recordKey).orElseThrow();
+    public DynamicEntityRecordDocument getRecord(String entityKey, String recordKey, DynamicScope scope) {
+        return recordRepository.findFirstByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey, recordKey).orElseThrow();
     }
 
-    public List<DynamicEntityRecordDocument> listRecords(String entityKey) {
-        return recordRepository.findByServiceKeyAndEntityKeyOrderByCreatedAtDesc(properties.getServiceKey(), entityKey);
+    public List<DynamicEntityRecordDocument> listRecords(String entityKey, DynamicScope scope) {
+        return recordRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyOrderByCreatedAtDesc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey);
     }
 
-    public void deleteRecord(String entityKey, String recordKey) {
-        getRecord(entityKey, recordKey);
-        recordRepository.deleteAllByServiceKeyAndEntityKeyAndRecordKey(properties.getServiceKey(), entityKey, recordKey);
+    public void deleteRecord(String entityKey, String recordKey, DynamicScope scope) {
+        getRecord(entityKey, recordKey, scope);
+        recordRepository.deleteAllByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey, recordKey);
     }
 
     private Map<String, Object> mergeForValidation(EntityDefinitionModel definition, Map<String, Object> input) {

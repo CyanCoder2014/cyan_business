@@ -1,19 +1,19 @@
 pluginManagement {
     repositories {
+        mavenCentral()
         maven { url 'https://mirror-maven.runflare.com/gradle-plugins/' }
         maven { url 'https://mirror-maven.runflare.com/maven2/' }
         gradlePluginPortal()
-        mavenCentral()
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
+        mavenCentral()
         maven { url 'https://mirror-maven.runflare.com/maven2/' }
         maven { url 'https://mirror-maven.runflare.com/android/maven2/' }
         maven { url 'https://mirror-maven.runflare.com/gradle-plugins/' }
-        mavenCentral()
     }
 }
 
@@ -47,3 +47,11 @@ include 'crm-automation-service'
 include 'finance-automation-service'
 include 'inventory-automation-service'
 include 'report-automation-service'
+include 'payment-service'
+include 'storefront-service'
+include 'media-service'
+include 'cart-service'
+include 'checkout-service'
+include 'payment-orchestrator-service'
+include 'pricing-promotion-service'
+include 'search-index-service'

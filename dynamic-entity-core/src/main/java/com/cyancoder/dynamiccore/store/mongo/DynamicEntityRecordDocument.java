@@ -8,11 +8,13 @@ import java.time.Instant;
 import java.util.Map;
 
 @Document("dynamic_entity_records")
-@CompoundIndex(name = "uk_dynamic_entity_record", def = "{'serviceKey': 1, 'entityKey': 1, 'recordKey': 1}", unique = true)
+@CompoundIndex(name = "uk_dynamic_entity_record", def = "{'serviceKey': 1, 'tenantKey': 1, 'siteKey': 1, 'entityKey': 1, 'recordKey': 1}", unique = true)
 public class DynamicEntityRecordDocument {
     @Id
     private String id;
     private String serviceKey;
+    private String tenantKey;
+    private String siteKey;
     private String entityKey;
     private String recordKey;
     private Map<String, Object> data;
@@ -25,6 +27,10 @@ public class DynamicEntityRecordDocument {
     public void setId(String id) { this.id = id; }
     public String getServiceKey() { return serviceKey; }
     public void setServiceKey(String serviceKey) { this.serviceKey = serviceKey; }
+    public String getTenantKey() { return tenantKey; }
+    public void setTenantKey(String tenantKey) { this.tenantKey = tenantKey; }
+    public String getSiteKey() { return siteKey; }
+    public void setSiteKey(String siteKey) { this.siteKey = siteKey; }
     public String getEntityKey() { return entityKey; }
     public void setEntityKey(String entityKey) { this.entityKey = entityKey; }
     public String getRecordKey() { return recordKey; }

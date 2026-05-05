@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DynamicEntityRecordRepository extends MongoRepository<DynamicEntityRecordDocument, String> {
-    Optional<DynamicEntityRecordDocument> findByServiceKeyAndEntityKeyAndRecordKey(String serviceKey, String entityKey, String recordKey);
-    Optional<DynamicEntityRecordDocument> findFirstByServiceKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(String serviceKey, String entityKey, String recordKey);
-    List<DynamicEntityRecordDocument> findByServiceKeyAndEntityKeyOrderByCreatedAtDesc(String serviceKey, String entityKey);
-    void deleteByServiceKeyAndEntityKeyAndRecordKey(String serviceKey, String entityKey, String recordKey);
-    void deleteAllByServiceKeyAndEntityKeyAndRecordKey(String serviceKey, String entityKey, String recordKey);
+    Optional<DynamicEntityRecordDocument> findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKey(String serviceKey, String tenantKey, String siteKey, String entityKey, String recordKey);
+    Optional<DynamicEntityRecordDocument> findFirstByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(String serviceKey, String tenantKey, String siteKey, String entityKey, String recordKey);
+    List<DynamicEntityRecordDocument> findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyOrderByCreatedAtDesc(String serviceKey, String tenantKey, String siteKey, String entityKey);
+    void deleteByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKey(String serviceKey, String tenantKey, String siteKey, String entityKey, String recordKey);
+    void deleteAllByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKey(String serviceKey, String tenantKey, String siteKey, String entityKey, String recordKey);
 }

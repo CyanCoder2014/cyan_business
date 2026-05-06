@@ -64,12 +64,24 @@ public class DynamicRuntimeService {
         return definitionRepository.save(definition);
     }
 
+    public List<StoredEntityDefinition> listDefinitions() {
+        return listDefinitions(new DynamicScope(null, null));
+    }
+
     public List<StoredEntityDefinition> listDefinitions(DynamicScope scope) {
         return definitionRepository.findByServiceKeyAndTenantKeyAndSiteKeyOrderByEntityKeyAsc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey());
     }
 
+    public StoredEntityDefinition getDefinition(String entityKey) {
+        return getDefinition(entityKey, new DynamicScope(null, null));
+    }
+
     public StoredEntityDefinition getDefinition(String entityKey, DynamicScope scope) {
         return definitionRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey).orElseThrow();
+    }
+
+    public void deleteDefinition(String entityKey) {
+        deleteDefinition(entityKey, new DynamicScope(null, null));
     }
 
     public void deleteDefinition(String entityKey, DynamicScope scope) {
@@ -103,12 +115,20 @@ public class DynamicRuntimeService {
         return saveDefinition(request);
     }
 
+    public StoredEntityDefinition createFromTemplate(String templateKey, String entityKeyOverride) {
+        return createFromTemplate(templateKey, entityKeyOverride, new DynamicScope(null, null));
+    }
+
     public DynamicValidationResult validate(String entityKey, Map<String, Object> input, boolean strict, DynamicScope scope) {
         StoredEntityDefinition stored = getDefinition(entityKey, scope);
         EntityDefinitionModel definition = definitionParser.parse(stored.getDefinitionJson());
         Map<String, Object> merged = mergeForValidation(definition, input);
         DynamicValidationResult result = validationEngine.validate(properties.getServiceKey(), entityKey, definition.getFields(), definition.getValidations(), merged, !strict);
         return new DynamicValidationResult(applyNonFieldDefaults(definition, result.data()), result.errors());
+    }
+
+    public DynamicValidationResult validate(String entityKey, Map<String, Object> input, boolean strict) {
+        return validate(entityKey, input, strict, new DynamicScope(null, null));
     }
 
     public DynamicEntityRecordDocument submitMap(String entityKey, String recordKey, Map<String, Object> input, boolean strict, DynamicScope scope) {
@@ -118,6 +138,10 @@ public class DynamicRuntimeService {
         request.setSiteKey(scope.siteKey());
         request.setData(input);
         return submit(entityKey, request, strict, scope);
+    }
+
+    public DynamicEntityRecordDocument submitMap(String entityKey, String recordKey, Map<String, Object> input, boolean strict) {
+        return submitMap(entityKey, recordKey, input, strict, new DynamicScope(null, null));
     }
 
     public DynamicEntityRecordDocument submit(String entityKey, DynamicRecordRequest request, boolean strict, DynamicScope scope) {
@@ -149,6 +173,10 @@ public class DynamicRuntimeService {
         return recordRepository.save(document);
     }
 
+    public DynamicEntityRecordDocument submit(String entityKey, DynamicRecordRequest request, boolean strict) {
+        return submit(entityKey, request, strict, new DynamicScope(null, null));
+    }
+
     public DynamicEntityRecordDocument update(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict, DynamicScope scope) {
         DynamicEntityRecordDocument existing = getRecord(entityKey, recordKey, scope);
         DynamicRecordRequest mergedRequest = new DynamicRecordRequest();
@@ -167,6 +195,10 @@ public class DynamicRuntimeService {
         return recordRepository.save(updated);
     }
 
+    public DynamicEntityRecordDocument update(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict) {
+        return update(entityKey, recordKey, request, strict, new DynamicScope(null, null));
+    }
+
     public DynamicEntityRecordDocument replace(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict, DynamicScope scope) {
         DynamicEntityRecordDocument existing = getRecord(entityKey, recordKey, scope);
         DynamicRecordRequest replaceRequest = new DynamicRecordRequest();
@@ -181,17 +213,33 @@ public class DynamicRuntimeService {
         return recordRepository.save(replaced);
     }
 
+    public DynamicEntityRecordDocument replace(String entityKey, String recordKey, DynamicRecordRequest request, boolean strict) {
+        return replace(entityKey, recordKey, request, strict, new DynamicScope(null, null));
+    }
+
     public DynamicEntityRecordDocument getRecord(String entityKey, String recordKey, DynamicScope scope) {
         return recordRepository.findFirstByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey, recordKey).orElseThrow();
+    }
+
+    public DynamicEntityRecordDocument getRecord(String entityKey, String recordKey) {
+        return getRecord(entityKey, recordKey, new DynamicScope(null, null));
     }
 
     public List<DynamicEntityRecordDocument> listRecords(String entityKey, DynamicScope scope) {
         return recordRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyOrderByCreatedAtDesc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey);
     }
 
+    public List<DynamicEntityRecordDocument> listRecords(String entityKey) {
+        return listRecords(entityKey, new DynamicScope(null, null));
+    }
+
     public void deleteRecord(String entityKey, String recordKey, DynamicScope scope) {
         getRecord(entityKey, recordKey, scope);
         recordRepository.deleteAllByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey, recordKey);
+    }
+
+    public void deleteRecord(String entityKey, String recordKey) {
+        deleteRecord(entityKey, recordKey, new DynamicScope(null, null));
     }
 
     private Map<String, Object> mergeForValidation(EntityDefinitionModel definition, Map<String, Object> input) {

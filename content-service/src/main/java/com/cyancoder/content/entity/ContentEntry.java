@@ -16,7 +16,7 @@ public class ContentEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "entry_key", nullable = false, unique = true)
     private String key;
 
     @Column(nullable = false)

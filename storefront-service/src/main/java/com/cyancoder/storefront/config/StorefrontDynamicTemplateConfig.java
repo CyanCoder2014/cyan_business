@@ -21,12 +21,18 @@ public class StorefrontDynamicTemplateConfig {
                           "defaultValues":{"publicationStatus":"DRAFT","indexingEnabled":"true","sitemapPriority":"0.8"},
                           "fields":{
                             "routeKey":{"id":"routeKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
-                            "path":{"id":"path","type":"string","validations":[{"validation":"REQUIRED","order":1},{"validation":"REGEX","order":2,"validationParams":{"pattern":"^/[a-z0-9\\-/]*$"}}]},
+                            "path":{"id":"path","type":"string","validations":[{"validation":"REQUIRED","order":1},{"validation":"REGEX","order":2,"validationParams":{"pattern":"^/[a-z0-9/-]*$"}}]},
                             "routeType":{"id":"routeType","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["LANDING","BLOG","PRODUCT","CATEGORY","SEARCH","CHECKOUT","CUSTOM"]}}]},
                             "entityRef":{"id":"entityRef","type":"object","itemValidations":{
                               "service":{"id":"service","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
                               "entityKey":{"id":"entityKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
                               "recordKey":{"id":"recordKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]}
+                            }},
+                            "navigation":{"id":"navigation","type":"object","itemValidations":{
+                              "label":{"id":"label","type":"string"},
+                              "menuKey":{"id":"menuKey","type":"string"},
+                              "sortOrder":{"id":"sortOrder","type":"number"},
+                              "visible":{"id":"visible","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["true","false"]}}]}
                             }},
                             "seo":{"id":"seo","type":"object","itemValidations":{
                               "title":{"id":"title","type":"string","validations":[{"validation":"REQUIRED","order":1},{"validation":"MAX_LENGTH","order":2,"validationParams":{"max":70}}]},
@@ -45,11 +51,18 @@ public class StorefrontDynamicTemplateConfig {
                               "themeKey":{"id":"themeKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
                               "templateKey":{"id":"templateKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
                               "cacheTtlSeconds":{"id":"cacheTtlSeconds","type":"number"},
-                              "preloadAssets":{"id":"preloadAssets","type":"list"}
+                              "preloadAssets":{"id":"preloadAssets","type":"list"},
+                              "hydrateTargetEntity":{"id":"hydrateTargetEntity","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["true","false"]}}]}
                             }},
                             "indexingEnabled":{"id":"indexingEnabled","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["true","false"]}}]},
                             "sitemapPriority":{"id":"sitemapPriority","type":"string"},
-                            "publicationStatus":{"id":"publicationStatus","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["DRAFT","PUBLISHED","ARCHIVED"]}}]}
+                            "publicationStatus":{"id":"publicationStatus","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["DRAFT","PUBLISHED","ARCHIVED"]}}]},
+                            "routeLifecycle":{"id":"routeLifecycle","type":"object","itemValidations":{
+                              "validFrom":{"id":"validFrom","type":"string"},
+                              "validTo":{"id":"validTo","type":"string"},
+                              "redirectTo":{"id":"redirectTo","type":"string"},
+                              "httpStatus":{"id":"httpStatus","type":"number"}
+                            }}
                           }
                         }
                         """),

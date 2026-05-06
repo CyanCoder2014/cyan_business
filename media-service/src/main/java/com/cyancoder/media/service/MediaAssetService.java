@@ -1,0 +1,119 @@
+package com.cyancoder.media.service;
+
+import com.cyancoder.dynamiccore.runtime.DynamicRuntimeService;
+import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
+import com.cyancoder.media.model.MediaAssetResponse;
+import com.cyancoder.media.model.MediaUploadPrepareRequest;
+import org.springframework.stereotype.Service;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+@Service
+public class MediaAssetService {
+    private final DynamicRuntimeService dynamicRuntimeService;
+
+    public MediaAssetService(DynamicRuntimeService dynamicRuntimeService) {
+        this.dynamicRuntimeService = dynamicRuntimeService;
+    }
+
+    public MediaAssetResponse prepareUpload(MediaUploadPrepareRequest request) {
+        ensureDefinition("media-asset");
+        String assetKey = request.assetKey();
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("assetKey", assetKey);
+        data.put("assetType", firstNonBlank(request.assetType(), "IMAGE"));
+        data.put("originalFileName", request.originalFileName());
+        data.put("mimeType", request.mimeType());
+        data.put("visibility", firstNonBlank(request.visibility(), "PUBLIC"));
+        data.put("seo", Map.of(
+                "altText", firstNonBlank(request.altText(), request.title(), assetKey),
+                "caption", firstNonBlank(request.caption(), ""),
+                "title", firstNonBlank(request.title(), request.originalFileName()),
+                "license", firstNonBlank(request.license(), "")
+        ));
+        String path = firstNonBlank(request.path(), "assets/" + assetKey + "/" + request.originalFileName());
+        String cdnUrl = "https://cdn.example.com/" + path;
+        data.put("storage", Map.of(
+                "bucket", firstNonBlank(request.bucket(), "default-public"),
+                "path", path,
+                "cdnUrl", cdnUrl,
+                "width", request.width() == null ? 0 : request.width(),
+                "height", request.height() == null ? 0 : request.height(),
+                "sizeBytes", request.sizeBytes() == null ? 0 : request.sizeBytes()
+        ));
+        data.put("variants", buildVariants(cdnUrl, request.width(), request.height()));
+        data.put("storageStatus", "OPTIMIZED");
+
+        DynamicEntityRecordDocument saved = dynamicRuntimeService.submitMap("media-asset", assetKey, data, true);
+        return toResponse(saved, null);
+    }
+
+    public MediaAssetResponse get(String assetKey) {
+        return toResponse(dynamicRuntimeService.getRecord("media-asset", assetKey), null);
+    }
+
+    @SuppressWarnings("unchecked")
+    public MediaAssetResponse getVariant(String assetKey, String variantKey) {
+        DynamicEntityRecordDocument record = dynamicRuntimeService.getRecord("media-asset", assetKey);
+        Map<String, Object> data = record.getData() == null ? Map.of() : record.getData();
+        Object variants = data.get("variants");
+        if (!(variants instanceof List<?> list)) {
+            return toResponse(record, null);
+        }
+        Map<String, Object> variant = list.stream()
+                .filter(Map.class::isInstance)
+                .map(Map.class::cast)
+                .map(item -> (Map<String, Object>) item)
+                .filter(item -> variantKey.equals(Objects.toString(item.get("variantKey"), "")))
+                .findFirst()
+                .orElseThrow();
+        return toResponse(record, variant);
+    }
+
+    private MediaAssetResponse toResponse(DynamicEntityRecordDocument record, Map<String, Object> variant) {
+        Map<String, Object> data = record.getData() == null ? Map.of() : record.getData();
+        String deliveryUrl = variant == null
+                ? Objects.toString(nested(data, "storage", "cdnUrl"), "")
+                : Objects.toString(variant.get("cdnUrl"), "");
+        return new MediaAssetResponse(record.getRecordKey(), deliveryUrl, Objects.toString(data.get("storageStatus"), "UPLOADED"), data);
+    }
+
+    private void ensureDefinition(String entityKey) {
+        try {
+            dynamicRuntimeService.getDefinition(entityKey);
+        } catch (Exception ex) {
+            dynamicRuntimeService.createFromTemplate(entityKey, entityKey);
+        }
+    }
+
+    private List<Map<String, Object>> buildVariants(String baseUrl, Integer width, Integer height) {
+        int safeWidth = width == null || width <= 0 ? 1200 : width;
+        int safeHeight = height == null || height <= 0 ? 1200 : height;
+        return List.of(
+                Map.of("variantKey", "thumb", "width", 320, "height", Math.min(safeHeight, 320), "format", "webp", "cdnUrl", baseUrl + "?variant=thumb"),
+                Map.of("variantKey", "medium", "width", 768, "height", Math.min(safeHeight, 768), "format", "webp", "cdnUrl", baseUrl + "?variant=medium"),
+                Map.of("variantKey", "original", "width", safeWidth, "height", safeHeight, "format", "original", "cdnUrl", baseUrl)
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object nested(Map<String, Object> data, String objectKey, String fieldKey) {
+        Object nested = data.get(objectKey);
+        if (nested instanceof Map<?, ?> map) {
+            return ((Map<String, Object>) map).get(fieldKey);
+        }
+        return null;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return "";
+    }
+}

@@ -55,4 +55,20 @@ public class PublicStorefrontController {
     ) {
         return storefrontRouteService.sitemap(DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
     }
+
+    @GetMapping(value = "/sitemap.xml", produces = "application/xml;charset=UTF-8")
+    public String sitemapXml(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+    ) {
+        return storefrontRouteService.sitemapXml(DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
+
+    @GetMapping(value = "/robots.txt", produces = "text/plain;charset=UTF-8")
+    public String robotsTxt(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+    ) {
+        return storefrontRouteService.robotsTxt(DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
 }

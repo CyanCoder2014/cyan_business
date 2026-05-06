@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class StorefrontRouteService {
@@ -63,20 +64,49 @@ public class StorefrontRouteService {
 
     public List<Map<String, Object>> sitemap(DynamicScope scope) {
         return dynamicRuntimeService.listRecords("site-route", scope).stream()
-                .map(DynamicEntityRecordDocument::getData)
-                .filter(Objects::nonNull)
-                .filter(route -> "PUBLISHED".equalsIgnoreCase(Objects.toString(route.get("publicationStatus"), "")))
-                .filter(route -> "true".equalsIgnoreCase(Objects.toString(route.get("indexingEnabled"), "true")))
-                .map(route -> {
+                .filter(record -> record.getData() != null)
+                .filter(record -> "PUBLISHED".equalsIgnoreCase(Objects.toString(record.getData().get("publicationStatus"), "")))
+                .filter(record -> "true".equalsIgnoreCase(Objects.toString(record.getData().get("indexingEnabled"), "true")))
+                .map(record -> {
+                    Map<String, Object> route = record.getData();
                     Map<String, Object> sitemapRow = new LinkedHashMap<>();
                     sitemapRow.put("path", Objects.toString(route.get("path"), ""));
                     sitemapRow.put("routeType", Objects.toString(route.get("routeType"), ""));
                     sitemapRow.put("sitemapPriority", Objects.toString(route.get("sitemapPriority"), "0.8"));
                     sitemapRow.put("canonicalUrl", Objects.toString(nestedValue(route, "seo", "canonicalUrl"), ""));
-                    sitemapRow.put("lastModified", "");
+                    sitemapRow.put("lastModified", Objects.toString(record.getUpdatedAt(), ""));
                     return sitemapRow;
                 })
                 .toList();
+    }
+
+    public String sitemapXml(DynamicScope scope) {
+        List<Map<String, Object>> routes = sitemap(scope);
+        StringBuilder xml = new StringBuilder();
+        xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+        xml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
+        for (Map<String, Object> route : routes) {
+            xml.append("<url>");
+            xml.append("<loc>").append(escapeXml(absoluteUrl(route))).append("</loc>");
+            String lastModified = Objects.toString(route.get("lastModified"), "");
+            if (!lastModified.isBlank()) {
+                xml.append("<lastmod>").append(escapeXml(lastModified)).append("</lastmod>");
+            }
+            xml.append("<changefreq>").append(escapeXml(defaulted(route.get("changeFrequency"), "weekly"))).append("</changefreq>");
+            xml.append("<priority>").append(escapeXml(defaulted(route.get("sitemapPriority"), "0.8"))).append("</priority>");
+            xml.append("</url>");
+        }
+        xml.append("</urlset>");
+        return xml.toString();
+    }
+
+    public String robotsTxt(DynamicScope scope) {
+        String sitemapUrl = sitemap(scope).stream()
+                .findFirst()
+                .map(this::absoluteUrl)
+                .map(url -> url.endsWith("/") ? url + "public/storefront/sitemap.xml" : url.substring(0, url.lastIndexOf('/')) + "/public/storefront/sitemap.xml")
+                .orElse("/public/storefront/sitemap.xml");
+        return "User-agent: *\nAllow: /\nSitemap: " + sitemapUrl + "\n";
     }
 
     private Map<String, Object> resolveTarget(Map<String, Object> routeData, DynamicScope scope) {
@@ -150,15 +180,36 @@ public class StorefrontRouteService {
         String brandName = Objects.toString(theme.get("brandName"), "Dynamic Storefront");
         String bodyTitle = firstNonBlank(targetData.get("title"), targetData.get("name"), title);
         String bodyContent = firstNonBlank(targetData.get("body"), targetData.get("content"), targetData.get("summary"), targetData.get("description"), "");
+        String canonicalUrl = firstNonBlank(seo.get("canonicalUrl"), nestedValue(targetData, "seo", "canonicalUrl"), nestedValue(targetData, "routing", "primaryPath"), resolved.getPath());
+        String robots = firstNonBlank(seo.get("robots"), "index,follow");
+        String ogImage = firstNonBlank(seo.get("ogImage"), nestedMediaUrl(targetData), "");
+        String twitterCard = firstNonBlank(seo.get("twitterCard"), "summary_large_image");
+        String schemaJson = buildSchemaJson(route, targetData, brandName, title, description, canonicalUrl);
 
         StringBuilder html = new StringBuilder();
         html.append("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">");
         html.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
         html.append("<title>").append(escapeHtml(title)).append("</title>");
+        html.append("<link rel=\"canonical\" href=\"").append(escapeHtml(canonicalUrl)).append("\">");
+        html.append("<meta name=\"robots\" content=\"").append(escapeHtml(robots)).append("\">");
         if (!description.isBlank()) {
             html.append("<meta name=\"description\" content=\"").append(escapeHtml(description)).append("\">");
         }
+        html.append("<meta property=\"og:title\" content=\"").append(escapeHtml(title)).append("\">");
+        html.append("<meta property=\"og:description\" content=\"").append(escapeHtml(description)).append("\">");
         html.append("<meta property=\"og:site_name\" content=\"").append(escapeHtml(brandName)).append("\">");
+        html.append("<meta property=\"og:type\" content=\"").append(escapeHtml(ogType(route))).append("\">");
+        html.append("<meta property=\"og:url\" content=\"").append(escapeHtml(canonicalUrl)).append("\">");
+        if (!ogImage.isBlank()) {
+            html.append("<meta property=\"og:image\" content=\"").append(escapeHtml(ogImage)).append("\">");
+        }
+        html.append("<meta name=\"twitter:card\" content=\"").append(escapeHtml(twitterCard)).append("\">");
+        html.append("<meta name=\"twitter:title\" content=\"").append(escapeHtml(title)).append("\">");
+        html.append("<meta name=\"twitter:description\" content=\"").append(escapeHtml(description)).append("\">");
+        if (!ogImage.isBlank()) {
+            html.append("<meta name=\"twitter:image\" content=\"").append(escapeHtml(ogImage)).append("\">");
+        }
+        html.append("<script type=\"application/ld+json\">").append(escapeHtml(schemaJson)).append("</script>");
         html.append("</head><body>");
         html.append("<header><h1>").append(escapeHtml(brandName)).append("</h1></header>");
         html.append("<main>");
@@ -174,6 +225,95 @@ public class StorefrontRouteService {
         html.append("</main>");
         html.append("</body></html>");
         return html.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String nestedMediaUrl(Map<String, Object> targetData) {
+        Object media = targetData.get("media");
+        if (!(media instanceof List<?> list) || list.isEmpty() || !(list.get(0) instanceof Map<?, ?> map)) {
+            return "";
+        }
+        return Objects.toString(((Map<String, Object>) map).get("url"), "");
+    }
+
+    private String ogType(Map<String, Object> route) {
+        String routeType = Objects.toString(route.get("routeType"), "");
+        if ("PRODUCT".equalsIgnoreCase(routeType)) {
+            return "product";
+        }
+        if ("BLOG".equalsIgnoreCase(routeType) || "ARTICLE".equalsIgnoreCase(routeType)) {
+            return "article";
+        }
+        return "website";
+    }
+
+    @SuppressWarnings("unchecked")
+    private String buildSchemaJson(Map<String, Object> route, Map<String, Object> targetData, String brandName, String title, String description, String canonicalUrl) {
+        Object explicitBlocks = nestedValue(route, "seo", "structuredDataBlocks");
+        if (explicitBlocks instanceof List<?> blocks && !blocks.isEmpty()) {
+            return blocks.stream().map(String::valueOf).collect(Collectors.joining(", ", "[", "]"));
+        }
+        Map<String, Object> schema = new LinkedHashMap<>();
+        schema.put("@context", "https://schema.org");
+        String routeType = Objects.toString(route.get("routeType"), "");
+        if ("PRODUCT".equalsIgnoreCase(routeType)) {
+            schema.put("@type", "Product");
+            schema.put("name", firstNonBlank(targetData.get("name"), title));
+            schema.put("description", description);
+            schema.put("url", canonicalUrl);
+            schema.put("brand", Map.of("@type", "Brand", "name", brandName));
+            Object price = targetData.get("defaultPrice");
+            if (price != null) {
+                schema.put("offers", Map.of(
+                        "@type", "Offer",
+                        "priceCurrency", firstNonBlank(targetData.get("currency"), "IRR"),
+                        "price", price,
+                        "availability", "https://schema.org/InStock"
+                ));
+            }
+        } else {
+            schema.put("@type", "WebPage");
+            schema.put("name", title);
+            schema.put("description", description);
+            schema.put("url", canonicalUrl);
+            schema.put("isPartOf", Map.of("@type", "WebSite", "name", brandName));
+        }
+        return toJson(schema);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String toJson(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof String string) {
+            return "\"" + string.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+        }
+        if (value instanceof Number || value instanceof Boolean) {
+            return String.valueOf(value);
+        }
+        if (value instanceof Map<?, ?> map) {
+            return map.entrySet().stream()
+                    .map(entry -> toJson(String.valueOf(entry.getKey())) + ":" + toJson(entry.getValue()))
+                    .collect(Collectors.joining(",", "{", "}"));
+        }
+        if (value instanceof List<?> list) {
+            return list.stream().map(this::toJson).collect(Collectors.joining(",", "[", "]"));
+        }
+        return toJson(String.valueOf(value));
+    }
+
+    private String absoluteUrl(Map<String, Object> route) {
+        String canonical = Objects.toString(route.get("canonicalUrl"), "");
+        if (!canonical.isBlank()) {
+            return canonical;
+        }
+        String path = Objects.toString(route.get("path"), "/");
+        return path.startsWith("http") ? path : "https://example.com" + path;
+    }
+
+    private String defaulted(Object value, String fallback) {
+        return value == null || String.valueOf(value).isBlank() ? fallback : String.valueOf(value);
     }
 
     private String firstNonBlank(Object... values) {
@@ -194,5 +334,9 @@ public class StorefrontRouteService {
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace("\"", "&quot;");
+    }
+
+    private String escapeXml(String input) {
+        return escapeHtml(input).replace("'", "&apos;");
     }
 }

@@ -3,6 +3,8 @@ package com.cyancoder.paymentorchestrator.service;
 import com.cyancoder.paymentorchestrator.model.AvailablePaymentMethod;
 import com.cyancoder.paymentorchestrator.model.PaymentOrchestratorInitiationRequest;
 import com.cyancoder.paymentorchestrator.model.PaymentOrchestratorInitiationResponse;
+import com.cyancoder.paymentorchestrator.model.PaymentOrchestratorVerificationRequest;
+import com.cyancoder.paymentorchestrator.model.PaymentOrchestratorVerificationResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -35,6 +37,20 @@ public class PaymentGatewayBridgeService {
                 string(body, "providerReferenceId"),
                 string(body, "externalPaymentId"),
                 string(body, "publicCallbackUrl")
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    public PaymentOrchestratorVerificationResponse verify(String transactionKey, PaymentOrchestratorVerificationRequest request) {
+        Map<String, Object> body = httpSupport.post("payment-service", "/internal/payment/transactions/" + transactionKey + "/verify",
+                request == null ? Map.of() : request.payload(),
+                Map.class);
+        return new PaymentOrchestratorVerificationResponse(
+                string(body, "transactionKey"),
+                string(body, "status"),
+                string(body, "paymentMethodKey"),
+                string(body, "providerCode"),
+                string(body, "verificationMessage")
         );
     }
 

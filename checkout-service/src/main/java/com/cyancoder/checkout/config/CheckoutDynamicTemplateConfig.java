@@ -81,7 +81,9 @@ public class CheckoutDynamicTemplateConfig {
                               "region":{"id":"region","type":"string"},
                               "gatewayType":{"id":"gatewayType","type":"string"},
                               "captureMode":{"id":"captureMode","type":"string"},
-                              "installmentPlanKey":{"id":"installmentPlanKey","type":"string"}
+                              "installmentPlanKey":{"id":"installmentPlanKey","type":"string"},
+                              "paymentTransactionKey":{"id":"paymentTransactionKey","type":"string"},
+                              "paymentUrl":{"id":"paymentUrl","type":"string"}
                             }},
                             "status":{"id":"status","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["CREATED","ADDRESS_COMPLETED","PRICED","PAYMENT_PENDING","PAYMENT_VERIFIED","ORDER_CONFIRMED","FAILED","CANCELLED"]}}]},
                             "notificationStatus":{"id":"notificationStatus","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["PENDING","SENT","FAILED"]}}]},

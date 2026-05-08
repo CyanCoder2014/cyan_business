@@ -14,7 +14,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableConfigurationProperties(InternalSecurityProperties.class)
+@EnableConfigurationProperties({InternalSecurityProperties.class, DynamicFlowCallbackProperties.class})
 public class BpmSecurityConfig {
 
     @Bean
@@ -45,6 +45,7 @@ public class BpmSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/public/bpm/async-actions/callbacks/**").permitAll()
                         .requestMatchers("/error", "/actuator/health").permitAll()
                         .anyRequest().denyAll());
         return http.build();
@@ -60,4 +61,3 @@ public class BpmSecurityConfig {
         );
     }
 }
-

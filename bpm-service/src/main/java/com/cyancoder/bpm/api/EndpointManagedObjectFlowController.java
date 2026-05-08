@@ -6,6 +6,7 @@ import com.cyancoder.bpm.api.dto.ManagedObjectActiveFormResponse;
 import com.cyancoder.bpm.api.dto.ManagedObjectFormSubmissionResponse;
 import com.cyancoder.bpm.api.dto.SubmitManagedObjectFormRequest;
 import com.cyancoder.bpm.api.dto.TransitionRequest;
+import com.cyancoder.bpm.api.dto.TransitionOptionResponse;
 import com.cyancoder.bpm.domain.ManagedObject;
 import com.cyancoder.bpm.service.ActorContextResolver;
 import com.cyancoder.bpm.service.ObjectFlowService;
@@ -79,6 +80,21 @@ public class EndpointManagedObjectFlowController {
         return objectFlowService.transit(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId, request.nextState(), actorContextResolver.fromAuthentication(authentication), request.context());
     }
 
+    @GetMapping("/{objectId}/transitions")
+    public List<TransitionOptionResponse> availableTransitions(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable String objectId,
+            Authentication authentication
+    ) {
+        return objectFlowService.availableTransitions(
+                FlowScopeResolver.fromHeaders(tenantKey, siteKey),
+                objectId,
+                actorContextResolver.fromAuthentication(authentication),
+                null
+        );
+    }
+
     @GetMapping("/{objectId}/active-form")
     public ManagedObjectActiveFormResponse getActiveForm(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
@@ -108,4 +124,3 @@ public class EndpointManagedObjectFlowController {
         return objectFlowService.findById(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId);
     }
 }
-

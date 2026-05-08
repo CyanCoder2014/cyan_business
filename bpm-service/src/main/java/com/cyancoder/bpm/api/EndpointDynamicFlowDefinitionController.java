@@ -49,5 +49,14 @@ public class EndpointDynamicFlowDefinitionController {
         BpmScope scope = FlowScopeResolver.fromHeaders(tenantKey, siteKey);
         return flowDefinitionService.save(scope, definition);
     }
-}
 
+    @PostMapping("/{flowKey}/activate/{version}")
+    public DynamicFlowDefinition activate(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable String flowKey,
+            @PathVariable Integer version
+    ) {
+        return flowDefinitionService.activate(FlowScopeResolver.fromHeaders(tenantKey, siteKey), flowKey, version);
+    }
+}

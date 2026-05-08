@@ -21,12 +21,14 @@ public class ManagedObject {
     private ManagedObjectRef objectRef;
     private String flowKey;
     private String state;
+    private String processInstanceId;
     private String assignee;
     private Map<String, Object> payload = new HashMap<>();
     private FlowAccessRule accessRule;
     private boolean locked;
     private List<String> auditLog = new ArrayList<>();
     private List<TransitionHistoryEntry> transitionHistory = new ArrayList<>();
+    private List<AsyncActionRegistration> asyncActionRegistry = new ArrayList<>();
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -44,6 +46,8 @@ public class ManagedObject {
     public void setFlowKey(String flowKey) { this.flowKey = flowKey; }
     public String getState() { return state; }
     public void setState(String state) { this.state = state; }
+    public String getProcessInstanceId() { return processInstanceId; }
+    public void setProcessInstanceId(String processInstanceId) { this.processInstanceId = processInstanceId; }
     public String getAssignee() { return assignee; }
     public void setAssignee(String assignee) { this.assignee = assignee; }
     public Map<String, Object> getPayload() { return payload; }
@@ -56,9 +60,10 @@ public class ManagedObject {
     public void setAuditLog(List<String> auditLog) { this.auditLog = auditLog; }
     public List<TransitionHistoryEntry> getTransitionHistory() { return transitionHistory; }
     public void setTransitionHistory(List<TransitionHistoryEntry> transitionHistory) { this.transitionHistory = transitionHistory; }
+    public List<AsyncActionRegistration> getAsyncActionRegistry() { return asyncActionRegistry; }
+    public void setAsyncActionRegistry(List<AsyncActionRegistration> asyncActionRegistry) { this.asyncActionRegistry = asyncActionRegistry; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }
-

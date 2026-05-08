@@ -41,10 +41,48 @@ public class FlowActionExecutor {
             case ADD_AUDIT_ENTRY -> object.getAuditLog().add(String.valueOf(params.getOrDefault("message", "audit")) + " by=" + actorUserId + " at=" + Instant.now());
             case SET_ASSIGNEE -> object.setAssignee(stringValue(params.get("assignee")));
             case SET_ACCESS_RULE -> object.setAccessRule(new FlowAccessRule(stringSet(params.get("canRead")), stringSet(params.get("canEdit")), stringSet(params.get("canApprove"))));
+            case LOCK_OBJECT -> object.setLocked(true);
+            case UNLOCK_OBJECT -> object.setLocked(false);
             case UPDATE_OBJECT_FIELDS -> updateFields(object.getPayload(), params);
             case COPY_FIELDS -> copyFields(object.getPayload(), params);
             case REMOVE_FIELDS -> removeFields(object.getPayload(), params);
-            case CALL_API, CALL_OPERATOR, NOTIFY_OWNER -> integrationClient.callAction(action, object, scope);
+            case CALL_API, CALL_OPERATOR -> syncCall(action, object, scope, actorUserId);
+            case CALL_API_ASYNC, CALL_OPERATOR_ASYNC -> registerAsyncAction(action, object, scope, actorUserId);
+            case NOTIFY_OWNER -> integrationClient.callAction(action, object, scope);
+        }
+    }
+
+    private void syncCall(FlowActionConfig action, ManagedObject object, BpmScope scope, String actorUserId) {
+        Map<String, Object> response = integrationClient.callActionForResponse(action, object, scope, actorUserId);
+        Map<String, Object> params = action.params() == null ? Map.of() : action.params();
+        CallApiActionSupport.applyResponseMappings(object, response, params.get("responseMappings"));
+        Object storeFullResponseAt = params.get("storeFullResponseAt");
+        if (storeFullResponseAt != null) {
+            ActionPayloadSupport.setPayloadPath(object, storeFullResponseAt.toString(), response);
+        }
+    }
+
+    private void registerAsyncAction(FlowActionConfig action, ManagedObject object, BpmScope scope, String actorUserId) {
+        Map<String, Object> params = action.params() == null ? Map.of() : action.params();
+        String actionKey = stringValue(params.getOrDefault("actionKey", "async-" + Instant.now().toEpochMilli()));
+        String correlationKey = stringValue(CallApiActionSupport.resolveTemplate(params.getOrDefault("correlationKey", object.getId() + ":" + actionKey), object, actorUserId));
+        com.cyancoder.bpm.domain.AsyncActionRegistration registration = new com.cyancoder.bpm.domain.AsyncActionRegistration();
+        registration.setActionKey(actionKey);
+        registration.setCorrelationKey(correlationKey);
+        registration.setStateId(object.getState());
+        registration.setStatus("PENDING");
+        object.getAsyncActionRegistry().removeIf(existing -> actionKey.equals(existing.getActionKey()));
+        object.getAsyncActionRegistry().add(registration);
+        ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".status", "PENDING");
+        ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".correlationKey", correlationKey);
+        if (params.get("callbackResponseMappings") != null) {
+            ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".callbackResponseMappings", params.get("callbackResponseMappings"));
+        }
+        if (params.get("callbackStoreFullResponseAt") != null) {
+            ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".callbackStoreFullResponseAt", params.get("callbackStoreFullResponseAt"));
+        }
+        if (!Boolean.FALSE.equals(params.get("fireAndForget"))) {
+            integrationClient.callActionForResponse(action, object, scope, actorUserId);
         }
     }
 
@@ -85,4 +123,3 @@ public class FlowActionExecutor {
         return value == null ? null : String.valueOf(value);
     }
 }
-

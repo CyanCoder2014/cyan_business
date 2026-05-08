@@ -113,6 +113,29 @@ public class DynamicFlowIntegrationClient {
         );
     }
 
+    public Map<String, Object> callActionForResponse(FlowActionConfig action, ManagedObject object, BpmScope scope, String actor) {
+        if (action.params() == null) {
+            return Map.of();
+        }
+        String serviceKey = stringValue(action.params().get("serviceKey"));
+        String path = stringValue(action.params().get("path"));
+        if (serviceKey == null || path == null) {
+            return Map.of();
+        }
+        Object body = CallApiActionSupport.resolveTemplate(action.params().get("body"), object, actor);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = httpSupport.exchange(
+                serviceKey,
+                path,
+                HttpMethod.valueOf(stringValue(action.params().getOrDefault("method", "POST"))),
+                body == null ? Map.of() : body,
+                scope.tenantKey(),
+                scope.siteKey(),
+                Map.class
+        );
+        return response == null ? Map.of() : response;
+    }
+
     private String coalesce(String... values) {
         for (String value : values) {
             if (value != null && !value.isBlank()) {
@@ -131,4 +154,3 @@ public class DynamicFlowIntegrationClient {
         return value == null ? null : String.valueOf(value);
     }
 }
-

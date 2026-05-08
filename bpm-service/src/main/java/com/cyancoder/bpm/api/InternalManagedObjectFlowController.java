@@ -6,6 +6,7 @@ import com.cyancoder.bpm.api.dto.ManagedObjectActiveFormResponse;
 import com.cyancoder.bpm.api.dto.ManagedObjectFormSubmissionResponse;
 import com.cyancoder.bpm.api.dto.SubmitManagedObjectFormRequest;
 import com.cyancoder.bpm.api.dto.TransitionRequest;
+import com.cyancoder.bpm.api.dto.TransitionOptionResponse;
 import com.cyancoder.bpm.domain.ManagedObject;
 import com.cyancoder.bpm.service.ActorContextResolver;
 import com.cyancoder.bpm.service.ObjectFlowService;
@@ -70,6 +71,23 @@ public class InternalManagedObjectFlowController {
                 request.nextState(),
                 actorContextResolver.fromInternalHeaders(actorUser, actorRoles, actorGroups),
                 request.context()
+        );
+    }
+
+    @GetMapping("/{objectId}/transitions")
+    public List<TransitionOptionResponse> availableTransitions(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @RequestHeader(value = "X-Actor-User", required = false) String actorUser,
+            @RequestHeader(value = "X-Actor-Roles", required = false) String actorRoles,
+            @RequestHeader(value = "X-Actor-Groups", required = false) String actorGroups,
+            @PathVariable String objectId
+    ) {
+        return objectFlowService.availableTransitions(
+                FlowScopeResolver.fromHeaders(tenantKey, siteKey),
+                objectId,
+                actorContextResolver.fromInternalHeaders(actorUser, actorRoles, actorGroups),
+                null
         );
     }
 

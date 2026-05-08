@@ -8,7 +8,8 @@ import java.util.Optional;
 
 public interface DynamicFlowDefinitionRepository extends MongoRepository<DynamicFlowDefinition, String> {
     List<DynamicFlowDefinition> findByTenantKeyAndSiteKeyOrderByFlowKeyAscVersionDesc(String tenantKey, String siteKey);
+    List<DynamicFlowDefinition> findByTenantKeyAndSiteKeyAndFlowKeyOrderByVersionDesc(String tenantKey, String siteKey, String flowKey);
     Optional<DynamicFlowDefinition> findFirstByTenantKeyAndSiteKeyAndFlowKeyAndActiveTrueOrderByVersionDesc(String tenantKey, String siteKey, String flowKey);
     Optional<DynamicFlowDefinition> findFirstByTenantKeyAndSiteKeyAndFlowKeyOrderByVersionDesc(String tenantKey, String siteKey, String flowKey);
+    Optional<DynamicFlowDefinition> findByTenantKeyAndSiteKeyAndFlowKeyAndVersion(String tenantKey, String siteKey, String flowKey, Integer version);
 }
-

@@ -1,9 +1,12 @@
 package com.cyancoder.bpm.service;
 
+import com.cyancoder.bpm.api.dto.TransitionActorContext;
 import com.cyancoder.bpm.domain.ConditionLogicalOperator;
 import com.cyancoder.bpm.domain.ConditionOperator;
 import com.cyancoder.bpm.domain.FlowCondition;
 import com.cyancoder.bpm.domain.FlowTransition;
+import com.cyancoder.bpm.domain.ManagedObject;
+import com.cyancoder.bpm.expression.TransitionAntlrExpressionEvaluator;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -13,8 +16,26 @@ import java.util.Objects;
 
 @Component
 public class FlowTransitionConditionEvaluator {
+    private final TransitionAntlrExpressionEvaluator antlrExpressionEvaluator = new TransitionAntlrExpressionEvaluator();
 
     public boolean evaluate(FlowTransition transition, Map<String, Object> payload, Map<String, Object> context) {
+        return evaluate(transition, payload, context, null, null);
+    }
+
+    public boolean evaluate(FlowTransition transition,
+                            Map<String, Object> payload,
+                            Map<String, Object> context,
+                            ManagedObject object,
+                            TransitionActorContext actorContext) {
+        if (transition.conditionExpression() != null && !transition.conditionExpression().isBlank()
+                && looksLikeAntlrExpression(transition.conditionExpression())) {
+            return antlrExpressionEvaluator.evaluate(
+                    transition.conditionExpression(),
+                    object == null ? syntheticObject(payload) : object,
+                    context,
+                    actorContext
+            );
+        }
         List<FlowCondition> conditions = transition.conditions();
         if (conditions == null || conditions.isEmpty()) {
             return true;
@@ -36,6 +57,21 @@ public class FlowTransitionConditionEvaluator {
             }
         }
         return current;
+    }
+
+    private boolean looksLikeAntlrExpression(String expression) {
+        return expression.contains("&&")
+                || expression.contains("||")
+                || expression.contains("==")
+                || expression.contains("!=")
+                || expression.contains(" contains ")
+                || expression.contains(" between ");
+    }
+
+    private ManagedObject syntheticObject(Map<String, Object> payload) {
+        ManagedObject object = new ManagedObject();
+        object.setPayload(payload);
+        return object;
     }
 
     private boolean evaluateCondition(FlowCondition condition, Map<String, Object> payload, Map<String, Object> context) {
@@ -120,4 +156,3 @@ public class FlowTransitionConditionEvaluator {
         return Double.compare(((Number) actual).doubleValue(), ((Number) expected).doubleValue());
     }
 }
-

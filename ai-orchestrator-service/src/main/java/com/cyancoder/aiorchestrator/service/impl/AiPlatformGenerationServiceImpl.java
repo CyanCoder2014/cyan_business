@@ -5,7 +5,9 @@ import com.cyancoder.aiorchestrator.api.dto.GeneratePlatformAppResponse;
 import com.cyancoder.aiorchestrator.api.dto.ProvisioningResultDto;
 import com.cyancoder.aiorchestrator.client.LlmClient;
 import com.cyancoder.aiorchestrator.client.PlatformMetadataClient;
+import com.cyancoder.aiorchestrator.domain.ClientAppDraft;
 import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
+import com.cyancoder.aiorchestrator.service.AppDraftService;
 import com.cyancoder.aiorchestrator.service.AiPlatformGenerationService;
 import com.cyancoder.aiorchestrator.service.AiPromptBuilder;
 import com.cyancoder.aiorchestrator.service.DslValidationService;
@@ -24,23 +26,30 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
     private final AiPromptBuilder promptBuilder;
     private final DslValidationService dslValidationService;
     private final PlatformProvisioningService provisioningService;
+    private final AppDraftService appDraftService;
 
     public AiPlatformGenerationServiceImpl(LlmClient llmClient,
                                            PlatformMetadataClient metadataClient,
                                            RetrievalService retrievalService,
                                            AiPromptBuilder promptBuilder,
                                            DslValidationService dslValidationService,
-                                           PlatformProvisioningService provisioningService) {
+                                           PlatformProvisioningService provisioningService,
+                                           AppDraftService appDraftService) {
         this.llmClient = llmClient;
         this.metadataClient = metadataClient;
         this.retrievalService = retrievalService;
         this.promptBuilder = promptBuilder;
         this.dslValidationService = dslValidationService;
         this.provisioningService = provisioningService;
+        this.appDraftService = appDraftService;
     }
 
     @Override
     public GeneratePlatformAppResponse generate(GeneratePlatformAppRequest request) {
+        var knownDraft = appDraftService.resolveKnownAppDraft(request.appType(), request.tenantKey(), request.siteKey(), request.clientKey(), request.prompt());
+        if (knownDraft.isPresent()) {
+            return resolveKnownDraftResponse(request, knownDraft.get());
+        }
         String tenantKey = defaultScope(request.tenantKey(), "tenant-" + slug(request.prompt()));
         String siteKey = defaultScope(request.siteKey(), "site-" + slug(request.prompt()));
         Map<String, Object> metadata = metadataClient.fetchMetadata(tenantKey, siteKey);
@@ -57,7 +66,16 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
         ProvisioningResultDto provisioningResult = request.execute() && nextQuestions.isEmpty()
                 ? provisioningService.provision(dsl)
                 : null;
-        return new GeneratePlatformAppResponse(dsl, nextQuestions, provisioningResult);
+        return new GeneratePlatformAppResponse(null, dsl, nextQuestions, provisioningResult);
+    }
+
+    private GeneratePlatformAppResponse resolveKnownDraftResponse(GeneratePlatformAppRequest request, ClientAppDraft draft) {
+        PlatformAppDslDefinition dsl = draft.getResolvedDsl();
+        List<String> nextQuestions = draft.getPendingQuestions() == null ? List.of() : draft.getPendingQuestions();
+        ProvisioningResultDto provisioningResult = request.execute() && nextQuestions.isEmpty()
+                ? provisioningService.provision(dsl)
+                : null;
+        return new GeneratePlatformAppResponse(draft.getDraftId(), dsl, nextQuestions, provisioningResult);
     }
 
     private List<String> deriveNextQuestions(GeneratePlatformAppRequest request, PlatformAppDslDefinition dsl) {
@@ -82,4 +100,3 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
         return prompt.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
     }
 }
-

@@ -7,6 +7,7 @@ import com.cyancoder.aiorchestrator.domain.ClientAppDraft;
 import com.cyancoder.aiorchestrator.domain.DraftStatus;
 import com.cyancoder.aiorchestrator.domain.ProvisioningRun;
 import com.cyancoder.aiorchestrator.domain.ProvisioningRunStatus;
+import com.cyancoder.aiorchestrator.domain.ProvisioningStepResult;
 import com.cyancoder.aiorchestrator.repo.ClientAppDraftRepository;
 import com.cyancoder.aiorchestrator.repo.ProvisioningRunRepository;
 import com.cyancoder.aiorchestrator.service.ProvisioningRunService;
@@ -45,6 +46,25 @@ public class MongoProvisioningRunService implements ProvisioningRunService {
         run.setStatus("PLAN".equals(mode) ? ProvisioningRunStatus.PLANNED : ProvisioningRunStatus.RUNNING);
         run.setStartedAt(Instant.now());
         run = runRepository.save(run);
+
+        if (!draft.getPendingQuestions().isEmpty()) {
+            ProvisioningStepResult step = new ProvisioningStepResult();
+            step.setStepKey("guard:ai-orchestrator:follow-up-questions");
+            step.setServiceKey("ai-orchestrator-service");
+            step.setEndpointPath("/endpoint/ai-orchestrator/drafts/" + draftId + "/provision");
+            step.setStatus("BLOCKED");
+            step.setIdempotencyKey(request == null ? null : request.idempotencyKey());
+            step.setSummary(String.join(" | ", draft.getPendingQuestions()));
+            step.setResponse(java.util.Map.of(
+                    "pendingQuestionKeys", draft.getPendingQuestionKeys(),
+                    "pendingQuestions", draft.getPendingQuestions()
+            ));
+            run.getStepResults().add(step);
+            run.setStatus(ProvisioningRunStatus.BLOCKED);
+            run.setFinishedAt(Instant.now());
+            run = runRepository.save(run);
+            return toDto(run, null);
+        }
 
         if ("PLAN".equals(mode)) {
             run.setFinishedAt(Instant.now());

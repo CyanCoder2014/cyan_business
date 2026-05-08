@@ -1,9 +1,9 @@
 package com.cyancoder.aiorchestrator.service.impl;
 
 import com.cyancoder.aiorchestrator.api.dto.CreateDraftRequest;
+import com.cyancoder.aiorchestrator.api.dto.FollowUpQuestionDto;
 import com.cyancoder.aiorchestrator.api.dto.UpdateDraftRequest;
 import com.cyancoder.aiorchestrator.domain.AppBlueprint;
-import com.cyancoder.aiorchestrator.domain.BlueprintQuestionDefinition;
 import com.cyancoder.aiorchestrator.domain.ClientAppDraft;
 import com.cyancoder.aiorchestrator.domain.DraftStatus;
 import com.cyancoder.aiorchestrator.domain.EntityBlueprint;
@@ -11,6 +11,7 @@ import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
 import com.cyancoder.aiorchestrator.repo.ClientAppDraftRepository;
 import com.cyancoder.aiorchestrator.service.AppDraftService;
 import com.cyancoder.aiorchestrator.service.BlueprintCatalogService;
+import com.cyancoder.aiorchestrator.service.FollowUpQuestionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
@@ -27,13 +28,16 @@ import java.util.UUID;
 public class MongoAppDraftService implements AppDraftService {
     private final ClientAppDraftRepository repository;
     private final BlueprintCatalogService blueprintCatalogService;
+    private final FollowUpQuestionService followUpQuestionService;
     private final ObjectMapper objectMapper;
 
     public MongoAppDraftService(ClientAppDraftRepository repository,
                                 BlueprintCatalogService blueprintCatalogService,
+                                FollowUpQuestionService followUpQuestionService,
                                 ObjectMapper objectMapper) {
         this.repository = repository;
         this.blueprintCatalogService = blueprintCatalogService;
+        this.followUpQuestionService = followUpQuestionService;
         this.objectMapper = objectMapper;
     }
 
@@ -130,12 +134,22 @@ public class MongoAppDraftService implements AppDraftService {
         dsl.getApp().setSiteKey(draft.getSiteKey());
         dsl.getApp().setCapabilities(new ArrayList<>(blueprint.getCapabilities()));
         dsl.setManualActions(new ArrayList<>());
+        dsl.getApp().setDesiredDomain(firstNonBlank(
+                stringValue(draft.getAnswers().get("desiredDomain")),
+                resolveSubdomainHost(stringValue(draft.getAnswers().get("subdomainPrefix")))
+        ));
         enrichEntities(dsl, draft.getAnswers(), blueprint.getAppType());
         draft.setResolvedDsl(dsl);
-        List<String> pendingQuestions = determinePendingQuestions(blueprint, draft.getAnswers());
-        draft.setPendingQuestions(pendingQuestions);
+        List<FollowUpQuestionDto> followUpQuestions = followUpQuestionService.resolveForBlueprint(
+                blueprint,
+                draft.getAnswers(),
+                dsl,
+                draft.getLatestIntent()
+        );
+        draft.setPendingQuestionKeys(followUpQuestions.stream().map(FollowUpQuestionDto::key).toList());
+        draft.setPendingQuestions(followUpQuestions.stream().map(FollowUpQuestionDto::prompt).toList());
         draft.setManualActions(new ArrayList<>(dsl.getManualActions()));
-        draft.setStatus(pendingQuestions.isEmpty() ? DraftStatus.READY : DraftStatus.DRAFT);
+        draft.setStatus(followUpQuestions.isEmpty() ? DraftStatus.READY : DraftStatus.WAITING_FOR_ANSWERS);
     }
 
     private void enrichEntities(PlatformAppDslDefinition dsl, Map<String, Object> answers, String appType) {
@@ -145,14 +159,14 @@ public class MongoAppDraftService implements AppDraftService {
                 recordData.putIfAbsent("title", firstNonBlank(stringValue(answers.get("homePageTitle")), stringValue(answers.get("brandName")), "Home"));
                 recordData.putIfAbsent("slug", "landing-home".equals(entity.getRecordKey()) ? "home" : entity.getRecordKey());
                 recordData.putIfAbsent("heroTitle", firstNonBlank(stringValue(answers.get("homePageTitle")), stringValue(answers.get("brandName")), "Welcome"));
-                recordData.putIfAbsent("heroSubtitle", "Generated from deterministic orchestrator blueprint.");
+                recordData.putIfAbsent("heroSubtitle", firstNonBlank(stringValue(answers.get("pageContentSummary")), "Generated from deterministic orchestrator blueprint."));
                 recordData.putIfAbsent("publicationStatus", "DRAFT");
                 recordData.putIfAbsent("sections", List.of());
             } else if ("content-service".equals(entity.getServiceKey()) && "blog-page".equals(entity.getTemplateKey())) {
                 recordData.putIfAbsent("slug", firstNonBlank(stringValue(answers.get("blogSlug")), "blog"));
                 recordData.putIfAbsent("title", "Blog");
                 recordData.putIfAbsent("summary", "Blog index for " + firstNonBlank(stringValue(answers.get("brandName")), "the site"));
-                recordData.putIfAbsent("body", "Generated blog starter page.");
+                recordData.putIfAbsent("body", firstNonBlank(stringValue(answers.get("pageContentSummary")), "Generated blog starter page."));
                 recordData.putIfAbsent("author", firstNonBlank(stringValue(answers.get("brandName")), "Editorial Team"));
                 recordData.putIfAbsent("publicationStatus", "DRAFT");
                 recordData.putIfAbsent("tags", List.of("starter"));
@@ -242,26 +256,14 @@ public class MongoAppDraftService implements AppDraftService {
                         "workCenter", "default-center",
                         "durationMinutes", 30
                 )));
+            } else if ("payment-service".equals(entity.getServiceKey()) || "checkout-service".equals(entity.getServiceKey())) {
+                recordData.putIfAbsent("provider", firstNonBlank(stringValue(answers.get("paymentProvider")), "zarinpal-default"));
             }
             entity.setRecordData(recordData);
         }
         if ("shop".equals(appType) || "e-commerce".equals(appType) || "mixed".equals(appType) || "erp".equals(appType)) {
             dsl.getManualActions().add("Review pricing, payment providers, and notification templates before publish.");
         }
-    }
-
-    private List<String> determinePendingQuestions(AppBlueprint blueprint, Map<String, Object> answers) {
-        List<String> pending = new ArrayList<>();
-        for (BlueprintQuestionDefinition question : blueprint.getRequiredQuestions()) {
-            if (!question.isRequired()) {
-                continue;
-            }
-            Object value = answers.get(question.getKey());
-            if (value == null || String.valueOf(value).isBlank()) {
-                pending.add(question.getPrompt());
-            }
-        }
-        return pending;
     }
 
     private String resolveAppType(String appType, String prompt) {
@@ -317,6 +319,13 @@ public class MongoAppDraftService implements AppDraftService {
 
     private String stringValue(Object value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    private String resolveSubdomainHost(String subdomainPrefix) {
+        if (subdomainPrefix == null || subdomainPrefix.isBlank()) {
+            return null;
+        }
+        return slug(subdomainPrefix) + ".cyan.local";
     }
 
     private String slug(String value) {

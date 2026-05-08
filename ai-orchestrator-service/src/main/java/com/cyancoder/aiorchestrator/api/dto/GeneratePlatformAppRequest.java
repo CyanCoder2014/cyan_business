@@ -10,6 +10,7 @@ public record GeneratePlatformAppRequest(
         String tenantKey,
         String siteKey,
         String clientKey,
+        String sessionId,
         boolean execute,
         Map<String, Object> answers
 ) {

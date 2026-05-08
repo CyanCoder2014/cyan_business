@@ -27,6 +27,7 @@ public class ClientAppDraft {
     private String latestIntent;
     private Map<String, Object> answers = new LinkedHashMap<>();
     private PlatformAppDslDefinition resolvedDsl = new PlatformAppDslDefinition();
+    private List<String> pendingQuestionKeys = new ArrayList<>();
     private List<String> pendingQuestions = new ArrayList<>();
     private List<String> manualActions = new ArrayList<>();
     private String latestSessionId;
@@ -62,6 +63,8 @@ public class ClientAppDraft {
     public void setAnswers(Map<String, Object> answers) { this.answers = answers; }
     public PlatformAppDslDefinition getResolvedDsl() { return resolvedDsl; }
     public void setResolvedDsl(PlatformAppDslDefinition resolvedDsl) { this.resolvedDsl = resolvedDsl; }
+    public List<String> getPendingQuestionKeys() { return pendingQuestionKeys; }
+    public void setPendingQuestionKeys(List<String> pendingQuestionKeys) { this.pendingQuestionKeys = pendingQuestionKeys; }
     public List<String> getPendingQuestions() { return pendingQuestions; }
     public void setPendingQuestions(List<String> pendingQuestions) { this.pendingQuestions = pendingQuestions; }
     public List<String> getManualActions() { return manualActions; }

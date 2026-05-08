@@ -48,6 +48,7 @@ public class MongoConversationSessionService implements ConversationSessionServi
         if (request.draftId() != null && !request.draftId().isBlank()) {
             ClientAppDraft draft = appDraftService.getDraft(request.draftId());
             session.setDraftId(draft.getDraftId());
+            syncPendingState(session, draft);
         } else if (request.appTypeHint() != null && !request.appTypeHint().isBlank()) {
             ClientAppDraft draft = appDraftService.resolveKnownAppDraft(
                             request.appTypeHint(),
@@ -67,6 +68,7 @@ public class MongoConversationSessionService implements ConversationSessionServi
                             session.getExtractedAnswers()
                     ), "session-create"));
             session.setDraftId(draft.getDraftId());
+            syncPendingState(session, draft);
         }
         return repository.save(session);
     }
@@ -99,10 +101,17 @@ public class MongoConversationSessionService implements ConversationSessionServi
                     null,
                     request.answersPatch()
             ), "session-message");
-            session.setStatus(updatedDraft.getPendingQuestions().isEmpty() ? SessionStatus.RESOLVED : SessionStatus.WAITING_FOR_ANSWERS);
+            syncPendingState(session, updatedDraft);
         }
         session.setUpdatedAt(Instant.now());
         return repository.save(session);
+    }
+
+    private void syncPendingState(ConversationSession session, ClientAppDraft draft) {
+        session.setPendingQuestionKeys(new ArrayList<>(draft.getPendingQuestionKeys()));
+        session.setPendingQuestions(new ArrayList<>(draft.getPendingQuestions()));
+        session.setLatestQuestion(draft.getPendingQuestions().isEmpty() ? null : draft.getPendingQuestions().get(0));
+        session.setStatus(draft.getPendingQuestions().isEmpty() ? SessionStatus.RESOLVED : SessionStatus.WAITING_FOR_ANSWERS);
     }
 
     private String firstNonBlank(String... values) {

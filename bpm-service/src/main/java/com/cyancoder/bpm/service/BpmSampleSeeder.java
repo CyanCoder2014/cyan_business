@@ -136,17 +136,17 @@ public class BpmSampleSeeder {
                         "Screening Intake",
                         false,
                         "screening-intake-form",
-                        "screening-intake-processor",
+                        "screening-intake-form",
                         false,
                         Set.of("ROLE_USER"),
                         List.of(new FlowActionConfig(ActionType.ADD_AUDIT_ENTRY, Map.of("message", "screening intake submitted"))),
                         new FlowAccessRule(Set.of("ROLE_USER", "ROLE_ADMIN"), Set.of("ROLE_USER"), Set.of()),
-                        "content-service",
+                        "bpm-service",
                         "screening-intake-form",
-                        "content-service",
+                        "bpm-service",
                         "screening-intake-form",
-                        SubmitMode.STATIC,
-                        "/internal/screening-intake/submit"
+                        SubmitMode.DYNAMIC,
+                        null
                 ),
                 new FlowState(
                         "automated-screening",
@@ -194,17 +194,17 @@ public class BpmSampleSeeder {
                         "Manual Review",
                         false,
                         "screening-review-form",
-                        "screening-review-processor",
+                        "screening-review-form",
                         true,
                         Set.of("ROLE_ADMIN"),
                         List.of(new FlowActionConfig(ActionType.ADD_AUDIT_ENTRY, Map.of("message", "sent to manual review"))),
                         new FlowAccessRule(Set.of("ROLE_ADMIN"), Set.of("ROLE_ADMIN"), Set.of("ROLE_ADMIN")),
-                        "content-service",
+                        "bpm-service",
                         "screening-review-form",
-                        "content-service",
+                        "bpm-service",
                         "screening-review-form",
-                        SubmitMode.STATIC,
-                        "/internal/screening-review/submit"
+                        SubmitMode.DYNAMIC,
+                        null
                 ),
                 new FlowState(
                         "fast-track-approved",
@@ -245,7 +245,9 @@ public class BpmSampleSeeder {
                 new FlowTransition("submit-intake", "screening-intake", "automated-screening", "Submit Intake", Set.of(), Set.of("ROLE_USER"), null, null, List.of()),
                 new FlowTransition("route-fast-track", "automated-screening", "fast-track-approved", "Fast Track", Set.of(), Set.of(), "payload.currentFormValues.screeningRoute == \"FAST_TRACK\"", null, List.of()),
                 new FlowTransition("route-manual", "automated-screening", "manual-review", "Manual Review", Set.of(), Set.of(), "payload.currentFormValues.screeningRoute == \"MANUAL_REVIEW\"", null, List.of()),
-                new FlowTransition("route-reject", "automated-screening", "screening-rejected", "Reject", Set.of(), Set.of(), "payload.currentFormValues.screeningRoute == \"REJECT\"", null, List.of())
+                new FlowTransition("route-reject", "automated-screening", "screening-rejected", "Reject", Set.of(), Set.of(), "payload.currentFormValues.screeningRoute == \"REJECT\"", null, List.of()),
+                new FlowTransition("manual-approve", "manual-review", "fast-track-approved", "Approve", Set.of(), Set.of("ROLE_ADMIN"), null, null, List.of()),
+                new FlowTransition("manual-reject", "manual-review", "screening-rejected", "Reject", Set.of(), Set.of("ROLE_ADMIN"), null, null, List.of())
         ));
         flowDefinitionService.save(scope, definition);
     }

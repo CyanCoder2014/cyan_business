@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -18,7 +19,7 @@ import static org.mockito.Mockito.when;
 class FlowActionExecutorTest {
 
     @Test
-    void startAutomationFlowStoresRegistrationAndInitialResponse() {
+    void runAutomationBlockStoresFirstClassBlockAndInitialResponse() {
         DynamicFlowIntegrationClient integrationClient = mock(DynamicFlowIntegrationClient.class);
         FlowActionExecutor executor = new FlowActionExecutor(integrationClient);
 
@@ -40,9 +41,10 @@ class FlowActionExecutorTest {
                 )
         )));
 
-        executor.execute(List.of(new FlowActionConfig(ActionType.START_AUTOMATION_FLOW, Map.of(
-                "actionKey", "screening",
+        executor.execute(List.of(new FlowActionConfig(ActionType.RUN_AUTOMATION_BLOCK, Map.of(
+                "blockKey", "screening",
                 "automationFlowKey", "hybrid-screening-automation",
+                "executionMode", "ASYNC",
                 "body", Map.of(
                         "fullName", "{{payload.screening-intake.fullName}}",
                         "requestedAmount", "{{payload.screening-intake.requestedAmount}}"
@@ -54,11 +56,39 @@ class FlowActionExecutorTest {
                 "storeFullResponseAt", "payload.automation.screening.startResponse"
         ))), object, new BpmScope("tenant-demo", "site-demo"), "user-1");
 
-        assertEquals("PENDING", ActionPayloadSupport.readPath(object.getPayload(), "asyncActions.screening.status"));
-        assertEquals("START_AUTOMATION_FLOW", ActionPayloadSupport.readPath(object.getPayload(), "asyncActions.screening.actionType"));
         assertEquals("exec-123", ActionPayloadSupport.readPath(object.getPayload(), "automation.screening.executionId"));
         assertEquals("RUNNING", ActionPayloadSupport.readPath(object.getPayload(), "automation.screening.status"));
         assertEquals("accepted", ActionPayloadSupport.readPath(object.getPayload(), "automation.screening.startResponse.snapshot.stage"));
-        assertEquals("screening", object.getAsyncActionRegistry().get(0).getActionKey());
+        assertEquals("screening", object.getAutomationBlockRegistry().get(0).getBlockKey());
+        assertEquals("RUNNING", object.getAutomationBlockRegistry().get(0).getStatus());
+        assertEquals("obj-1:screening", object.getAutomationBlockRegistry().get(0).getCorrelationKey());
+    }
+
+    @Test
+    void syncAutomationBlockWithFailFastThrowsOnFailure() {
+        DynamicFlowIntegrationClient integrationClient = mock(DynamicFlowIntegrationClient.class);
+        FlowActionExecutor executor = new FlowActionExecutor(integrationClient);
+
+        when(integrationClient.callActionForResponse(any(), any(), any(), any())).thenReturn(Map.of(
+                "executionId", "exec-fail",
+                "status", "FAILED",
+                "error", Map.of("message", "downstream failure")
+        ));
+
+        ManagedObject object = new ManagedObject();
+        object.setId("obj-2");
+        object.setState("automated-screening");
+        object.setFlowKey("hybrid-screening-intake");
+        object.setPayload(new LinkedHashMap<>());
+
+        assertThrows(IllegalStateException.class, () -> executor.execute(List.of(
+                new FlowActionConfig(ActionType.RUN_AUTOMATION_BLOCK, Map.of(
+                        "blockKey", "screening",
+                        "automationFlowKey", "hybrid-screening-automation",
+                        "executionMode", "SYNC",
+                        "failurePolicy", "FAIL_FAST",
+                        "body", Map.of()
+                ))
+        ), object, new BpmScope("tenant-demo", "site-demo"), "user-1"));
     }
 }

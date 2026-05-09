@@ -22,7 +22,7 @@ public record FlowState(
         String rendererService,
         String rendererKey,
         SubmitMode submitMode,
-        String submitUrl
+        String submitUrl,
+        boolean waitForAutomation
 ) {
 }
-

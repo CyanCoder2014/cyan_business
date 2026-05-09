@@ -60,8 +60,7 @@ public class SeedBlueprintFactory {
                         Map.of(
                                 "starterProductSku", "STARTER-001",
                                 "paymentProvider", "zarinpal-default",
-                                "blogSlug", "blog",
-                                "subdomainPrefix", "shop-demo"
+                                "blogSlug", "blog"
                         ),
                         ecommerceDsl()),
                 blueprint("crm-basic-v1", "crm", "CRM", "Lead and contact management starter app.",

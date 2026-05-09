@@ -66,7 +66,8 @@ public class BpmSampleSeeder {
                         "commerce-service",
                         "shop-order",
                         SubmitMode.DYNAMIC,
-                        null
+                        null,
+                        false
                 ),
                 new FlowState(
                         "approved-order",
@@ -90,7 +91,8 @@ public class BpmSampleSeeder {
                         null,
                         null,
                         SubmitMode.DYNAMIC,
-                        null
+                        null,
+                        false
                 ),
                 new FlowState(
                         "fulfilled-order",
@@ -107,7 +109,8 @@ public class BpmSampleSeeder {
                         null,
                         null,
                         SubmitMode.DYNAMIC,
-                        null
+                        null,
+                        false
                 )
         ));
         definition.setTransitions(List.of(
@@ -146,7 +149,8 @@ public class BpmSampleSeeder {
                         "bpm-service",
                         "screening-intake-form",
                         SubmitMode.DYNAMIC,
-                        null
+                        null,
+                        false
                 ),
                 new FlowState(
                         "automated-screening",
@@ -158,28 +162,7 @@ public class BpmSampleSeeder {
                         Set.of("ROLE_ADMIN"),
                         List.of(
                                 new FlowActionConfig(ActionType.ADD_AUDIT_ENTRY, Map.of("message", "entered automated screening")),
-                                new FlowActionConfig(ActionType.START_AUTOMATION_FLOW, Map.of(
-                                        "actionKey", "screening",
-                                        "automationFlowKey", "hybrid-screening-automation",
-                                        "body", Map.of(
-                                                "fullName", "{{payload.screening-intake.fullName}}",
-                                                "nationalId", "{{payload.screening-intake.nationalId}}",
-                                                "requestedAmount", "{{payload.screening-intake.requestedAmount}}"
-                                        ),
-                                        "responseMappings", Map.of(
-                                                "payload.automation.screening.executionId", "executionId",
-                                                "payload.automation.screening.status", "status"
-                                        ),
-                                        "storeFullResponseAt", "payload.automation.screening.startResponse",
-                                        "callbackResponseMappings", Map.of(
-                                                "payload.automation.screening.executionId", "executionId",
-                                                "payload.automation.screening.status", "status",
-                                                "payload.currentFormValues.riskScore", "riskScore",
-                                                "payload.currentFormValues.screeningRoute", "screeningRoute",
-                                                "payload.currentFormValues.externalRef", "externalRef"
-                                        ),
-                                        "callbackStoreFullResponseAt", "payload.automation.screening.snapshot"
-                                ))
+                                new FlowActionConfig(ActionType.RUN_AUTOMATION_BLOCK, screeningAutomationParams())
                         ),
                         new FlowAccessRule(Set.of("ROLE_USER", "ROLE_ADMIN"), Set.of("ROLE_ADMIN"), Set.of("ROLE_ADMIN")),
                         null,
@@ -187,7 +170,8 @@ public class BpmSampleSeeder {
                         null,
                         null,
                         SubmitMode.DYNAMIC,
-                        null
+                        null,
+                        true
                 ),
                 new FlowState(
                         "manual-review",
@@ -204,7 +188,8 @@ public class BpmSampleSeeder {
                         "bpm-service",
                         "screening-review-form",
                         SubmitMode.DYNAMIC,
-                        null
+                        null,
+                        false
                 ),
                 new FlowState(
                         "fast-track-approved",
@@ -221,7 +206,8 @@ public class BpmSampleSeeder {
                         null,
                         null,
                         SubmitMode.DYNAMIC,
-                        null
+                        null,
+                        false
                 ),
                 new FlowState(
                         "screening-rejected",
@@ -238,7 +224,8 @@ public class BpmSampleSeeder {
                         null,
                         null,
                         SubmitMode.DYNAMIC,
-                        null
+                        null,
+                        false
                 )
         ));
         definition.setTransitions(List.of(
@@ -250,5 +237,34 @@ public class BpmSampleSeeder {
                 new FlowTransition("manual-reject", "manual-review", "screening-rejected", "Reject", Set.of(), Set.of("ROLE_ADMIN"), null, null, List.of())
         ));
         flowDefinitionService.save(scope, definition);
+    }
+
+    private Map<String, Object> screeningAutomationParams() {
+        Map<String, Object> params = new java.util.LinkedHashMap<>();
+        params.put("blockKey", "screening");
+        params.put("automationFlowKey", "hybrid-screening-automation");
+        params.put("executionMode", "ASYNC");
+        params.put("failurePolicy", "RETRY");
+        params.put("maxRetries", 1);
+        params.put("timeoutSeconds", 300);
+        params.put("body", Map.of(
+                "fullName", "{{payload.screening-intake.fullName}}",
+                "nationalId", "{{payload.screening-intake.nationalId}}",
+                "requestedAmount", "{{payload.screening-intake.requestedAmount}}"
+        ));
+        params.put("responseMappings", Map.of(
+                "payload.automation.screening.executionId", "executionId",
+                "payload.automation.screening.status", "status"
+        ));
+        params.put("storeFullResponseAt", "payload.automation.screening.startResponse");
+        params.put("callbackResponseMappings", Map.of(
+                "payload.automation.screening.executionId", "executionId",
+                "payload.automation.screening.status", "status",
+                "payload.currentFormValues.riskScore", "riskScore",
+                "payload.currentFormValues.screeningRoute", "screeningRoute",
+                "payload.currentFormValues.externalRef", "externalRef"
+        ));
+        params.put("callbackStoreFullResponseAt", "payload.automation.screening.snapshot");
+        return params;
     }
 }

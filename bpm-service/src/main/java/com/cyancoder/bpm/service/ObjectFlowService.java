@@ -10,7 +10,10 @@ import com.cyancoder.bpm.api.dto.ManagedObjectFormSubmissionResponse;
 import com.cyancoder.bpm.api.dto.SubmitManagedObjectFormRequest;
 import com.cyancoder.bpm.api.dto.TransitionActorContext;
 import com.cyancoder.bpm.api.dto.TransitionOptionResponse;
+import com.cyancoder.bpm.domain.AutomationBlockExecution;
+import com.cyancoder.bpm.domain.AutomationFailurePolicy;
 import com.cyancoder.bpm.domain.DynamicFlowDefinition;
+import com.cyancoder.bpm.domain.FlowActionConfig;
 import com.cyancoder.bpm.domain.FlowState;
 import com.cyancoder.bpm.domain.FlowTransition;
 import com.cyancoder.bpm.domain.ManagedObject;
@@ -237,42 +240,54 @@ public class ObjectFlowService {
 
     public ManagedObject acceptAsyncActionCallback(BpmScope scope,
                                                    String objectId,
-                                                   String actionKey,
+                                                   String blockKey,
                                                    AsyncActionCallbackRequest request,
                                                    TransitionActorContext actorContext,
                                                    String callbackFingerprint) {
         ManagedObject object = findById(scope, objectId);
-        Map<String, Object> asyncEntry = asyncActionEntry(object, actionKey);
-        if (isDuplicateCallback(asyncEntry, callbackFingerprint)) {
-            object.getAuditLog().add("duplicate async callback " + actionKey + " ignored at=" + Instant.now());
+        AutomationBlockExecution block = automationBlockEntry(object, blockKey);
+        if (isDuplicateCallback(block, callbackFingerprint)) {
+            object.getAuditLog().add("duplicate automation callback " + blockKey + " ignored at=" + Instant.now());
             return object;
         }
-        Object callbackMappings = asyncEntry.get("callbackResponseMappings");
-        Object callbackStoreFullResponseAt = asyncEntry.get("callbackStoreFullResponseAt");
         Map<String, Object> callbackPayload = request == null || request.payload() == null ? Map.of() : request.payload();
         String callbackStatus = request == null || request.status() == null || request.status().isBlank() ? "SUCCESS" : request.status().trim().toUpperCase();
-        CallApiActionSupport.applyResponseMappingsFromCallback(object, callbackPayload, callbackMappings);
-        if (callbackStoreFullResponseAt != null) {
-            ActionPayloadSupport.setPayloadPath(object, callbackStoreFullResponseAt.toString(), callbackPayload);
+        CallApiActionSupport.applyResponseMappingsFromCallback(object, callbackPayload, block.getOutputMappings());
+        if (block.getStoreOutputAt() != null && !block.getStoreOutputAt().isBlank()) {
+            ActionPayloadSupport.setPayloadPath(object, block.getStoreOutputAt(), callbackPayload);
         }
-        rememberProcessedCallback(object, actionKey, callbackFingerprint);
-        ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".status", callbackStatus);
-        ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".finishedAt", Instant.now().toString());
-        if ("FAILED".equalsIgnoreCase(callbackStatus)) {
-            ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".error", callbackPayload);
+        rememberProcessedCallback(block, callbackFingerprint);
+        block.setStatus(callbackStatus);
+        block.setFinishedAt(Instant.now());
+        block.setUpdatedAt(Instant.now());
+        if (callbackPayload.get("snapshot") instanceof Map<?, ?> map) {
+            block.setSnapshot(new LinkedHashMap<>((Map<String, Object>) map));
+        }
+        block.setOutput(new LinkedHashMap<>(callbackPayload));
+        if ("FAILED".equalsIgnoreCase(callbackStatus) || "TIMED_OUT".equalsIgnoreCase(callbackStatus) || "CANCELLED".equalsIgnoreCase(callbackStatus)) {
+            block.setError(new LinkedHashMap<>(callbackPayload));
         } else {
-            ActionPayloadSupport.removePayloadPath(object, "payload.asyncActions." + actionKey + ".error");
+            block.setError(new LinkedHashMap<>());
         }
-        markAsyncRegistrationStatus(object, actionKey, callbackStatus);
-        object.getAuditLog().add("async callback " + actionKey + " received at=" + Instant.now());
+        object.getAuditLog().add("automation callback " + blockKey + " received at=" + Instant.now());
         object.setUpdatedAt(Instant.now());
         managedObjectRepository.save(object);
 
+        if ("FAILED".equalsIgnoreCase(callbackStatus) && block.getFailurePolicy() == AutomationFailurePolicy.RETRY && canRetry(block)) {
+            restartAutomationBlock(scope, object, block);
+            managedObjectRepository.save(object);
+            return object;
+        }
+
         DynamicFlowDefinition definition = flowDefinitionService.getActiveByFlowKey(scope, object.getFlowKey());
-        if (isAutomaticState(findState(definition, object.getState())) && !hasPendingAsyncForCurrentState(object)) {
+        FlowState currentState = findState(definition, object.getState());
+        if (isAutomaticState(currentState) && !hasPendingBlockingAutomationForCurrentState(object, currentState)) {
+            String requestedNextState = "FAILED".equalsIgnoreCase(callbackStatus) || "TIMED_OUT".equalsIgnoreCase(callbackStatus) || "CANCELLED".equalsIgnoreCase(callbackStatus)
+                    ? firstNonBlank(block.getNextStateOnFailure(), request == null ? null : request.nextState())
+                    : firstNonBlank(block.getNextStateOnSuccess(), request == null ? null : request.nextState());
             return transit(scope,
                     objectId,
-                    request == null ? null : request.nextState(),
+                    requestedNextState,
                     actorContext == null ? new TransitionActorContext("system-callback", Set.of(), Set.of()) : actorContext,
                     request == null || request.context() == null ? Map.of() : request.context());
         }
@@ -284,10 +299,10 @@ public class ObjectFlowService {
                                                                    AsyncActionCallbackRequest request,
                                                                    TransitionActorContext actorContext,
                                                                    String callbackFingerprint) {
-        ManagedObject object = managedObjectRepository.findFirstByTenantKeyAndSiteKeyAndAsyncActionRegistryCorrelationKey(scope.tenantKey(), scope.siteKey(), correlationKey)
+        ManagedObject object = managedObjectRepository.findFirstByTenantKeyAndSiteKeyAndAutomationBlockRegistryCorrelationKey(scope.tenantKey(), scope.siteKey(), correlationKey)
                 .orElseThrow();
-        String actionKey = resolveActionKeyByCorrelation(object, correlationKey);
-        return acceptAsyncActionCallback(scope, object.getId(), actionKey, request, actorContext, callbackFingerprint);
+        String blockKey = resolveBlockKeyByCorrelation(object, correlationKey);
+        return acceptAsyncActionCallback(scope, object.getId(), blockKey, request, actorContext, callbackFingerprint);
     }
 
     private FlowTransition resolveTransition(DynamicFlowDefinition definition, ManagedObject object, String nextState, TransitionActorContext actorContext, Map<String, Object> context) {
@@ -348,7 +363,7 @@ public class ObjectFlowService {
                                                Map<String, Object> context,
                                                String actor) {
         int guard = 0;
-        while (isAutomaticState(findState(definition, object.getState())) && !hasPendingAsyncForCurrentState(object)) {
+        while (isAutomaticState(findState(definition, object.getState())) && !hasPendingBlockingAutomationForCurrentState(object, findState(definition, object.getState()))) {
             guard++;
             if (guard > 20) {
                 throw new IllegalStateException("Automatic state chaining exceeded 20 steps for object " + object.getId());
@@ -445,91 +460,100 @@ public class ObjectFlowService {
                 && (state.submitUrl() == null || state.submitUrl().isBlank());
     }
 
-    private boolean hasPendingAsyncForCurrentState(ManagedObject object) {
-        if (object.getAsyncActionRegistry() == null) {
+    private boolean hasPendingBlockingAutomationForCurrentState(ManagedObject object, FlowState state) {
+        if (state == null || !state.waitForAutomation() || object.getAutomationBlockRegistry() == null) {
             return false;
         }
-        for (var registration : object.getAsyncActionRegistry()) {
-            if (registration != null
+        for (var block : object.getAutomationBlockRegistry()) {
+            if (block != null
                     && object.getState() != null
-                    && object.getState().equals(registration.getStateId())
-                    && "PENDING".equalsIgnoreCase(registration.getStatus())) {
+                    && object.getState().equals(block.getStateId())
+                    && block.isWaitForCompletion()
+                    && ("PENDING".equalsIgnoreCase(block.getStatus()) || "RUNNING".equalsIgnoreCase(block.getStatus()))) {
                 return true;
             }
         }
         return false;
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> asyncActionEntry(ManagedObject object, String actionKey) {
-        Object root = object.getPayload().get("asyncActions");
-        if (!(root instanceof Map<?, ?> rootMap)) {
-            throw new IllegalArgumentException("async action not found");
+    private AutomationBlockExecution automationBlockEntry(ManagedObject object, String blockKey) {
+        if (object.getAutomationBlockRegistry() == null) {
+            throw new IllegalArgumentException("automation block not found");
         }
-        Object entry = ((Map<String, Object>) rootMap).get(actionKey);
-        if (!(entry instanceof Map<?, ?> entryMap)) {
-            throw new IllegalArgumentException("async action not found");
-        }
-        return (Map<String, Object>) entryMap;
+        return object.getAutomationBlockRegistry().stream()
+                .filter(item -> item != null && blockKey.equals(item.getBlockKey()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("automation block not found"));
     }
 
-    @SuppressWarnings("unchecked")
-    private boolean isDuplicateCallback(Map<String, Object> asyncEntry, String callbackFingerprint) {
+    private boolean isDuplicateCallback(AutomationBlockExecution block, String callbackFingerprint) {
         if (callbackFingerprint == null || callbackFingerprint.isBlank()) {
             return false;
         }
-        Object processed = asyncEntry.get("processedCallbacks");
-        if (!(processed instanceof List<?> list)) {
-            return false;
-        }
-        return list.stream().anyMatch(callbackFingerprint::equals);
+        return block.getProcessedCallbacks() != null && block.getProcessedCallbacks().stream().anyMatch(callbackFingerprint::equals);
     }
 
-    @SuppressWarnings("unchecked")
-    private void rememberProcessedCallback(ManagedObject object, String actionKey, String callbackFingerprint) {
+    private void rememberProcessedCallback(AutomationBlockExecution block, String callbackFingerprint) {
         if (callbackFingerprint == null || callbackFingerprint.isBlank()) {
             return;
         }
-        Object asyncActions = object.getPayload().computeIfAbsent("asyncActions", ignored -> new LinkedHashMap<String, Object>());
-        if (!(asyncActions instanceof Map<?, ?> actionsMap)) {
-            return;
-        }
-        Map<String, Object> actionEntry = (Map<String, Object>) ((Map<String, Object>) actionsMap)
-                .computeIfAbsent(actionKey, ignored -> new LinkedHashMap<String, Object>());
-        Object processed = actionEntry.get("processedCallbacks");
-        List<String> callbacks = new ArrayList<>();
-        if (processed instanceof List<?> list) {
-            for (Object item : list) {
-                if (item != null) {
-                    callbacks.add(String.valueOf(item));
-                }
-            }
-        }
+        List<String> callbacks = new ArrayList<>(block.getProcessedCallbacks() == null ? List.of() : block.getProcessedCallbacks());
         if (!callbacks.contains(callbackFingerprint)) {
             callbacks.add(callbackFingerprint);
         }
-        actionEntry.put("processedCallbacks", callbacks);
+        block.setProcessedCallbacks(callbacks);
     }
 
-    private String resolveActionKeyByCorrelation(ManagedObject object, String correlationKey) {
-        if (object.getAsyncActionRegistry() == null) {
-            throw new IllegalArgumentException("async action not found");
+    private String resolveBlockKeyByCorrelation(ManagedObject object, String correlationKey) {
+        if (object.getAutomationBlockRegistry() == null) {
+            throw new IllegalArgumentException("automation block not found");
         }
-        return object.getAsyncActionRegistry().stream()
-                .filter(registration -> registration != null && correlationKey.equals(registration.getCorrelationKey()))
-                .map(com.cyancoder.bpm.domain.AsyncActionRegistration::getActionKey)
+        return object.getAutomationBlockRegistry().stream()
+                .filter(block -> block != null && correlationKey.equals(block.getCorrelationKey()))
+                .map(AutomationBlockExecution::getBlockKey)
                 .findFirst()
                 .orElseThrow();
     }
 
-    private void markAsyncRegistrationStatus(ManagedObject object, String actionKey, String status) {
-        if (object.getAsyncActionRegistry() == null) {
-            return;
-        }
-        for (var registration : object.getAsyncActionRegistry()) {
-            if (registration != null && actionKey.equals(registration.getActionKey())) {
-                registration.setStatus(status);
+    private boolean canRetry(AutomationBlockExecution block) {
+        return block.getRetryCount() != null && block.getMaxRetries() != null && block.getRetryCount() < block.getMaxRetries();
+    }
+
+    private void restartAutomationBlock(BpmScope scope, ManagedObject object, AutomationBlockExecution block) {
+        block.setRetryCount((block.getRetryCount() == null ? 0 : block.getRetryCount()) + 1);
+        block.setStatus("PENDING");
+        block.setFinishedAt(null);
+        block.setUpdatedAt(Instant.now());
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("blockKey", block.getBlockKey());
+        params.put("automationFlowKey", block.getAutomationFlowKey());
+        params.put("executionMode", block.getExecutionMode().name());
+        params.put("failurePolicy", block.getFailurePolicy().name());
+        params.put("serviceKey", block.getServiceKey());
+        params.put("path", block.getPath());
+        params.put("method", firstNonBlank(block.getMethod(), "POST"));
+        params.put("body", block.getRequestBody());
+        params.put("inlineFragment", block.getInlineFragment());
+        params.put("responseMappings", block.getStartResponseMappings());
+        params.put("storeFullResponseAt", block.getStoreStartResponseAt());
+        params.put("callbackResponseMappings", block.getOutputMappings());
+        params.put("callbackStoreFullResponseAt", block.getStoreOutputAt());
+        params.put("maxRetries", block.getMaxRetries());
+        params.put("timeoutSeconds", block.getTimeoutSeconds());
+        params.put("nextStateOnSuccess", block.getNextStateOnSuccess());
+        params.put("nextStateOnFailure", block.getNextStateOnFailure());
+        params.put("waitForCompletion", block.isWaitForCompletion());
+        params.put("correlationKey", block.getCorrelationKey());
+        FlowActionConfig action = new FlowActionConfig(com.cyancoder.bpm.domain.ActionType.RUN_AUTOMATION_BLOCK, params);
+        actionExecutor.execute(List.of(action), object, scope, "system-retry");
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
             }
         }
+        return null;
     }
 }

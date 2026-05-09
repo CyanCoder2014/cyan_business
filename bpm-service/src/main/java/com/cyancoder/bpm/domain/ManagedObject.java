@@ -29,6 +29,7 @@ public class ManagedObject {
     private List<String> auditLog = new ArrayList<>();
     private List<TransitionHistoryEntry> transitionHistory = new ArrayList<>();
     private List<AsyncActionRegistration> asyncActionRegistry = new ArrayList<>();
+    private List<AutomationBlockExecution> automationBlockRegistry = new ArrayList<>();
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -62,6 +63,8 @@ public class ManagedObject {
     public void setTransitionHistory(List<TransitionHistoryEntry> transitionHistory) { this.transitionHistory = transitionHistory; }
     public List<AsyncActionRegistration> getAsyncActionRegistry() { return asyncActionRegistry; }
     public void setAsyncActionRegistry(List<AsyncActionRegistration> asyncActionRegistry) { this.asyncActionRegistry = asyncActionRegistry; }
+    public List<AutomationBlockExecution> getAutomationBlockRegistry() { return automationBlockRegistry; }
+    public void setAutomationBlockRegistry(List<AutomationBlockExecution> automationBlockRegistry) { this.automationBlockRegistry = automationBlockRegistry; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

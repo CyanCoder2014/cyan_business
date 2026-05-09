@@ -9,4 +9,5 @@ public interface ManagedObjectRepository extends MongoRepository<ManagedObject, 
     List<ManagedObject> findByTenantKeyAndSiteKeyOrderByUpdatedAtDesc(String tenantKey, String siteKey);
     List<ManagedObject> findByTenantKeyAndSiteKeyAndAssigneeOrderByUpdatedAtDesc(String tenantKey, String siteKey, String assignee);
     java.util.Optional<ManagedObject> findFirstByTenantKeyAndSiteKeyAndAsyncActionRegistryCorrelationKey(String tenantKey, String siteKey, String correlationKey);
+    java.util.Optional<ManagedObject> findFirstByTenantKeyAndSiteKeyAndAutomationBlockRegistryCorrelationKey(String tenantKey, String siteKey, String correlationKey);
 }

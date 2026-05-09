@@ -119,6 +119,10 @@ public class DynamicFlowIntegrationClient {
         }
         String serviceKey = stringValue(action.params().get("serviceKey"));
         String path = stringValue(action.params().get("path"));
+        if (action.type() == com.cyancoder.bpm.domain.ActionType.START_AUTOMATION_FLOW) {
+            serviceKey = coalesce(serviceKey, "automation-orchestrator-service");
+            path = coalesce(path, "/internal/automation-orchestrator/executions/start");
+        }
         if (serviceKey == null || path == null) {
             return Map.of();
         }

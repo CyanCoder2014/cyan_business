@@ -1,0 +1,288 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Inventory"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/api/inventory-service/items": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Create Inventory Item",
+        "description": "Create Inventory Item for Inventory.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "itemKey": "item-1001",
+                "title": "Sample Inventory Item",
+                "status": "ACTIVE",
+                "payload": {
+                  "source": "postman",
+                  "tenantKey": "{{tenant_key}}",
+                  "siteKey": "{{site_key}}"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "List Inventory Items",
+        "description": "List Inventory Items for Inventory.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/inventory-service/items/{itemKey}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Get Inventory Item",
+        "description": "Get Inventory Item for Inventory.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "itemKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "item-1001"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Update Inventory Item",
+        "description": "Update Inventory Item for Inventory.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "itemKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "item-1001"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "itemKey": "item-1001",
+                "title": "Sample Inventory Item",
+                "status": "ACTIVE",
+                "payload": {
+                  "source": "postman",
+                  "tenantKey": "{{tenant_key}}",
+                  "siteKey": "{{site_key}}"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Delete Inventory Item",
+        "description": "Delete Inventory Item for Inventory.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "itemKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "item-1001"
+          }
+        ]
+      }
+    },
+    "/api/inventory-service/items/internal/export": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "summary": "Export Inventory",
+        "description": "Export Inventory for Inventory.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

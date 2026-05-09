@@ -1,0 +1,880 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "SSO"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/api/sso/auth/login": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Login",
+        "description": "Login for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "accessToken": "{{access_token}}",
+                  "refreshToken": "{{refresh_token}}",
+                  "tokenType": "Bearer",
+                  "expiresIn": 3600,
+                  "sessionId": "{{session_id}}"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "clientId": "panel.sampv3",
+                "username": "farid",
+                "password": "Passw0rd!",
+                "captchaChallengeId": null,
+                "captchaAnswer": null,
+                "otpCode": null,
+                "deviceId": "chrome-local"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/auth/logout": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Logout",
+        "description": "Logout for SSO.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "sessionId": "{{session_id}}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/auth/refresh": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Refresh Token",
+        "description": "Refresh Token for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "clientId": "panel.sampv3",
+                "refreshToken": "{{refresh_token}}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/auth/introspect": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Token Introspect",
+        "description": "Token Introspect for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "token": "{{access_token}}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/auth/otp/send": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Auth OTP Send",
+        "description": "Auth OTP Send for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "phoneNumber": "+989121234567"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/auth/fido/challenge": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Auth FIDO Challenge",
+        "description": "Auth FIDO Challenge for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "deviceId": "chrome-local"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/auth/fido/verify": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Auth FIDO Verify",
+        "description": "Auth FIDO Verify for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "challengeId": "challenge-1",
+                "credential": "signed-payload"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/jwks.json": {
+      "get": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "JWKS",
+        "description": "JWKS for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/openid-configuration": {
+      "get": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "OpenID Configuration",
+        "description": "OpenID Configuration for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/captcha/challenges": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Create Captcha Challenge",
+        "description": "Create Captcha Challenge for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/captcha/verify": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Verify Captcha",
+        "description": "Verify Captcha for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "challengeId": "{{captcha_challenge_id}}",
+                "answer": "7H2K"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/otp/send": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "OTP Send",
+        "description": "OTP Send for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "destination": "+989121234567",
+                "reason": "LOGIN"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/otp/verify": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "OTP Verify",
+        "description": "OTP Verify for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "otpCode": "123456"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/sessions": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Create Session",
+        "description": "Create Session for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "clientId": "panel.sampv3",
+                "deviceId": "chrome-local"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/sessions/{sessionId}": {
+      "get": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Get Session",
+        "description": "Get Session for SSO.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{session_id}}"
+          }
+        ]
+      }
+    },
+    "/api/sso/sessions/revoke": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Revoke Session",
+        "description": "Revoke Session for SSO.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "sessionId": "{{session_id}}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/users": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Register User",
+        "description": "Register User for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "password": "Passw0rd!",
+                "email": "farid@example.com",
+                "phoneNumber": "+989121234567",
+                "mfaEnabled": false,
+                "roles": [
+                  "ROLE_USER",
+                  "ROLE_ADMIN"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/users/{username}": {
+      "get": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Get User",
+        "description": "Get User for SSO.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "farid"
+          }
+        ]
+      }
+    },
+    "/api/sso/users/verify-password": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "Verify Password",
+        "description": "Verify Password for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "password": "Passw0rd!"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/fido/challenge": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "FIDO Challenge",
+        "description": "FIDO Challenge for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "deviceId": "chrome-local"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sso/fido/verify": {
+      "post": {
+        "tags": [
+          "SSO"
+        ],
+        "summary": "FIDO Verify",
+        "description": "FIDO Verify for SSO.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "username": "farid",
+                "challengeId": "challenge-1",
+                "credential": "signed-payload"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

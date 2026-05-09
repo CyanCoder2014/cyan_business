@@ -1,0 +1,311 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Processor"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/api/processor-service/processors": {
+      "post": {
+        "tags": [
+          "Processor"
+        ],
+        "summary": "Create Processor",
+        "description": "Create Processor for Processor.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "processorKey": "sync-customer-profile",
+                "title": "Sync Customer Profile",
+                "status": "ACTIVE",
+                "config": {
+                  "targetService": "crm-service"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Processor"
+        ],
+        "summary": "List Processors",
+        "description": "List Processors for Processor.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/processor-service/processors/{processorKey}": {
+      "get": {
+        "tags": [
+          "Processor"
+        ],
+        "summary": "Get Processor",
+        "description": "Get Processor for Processor.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "processorKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sync-customer-profile"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Processor"
+        ],
+        "summary": "Update Processor",
+        "description": "Update Processor for Processor.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "processorKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sync-customer-profile"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "processorKey": "sync-customer-profile",
+                "title": "Sync Customer Profile Updated",
+                "status": "ACTIVE",
+                "config": {
+                  "targetService": "crm-service"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Processor"
+        ],
+        "summary": "Delete Processor",
+        "description": "Delete Processor for Processor.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "processorKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sync-customer-profile"
+          }
+        ]
+      }
+    },
+    "/api/processor-service/processors/{processorKey}/run": {
+      "post": {
+        "tags": [
+          "Processor"
+        ],
+        "summary": "Run Processor",
+        "description": "Run Processor for Processor.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "processorKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sync-customer-profile"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "input": {
+                  "recordKey": "customer-1001"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

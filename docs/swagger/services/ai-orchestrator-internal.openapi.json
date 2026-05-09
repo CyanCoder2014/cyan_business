@@ -1,0 +1,619 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "AI Orchestrator Internal"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/ai-orchestrator/generate/app": {
+      "post": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Generate Platform App Internal",
+        "description": "Generate Platform App Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "prompt": "Generate a tenant blueprint draft for a store.",
+                "appType": "ECOMMERCE",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "clientKey": "{{client_key}}",
+                "execute": false,
+                "answers": {
+                  "subdomain": "internal-spiffy"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/ai-orchestrator/blueprints": {
+      "get": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "List Blueprints Internal",
+        "description": "List Blueprints Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/ai-orchestrator/blueprints/{blueprintKey}": {
+      "get": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Get Blueprint Internal",
+        "description": "Get Blueprint Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "blueprintKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ecommerce-crm-zarinpal-v1"
+          }
+        ]
+      }
+    },
+    "/internal/ai-orchestrator/drafts": {
+      "post": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Create Draft Internal",
+        "description": "Create Draft Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "appType": "ECOMMERCE",
+                "blueprintKey": "ecommerce-crm-zarinpal-v1",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "clientKey": "{{client_key}}",
+                "title": "Internal Spiffy Draft",
+                "prompt": "Internal provisioning path.",
+                "answers": {
+                  "subdomain": "internal-spiffy"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "List Drafts Internal",
+        "description": "List Drafts Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/ai-orchestrator/drafts/{draftId}": {
+      "get": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Get Draft Internal",
+        "description": "Get Draft Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{draft_id}}"
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Patch Draft Internal",
+        "description": "Patch Draft Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{draft_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "title": "Internal Updated"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/ai-orchestrator/drafts/{draftId}/provision": {
+      "post": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Provision Draft Internal",
+        "description": "Provision Draft Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{draft_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "mode": "EXECUTE"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/ai-orchestrator/drafts/{draftId}/runs": {
+      "get": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "List Runs Internal",
+        "description": "List Runs Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{draft_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/ai-orchestrator/runs/{runId}": {
+      "get": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Get Run Internal",
+        "description": "Get Run Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{run_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/ai-orchestrator/sessions": {
+      "post": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Create Session Internal",
+        "description": "Create Session Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "channelType": "SYSTEM",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "clientKey": "{{client_key}}",
+                "title": "Internal Session"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/ai-orchestrator/sessions/{sessionId}": {
+      "get": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Get Session Internal",
+        "description": "Get Session Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{session_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/ai-orchestrator/sessions/{sessionId}/message": {
+      "post": {
+        "tags": [
+          "AI Orchestrator Internal"
+        ],
+        "summary": "Message Session Internal",
+        "description": "Message Session Internal for AI Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{session_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "role": "SYSTEM",
+                "content": "Continue blueprint enrichment."
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Payment Orchestrator"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/payment-orchestrator/methods": {
+      "get": {
+        "tags": [
+          "Payment Orchestrator"
+        ],
+        "summary": "List Available Payment Methods",
+        "description": "List Available Payment Methods for Payment Orchestrator.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/payment-orchestrator/sessions/initiate": {
+      "post": {
+        "tags": [
+          "Payment Orchestrator"
+        ],
+        "summary": "Initiate Payment Session",
+        "description": "Initiate Payment Session for Payment Orchestrator.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "paymentMethodKey": "zarinpal-main",
+                "orderKey": "order-1001",
+                "invoiceKey": "invoice-1001",
+                "customerKey": "customer-farid",
+                "relatedService": "checkout-service",
+                "relatedEntityType": "order",
+                "relatedEntityKey": "order-1001",
+                "amount": 1250000,
+                "currency": "IRR",
+                "description": "Order payment for Spiffy checkout",
+                "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+                "successUrl": "http://localhost:3000/checkout/success",
+                "failureUrl": "http://localhost:3000/checkout/failure",
+                "metaData": {
+                  "cartKey": "cart-1001",
+                  "source": "storefront"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/payment-orchestrator/transactions/{transactionKey}/verify": {
+      "post": {
+        "tags": [
+          "Payment Orchestrator"
+        ],
+        "summary": "Verify Orchestrated Payment",
+        "description": "Verify Orchestrated Payment for Payment Orchestrator.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transactionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{transaction_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "payload": {
+                  "authority": "A0000001",
+                  "status": "OK"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

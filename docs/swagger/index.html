@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cyan Business Platform Swagger</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    body { margin: 0; background: #f5f7fb; }
+    .topbar { display: none; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    window.ui = SwaggerUIBundle({
+      urls: [
+      {
+            "name": "Platform - All Services",
+            "url": "./cyan-business-platform.openapi.json"
+      },
+      {
+            "name": "AI Orchestrator",
+            "url": "./services/ai-orchestrator.openapi.json"
+      },
+      {
+            "name": "AI Orchestrator Internal",
+            "url": "./services/ai-orchestrator-internal.openapi.json"
+      },
+      {
+            "name": "Automation Orchestrator",
+            "url": "./services/automation-orchestrator.openapi.json"
+      },
+      {
+            "name": "BPM",
+            "url": "./services/bpm.openapi.json"
+      },
+      {
+            "name": "BPM Internal Flow",
+            "url": "./services/bpm-internal-flow.openapi.json"
+      },
+      {
+            "name": "BPM Internal Managed Objects",
+            "url": "./services/bpm-internal-managed-objects.openapi.json"
+      },
+      {
+            "name": "BPM Internal Metadata",
+            "url": "./services/bpm-internal-metadata.openapi.json"
+      },
+      {
+            "name": "CRM",
+            "url": "./services/crm.openapi.json"
+      },
+      {
+            "name": "CRM Automation",
+            "url": "./services/crm-automation.openapi.json"
+      },
+      {
+            "name": "Catalog",
+            "url": "./services/catalog.openapi.json"
+      },
+      {
+            "name": "Checkout",
+            "url": "./services/checkout.openapi.json"
+      },
+      {
+            "name": "Commerce",
+            "url": "./services/commerce.openapi.json"
+      },
+      {
+            "name": "Content",
+            "url": "./services/content.openapi.json"
+      },
+      {
+            "name": "Dynamic Entity",
+            "url": "./services/dynamic-entity.openapi.json"
+      },
+      {
+            "name": "Dynamic Entity Internal",
+            "url": "./services/dynamic-entity-internal.openapi.json"
+      },
+      {
+            "name": "Event",
+            "url": "./services/event.openapi.json"
+      },
+      {
+            "name": "Finance",
+            "url": "./services/finance.openapi.json"
+      },
+      {
+            "name": "Finance Automation",
+            "url": "./services/finance-automation.openapi.json"
+      },
+      {
+            "name": "Inventory",
+            "url": "./services/inventory.openapi.json"
+      },
+      {
+            "name": "Inventory Automation",
+            "url": "./services/inventory-automation.openapi.json"
+      },
+      {
+            "name": "Legacy Buyer",
+            "url": "./services/legacy-buyer.openapi.json"
+      },
+      {
+            "name": "Legacy Client",
+            "url": "./services/legacy-client.openapi.json"
+      },
+      {
+            "name": "Legacy Factor",
+            "url": "./services/legacy-factor.openapi.json"
+      },
+      {
+            "name": "Legacy Product",
+            "url": "./services/legacy-product.openapi.json"
+      },
+      {
+            "name": "Media",
+            "url": "./services/media.openapi.json"
+      },
+      {
+            "name": "Notification",
+            "url": "./services/notification.openapi.json"
+      },
+      {
+            "name": "Notification Internal",
+            "url": "./services/notification-internal.openapi.json"
+      },
+      {
+            "name": "Payment",
+            "url": "./services/payment.openapi.json"
+      },
+      {
+            "name": "Payment Internal",
+            "url": "./services/payment-internal.openapi.json"
+      },
+      {
+            "name": "Payment Orchestrator",
+            "url": "./services/payment-orchestrator.openapi.json"
+      },
+      {
+            "name": "Payment Public",
+            "url": "./services/payment-public.openapi.json"
+      },
+      {
+            "name": "Pricing Promotion",
+            "url": "./services/pricing-promotion.openapi.json"
+      },
+      {
+            "name": "Processor",
+            "url": "./services/processor.openapi.json"
+      },
+      {
+            "name": "Report",
+            "url": "./services/report.openapi.json"
+      },
+      {
+            "name": "Report Automation",
+            "url": "./services/report-automation.openapi.json"
+      },
+      {
+            "name": "Report Internal",
+            "url": "./services/report-internal.openapi.json"
+      },
+      {
+            "name": "SSO",
+            "url": "./services/sso.openapi.json"
+      },
+      {
+            "name": "Search",
+            "url": "./services/search.openapi.json"
+      },
+      {
+            "name": "Search Internal",
+            "url": "./services/search-internal.openapi.json"
+      },
+      {
+            "name": "Storefront",
+            "url": "./services/storefront.openapi.json"
+      },
+      {
+            "name": "Tax Pay Sys",
+            "url": "./services/tax-pay-sys.openapi.json"
+      }
+],
+      dom_id: '#swagger-ui',
+      deepLinking: true,
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      docExpansion: 'list',
+      tryItOutEnabled: true
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Media"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/media/assets/prepare-upload": {
+      "post": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Prepare Upload",
+        "description": "Prepare Upload for Media.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "assetKey": "hero-banner-1",
+                "assetType": "IMAGE",
+                "originalFileName": "banner.jpg",
+                "mimeType": "image/jpeg",
+                "visibility": "PUBLIC",
+                "altText": "Spiffy banner",
+                "caption": "Homepage banner",
+                "title": "Spiffy Hero",
+                "license": "owned",
+                "bucket": "media",
+                "path": "homepage/banner.jpg",
+                "width": 1600,
+                "height": 900,
+                "sizeBytes": 245000
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/media/assets/{assetKey}": {
+      "get": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Get Media Asset Internal",
+        "description": "Get Media Asset Internal for Media.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "assetKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "hero-banner-1"
+          }
+        ]
+      }
+    },
+    "/public/media/assets/{assetKey}": {
+      "get": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Get Media Asset",
+        "description": "Get Media Asset for Media.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "assetKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "hero-banner-1"
+          }
+        ]
+      }
+    },
+    "/public/media/assets/{assetKey}/variants/{variantKey}": {
+      "get": {
+        "tags": [
+          "Media"
+        ],
+        "summary": "Get Media Asset Variant",
+        "description": "Get Media Asset Variant for Media.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "assetKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "hero-banner-1"
+          },
+          {
+            "name": "variantKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "thumb"
+          }
+        ]
+      }
+    }
+  }
+}

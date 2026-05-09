@@ -1,0 +1,842 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Dynamic Entity"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/endpoint/entities/definitions": {
+      "post": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Create Definition",
+        "description": "Create Definition for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "entityKey": "catalog-item",
+                "tenantKey": "demo-tenant",
+                "siteKey": "main-site",
+                "definitionJson": "{\"entityKey\": \"catalog-item\", \"title\": \"Catalog Item\", \"fields\": [{\"key\": \"title\", \"type\": \"text\", \"required\": true}, {\"key\": \"price\", \"type\": \"number\", \"required\": true}, {\"key\": \"status\", \"type\": \"select\", \"options\": [\"DRAFT\", \"PUBLISHED\"]}]}"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "List Definitions",
+        "description": "List Definitions for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/entities/definitions/{entityKey}": {
+      "put": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Update Definition",
+        "description": "Update Definition for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "entityKey": "catalog-item",
+                "tenantKey": "demo-tenant",
+                "siteKey": "main-site",
+                "definitionJson": "{\"entityKey\": \"catalog-item\", \"title\": \"Catalog Item\", \"fields\": [{\"key\": \"title\", \"type\": \"text\", \"required\": true}, {\"key\": \"price\", \"type\": \"number\", \"required\": true}, {\"key\": \"status\", \"type\": \"select\", \"options\": [\"DRAFT\", \"PUBLISHED\"]}]}"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Get Definition",
+        "description": "Get Definition for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Delete Definition",
+        "description": "Delete Definition for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ]
+      }
+    },
+    "/endpoint/entities/templates": {
+      "get": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "List Templates",
+        "description": "List Templates for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/entities/templates/{templateKey}": {
+      "get": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Get Template",
+        "description": "Get Template for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "templateKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{templateKey}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/entities/templates/{templateKey}/definitions": {
+      "post": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Create Definition From Template",
+        "description": "Create Definition From Template for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "templateKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{templateKey}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "entityKey": "spiffy-order",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/entities/records/{entityKey}/validate": {
+      "post": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Validate Record",
+        "description": "Validate Record for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "title": "Spiffy Everyday Bag",
+                "slug": "spiffy-everyday-bag",
+                "price": 1250000,
+                "currency": "IRR",
+                "status": "PUBLISHED"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/entities/submit/{entityKey}": {
+      "post": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Submit Map Record",
+        "description": "Submit Map Record for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "item-spiffy-bag"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "title": "Spiffy Everyday Bag",
+                "slug": "spiffy-everyday-bag",
+                "price": 1250000,
+                "currency": "IRR",
+                "status": "PUBLISHED"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/entities/records/{entityKey}": {
+      "post": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Create Record",
+        "description": "Create Record for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "recordKey": "item-spiffy-bag",
+                "tenantKey": "demo-tenant",
+                "siteKey": "main-site",
+                "data": {
+                  "title": "Spiffy Everyday Bag",
+                  "slug": "spiffy-everyday-bag",
+                  "price": 1250000,
+                  "currency": "IRR",
+                  "status": "PUBLISHED"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "List Records",
+        "description": "List Records for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ]
+      }
+    },
+    "/endpoint/entities/records/{entityKey}/{recordKey}": {
+      "put": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Replace Record",
+        "description": "Replace Record for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{record_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "recordKey": "item-spiffy-bag",
+                "tenantKey": "demo-tenant",
+                "siteKey": "main-site",
+                "data": {
+                  "title": "Spiffy Everyday Bag",
+                  "slug": "spiffy-everyday-bag",
+                  "price": 1250000,
+                  "currency": "IRR",
+                  "status": "PUBLISHED"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Patch Record",
+        "description": "Patch Record for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{record_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "data": {
+                  "price": 1350000,
+                  "status": "PUBLISHED"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Get Record",
+        "description": "Get Record for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{record_key}}"
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Delete Record",
+        "description": "Delete Record for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{record_key}}"
+          }
+        ]
+      }
+    }
+  }
+}

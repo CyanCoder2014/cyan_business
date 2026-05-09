@@ -1,0 +1,732 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "BPM"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/endpoint/bpm/metadata/actions": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List BPM Action Metadata",
+        "description": "List BPM Action Metadata for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/bpm/metadata/transition-conditions": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List BPM Transition Conditions",
+        "description": "List BPM Transition Conditions for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/bpm/flows": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List Flows",
+        "description": "List Flows for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Create Flow",
+        "description": "Create Flow for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "flowKey": "customer-onboarding",
+                "version": 1,
+                "active": true,
+                "states": [
+                  {
+                    "key": "DRAFT",
+                    "label": "Draft",
+                    "automatic": false,
+                    "waitForAutomation": false
+                  },
+                  {
+                    "key": "REVIEW",
+                    "label": "Review",
+                    "automatic": false,
+                    "waitForAutomation": true
+                  }
+                ],
+                "actions": [
+                  {
+                    "type": "RUN_AUTOMATION_BLOCK",
+                    "params": {
+                      "blockKey": "credit-check",
+                      "automationFlowKey": "credit-screening",
+                      "executionMode": "ASYNC",
+                      "failurePolicy": "MARK_FAILED",
+                      "body": {
+                        "customerKey": "{{record_key}}"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/bpm/flows/{flowKey}": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Get Flow",
+        "description": "Get Flow for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          }
+        ]
+      }
+    },
+    "/endpoint/bpm/flows/{flowKey}/activate/{version}": {
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Activate Flow",
+        "description": "Activate Flow for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ]
+      }
+    },
+    "/endpoint/bpm/managed-objects": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List Managed Objects",
+        "description": "List Managed Objects for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Create Managed Object",
+        "description": "Create Managed Object for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "flowKey": "customer-onboarding",
+                "objectType": "crm-lead",
+                "objectRef": {
+                  "entityKey": "crm-record",
+                  "recordKey": "lead-1001"
+                },
+                "payload": {
+                  "customerName": "Farid",
+                  "phone": "+989121234567",
+                  "plan": "PREMIUM"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/bpm/managed-objects/assigned-to-me": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Assigned To Me",
+        "description": "Assigned To Me for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/bpm/managed-objects/visible-to-me": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Visible To Me",
+        "description": "Visible To Me for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/bpm/managed-objects/{objectId}/transitions": {
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Execute Transition",
+        "description": "Execute Transition for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "nextState": "REVIEW",
+                "context": {
+                  "reason": "manual-review"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List Available Transitions",
+        "description": "List Available Transitions for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/bpm/managed-objects/{objectId}/active-form": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Get Active Form",
+        "description": "Get Active Form for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/bpm/managed-objects/{objectId}/active-form/submissions": {
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Submit Active Form",
+        "description": "Submit Active Form for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "formData": {
+                  "nationalCode": "0012345678",
+                  "acceptTerms": true
+                },
+                "nextState": "REVIEW",
+                "context": {
+                  "submittedBy": "farid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/bpm/managed-objects/{objectId}": {
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Get Managed Object",
+        "description": "Get Managed Object for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
+    "/public/bpm/async-actions/callbacks/{correlationKey}": {
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Async Callback",
+        "description": "Async Callback for BPM.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "correlationKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "corr-1001"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "status": "SUCCEEDED",
+                "output": {
+                  "screeningScore": 87,
+                  "riskBucket": "LOW"
+                },
+                "errorCode": null,
+                "errorMessage": null
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,355 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "BPM Internal Managed Objects"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/bpm/managed-objects": {
+      "get": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "List Managed Objects Internal",
+        "description": "List Managed Objects Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "Create Managed Object Internal",
+        "description": "Create Managed Object Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "flowKey": "customer-onboarding",
+                "objectType": "crm-lead",
+                "objectRef": {
+                  "entityKey": "crm-record",
+                  "recordKey": "lead-1001"
+                },
+                "payload": {
+                  "customerName": "Farid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/bpm/managed-objects/{objectId}/transitions": {
+      "post": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "Execute Transition Internal",
+        "description": "Execute Transition Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "nextState": "APPROVED",
+                "context": {
+                  "source": "system"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "List Available Transitions Internal",
+        "description": "List Available Transitions Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/bpm/managed-objects/{objectId}/active-form": {
+      "get": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "Get Active Form Internal",
+        "description": "Get Active Form Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/bpm/managed-objects/{objectId}/active-form/submissions": {
+      "post": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "Submit Active Form Internal",
+        "description": "Submit Active Form Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "formData": {
+                  "approved": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/bpm/managed-objects/{objectId}": {
+      "get": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "Get Managed Object Internal",
+        "description": "Get Managed Object Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Automation Orchestrator"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/automation-orchestrator/executions/start": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Start Automation Execution",
+        "description": "Start Automation Execution for Automation Orchestrator.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "blockKey": "credit-check",
+                "automationFlowKey": "credit-screening",
+                "executionMode": "ASYNC",
+                "failurePolicy": "MARK_FAILED",
+                "correlationKey": "corr-1001",
+                "callbackPath": "/public/bpm/async-actions/callbacks/corr-1001",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "input": {
+                  "customerKey": "lead-1001"
+                },
+                "context": {
+                  "objectId": "{{object_id}}"
+                },
+                "inlineFragment": {
+                  "type": "MAP_OUTPUT",
+                  "mappings": {
+                    "riskBucket": "$.riskBucket"
+                  }
+                },
+                "maxRetries": 2,
+                "timeoutSeconds": 120,
+                "delayMillis": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Get Automation Execution",
+        "description": "Get Automation Execution for Automation Orchestrator.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/cancel": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Cancel Automation Execution",
+        "description": "Cancel Automation Execution for Automation Orchestrator.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    }
+  }
+}

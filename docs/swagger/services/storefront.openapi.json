@@ -1,0 +1,228 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Storefront"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/public/storefront/resolve": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Resolve Route",
+        "description": "Resolve Route for Storefront.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "/products/spiffy-everyday-bag"
+          }
+        ]
+      }
+    },
+    "/public/storefront/render": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Render Route",
+        "description": "Render Route for Storefront.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "/products/spiffy-everyday-bag"
+          }
+        ]
+      }
+    },
+    "/public/storefront/page": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Render HTML Page",
+        "description": "Render HTML Page for Storefront.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "value": "<html>...</html>"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "/products/spiffy-everyday-bag"
+          }
+        ]
+      }
+    },
+    "/public/storefront/sitemap": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Get Sitemap",
+        "description": "Get Sitemap for Storefront.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/storefront/sitemap.xml": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Get Sitemap XML",
+        "description": "Get Sitemap XML for Storefront.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "value": "<urlset/>"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/storefront/robots.txt": {
+      "get": {
+        "tags": [
+          "Storefront"
+        ],
+        "summary": "Get Robots",
+        "description": "Get Robots for Storefront.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "value": "User-agent: *"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

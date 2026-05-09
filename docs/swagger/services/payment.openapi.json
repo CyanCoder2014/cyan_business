@@ -1,0 +1,493 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Payment"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/endpoint/payment/methods": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "List Payment Methods",
+        "description": "List Payment Methods for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/payment/admin/methods": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "List Admin Payment Methods",
+        "description": "List Admin Payment Methods for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Create Payment Method",
+        "description": "Create Payment Method for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "methodKey": "zarinpal-main",
+                "displayName": "Zarinpal Main",
+                "providerCode": "ZARINPAL",
+                "region": "IRANIAN",
+                "flowType": "REDIRECT",
+                "enabled": true,
+                "active": true,
+                "priorityOrder": 1,
+                "supportedCurrencies": [
+                  "IRR"
+                ],
+                "configuration": {
+                  "merchantId": "merchant-demo",
+                  "callbackBaseUrl": "http://localhost:8080"
+                },
+                "description": "Primary Zarinpal payment method"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/payment/admin/methods/{methodKey}": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Get Admin Payment Method",
+        "description": "Get Admin Payment Method for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "methodKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "zarinpal-main"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Update Payment Method",
+        "description": "Update Payment Method for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "methodKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "zarinpal-main"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "methodKey": "zarinpal-main",
+                "displayName": "Zarinpal Main Updated",
+                "providerCode": "ZARINPAL",
+                "region": "IRANIAN",
+                "flowType": "REDIRECT",
+                "enabled": true,
+                "active": true,
+                "priorityOrder": 1,
+                "supportedCurrencies": [
+                  "IRR"
+                ],
+                "configuration": {
+                  "merchantId": "merchant-demo",
+                  "callbackBaseUrl": "http://localhost:8080"
+                },
+                "description": "Updated method"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Delete Payment Method",
+        "description": "Delete Payment Method for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "methodKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "zarinpal-main"
+          }
+        ]
+      }
+    },
+    "/endpoint/payment/transactions/initiate": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Initiate Payment",
+        "description": "Initiate Payment for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "paymentMethodKey": "zarinpal-main",
+                "orderKey": "order-1001",
+                "invoiceKey": "invoice-1001",
+                "customerKey": "customer-farid",
+                "relatedService": "checkout-service",
+                "relatedEntityType": "order",
+                "relatedEntityKey": "order-1001",
+                "amount": 1250000,
+                "currency": "IRR",
+                "description": "Order payment for Spiffy checkout",
+                "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+                "successUrl": "http://localhost:3000/checkout/success",
+                "failureUrl": "http://localhost:3000/checkout/failure",
+                "metaData": {
+                  "cartKey": "cart-1001",
+                  "source": "storefront"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/payment/transactions/{transactionKey}/verify": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Verify Payment",
+        "description": "Verify Payment for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transactionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{transaction_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "payload": {
+                  "authority": "A0000001",
+                  "status": "OK"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/payment/transactions/{transactionKey}": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Get Payment Transaction",
+        "description": "Get Payment Transaction for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transactionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{transaction_key}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/payment/transactions": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "List Payment Transactions",
+        "description": "List Payment Transactions for Payment.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -250,15 +250,20 @@ public class ObjectFlowService {
         Object callbackMappings = asyncEntry.get("callbackResponseMappings");
         Object callbackStoreFullResponseAt = asyncEntry.get("callbackStoreFullResponseAt");
         Map<String, Object> callbackPayload = request == null || request.payload() == null ? Map.of() : request.payload();
+        String callbackStatus = request == null || request.status() == null || request.status().isBlank() ? "SUCCESS" : request.status().trim().toUpperCase();
         CallApiActionSupport.applyResponseMappingsFromCallback(object, callbackPayload, callbackMappings);
         if (callbackStoreFullResponseAt != null) {
             ActionPayloadSupport.setPayloadPath(object, callbackStoreFullResponseAt.toString(), callbackPayload);
         }
         rememberProcessedCallback(object, actionKey, callbackFingerprint);
-        ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".status", "SUCCESS");
+        ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".status", callbackStatus);
         ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".finishedAt", Instant.now().toString());
-        ActionPayloadSupport.removePayloadPath(object, "payload.asyncActions." + actionKey + ".error");
-        markAsyncRegistrationStatus(object, actionKey, "SUCCESS");
+        if ("FAILED".equalsIgnoreCase(callbackStatus)) {
+            ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".error", callbackPayload);
+        } else {
+            ActionPayloadSupport.removePayloadPath(object, "payload.asyncActions." + actionKey + ".error");
+        }
+        markAsyncRegistrationStatus(object, actionKey, callbackStatus);
         object.getAuditLog().add("async callback " + actionKey + " received at=" + Instant.now());
         object.setUpdatedAt(Instant.now());
         managedObjectRepository.save(object);

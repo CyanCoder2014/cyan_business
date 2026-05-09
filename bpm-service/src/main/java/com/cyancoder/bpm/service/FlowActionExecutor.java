@@ -47,7 +47,7 @@ public class FlowActionExecutor {
             case COPY_FIELDS -> copyFields(object.getPayload(), params);
             case REMOVE_FIELDS -> removeFields(object.getPayload(), params);
             case CALL_API, CALL_OPERATOR -> syncCall(action, object, scope, actorUserId);
-            case CALL_API_ASYNC, CALL_OPERATOR_ASYNC -> registerAsyncAction(action, object, scope, actorUserId);
+            case CALL_API_ASYNC, CALL_OPERATOR_ASYNC, START_AUTOMATION_FLOW -> registerAsyncAction(action, object, scope, actorUserId);
             case NOTIFY_OWNER -> integrationClient.callAction(action, object, scope);
         }
     }
@@ -75,6 +75,7 @@ public class FlowActionExecutor {
         object.getAsyncActionRegistry().add(registration);
         ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".status", "PENDING");
         ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".correlationKey", correlationKey);
+        ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".actionType", action.type().name());
         if (params.get("callbackResponseMappings") != null) {
             ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".callbackResponseMappings", params.get("callbackResponseMappings"));
         }
@@ -82,8 +83,44 @@ public class FlowActionExecutor {
             ActionPayloadSupport.setPayloadPath(object, "payload.asyncActions." + actionKey + ".callbackStoreFullResponseAt", params.get("callbackStoreFullResponseAt"));
         }
         if (!Boolean.FALSE.equals(params.get("fireAndForget"))) {
-            integrationClient.callActionForResponse(action, object, scope, actorUserId);
+            Map<String, Object> response = integrationClient.callActionForResponse(withResolvedAsyncBody(action, object, scope, actorUserId, actionKey, correlationKey), object, scope, actorUserId);
+            CallApiActionSupport.applyResponseMappings(object, response, params.get("responseMappings"));
+            Object storeFullResponseAt = params.get("storeFullResponseAt");
+            if (storeFullResponseAt != null) {
+                ActionPayloadSupport.setPayloadPath(object, storeFullResponseAt.toString(), response);
+            }
         }
+    }
+
+    private FlowActionConfig withResolvedAsyncBody(FlowActionConfig action,
+                                                   ManagedObject object,
+                                                   BpmScope scope,
+                                                   String actorUserId,
+                                                   String actionKey,
+                                                   String correlationKey) {
+        if (action.type() != ActionType.START_AUTOMATION_FLOW) {
+            return action;
+        }
+        Map<String, Object> params = new LinkedHashMap<>(action.params() == null ? Map.of() : action.params());
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("automationFlowKey", stringValue(params.getOrDefault("automationFlowKey", actionKey)));
+        body.put("correlationKey", correlationKey);
+        body.put("callbackPath", "/public/bpm/async-actions/callbacks/" + correlationKey);
+        body.put("tenantKey", scope.tenantKey());
+        body.put("siteKey", scope.siteKey());
+        Object inputTemplate = params.get("body");
+        body.put("input", inputTemplate == null ? Map.of() : CallApiActionSupport.resolveTemplate(inputTemplate, object, actorUserId));
+        body.put("context", Map.of(
+                "managedObjectId", object.getId(),
+                "flowKey", object.getFlowKey(),
+                "stateId", object.getState(),
+                "actionKey", actionKey
+        ));
+        params.put("serviceKey", params.getOrDefault("serviceKey", "automation-orchestrator-service"));
+        params.put("path", params.getOrDefault("path", "/internal/automation-orchestrator/executions/start"));
+        params.put("method", params.getOrDefault("method", "POST"));
+        params.put("body", body);
+        return new FlowActionConfig(action.type(), params);
     }
 
     private void updateFields(Map<String, Object> payload, Map<String, Object> params) {

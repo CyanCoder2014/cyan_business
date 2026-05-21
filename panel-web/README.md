@@ -47,7 +47,12 @@ npm run dev
 - draft/project detail view
 - backend API client for the AI orchestrator
 - browser-local draft cache
+- mobile-first maker/data/flow/integration workspaces
+- PWA manifest and installable panel metadata
+- Farsi/English direction toggle and light/dark UI toggle
 
 ## Next step
 
-Replace the browser-local draft cache with a real backend draft registry so reopened projects do not require a fresh AI call.
+Replace the browser-local draft cache with `ai-orchestrator-service` drafts/sessions as the production source of truth, then wire maker/data/flow editors to real service endpoints.
+
+See `../docs/AI_APP_WEB_BOT_MAKER_ROADMAP.md` for the market roadmap and backend gaps.

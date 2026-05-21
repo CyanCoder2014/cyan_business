@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
@@ -16,7 +16,20 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Naviya Panel",
-  description: "App-maker control panel for structured business apps, orchestrations, and drafts."
+  description: "App-maker control panel for structured business apps, orchestrations, and drafts.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "Naviya Panel",
+    statusBarStyle: "black-translucent"
+  }
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#0d1720"
 };
 
 export default function RootLayout({

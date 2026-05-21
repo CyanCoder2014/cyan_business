@@ -13,16 +13,16 @@ export default function HomePage() {
     >
       <div className="stats-row">
         <div className="stat">
-          <strong>1 control plane</strong>
-          <span>AI orchestrator, storefront, BPM, and service provisioning live behind one panel.</span>
+          <strong>1 maker panel</strong>
+          <span>AI chat, manual maker, data manager, flows, and client channels live behind one panel.</span>
         </div>
         <div className="stat">
-          <strong>4 app types</strong>
-          <span>Website, shop, CRM, and BPM-assisted mixed business apps are the core flows.</span>
+          <strong>6 channels</strong>
+          <span>Website, PWA, shop, CRM portal, Telegram bot, and Bale bot are the launch focus.</span>
         </div>
         <div className="stat">
-          <strong>Draft first</strong>
-          <span>Every generated app should be reviewable before execution and publication.</span>
+          <strong>2 languages</strong>
+          <span>Farsi/English controls and light/dark UI are first-class panel requirements.</span>
         </div>
       </div>
 
@@ -43,10 +43,13 @@ export default function HomePage() {
           </div>
           <div className="hero-actions">
             <Link className="btn" href="/projects/new">
-              Open app studio
+              Open AI studio
             </Link>
-            <Link className="ghost-btn" href="/projects">
-              Inspect a draft project
+            <Link className="ghost-btn" href="/maker">
+              Open maker panel
+            </Link>
+            <Link className="ghost-btn" href="/integrations">
+              Manage apps and bots
             </Link>
           </div>
         </section>

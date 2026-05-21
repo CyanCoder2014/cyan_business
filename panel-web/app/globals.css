@@ -15,6 +15,21 @@
   color-scheme: dark;
 }
 
+:root[data-theme="light"] {
+  --bg: #f4f0e8;
+  --bg-alt: #fffaf0;
+  --panel: rgba(255, 252, 244, 0.88);
+  --panel-strong: rgba(255, 255, 255, 0.96);
+  --panel-border: rgba(11, 54, 61, 0.16);
+  --text: #102127;
+  --muted: #657781;
+  --cyan: #087c7d;
+  --cyan-soft: rgba(8, 124, 125, 0.12);
+  --amber: #b66a00;
+  --shadow: 0 26px 80px rgba(74, 54, 24, 0.15);
+  color-scheme: light;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -32,6 +47,13 @@ body {
     radial-gradient(circle at top right, rgba(255, 187, 92, 0.10), transparent 20%),
     linear-gradient(135deg, var(--bg) 0%, #0a141d 45%, #101d27 100%);
   font-family: var(--font-display), "Trebuchet MS", sans-serif;
+}
+
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(circle at top left, rgba(8, 124, 125, 0.12), transparent 28%),
+    radial-gradient(circle at top right, rgba(182, 106, 0, 0.12), transparent 20%),
+    linear-gradient(135deg, var(--bg) 0%, #fff8e8 48%, #e9f4f1 100%);
 }
 
 a {
@@ -105,6 +127,13 @@ select {
   backdrop-filter: blur(14px);
 }
 
+.workspace-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -160,6 +189,17 @@ select {
   transform: translateY(-1px);
   border-color: rgba(81, 215, 208, 0.38);
   background: rgba(81, 215, 208, 0.09);
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.nav small {
+  color: var(--muted);
+  font-size: 0.72rem;
 }
 
 .btn {
@@ -451,6 +491,12 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+button.draft-item {
+  color: var(--text);
+  text-align: start;
+  cursor: pointer;
+}
+
 .draft-item.active {
   border-color: rgba(81, 215, 208, 0.5);
   background: rgba(81, 215, 208, 0.08);
@@ -536,9 +582,24 @@ select {
   }
 
   .topbar,
-  .panel-header {
+  .panel-header,
+  .editor-toolbar {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .brand {
+    align-items: flex-start;
+  }
+
+  .nav {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+
+  .nav a {
+    white-space: nowrap;
   }
 
   .stats-row,
@@ -550,5 +611,15 @@ select {
 
   .hero-actions {
     flex-direction: column;
+  }
+
+  .rail,
+  section[style] {
+    padding: 16px !important;
+  }
+
+  .headline {
+    font-size: clamp(2rem, 14vw, 3.3rem);
+    max-width: 14ch;
   }
 }

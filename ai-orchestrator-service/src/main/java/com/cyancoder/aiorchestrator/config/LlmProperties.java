@@ -11,7 +11,7 @@ import java.util.Map;
 public class LlmProperties {
     private AiProvider provider = AiProvider.AUTO;
     private int maxParseAttempts = 3;
-    private List<AiProvider> fallbackOrder = new ArrayList<>(List.of(AiProvider.OPENAI, AiProvider.OPENROUTER, AiProvider.GAPGPT, AiProvider.OLLAMA, AiProvider.HEURISTIC));
+    private List<AiProvider> fallbackOrder = new ArrayList<>(List.of(AiProvider.OPENAI, AiProvider.GAPGPT, AiProvider.OPENROUTER, AiProvider.OLLAMA, AiProvider.HEURISTIC));
     private ProviderProperties openai = new ProviderProperties();
     private ProviderProperties openrouter = new ProviderProperties();
     private ProviderProperties gapgpt = new ProviderProperties();
@@ -63,4 +63,3 @@ public class LlmProperties {
         public void setTitle(String title) { this.title = title; }
     }
 }
-

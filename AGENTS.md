@@ -136,7 +136,7 @@ Business services write local data and local outbox state, then hand integration
 - ingress and route aggregation use `api-gateway`
 - most new dynamic services use PostgreSQL plus MongoDB
 - SSO services mostly use H2 locally
-- legacy services use MySQL and some also use MongoDB
+- legacy services default to PostgreSQL now and may be switched back to MySQL through datasource configuration; some also use MongoDB
 - Kafka is used for fan-out automation
 - local Docker compose files exist for databases, Kafka, Axon, and Keycloak-related setup
 
@@ -148,6 +148,7 @@ Business services write local data and local outbox state, then hand integration
 - Do not weaken strict validation in dynamic services unless there is a clear platform-level reason.
 - Treat tenant/site headers as part of correctness where storefront or scoped definitions are involved.
 - Keep new docs and code aligned with actual routes in `api-gateway`.
+- Every microservice must keep a unique fixed local `server.port`; do not reuse ports across modules.
 
 ## Suggested Reading Order
 1. `STRUCTURED_DYNAMIC_PLATFORM.md`

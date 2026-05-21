@@ -19,7 +19,7 @@ The UI expects the orchestrator on:
 
 Default:
 
-- `http://localhost:8080`
+- `http://localhost:8001`
 
 Primary endpoint:
 

@@ -16,7 +16,7 @@
 ## Dependencies
 - `factor-service`
 - `client-service`
-- MySQL, Mongo, Eureka, auth issuer config
+- PostgreSQL-or-MySQL datasource config, Mongo, Eureka, auth issuer config
 
 ## Change Rules
 - Treat this as an external integration boundary.

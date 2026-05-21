@@ -13,7 +13,7 @@
 
 ## Dependencies
 - legacy shared `generic` commands/events
-- Eureka, Mongo, MySQL, and auth issuer config
+- Eureka, Mongo, PostgreSQL-or-MySQL datasource config, and auth issuer config
 
 ## Change Rules
 - Treat this as a legacy bounded context; avoid forcing new dynamic patterns unless intentionally migrating it.

@@ -8,6 +8,9 @@ ROOT = Path(__file__).resolve().parents[1]
 POSTMAN_DIR = ROOT / "docs" / "postman"
 SWAGGER_DIR = ROOT / "docs" / "swagger"
 SWAGGER_SERVICES_DIR = SWAGGER_DIR / "services"
+DEFAULT_GATEWAY_BASE_URL = "http://localhost:8001"
+DEFAULT_USERNAME = "cyan-admin"
+DEFAULT_PASSWORD = "admin123"
 
 
 def example_dynamic_definition():
@@ -56,7 +59,7 @@ def example_payment_initiation():
         "amount": 1250000,
         "currency": "IRR",
         "description": "Order payment for Spiffy checkout",
-        "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+        "callbackUrl": f"{DEFAULT_GATEWAY_BASE_URL}/public/payment/callback/ZARINPAL/order-1001",
         "successUrl": "http://localhost:3000/checkout/success",
         "failureUrl": "http://localhost:3000/checkout/failure",
         "metaData": {"cartKey": "cart-1001", "source": "storefront"},
@@ -98,8 +101,8 @@ def build_endpoints():
     endpoints.extend([
         ep("SSO", "POST", "/api/sso/auth/login", "Login", auth="none", body={
             "clientId": "panel.sampv3",
-            "username": "farid",
-            "password": "Passw0rd!",
+            "username": DEFAULT_USERNAME,
+            "password": DEFAULT_PASSWORD,
             "captchaChallengeId": None,
             "captchaAnswer": None,
             "otpCode": None,
@@ -117,9 +120,9 @@ def build_endpoints():
             "refreshToken": "{{refresh_token}}"
         }),
         ep("SSO", "POST", "/api/sso/auth/introspect", "Token Introspect", auth="none", body={"token": "{{access_token}}"}),
-        ep("SSO", "POST", "/api/sso/auth/otp/send", "Auth OTP Send", auth="none", body={"username": "farid", "phoneNumber": "+989121234567"}),
-        ep("SSO", "POST", "/api/sso/auth/fido/challenge", "Auth FIDO Challenge", auth="none", body={"username": "farid", "deviceId": "chrome-local"}),
-        ep("SSO", "POST", "/api/sso/auth/fido/verify", "Auth FIDO Verify", auth="none", body={"username": "farid", "challengeId": "challenge-1", "credential": "signed-payload"}),
+        ep("SSO", "POST", "/api/sso/auth/otp/send", "Auth OTP Send", auth="none", body={"username": DEFAULT_USERNAME, "phoneNumber": "+989121234567"}),
+        ep("SSO", "POST", "/api/sso/auth/fido/challenge", "Auth FIDO Challenge", auth="none", body={"username": DEFAULT_USERNAME, "deviceId": "chrome-local"}),
+        ep("SSO", "POST", "/api/sso/auth/fido/verify", "Auth FIDO Verify", auth="none", body={"username": DEFAULT_USERNAME, "challengeId": "challenge-1", "credential": "signed-payload"}),
         ep("SSO", "GET", "/.well-known/jwks.json", "JWKS", auth="none"),
         ep("SSO", "GET", "/.well-known/openid-configuration", "OpenID Configuration", auth="none"),
         ep("SSO", "POST", "/api/sso/captcha/challenges", "Create Captcha Challenge", auth="none"),
@@ -128,24 +131,24 @@ def build_endpoints():
             "answer": "7H2K"
         }),
         ep("SSO", "POST", "/api/sso/otp/send", "OTP Send", auth="none", body={
-            "username": "farid",
+            "username": DEFAULT_USERNAME,
             "destination": "+989121234567",
             "reason": "LOGIN"
         }),
         ep("SSO", "POST", "/api/sso/otp/verify", "OTP Verify", auth="none", body={
-            "username": "farid",
+            "username": DEFAULT_USERNAME,
             "otpCode": "123456"
         }),
         ep("SSO", "POST", "/api/sso/sessions", "Create Session", auth="none", body={
-            "username": "farid",
+            "username": DEFAULT_USERNAME,
             "clientId": "panel.sampv3",
             "deviceId": "chrome-local"
         }),
         ep("SSO", "GET", "/api/sso/sessions/{sessionId}", "Get Session", auth="bearer"),
         ep("SSO", "POST", "/api/sso/sessions/revoke", "Revoke Session", auth="bearer", body={"sessionId": "{{session_id}}"}),
         ep("SSO", "POST", "/api/sso/users", "Register User", auth="none", body={
-            "username": "farid",
-            "password": "Passw0rd!",
+            "username": DEFAULT_USERNAME,
+            "password": DEFAULT_PASSWORD,
             "email": "farid@example.com",
             "phoneNumber": "+989121234567",
             "mfaEnabled": False,
@@ -153,11 +156,11 @@ def build_endpoints():
         }),
         ep("SSO", "GET", "/api/sso/users/{username}", "Get User", auth="bearer"),
         ep("SSO", "POST", "/api/sso/users/verify-password", "Verify Password", auth="none", body={
-            "username": "farid",
-            "password": "Passw0rd!"
+            "username": DEFAULT_USERNAME,
+            "password": DEFAULT_PASSWORD
         }),
-        ep("SSO", "POST", "/api/sso/fido/challenge", "FIDO Challenge", auth="none", body={"username": "farid", "deviceId": "chrome-local"}),
-        ep("SSO", "POST", "/api/sso/fido/verify", "FIDO Verify", auth="none", body={"username": "farid", "challengeId": "challenge-1", "credential": "signed-payload"}),
+        ep("SSO", "POST", "/api/sso/fido/challenge", "FIDO Challenge", auth="none", body={"username": DEFAULT_USERNAME, "deviceId": "chrome-local"}),
+        ep("SSO", "POST", "/api/sso/fido/verify", "FIDO Verify", auth="none", body={"username": DEFAULT_USERNAME, "challengeId": "challenge-1", "credential": "signed-payload"}),
     ])
 
     endpoints.extend([
@@ -405,7 +408,7 @@ def build_endpoints():
             "amount": 1250000,
             "currency": "IRR",
             "description": "Checkout payment",
-            "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+            "callbackUrl": f"{DEFAULT_GATEWAY_BASE_URL}/public/payment/callback/ZARINPAL/order-1001",
             "successUrl": "http://localhost:3000/checkout/success",
             "failureUrl": "http://localhost:3000/checkout/failure",
             "metaData": {"cartKey": "cart-1001"}
@@ -444,7 +447,7 @@ def build_endpoints():
             "active": True,
             "priorityOrder": 1,
             "supportedCurrencies": ["IRR"],
-            "configuration": {"merchantId": "merchant-demo", "callbackBaseUrl": "http://localhost:8080"},
+            "configuration": {"merchantId": "merchant-demo", "callbackBaseUrl": DEFAULT_GATEWAY_BASE_URL},
             "description": "Primary Zarinpal payment method"
         }),
         ep("Payment", "PUT", "/endpoint/payment/admin/methods/{methodKey}", "Update Payment Method", body={
@@ -457,7 +460,7 @@ def build_endpoints():
             "active": True,
             "priorityOrder": 1,
             "supportedCurrencies": ["IRR"],
-            "configuration": {"merchantId": "merchant-demo", "callbackBaseUrl": "http://localhost:8080"},
+            "configuration": {"merchantId": "merchant-demo", "callbackBaseUrl": DEFAULT_GATEWAY_BASE_URL},
             "description": "Updated method"
         }),
         ep("Payment", "DELETE", "/endpoint/payment/admin/methods/{methodKey}", "Delete Payment Method"),
@@ -731,7 +734,7 @@ def example_from_path_param(name):
         "reportKey": "sales-summary",
         "processorKey": "sync-customer-profile",
         "eventKey": "order-created-1001",
-        "username": "farid",
+        "username": DEFAULT_USERNAME,
         "slug": "homepage",
         "correlationKey": "corr-1001",
     }
@@ -801,7 +804,7 @@ def build_postman_collection(endpoints):
         },
         "item": items,
         "variable": [
-            {"key": "gateway_base_url", "value": "http://localhost:8080"},
+            {"key": "gateway_base_url", "value": DEFAULT_GATEWAY_BASE_URL},
             {"key": "tenant_key", "value": "demo-tenant"},
             {"key": "site_key", "value": "main-site"},
             {"key": "client_key", "value": "spiffy-client"},
@@ -811,12 +814,12 @@ def build_postman_collection(endpoints):
 
 def build_postman_environment():
     values = OrderedDict([
-        ("gateway_base_url", "http://localhost:8080"),
+        ("gateway_base_url", DEFAULT_GATEWAY_BASE_URL),
         ("tenant_key", "demo-tenant"),
         ("site_key", "main-site"),
         ("client_key", "spiffy-client"),
-        ("username", "farid"),
-        ("password", "Passw0rd!"),
+        ("username", DEFAULT_USERNAME),
+        ("password", DEFAULT_PASSWORD),
         ("access_token", ""),
         ("refresh_token", ""),
         ("session_id", ""),
@@ -914,7 +917,7 @@ def build_openapi(endpoints):
             "url": "{gateway_base_url}",
             "description": "Gateway base URL",
             "variables": {
-                "gateway_base_url": {"default": "http://localhost:8080"}
+                "gateway_base_url": {"default": DEFAULT_GATEWAY_BASE_URL}
             }
         }],
         "tags": [{"name": service} for service in sorted({endpoint["service"] for endpoint in endpoints})],

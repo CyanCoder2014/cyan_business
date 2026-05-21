@@ -1,6 +1,6 @@
 import type { GeneratePlatformAppRequest, GeneratePlatformAppResponse } from "@/lib/types";
 
-const baseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8080";
+const baseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
 
 async function requestJson<T>(path: string, init: RequestInit): Promise<T> {
   const response = await fetch(`${baseUrl}${path}`, {

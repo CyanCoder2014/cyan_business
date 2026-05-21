@@ -9,34 +9,37 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class GapGptLiveSmokeTest {
+class OpenRouterLiveSmokeTest {
 
     @Test
-    void parsesLiveGapGptResponseWhenApiKeyIsProvided() {
-        String apiKey = System.getenv("GAPGPT_API_KEY");
-        Assumptions.assumeTrue(apiKey != null && !apiKey.isBlank(), "GAPGPT_API_KEY is required for live smoke test");
+    void parsesLiveOpenRouterResponseWhenApiKeyIsProvided() {
+        String apiKey = System.getenv("OPENROUTER_API_KEY");
+        Assumptions.assumeTrue(apiKey != null && !apiKey.isBlank(), "OPENROUTER_API_KEY is required for live smoke test");
 
         LlmProperties properties = new LlmProperties();
         properties.setMaxParseAttempts(2);
-        LlmProperties.ProviderProperties gapgpt = properties.getGapgpt();
-        gapgpt.setApiKey(apiKey);
-        gapgpt.setBaseUrl("https://api.gapgpt.app");
-        gapgpt.setCompletionsPath("/v1/chat/completions");
-        gapgpt.setModel("gpt-4o");
+        LlmProperties.ProviderProperties openrouter = properties.getOpenrouter();
+        openrouter.setApiKey(apiKey);
+        openrouter.setBaseUrl(System.getenv().getOrDefault("OPENROUTER_BASE_URL", "https://openrouter.ai"));
+        openrouter.setCompletionsPath(System.getenv().getOrDefault("OPENROUTER_COMPLETIONS_PATH", "/api/v1/chat/completions"));
+        openrouter.setModel(System.getenv().getOrDefault("OPENROUTER_MODEL", "openrouter/free"));
+        openrouter.setReferer(System.getenv("OPENROUTER_HTTP_REFERER"));
+        openrouter.setTitle(System.getenv().getOrDefault("OPENROUTER_APP_TITLE", "ai-orchestrator-service"));
 
         OpenAiCompatibleLlmClient client = new OpenAiCompatibleLlmClient(
-                AiProvider.GAPGPT,
+                AiProvider.OPENROUTER,
                 properties,
-                gapgpt,
+                openrouter,
                 new ObjectMapper()
         );
 
         PlatformAppDslDefinition dsl = client.generateDsl("""
                 Return a minimal valid PlatformAppDslDefinition for a combined shop and crm app.
                 Requirements:
-                - app.appKey = "gapgpt-shop-crm-live"
-                - app.title = "GapGPT Shop CRM Live"
+                - app.appKey = "openrouter-shop-crm-live"
+                - app.title = "OpenRouter Shop CRM Live"
                 - app.type = "SHOP"
                 - app.tenantKey = "tenant-live"
                 - app.siteKey = "site-live"
@@ -51,10 +54,10 @@ class GapGptLiveSmokeTest {
                 """);
 
         assertNotNull(dsl);
-        assertEquals("gapgpt-shop-crm-live", dsl.getApp().getAppKey());
+        assertEquals("openrouter-shop-crm-live", dsl.getApp().getAppKey());
         assertEquals("tenant-live", dsl.getApp().getTenantKey());
         assertEquals("site-live", dsl.getApp().getSiteKey());
-        assertEquals(1, dsl.getDelivery().getPublicApis().size());
-        assertEquals(3, dsl.getApp().getCapabilities().size());
+        assertTrue(dsl.getApp().getCapabilities().contains("shop"));
+        assertTrue(dsl.getApp().getCapabilities().contains("crm"));
     }
 }

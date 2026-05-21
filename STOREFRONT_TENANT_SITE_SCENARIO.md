@@ -465,6 +465,6 @@ Expected result:
 
 ## Notes
 
-- Use `submit/{entityKey}` when you want the simplest raw-map flow, closest to `naviya-core`.
+- Use `submit/{entityKey}` when you want the simplest raw-map flow, closest to `Cyan-core`.
 - If another client uses a different tenant/site pair, their definitions and records stay isolated.
 - The route target can point to `content-service`, `catalog-service`, or another dynamic service as long as the target records use the same `X-Tenant-Key` and `X-Site-Key` values.

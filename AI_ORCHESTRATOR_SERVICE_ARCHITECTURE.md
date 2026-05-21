@@ -1,6 +1,6 @@
 # AI Orchestrator Service Architecture
 
-This repo now includes [ai-orchestrator-service](/Users/farid/Projects/naviya/old-cyan/cyan_business/ai-orchestrator-service:1).
+This repo now includes [ai-orchestrator-service](/Users/farid/Projects/Cyan/old-cyan/cyan_business/ai-orchestrator-service:1).
 
 It is modeled on the existing `AI-Orchestrator/ai-orchestrator-service`, but adapted for this platform:
 

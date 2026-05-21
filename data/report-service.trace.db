@@ -1,4 +1,4 @@
-2026-05-04 16:04:53 database: opening /Users/farid/Projects/naviya/old-cyan/cyan_business/data/report-service
+2026-05-04 16:04:53 database: opening /Users/farid/Projects/Cyan/old-cyan/cyan_business/data/report-service
 org.h2.message.DbException: IO Exception: "java.net.SocketException: Operation not permitted"; "port: 0 ssl: false" [90031-214]
 	at org.h2.message.DbException.convert(DbException.java:383)
 	at org.h2.engine.Database.startServer(Database.java:674)
@@ -74,7 +74,7 @@ Caused by: java.net.SocketException: Operation not permitted
 	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:171)
 	at org.h2.util.NetUtils.createServerSocketTry(NetUtils.java:207)
 	... 55 more
-2026-05-04 16:04:55 database: opening /Users/farid/Projects/naviya/old-cyan/cyan_business/data/report-service
+2026-05-04 16:04:55 database: opening /Users/farid/Projects/Cyan/old-cyan/cyan_business/data/report-service
 org.h2.message.DbException: IO Exception: "java.net.SocketException: Operation not permitted"; "port: 0 ssl: false" [90031-214]
 	at org.h2.message.DbException.convert(DbException.java:383)
 	at org.h2.engine.Database.startServer(Database.java:674)
@@ -154,7 +154,7 @@ Caused by: java.net.SocketException: Operation not permitted
 	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:171)
 	at org.h2.util.NetUtils.createServerSocketTry(NetUtils.java:207)
 	... 59 more
-2026-05-04 16:05:22 database: opening /Users/farid/Projects/naviya/old-cyan/cyan_business/data/report-service
+2026-05-04 16:05:22 database: opening /Users/farid/Projects/Cyan/old-cyan/cyan_business/data/report-service
 org.h2.message.DbException: IO Exception: "java.net.SocketException: Operation not permitted"; "port: 0 ssl: false" [90031-214]
 	at org.h2.message.DbException.convert(DbException.java:383)
 	at org.h2.engine.Database.startServer(Database.java:674)
@@ -230,7 +230,7 @@ Caused by: java.net.SocketException: Operation not permitted
 	at java.base/java.net.ServerSocket.<init>(ServerSocket.java:171)
 	at org.h2.util.NetUtils.createServerSocketTry(NetUtils.java:207)
 	... 55 more
-2026-05-04 16:05:24 database: opening /Users/farid/Projects/naviya/old-cyan/cyan_business/data/report-service
+2026-05-04 16:05:24 database: opening /Users/farid/Projects/Cyan/old-cyan/cyan_business/data/report-service
 org.h2.message.DbException: IO Exception: "java.net.SocketException: Operation not permitted"; "port: 0 ssl: false" [90031-214]
 	at org.h2.message.DbException.convert(DbException.java:383)
 	at org.h2.engine.Database.startServer(Database.java:674)

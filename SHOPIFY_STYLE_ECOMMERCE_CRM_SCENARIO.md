@@ -16,7 +16,7 @@ Payment microservice is intentionally skipped. Payment is represented as a `fina
 
 A lightweight live HTTP integration test was added here:
 
-- [report-service/src/test/java/com/cyancoder/report/integration/DynamicServicesScenarioHttpIT.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/report-service/src/test/java/com/cyancoder/report/integration/DynamicServicesScenarioHttpIT.java:1)
+- [report-service/src/test/java/com/cyancoder/report/integration/DynamicServicesScenarioHttpIT.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/report-service/src/test/java/com/cyancoder/report/integration/DynamicServicesScenarioHttpIT.java:1)
 
 It is opt-in and assumes the services are already running on localhost.
 
@@ -385,7 +385,7 @@ What was done:
 
 - `DynamicReportQueryService` was patched to prefer `localhost:<port>` instead of the Eureka machine IP for local service-to-service fetches.
 - The source change is in:
-  - [report-service/src/main/java/com/cyancoder/report/service/DynamicReportQueryService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/report-service/src/main/java/com/cyancoder/report/service/DynamicReportQueryService.java:1)
+  - [report-service/src/main/java/com/cyancoder/report/service/DynamicReportQueryService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/report-service/src/main/java/com/cyancoder/report/service/DynamicReportQueryService.java:1)
 
 What blocked full live verification:
 

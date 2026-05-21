@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -71,6 +73,25 @@ public class MongoConversationSessionService implements ConversationSessionServi
             syncPendingState(session, draft);
         }
         return repository.save(session);
+    }
+
+    @Override
+    public List<ConversationSession> listSessions(String tenantKey, String siteKey, String clientKey, String draftId) {
+        if (draftId != null && !draftId.isBlank()) {
+            return repository.findByDraftIdOrderByUpdatedAtDesc(draftId);
+        }
+        if (clientKey != null && !clientKey.isBlank()) {
+            return repository.findByClientKeyOrderByUpdatedAtDesc(clientKey);
+        }
+        if (tenantKey != null && !tenantKey.isBlank() && siteKey != null && !siteKey.isBlank()) {
+            return repository.findByTenantKeyAndSiteKeyOrderByUpdatedAtDesc(tenantKey, siteKey);
+        }
+        if (tenantKey != null && !tenantKey.isBlank()) {
+            return repository.findByTenantKeyOrderByUpdatedAtDesc(tenantKey);
+        }
+        return repository.findAll().stream()
+                .sorted(Comparator.comparing(ConversationSession::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
     }
 
     @Override

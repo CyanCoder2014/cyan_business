@@ -4,6 +4,8 @@ export type GeneratePlatformAppRequest = {
   prompt: string;
   tenantKey?: string;
   siteKey?: string;
+  clientKey?: string;
+  sessionId?: string;
   execute: boolean;
   answers?: Record<string, unknown>;
 };
@@ -38,9 +40,110 @@ export type PlatformAppDslDefinition = {
 };
 
 export type GeneratePlatformAppResponse = {
+  draftId?: string | null;
+  sessionId?: string | null;
   dsl: PlatformAppDslDefinition;
   nextQuestions: string[];
   provisioningResult: ProvisioningResult | null;
+};
+
+export type AppBlueprint = {
+  id?: string;
+  blueprintKey: string;
+  appType: string;
+  version: number;
+  title: string;
+  description: string;
+  active: boolean;
+  capabilities: string[];
+  requiredQuestions: Array<Record<string, unknown>>;
+  defaultAnswers: Record<string, unknown>;
+  baseDsl: PlatformAppDslDefinition;
+};
+
+export type ClientAppDraft = {
+  id?: string;
+  draftId: string;
+  tenantKey: string;
+  siteKey: string;
+  clientKey?: string | null;
+  blueprintKey?: string | null;
+  blueprintVersion?: number | null;
+  status: "WAITING_FOR_ANSWERS" | "READY" | "PROVISIONED" | "FAILED" | string;
+  title: string;
+  appType: string;
+  latestIntent: string;
+  answers: Record<string, unknown>;
+  resolvedDsl: PlatformAppDslDefinition;
+  pendingQuestionKeys: string[];
+  pendingQuestions: string[];
+  manualActions: string[];
+  latestSessionId?: string | null;
+  revision?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type ProvisioningRun = {
+  runId: string;
+  draftId: string;
+  tenantKey?: string;
+  siteKey?: string;
+  status: string;
+  triggerType?: string;
+  triggeredBy?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  stepResults: Array<Record<string, unknown>>;
+  result?: ProvisioningResult | null;
+};
+
+export type DynamicServiceKey =
+  | "content-service"
+  | "catalog-service"
+  | "crm-service"
+  | "commerce-service"
+  | "finance-service"
+  | "inventory-service"
+  | "report-service"
+  | "storefront-service"
+  | "cart-service"
+  | "checkout-service"
+  | "payment-service"
+  | "pricing-promotion-service"
+  | "notification-service"
+  | "bpm-service";
+
+export type DynamicEntityTemplate = {
+  templateKey: string;
+  entityType?: string;
+  title?: string;
+  description?: string;
+  definitionJson?: string;
+};
+
+export type DynamicEntityDefinition = {
+  id?: number | string;
+  serviceKey: string;
+  entityKey: string;
+  tenantKey?: string | null;
+  siteKey?: string | null;
+  entityType?: string;
+  title?: string;
+  definitionJson: string;
+  active?: boolean;
+};
+
+export type DynamicEntityRecord = {
+  id?: string;
+  serviceKey?: string;
+  entityKey?: string;
+  recordKey: string;
+  tenantKey?: string | null;
+  siteKey?: string | null;
+  data: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type ProjectDraft = {
@@ -81,4 +184,26 @@ export type BotConversationSession = {
   messages: BotMessage[];
   createdAt: string;
   updatedAt: string;
+};
+
+export type BotChannelIntegration = {
+  id?: string;
+  channel: "TELEGRAM" | "BALE";
+  integrationKey: string;
+  tenantKey: string;
+  siteKey: string;
+  clientKey?: string | null;
+  appTypeHint?: string | null;
+  botId?: string | null;
+  botUsername?: string | null;
+  tokenSecretRef?: string | null;
+  tokenFingerprint?: string | null;
+  webhookSecret?: string | null;
+  miniAppUrl?: string | null;
+  miniAppEnabled?: boolean;
+  miniAppStartParam?: string | null;
+  providerConfig?: Record<string, unknown>;
+  active: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };

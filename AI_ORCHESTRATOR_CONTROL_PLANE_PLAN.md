@@ -24,9 +24,9 @@ The current implementation of `ai-orchestrator-service`:
 
 Current references:
 
-- [AI_ORCHESTRATOR_SERVICE_ARCHITECTURE.md](/Users/farid/Projects/naviya/old-cyan/cyan_business/AI_ORCHESTRATOR_SERVICE_ARCHITECTURE.md)
-- [AiPlatformGenerationServiceImpl.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/ai-orchestrator-service/src/main/java/com/cyancoder/aiorchestrator/service/impl/AiPlatformGenerationServiceImpl.java)
-- [PlatformProvisioningService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/ai-orchestrator-service/src/main/java/com/cyancoder/aiorchestrator/service/impl/PlatformProvisioningService.java)
+- [AI_ORCHESTRATOR_SERVICE_ARCHITECTURE.md](/Users/farid/Projects/Cyan/old-cyan/cyan_business/AI_ORCHESTRATOR_SERVICE_ARCHITECTURE.md)
+- [AiPlatformGenerationServiceImpl.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/ai-orchestrator-service/src/main/java/com/cyancoder/aiorchestrator/service/impl/AiPlatformGenerationServiceImpl.java)
+- [PlatformProvisioningService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/ai-orchestrator-service/src/main/java/com/cyancoder/aiorchestrator/service/impl/PlatformProvisioningService.java)
 
 That is not enough for:
 

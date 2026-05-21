@@ -1,4 +1,4 @@
-# Naviya Panel Web
+# Cyan Panel Web
 
 Next.js control panel for the structured app-maker flow.
 
@@ -50,9 +50,11 @@ npm run dev
 - mobile-first maker/data/flow/integration workspaces
 - PWA manifest and installable panel metadata
 - Farsi/English direction toggle and light/dark UI toggle
+- backend-first project registry with local development fallback
+- dynamic service proxy for Maker/Data access to `/endpoint/entities/**`
 
 ## Next step
 
-Replace the browser-local draft cache with `ai-orchestrator-service` drafts/sessions as the production source of truth, then wire maker/data/flow editors to real service endpoints.
+Finish production bot adapters: Telegram/Bale webhook ingestion, token storage, tenant mapping, and idempotent message processing.
 
 See `../docs/AI_APP_WEB_BOT_MAKER_ROADMAP.md` for the market roadmap and backend gaps.

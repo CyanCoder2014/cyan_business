@@ -27,7 +27,7 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
           <div className="brand">
             <div className="brand-mark" />
             <div>
-              <h1>Naviya Panel</h1>
+              <h1>Cyan Panel</h1>
               <p>{subtitle}</p>
             </div>
           </div>

@@ -16,7 +16,7 @@ Current event path:
 
 - topic: `business-events`
 - bootstrap server default: `localhost:9092`
-- local Docker compose: [docker/kafka/docker-compose.yml](/Users/farid/Projects/naviya/old-cyan/cyan_business/docker/kafka/docker-compose.yml:1)
+- local Docker compose: [docker/kafka/docker-compose.yml](/Users/farid/Projects/Cyan/old-cyan/cyan_business/docker/kafka/docker-compose.yml:1)
 
 ## Local Startup
 

@@ -1,7 +1,7 @@
 # AI App/Web/Bot Maker Roadmap
 
 ## Product Position
-Naviya should be sold as a mobile-friendly AI business app maker: a user can create a complete website, PWA, shop, CRM, BPM/form system, automation flow, or Telegram/Bale bot from a prompt or from ready blueprints, then edit everything manually in the panel.
+Cyan should be sold as a mobile-friendly AI business app maker: a user can create a complete website, PWA, shop, CRM, BPM/form system, automation flow, or Telegram/Bale bot from a prompt or from ready blueprints, then edit everything manually in the panel.
 
 ## Frontend Surfaces
 - `panel-web`: admin/maker panel for AI chat, drafts, entity structure, data management, automation, and client app/bot integrations.
@@ -21,13 +21,16 @@ Naviya should be sold as a mobile-friendly AI business app maker: a user can cre
 The current backend already has the main contracts for this phase:
 - `api-gateway` routes AI orchestration, public storefront, BPM, notification, payment, media, and search paths.
 - `ai-orchestrator-service` owns app generation, blueprints, drafts, sessions, and provisioning runs.
+- `ai-orchestrator-service` sessions are listable by tenant/site/client/draft so bot and panel conversations can be resumed.
 - `storefront-service` owns public route resolution, HTML rendering, sitemap, and robots output.
 - Dynamic services expose strict definition/record APIs through `dynamic-entity-core`.
+- `panel-web` proxies service-owned `/endpoint/entities/**` APIs to each local dynamic service for Maker/Data workspaces.
+- `bot-adapter-service` owns Telegram/Bale webhook ingestion, channel integration mappings, chat-to-session continuity, and idempotent inbound message processing.
 - Automation should continue to fan out through `event-service`.
 
 ## Backend Gaps To Avoid Before Market
-- Do not create a second draft registry in the frontend for production; use `ai-orchestrator-service` drafts/sessions as the source of truth.
-- Add real Telegram/Bale webhook adapter services only when token storage, tenant mapping, and idempotent message handling are defined.
+- Do not create a second draft registry in the frontend for production; `panel-web` should keep using `ai-orchestrator-service` drafts/sessions as the source of truth and only fall back locally in development.
+- Store actual Telegram/Bale bot tokens only in a secret manager; `bot-adapter-service` stores `tokenSecretRef`, not token values.
 - Add a presentation-template registry if storefront themes need versioned reusable templates beyond dynamic records.
 - Add publish-state and domain-binding workflows before promising custom domains.
 

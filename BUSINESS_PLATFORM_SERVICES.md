@@ -13,7 +13,7 @@ This repository now includes a separate set of business microservices for buildi
 - dynamic reports
 - and future manufacturing/inventory workflows
 
-These services do not modify `naviya-core` or `naviya-bpm`.
+These services do not modify `Cyan-core` or `Cyan-bpm`.
 They live only in this repository and are intended to complement later BPM integration.
 
 There is also a shared runtime submission engine:
@@ -23,6 +23,10 @@ There is also a shared runtime submission engine:
 And a shared integration event hub:
 
 - `event-service`
+
+And a public bot adapter for Telegram/Bale channels:
+
+- `bot-adapter-service`
 
 And Kafka-driven automation consumers:
 
@@ -452,7 +456,7 @@ Example:
 
 ## Future BPM Integration
 
-These services are designed so later `naviya-bpm` can orchestrate them by business process without changing this repository structure.
+These services are designed so later `Cyan-bpm` can orchestrate them by business process without changing this repository structure.
 
 Recommended future BPM usage:
 
@@ -471,7 +475,7 @@ Recommended future BPM usage:
 ## Important Limitations
 
 - these services are intentionally lightweight
-- they do not reuse `naviya-core`
+- they do not reuse `Cyan-core`
 - they do not include renderer abstractions yet
 - persistence is local H2 file-based storage, not production-grade distributed storage
 - `report-service` performs aggregation in service memory after fetching source rows

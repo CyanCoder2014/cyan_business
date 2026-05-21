@@ -1,6 +1,6 @@
 # BPM Service Architecture
 
-This repo now includes [bpm-service](/Users/farid/Projects/naviya/old-cyan/cyan_business/bpm-service:1), an additive BPM module modeled on `naviya-bpm` but integrated with the microservices in this project instead of `naviya-core`.
+This repo now includes [bpm-service](/Users/farid/Projects/Cyan/old-cyan/cyan_business/bpm-service:1), an additive BPM module modeled on `Cyan-bpm` but integrated with the microservices in this project instead of `Cyan-core`.
 
 ## Goal
 
@@ -9,7 +9,7 @@ This repo now includes [bpm-service](/Users/farid/Projects/naviya/old-cyan/cyan_
 - dynamic entities exposed by the shared `dynamic-entity-core` runtime
 - static entity APIs exposed by older microservices
 
-It keeps the `naviya-bpm` shape:
+It keeps the `Cyan-bpm` shape:
 
 - `DynamicFlowDefinition`
 - `FlowState`
@@ -20,9 +20,9 @@ It keeps the `naviya-bpm` shape:
 - active-form submit
 - transition execution
 
-## Main Difference From `naviya-bpm`
+## Main Difference From `Cyan-bpm`
 
-Instead of submitting to `naviya-core` form APIs, each BPM state can target:
+Instead of submitting to `Cyan-core` form APIs, each BPM state can target:
 
 1. a dynamic entity in another service
 2. a static submit URL in another service
@@ -97,7 +97,7 @@ Gateway route:
 
 ## Active Form / Renderer Behavior
 
-There is no direct `naviya-core` `FormRenderer` dependency here.
+There is no direct `Cyan-core` `FormRenderer` dependency here.
 
 Instead, BPM resolves the active renderer from the target service definition:
 
@@ -112,7 +112,7 @@ The active-form response includes `rendererDefinition`, which contains:
 - `title`
 - `definitionJson`
 
-That lets frontend or orchestration clients render the current structured entity form the same way they would use a form definition from `naviya-core`.
+That lets frontend or orchestration clients render the current structured entity form the same way they would use a form definition from `Cyan-core`.
 
 ## On-Enter Actions
 
@@ -176,7 +176,7 @@ Implemented:
 - endpoint/internal auth split
 - tenant/site scoping
 
-Not yet implemented from full `naviya-bpm`:
+Not yet implemented from full `Cyan-bpm`:
 
 - Flowable engine orchestration
 - async callback registry
@@ -184,4 +184,4 @@ Not yet implemented from full `naviya-bpm`:
 - BPMN export/builder
 - deployment metadata helpers
 
-This keeps the service usable now while staying aligned with the `naviya-bpm` model.
+This keeps the service usable now while staying aligned with the `Cyan-bpm` model.

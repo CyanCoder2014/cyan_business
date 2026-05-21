@@ -32,9 +32,9 @@ public class BlueprintDraftBootstrapSeeder implements ApplicationRunner {
                 "aboutPageTitle", "About Me"
         ));
         seed("company-site", "tenant-demo", "site-company", "client-demo", "Company Site Demo", Map.of(
-                "brandName", "Naviya Business",
+                "brandName", "Cyan Business",
                 "homePageTitle", "Structured business apps without platform sprawl",
-                "aboutPageTitle", "About Naviya"
+                "aboutPageTitle", "About Cyan"
         ));
         seed("e-commerce", "tenant-demo", "site-shop", "client-demo", "E-Commerce Demo", Map.of(
                 "brandName", "Acme Store",

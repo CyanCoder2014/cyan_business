@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { ProjectProvisioningPanel } from "@/components/project-provisioning-panel";
 import { seedDrafts } from "@/lib/draft-store";
 import { getProjectDraft } from "@/lib/project-registry";
 
@@ -79,6 +80,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       </div>
 
       <section style={{ padding: "24px" }}>
+        <ProjectProvisioningPanel draftId={draft.id} />
+      </section>
+
+      <section style={{ padding: "24px", paddingTop: 0 }}>
         <p className="section-title">DSL</p>
         <pre className="json-view">{JSON.stringify(draft.dsl, null, 2)}</pre>
       </section>

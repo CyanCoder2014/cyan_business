@@ -113,6 +113,7 @@ Business services write local data and local outbox state, then hand integration
 - `payment-service`
 - `search-index-service`
 - `notification-service`
+- `bot-adapter-service`
 
 ### Orchestration and intelligence
 - `bpm-service`

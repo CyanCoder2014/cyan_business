@@ -2,7 +2,7 @@
 
 ## Main Idea
 
-This project is now oriented around the same core concept as `naviya-core`:
+This project is now oriented around the same core concept as `Cyan-core`:
 
 - a service stores dynamic entity definitions
 - each definition declares nested field structure
@@ -17,7 +17,7 @@ The aim is to keep every dynamic service structured, so AI-generated entities re
 
 Shared module:
 
-- [dynamic-entity-core](/Users/farid/Projects/naviya/old-cyan/cyan_business/dynamic-entity-core:1)
+- [dynamic-entity-core](/Users/farid/Projects/Cyan/old-cyan/cyan_business/dynamic-entity-core:1)
 
 It provides:
 
@@ -109,7 +109,7 @@ And matching internal surfaces:
 
 ## Validation Behavior
 
-Recursive validation behavior is modeled after `DynamicValidationServiceImp` from `naviya-core`.
+Recursive validation behavior is modeled after `DynamicValidationServiceImp` from `Cyan-core`.
 
 Current shared validation engine:
 
@@ -133,7 +133,7 @@ Supported validators in shared runtime:
 
 ### `AntlrExpression` Validator
 
-The shared runtime now includes an expression validator modeled after the `naviya-core` `AntlrExpressionValidator` idea.
+The shared runtime now includes an expression validator modeled after the `Cyan-core` `AntlrExpressionValidator` idea.
 
 It uses a dedicated lexer/parser-style pipeline and supports:
 
@@ -346,7 +346,7 @@ docker compose -f docker/kafka/docker-compose.yml up -d
 
 This is now much closer to the intended platform model, but a few things still remain simplified:
 
-- validator set is smaller than `naviya-core`
-- operators are simpler than the full `naviya-core` behavior
+- validator set is smaller than `Cyan-core`
+- operators are simpler than the full `Cyan-core` behavior
 - report-service still keeps its earlier custom report code alongside the new shared dynamic runtime
 - existing fixed controllers from earlier work still exist in some services, even though the new preferred surface is `/endpoint/...` and `/internal/...`

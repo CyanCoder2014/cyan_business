@@ -12,6 +12,8 @@
   --danger: #ff7f7f;
   --success: #7fe3b5;
   --shadow: 0 26px 80px rgba(0, 0, 0, 0.38);
+  --font-display: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
+  --font-mono: "SFMono-Regular", "Cascadia Code", "Courier New", monospace;
   color-scheme: dark;
 }
 
@@ -46,7 +48,7 @@ body {
     radial-gradient(circle at top left, rgba(81, 215, 208, 0.12), transparent 28%),
     radial-gradient(circle at top right, rgba(255, 187, 92, 0.10), transparent 20%),
     linear-gradient(135deg, var(--bg) 0%, #0a141d 45%, #101d27 100%);
-  font-family: var(--font-display), "Trebuchet MS", sans-serif;
+  font-family: var(--font-display);
 }
 
 :root[data-theme="light"] body {

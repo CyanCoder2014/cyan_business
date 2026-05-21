@@ -39,7 +39,7 @@ class OpenAiCompatibleLlmClientOpenRouterContractTest {
             openrouter.setBaseUrl(server.url("/").toString().replaceAll("/$", ""));
             openrouter.setCompletionsPath("/api/v1/chat/completions");
             openrouter.setModel("openrouter/free");
-            openrouter.setReferer("https://naviya.local");
+            openrouter.setReferer("https://Cyan.local");
             openrouter.setTitle("ai-orchestrator-service");
 
             OpenAiCompatibleLlmClient client = new OpenAiCompatibleLlmClient(
@@ -54,7 +54,7 @@ class OpenAiCompatibleLlmClientOpenRouterContractTest {
 
             assertEquals("/api/v1/chat/completions", request.getPath());
             assertEquals("Bearer openrouter-test-key", request.getHeader("Authorization"));
-            assertEquals("https://naviya.local", request.getHeader("HTTP-Referer"));
+            assertEquals("https://Cyan.local", request.getHeader("HTTP-Referer"));
             assertEquals("ai-orchestrator-service", request.getHeader("X-OpenRouter-Title"));
             assertTrue(request.getBody().readUtf8().contains("\"model\":\"openrouter/free\""));
             assertEquals("shop-crm-studio", dsl.getApp().getAppKey());

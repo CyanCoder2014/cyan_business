@@ -1,37 +1,264 @@
-import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+"use client";
 
-const channels = [
-  ["Website", "SEO storefront routes, sitemap, robots.txt, media, search, cart, checkout"],
-  ["PWA", "Installable control panel and future customer app shell"],
-  ["Telegram bot", "Conversation sessions mapped to AI drafts and platform APIs"],
-  ["Bale bot", "Same draft/session flow with Bale channel identity"],
-  ["Telegram mini app", "Next phase client shell once bot channel contracts stabilize"],
-  ["Mobile app", "Next phase native wrapper around public APIs and PWA flows"]
-];
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { AppShell } from "@/components/app-shell";
+import { listBotIntegrations, upsertBotIntegration } from "@/lib/platform-api";
+import type { BotChannelIntegration } from "@/lib/types";
+
+const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
 
 export default function IntegrationsPage() {
+  const [channel, setChannel] = useState<"TELEGRAM" | "BALE">("TELEGRAM");
+  const [integrationKey, setIntegrationKey] = useState("retail-bot");
+  const [tenantKey, setTenantKey] = useState("tenant-demo");
+  const [siteKey, setSiteKey] = useState("site-commerce");
+  const [clientKey, setClientKey] = useState("client-demo");
+  const [appTypeHint, setAppTypeHint] = useState("MIXED_BUSINESS_APP");
+  const [botId, setBotId] = useState("");
+  const [botUsername, setBotUsername] = useState("retail_demo_bot");
+  const [botToken, setBotToken] = useState("");
+  const [tokenSecretRef, setTokenSecretRef] = useState("vault://bots/retail-demo");
+  const [webhookSecret, setWebhookSecret] = useState("");
+  const [miniAppEnabled, setMiniAppEnabled] = useState(false);
+  const [miniAppUrl, setMiniAppUrl] = useState("");
+  const [miniAppStartParam, setMiniAppStartParam] = useState("");
+  const [integrations, setIntegrations] = useState<BotChannelIntegration[]>([]);
+  const [status, setStatus] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const webhookUrl = useMemo(
+    () => `${platformBaseUrl}/public/bot-adapter/${channel.toLowerCase()}/${integrationKey}/webhook`,
+    [channel, integrationKey]
+  );
+
+  async function refresh() {
+    setLoading(true);
+    setStatus(null);
+    try {
+      setIntegrations(await listBotIntegrations({ tenantKey, siteKey }));
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to load bot integrations");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function saveIntegration() {
+    setLoading(true);
+    setStatus(null);
+    try {
+      await upsertBotIntegration({
+        channel,
+        integrationKey,
+        tenantKey,
+        siteKey,
+        clientKey,
+        appTypeHint,
+        botId,
+        botUsername,
+        botToken,
+        tokenSecretRef,
+        webhookSecret,
+        miniAppEnabled,
+        miniAppUrl,
+        miniAppStartParam,
+        active: true
+      });
+      setBotToken("");
+      await refresh();
+      setStatus("Bot integration saved. Register the generated webhook URL with the channel provider.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to save bot integration");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <AppShell title="Client Apps And Bots" subtitle="Manage every presentation channel attached to a generated business app.">
-      <section className="panel rail" style={{ marginTop: 24 }}>
-        <div className="editor-toolbar">
-          <div>
-            <p className="section-title">Integrated channels</p>
-            <div className="meta">Current market focus: website/PWA plus Telegram and Bale bot maker.</div>
-          </div>
-          <Link className="btn" href="/bot">
-            Open bot flow
-          </Link>
-        </div>
-        <div className="mini-grid">
-          {channels.map(([title, description]) => (
-            <div key={title} className="mini-card">
-              <h3>{title}</h3>
-              <p>{description}</p>
+      <div className="studio-grid">
+        <section className="panel rail">
+          <div className="editor-toolbar">
+            <div>
+              <p className="section-title">Telegram/Bale integration</p>
+              <div className="meta">Stores token references only. Webhooks are idempotently forwarded to AI sessions.</div>
             </div>
-          ))}
-        </div>
-      </section>
+            <Link className="ghost-btn" href="/bot">
+              Open bot flow
+            </Link>
+          </div>
+
+          <div className="form-grid">
+            <div className="field">
+              <label>Channel</label>
+              <div className="chip-row">
+                {(["TELEGRAM", "BALE"] as const).map((item) => (
+                  <button key={item} type="button" className={`chip ${channel === item ? "active" : ""}`} onClick={() => setChannel(item)}>
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field-grid">
+              <div className="field">
+                <label htmlFor="integrationKey">Integration key</label>
+                <input id="integrationKey" value={integrationKey} onChange={(event) => setIntegrationKey(event.target.value)} />
+              </div>
+              <div className="field">
+                <label htmlFor="botId">Bot id</label>
+                <input id="botId" value={botId} onChange={(event) => setBotId(event.target.value)} placeholder="123456789" />
+              </div>
+            </div>
+
+            <div className="field-grid">
+              <div className="field">
+                <label htmlFor="botUsername">Bot username</label>
+                <input id="botUsername" value={botUsername} onChange={(event) => setBotUsername(event.target.value)} />
+              </div>
+              <div className="field">
+                <label htmlFor="botToken">Bot token/key</label>
+                <input
+                  id="botToken"
+                  value={botToken}
+                  onChange={(event) => setBotToken(event.target.value)}
+                  placeholder="Write-only; not returned by API"
+                />
+              </div>
+            </div>
+
+            <div className="field-grid">
+              <div className="field">
+                <label htmlFor="tenantKey">Tenant key</label>
+                <input id="tenantKey" value={tenantKey} onChange={(event) => setTenantKey(event.target.value)} />
+              </div>
+              <div className="field">
+                <label htmlFor="siteKey">Site key</label>
+                <input id="siteKey" value={siteKey} onChange={(event) => setSiteKey(event.target.value)} />
+              </div>
+            </div>
+
+            <div className="field-grid">
+              <div className="field">
+                <label htmlFor="clientKey">Client key</label>
+                <input id="clientKey" value={clientKey} onChange={(event) => setClientKey(event.target.value)} />
+              </div>
+              <div className="field">
+                <label htmlFor="appTypeHint">App type hint</label>
+                <input id="appTypeHint" value={appTypeHint} onChange={(event) => setAppTypeHint(event.target.value)} />
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="tokenSecretRef">Token secret reference</label>
+              <input id="tokenSecretRef" value={tokenSecretRef} onChange={(event) => setTokenSecretRef(event.target.value)} />
+            </div>
+
+            <div className="field">
+              <label htmlFor="webhookSecret">Webhook secret</label>
+              <input id="webhookSecret" value={webhookSecret} onChange={(event) => setWebhookSecret(event.target.value)} />
+            </div>
+
+            <div className="field">
+              <label>Mini app</label>
+              <button type="button" className={`chip ${miniAppEnabled ? "active" : ""}`} onClick={() => setMiniAppEnabled((value) => !value)}>
+                {miniAppEnabled ? "Mini app enabled" : "Mini app disabled"}
+              </button>
+            </div>
+
+            <div className="field-grid">
+              <div className="field">
+                <label htmlFor="miniAppUrl">Mini app URL</label>
+                <input id="miniAppUrl" value={miniAppUrl} onChange={(event) => setMiniAppUrl(event.target.value)} />
+              </div>
+              <div className="field">
+                <label htmlFor="miniAppStartParam">Mini app start param</label>
+                <input id="miniAppStartParam" value={miniAppStartParam} onChange={(event) => setMiniAppStartParam(event.target.value)} />
+              </div>
+            </div>
+
+            <div className="result-card">
+              <h4>Webhook URL</h4>
+              <p className="muted">{webhookUrl}</p>
+            </div>
+
+            <div className="hero-actions">
+              <button type="button" className="btn" onClick={saveIntegration} disabled={loading}>
+                {loading ? "Saving..." : "Save integration"}
+              </button>
+              <button type="button" className="ghost-btn" onClick={refresh} disabled={loading}>
+                Refresh
+              </button>
+            </div>
+
+            {status ? (
+              <div className="result-card">
+                <h4>Status</h4>
+                <p className="muted">{status}</p>
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        <aside className="sidebar">
+          <section className="panel rail">
+            <p className="section-title">Saved bot integrations</p>
+            <div className="draft-list">
+              {integrations.map((integration) => (
+                <button
+                  key={`${integration.channel}-${integration.integrationKey}`}
+                  type="button"
+                  className="draft-item"
+                  onClick={() => {
+                    setChannel(integration.channel);
+                    setIntegrationKey(integration.integrationKey);
+                    setTenantKey(integration.tenantKey);
+                    setSiteKey(integration.siteKey);
+                    setClientKey(integration.clientKey ?? "");
+                    setAppTypeHint(integration.appTypeHint ?? "");
+                    setBotId(integration.botId ?? "");
+                    setBotUsername(integration.botUsername ?? "");
+                    setBotToken("");
+                    setTokenSecretRef(integration.tokenSecretRef ?? "");
+                    setWebhookSecret(integration.webhookSecret ?? "");
+                    setMiniAppEnabled(Boolean(integration.miniAppEnabled));
+                    setMiniAppUrl(integration.miniAppUrl ?? "");
+                    setMiniAppStartParam(integration.miniAppStartParam ?? "");
+                  }}
+                >
+                  <strong>
+                    <span>{integration.integrationKey}</span>
+                    <span className="muted">{integration.channel}</span>
+                  </strong>
+                  <span className="muted">{integration.tenantKey} / {integration.siteKey}</span>
+                  <span className="muted">
+                    {integration.active ? "active" : "inactive"} / {integration.miniAppEnabled ? "mini app" : "bot only"}
+                  </span>
+                  <span className="muted">{integration.tokenFingerprint ? `token ${integration.tokenFingerprint}` : "token ref only"}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel rail">
+            <p className="section-title">Next channels</p>
+            <div className="mini-grid" style={{ gridTemplateColumns: "1fr" }}>
+              {["Website/PWA publish", "Telegram mini app", "Mobile app shell"].map((title) => (
+                <div key={title} className="mini-card">
+                  <h3>{title}</h3>
+                  <p>Planned after bot webhook, tenant mapping, and public app contracts are stable.</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </aside>
+      </div>
     </AppShell>
   );
 }

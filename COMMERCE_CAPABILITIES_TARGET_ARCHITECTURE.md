@@ -14,7 +14,7 @@ Every service here must support:
 - `/endpoint/**` bearer-token APIs
 - `/internal/**` basic-auth APIs
 
-This matches the `naviya-core` style already being adopted in this repo.
+This matches the `Cyan-core` style already being adopted in this repo.
 
 ## Added services
 

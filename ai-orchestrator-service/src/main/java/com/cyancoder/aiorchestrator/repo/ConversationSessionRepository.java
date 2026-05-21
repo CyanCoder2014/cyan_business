@@ -9,4 +9,7 @@ import java.util.Optional;
 public interface ConversationSessionRepository extends MongoRepository<ConversationSession, String> {
     Optional<ConversationSession> findBySessionId(String sessionId);
     List<ConversationSession> findByDraftIdOrderByUpdatedAtDesc(String draftId);
+    List<ConversationSession> findByClientKeyOrderByUpdatedAtDesc(String clientKey);
+    List<ConversationSession> findByTenantKeyOrderByUpdatedAtDesc(String tenantKey);
+    List<ConversationSession> findByTenantKeyAndSiteKeyOrderByUpdatedAtDesc(String tenantKey, String siteKey);
 }

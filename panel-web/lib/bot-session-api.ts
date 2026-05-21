@@ -27,7 +27,9 @@ export function getBotSession(sessionId: string): Promise<BotConversationSession
 }
 
 export function createBotSession(
-  session: Omit<BotConversationSession, "id" | "createdAt" | "updatedAt" | "messages">
+  session: Omit<BotConversationSession, "id" | "createdAt" | "updatedAt" | "messages"> & {
+    messages?: BotConversationSession["messages"];
+  }
 ): Promise<BotConversationSession> {
   return requestJson<BotConversationSession>("/api/bot-sessions", {
     method: "POST",

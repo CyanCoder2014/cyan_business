@@ -1,6 +1,6 @@
 import type { ProjectDraft } from "@/lib/types";
 
-const storageKey = "naviya-panel-drafts";
+const storageKey = "Cyan-panel-drafts";
 
 export function loadDrafts(): ProjectDraft[] {
   if (typeof window === "undefined") {

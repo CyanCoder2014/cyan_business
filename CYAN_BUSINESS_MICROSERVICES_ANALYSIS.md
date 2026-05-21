@@ -7,7 +7,7 @@ It is written for future engineers or AI agents who need to:
 
 - understand the microservices in this project
 - identify the real business capabilities behind those services
-- decide what should be migrated into `naviya`
+- decide what should be migrated into `Cyan`
 - avoid copying weak or broken parts of the current implementation
 
 This file is based on code inspection of the repository, not on README documentation.
@@ -28,7 +28,7 @@ This repository is a Java 17 / Spring Boot 3 multi-module Gradle project with th
 
 Reference:
 
-- [settings.gradle](/Users/farid/Projects/naviya/old-cyan/cyan_business/settings.gradle:1)
+- [settings.gradle](/Users/farid/Projects/Cyan/old-cyan/cyan_business/settings.gradle:1)
 
 At runtime the system expects:
 
@@ -39,12 +39,12 @@ At runtime the system expects:
 
 References:
 
-- [discovery-server/src/main/resources/application.properties](/Users/farid/Projects/naviya/old-cyan/cyan_business/discovery-server/src/main/resources/application.properties:1)
-- [api-gateway/src/main/resources/application.properties](/Users/farid/Projects/naviya/old-cyan/cyan_business/api-gateway/src/main/resources/application.properties:1)
-- [factor-service/src/main/resources/application.properties](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/resources/application.properties:1)
-- [tax-pay-sys/src/main/resources/application.properties](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/resources/application.properties:1)
-- [docker/axon/docker-compose.yml](/Users/farid/Projects/naviya/old-cyan/cyan_business/docker/axon/docker-compose.yml:1)
-- [docker/keycloak/docker-compose.yml](/Users/farid/Projects/naviya/old-cyan/cyan_business/docker/keycloak/docker-compose.yml:1)
+- [discovery-server/src/main/resources/application.properties](/Users/farid/Projects/Cyan/old-cyan/cyan_business/discovery-server/src/main/resources/application.properties:1)
+- [api-gateway/src/main/resources/application.properties](/Users/farid/Projects/Cyan/old-cyan/cyan_business/api-gateway/src/main/resources/application.properties:1)
+- [factor-service/src/main/resources/application.properties](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/resources/application.properties:1)
+- [tax-pay-sys/src/main/resources/application.properties](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/resources/application.properties:1)
+- [docker/axon/docker-compose.yml](/Users/farid/Projects/Cyan/old-cyan/cyan_business/docker/axon/docker-compose.yml:1)
+- [docker/keycloak/docker-compose.yml](/Users/farid/Projects/Cyan/old-cyan/cyan_business/docker/keycloak/docker-compose.yml:1)
 
 ## High-Level Architecture
 
@@ -79,13 +79,13 @@ Key characteristics:
 
 References:
 
-- [discovery-server/src/main/java/com/cyancoder/discoveryserver/DiscoveryServerApplication.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/discovery-server/src/main/java/com/cyancoder/discoveryserver/DiscoveryServerApplication.java:7)
-- [discovery-server/src/main/resources/application.properties](/Users/farid/Projects/naviya/old-cyan/cyan_business/discovery-server/src/main/resources/application.properties:1)
+- [discovery-server/src/main/java/com/cyancoder/discoveryserver/DiscoveryServerApplication.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/discovery-server/src/main/java/com/cyancoder/discoveryserver/DiscoveryServerApplication.java:7)
+- [discovery-server/src/main/resources/application.properties](/Users/farid/Projects/Cyan/old-cyan/cyan_business/discovery-server/src/main/resources/application.properties:1)
 
 Migration value:
 
 - low
-- should not be migrated into `naviya` unless `naviya` already uses Spring Cloud service discovery
+- should not be migrated into `Cyan` unless `Cyan` already uses Spring Cloud service discovery
 
 ### `api-gateway`
 
@@ -104,8 +104,8 @@ Key characteristics:
 
 References:
 
-- [api-gateway/src/main/resources/application.properties](/Users/farid/Projects/naviya/old-cyan/cyan_business/api-gateway/src/main/resources/application.properties:1)
-- [api-gateway/src/main/java/come/cyancoder/apigateway/config/SecurityConfig.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/api-gateway/src/main/java/come/cyancoder/apigateway/config/SecurityConfig.java:16)
+- [api-gateway/src/main/resources/application.properties](/Users/farid/Projects/Cyan/old-cyan/cyan_business/api-gateway/src/main/resources/application.properties:1)
+- [api-gateway/src/main/java/come/cyancoder/apigateway/config/SecurityConfig.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/api-gateway/src/main/java/come/cyancoder/apigateway/config/SecurityConfig.java:16)
 
 Important note:
 
@@ -147,10 +147,10 @@ Important create behavior:
 
 References:
 
-- [client-service/src/main/java/com/cyancoder/client/rest/CompanyCommandController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/rest/CompanyCommandController.java:21)
-- [client-service/src/main/java/com/cyancoder/client/entity/CompanyEntity.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/entity/CompanyEntity.java:15)
-- [client-service/src/main/java/com/cyancoder/client/query/CompanyQueryHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/query/CompanyQueryHandler.java:21)
-- [client-service/src/main/java/com/cyancoder/client/repository/CompanyRepository.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/repository/CompanyRepository.java:7)
+- [client-service/src/main/java/com/cyancoder/client/rest/CompanyCommandController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/rest/CompanyCommandController.java:21)
+- [client-service/src/main/java/com/cyancoder/client/entity/CompanyEntity.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/entity/CompanyEntity.java:15)
+- [client-service/src/main/java/com/cyancoder/client/query/CompanyQueryHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/query/CompanyQueryHandler.java:21)
+- [client-service/src/main/java/com/cyancoder/client/repository/CompanyRepository.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/repository/CompanyRepository.java:7)
 
 Why it matters:
 
@@ -160,7 +160,7 @@ Why it matters:
 Migration value:
 
 - high
-- one of the strongest migration candidates for `naviya`
+- one of the strongest migration candidates for `Cyan`
 
 ### `buyer-service`
 
@@ -177,10 +177,10 @@ Key characteristics:
 
 References:
 
-- [buyer-service/src/main/java/com/cyancoder/client/entity/BuyerEntity.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/entity/BuyerEntity.java:11)
-- [buyer-service/src/main/java/com/cyancoder/client/repository/BuyerRepository.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/repository/BuyerRepository.java:6)
-- [buyer-service/src/main/java/com/cyancoder/client/query/BuyerQueryHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/query/BuyerQueryHandler.java:19)
-- [buyer-service/src/main/java/com/cyancoder/client/query/BuyerEventHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/query/BuyerEventHandler.java:15)
+- [buyer-service/src/main/java/com/cyancoder/client/entity/BuyerEntity.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/entity/BuyerEntity.java:11)
+- [buyer-service/src/main/java/com/cyancoder/client/repository/BuyerRepository.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/repository/BuyerRepository.java:6)
+- [buyer-service/src/main/java/com/cyancoder/client/query/BuyerQueryHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/query/BuyerQueryHandler.java:19)
+- [buyer-service/src/main/java/com/cyancoder/client/query/BuyerEventHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/query/BuyerEventHandler.java:15)
 
 Why it matters:
 
@@ -190,7 +190,7 @@ Why it matters:
 Migration value:
 
 - medium
-- useful domain data, but better merged into a billing/customer module in `naviya`
+- useful domain data, but better merged into a billing/customer module in `Cyan`
 
 ### `factor-service`
 
@@ -209,14 +209,14 @@ Core endpoints:
 
 References:
 
-- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorCommandController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorCommandController.java:17)
-- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java:22)
-- [factor-service/src/main/java/com/cyancoder/factor/query/FactorEventHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorEventHandler.java:32)
-- [factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java:25)
-- [factor-service/src/main/java/com/cyancoder/factor/entity/FactorEntity.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/FactorEntity.java:15)
-- [factor-service/src/main/java/com/cyancoder/factor/entity/FactorItemEntity.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/FactorItemEntity.java:19)
-- [factor-service/src/main/java/com/cyancoder/factor/entity/ProductEntity.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/ProductEntity.java:18)
-- [factor-service/src/main/java/com/cyancoder/factor/repository/FactorRepository.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/repository/FactorRepository.java:10)
+- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorCommandController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorCommandController.java:17)
+- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java:22)
+- [factor-service/src/main/java/com/cyancoder/factor/query/FactorEventHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorEventHandler.java:32)
+- [factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java:25)
+- [factor-service/src/main/java/com/cyancoder/factor/entity/FactorEntity.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/FactorEntity.java:15)
+- [factor-service/src/main/java/com/cyancoder/factor/entity/FactorItemEntity.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/FactorItemEntity.java:19)
+- [factor-service/src/main/java/com/cyancoder/factor/entity/ProductEntity.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/ProductEntity.java:18)
+- [factor-service/src/main/java/com/cyancoder/factor/repository/FactorRepository.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/repository/FactorRepository.java:10)
 
 Why it matters:
 
@@ -226,7 +226,7 @@ Why it matters:
 Migration value:
 
 - very high
-- this is the most important business feature to carry into `naviya` if invoice/factor functionality is needed
+- this is the most important business feature to carry into `Cyan` if invoice/factor functionality is needed
 
 ### `product-service`
 
@@ -241,8 +241,8 @@ Reality:
 
 References:
 
-- [product-service/src/main/java/com/cyancoder/client/rest/ProductCommandController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/product-service/src/main/java/com/cyancoder/client/rest/ProductCommandController.java:11)
-- [product-service/src/main/java/com/cyancoder/client/query/ProductEventHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/product-service/src/main/java/com/cyancoder/client/query/ProductEventHandler.java:15)
+- [product-service/src/main/java/com/cyancoder/client/rest/ProductCommandController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/product-service/src/main/java/com/cyancoder/client/rest/ProductCommandController.java:11)
+- [product-service/src/main/java/com/cyancoder/client/query/ProductEventHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/product-service/src/main/java/com/cyancoder/client/query/ProductEventHandler.java:15)
 
 Migration value:
 
@@ -264,15 +264,15 @@ This is the most specialized module in the repository.
 
 References:
 
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java:12)
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:48)
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/client/services_api/service/CompanyClientService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/client/services_api/service/CompanyClientService.java:14)
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/client/services_api/service/FactorClientService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/client/services_api/service/FactorClientService.java:22)
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/entity/FactorTaxEntity.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/entity/FactorTaxEntity.java:13)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java:12)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:48)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/client/services_api/service/CompanyClientService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/client/services_api/service/CompanyClientService.java:14)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/client/services_api/service/FactorClientService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/client/services_api/service/FactorClientService.java:22)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/entity/FactorTaxEntity.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/entity/FactorTaxEntity.java:13)
 
 Why it matters:
 
-- if `naviya` needs Iranian tax invoice submission, this module is the main transfer source
+- if `Cyan` needs Iranian tax invoice submission, this module is the main transfer source
 - if not, this service can be ignored almost entirely
 
 Migration value:
@@ -292,9 +292,9 @@ Key example:
 
 References:
 
-- [generic/src/main/java/com/cyancoder/generic/command/buyer/AddOrEditBuyerCommand.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/generic/src/main/java/com/cyancoder/generic/command/buyer/AddOrEditBuyerCommand.java:1)
-- [generic/src/main/java/com/cyancoder/generic/query/FetchBuyerQuery.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/generic/src/main/java/com/cyancoder/generic/query/FetchBuyerQuery.java:1)
-- [generic/src/main/java/com/cyancoder/generic/model/Buyer.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/generic/src/main/java/com/cyancoder/generic/model/Buyer.java:1)
+- [generic/src/main/java/com/cyancoder/generic/command/buyer/AddOrEditBuyerCommand.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/generic/src/main/java/com/cyancoder/generic/command/buyer/AddOrEditBuyerCommand.java:1)
+- [generic/src/main/java/com/cyancoder/generic/query/FetchBuyerQuery.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/generic/src/main/java/com/cyancoder/generic/query/FetchBuyerQuery.java:1)
+- [generic/src/main/java/com/cyancoder/generic/model/Buyer.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/generic/src/main/java/com/cyancoder/generic/model/Buyer.java:1)
 
 Migration value:
 
@@ -395,8 +395,8 @@ Main flow:
 
 References:
 
-- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorCommandController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorCommandController.java:28)
-- [factor-service/src/main/java/com/cyancoder/factor/query/FactorEventHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorEventHandler.java:52)
+- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorCommandController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorCommandController.java:28)
+- [factor-service/src/main/java/com/cyancoder/factor/query/FactorEventHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorEventHandler.java:52)
 
 Important interpretation:
 
@@ -415,13 +415,13 @@ Main flow:
 
 References:
 
-- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java:33)
-- [factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java:35)
+- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java:33)
+- [factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java:35)
 
 Important interpretation:
 
 - read-model assembly is distributed across services because of Axon
-- in a consolidated `naviya` implementation, this should become a simple local service call or repository join strategy
+- in a consolidated `Cyan` implementation, this should become a simple local service call or repository join strategy
 
 ## Tax Submission Flow
 
@@ -439,8 +439,8 @@ Main flow:
 
 References:
 
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java:46)
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:64)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java:46)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:64)
 
 Important interpretation:
 
@@ -462,12 +462,12 @@ The repository’s effective persistence model is:
 
 The most important entities for migration are:
 
-- [client-service CompanyEntity](/Users/farid/Projects/naviya/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/entity/CompanyEntity.java:15)
-- [buyer-service BuyerEntity](/Users/farid/Projects/naviya/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/entity/BuyerEntity.java:11)
-- [factor-service FactorEntity](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/FactorEntity.java:15)
-- [factor-service FactorItemEntity](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/FactorItemEntity.java:19)
-- [factor-service ProductEntity](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/ProductEntity.java:18)
-- [tax-pay-sys FactorTaxEntity](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/entity/FactorTaxEntity.java:13)
+- [client-service CompanyEntity](/Users/farid/Projects/Cyan/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/entity/CompanyEntity.java:15)
+- [buyer-service BuyerEntity](/Users/farid/Projects/Cyan/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/entity/BuyerEntity.java:11)
+- [factor-service FactorEntity](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/FactorEntity.java:15)
+- [factor-service FactorItemEntity](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/FactorItemEntity.java:19)
+- [factor-service ProductEntity](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/entity/ProductEntity.java:18)
+- [tax-pay-sys FactorTaxEntity](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/entity/FactorTaxEntity.java:13)
 
 ## Security Model
 
@@ -482,9 +482,9 @@ Common patterns:
 
 References:
 
-- [api-gateway/src/main/java/come/cyancoder/apigateway/config/SecurityConfig.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/api-gateway/src/main/java/come/cyancoder/apigateway/config/SecurityConfig.java:21)
-- [client-service/src/main/java/com/cyancoder/client/config/OAuthToken.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/config/OAuthToken.java:15)
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/config/OauthToken.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/config/OauthToken.java:11)
+- [api-gateway/src/main/java/come/cyancoder/apigateway/config/SecurityConfig.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/api-gateway/src/main/java/come/cyancoder/apigateway/config/SecurityConfig.java:21)
+- [client-service/src/main/java/com/cyancoder/client/config/OAuthToken.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/config/OAuthToken.java:15)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/config/OauthToken.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/config/OauthToken.java:11)
 
 Important interpretation:
 
@@ -498,11 +498,11 @@ The most reusable technical part of `tax-pay-sys` is the transfer stack.
 Main components:
 
 - transfer orchestration:
-  - [ObjectTransferApiImpl](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/transfer/api/ObjectTransferApiImpl.java:16)
+  - [ObjectTransferApiImpl](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/transfer/api/ObjectTransferApiImpl.java:16)
 - encryption:
-  - [DefaultEncrypter](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/transfer/impl/encrypter/DefaultEncrypter.java:20)
+  - [DefaultEncrypter](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/transfer/impl/encrypter/DefaultEncrypter.java:20)
 - signing:
-  - [InMemorySignatory](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/transfer/impl/signatory/InMemorySignatory.java:15)
+  - [InMemorySignatory](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/transfer/impl/signatory/InMemorySignatory.java:15)
 
 This stack is more reusable than the service layer around it.
 
@@ -520,8 +520,8 @@ The system relies on several local/static assumptions:
 
 Examples:
 
-- [api-gateway application routes](/Users/farid/Projects/naviya/old-cyan/cyan_business/api-gateway/src/main/resources/application.properties:15)
-- [tax-pay-sys service discovery fallback](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/resources/application.properties:46)
+- [api-gateway application routes](/Users/farid/Projects/Cyan/old-cyan/cyan_business/api-gateway/src/main/resources/application.properties:15)
+- [tax-pay-sys service discovery fallback](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/resources/application.properties:46)
 
 This means the system is not cleanly environment-abstracted.
 
@@ -542,13 +542,13 @@ The service READMEs are mostly GitLab template text and not useful documentation
 
 Reference:
 
-- [product-service/src/main/java/com/cyancoder/client/rest/ProductCommandController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/product-service/src/main/java/com/cyancoder/client/rest/ProductCommandController.java:21)
+- [product-service/src/main/java/com/cyancoder/client/rest/ProductCommandController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/product-service/src/main/java/com/cyancoder/client/rest/ProductCommandController.java:21)
 
 `buyer-service` create logic is also effectively incomplete in the controller layer.
 
 Reference:
 
-- [buyer-service/src/main/java/com/cyancoder/client/rest/BuyerCommandController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/rest/BuyerCommandController.java:21)
+- [buyer-service/src/main/java/com/cyancoder/client/rest/BuyerCommandController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/rest/BuyerCommandController.java:21)
 
 ### 3. Broken Query Logic
 
@@ -556,13 +556,13 @@ Reference:
 
 Reference:
 
-- [buyer-service/src/main/java/com/cyancoder/client/query/BuyerQueryHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/query/BuyerQueryHandler.java:23)
+- [buyer-service/src/main/java/com/cyancoder/client/query/BuyerQueryHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/buyer-service/src/main/java/com/cyancoder/client/query/BuyerQueryHandler.java:23)
 
 `CompanyQueryController` uses `Long.getLong(...)` instead of parsing a numeric string.
 
 Reference:
 
-- [client-service/src/main/java/com/cyancoder/client/rest/CompanyQueryController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/rest/CompanyQueryController.java:37)
+- [client-service/src/main/java/com/cyancoder/client/rest/CompanyQueryController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/client-service/src/main/java/com/cyancoder/client/rest/CompanyQueryController.java:37)
 
 ### 4. Incorrect String Comparisons
 
@@ -570,9 +570,9 @@ Several places use `==` or `!=` with strings, which is wrong in Java.
 
 Examples:
 
-- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java:43)
-- [factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java:52)
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:148)
+- [factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/rest/FactorQueryController.java:43)
+- [factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/factor-service/src/main/java/com/cyancoder/factor/query/FactorQueryHandler.java:52)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:148)
 
 ### 5. Tax Service Logic Bugs
 
@@ -580,7 +580,7 @@ In the factor-code path, `codeTo` is not set correctly.
 
 Reference:
 
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:75)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:75)
 
 Private-key validation is inverted:
 
@@ -588,7 +588,7 @@ Private-key validation is inverted:
 
 Reference:
 
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:208)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/service/FactorService.java:208)
 
 ### 6. Route Inconsistency
 
@@ -596,8 +596,8 @@ The gateway routes `tax-pay-sys` through `/v2/api/tax-service/**`, but some tax 
 
 References:
 
-- [api-gateway/src/main/resources/application.properties](/Users/farid/Projects/naviya/old-cyan/cyan_business/api-gateway/src/main/resources/application.properties:25)
-- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java:13)
+- [api-gateway/src/main/resources/application.properties](/Users/farid/Projects/Cyan/old-cyan/cyan_business/api-gateway/src/main/resources/application.properties:25)
+- [tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/main/java/com/cyancoder/taxpaysys/modules/tax_api/rest/InvoiceController.java:13)
 
 This likely means some tax endpoints are not properly reachable through the gateway.
 
@@ -608,10 +608,10 @@ Only bootstrap-style application tests are present.
 
 Examples:
 
-- [tax-pay-sys/src/test/java/com/cyancoder/cyan_count_v2/CyanCountV2ApplicationTests.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/tax-pay-sys/src/test/java/com/cyancoder/cyan_count_v2/CyanCountV2ApplicationTests.java:1)
-- [discovery-server/src/test/java/com/cyancoder/discoveryserver/DiscoveryServerApplicationTests.java](/Users/farid/Projects/naviya/old-cyan/cyan_business/discovery-server/src/test/java/com/cyancoder/discoveryserver/DiscoveryServerApplicationTests.java:1)
+- [tax-pay-sys/src/test/java/com/cyancoder/cyan_count_v2/CyanCountV2ApplicationTests.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/tax-pay-sys/src/test/java/com/cyancoder/cyan_count_v2/CyanCountV2ApplicationTests.java:1)
+- [discovery-server/src/test/java/com/cyancoder/discoveryserver/DiscoveryServerApplicationTests.java](/Users/farid/Projects/Cyan/old-cyan/cyan_business/discovery-server/src/test/java/com/cyancoder/discoveryserver/DiscoveryServerApplicationTests.java:1)
 
-## What Should Be Migrated to Naviya
+## What Should Be Migrated to Cyan
 
 This section is the key recommendation set.
 
@@ -619,7 +619,7 @@ This section is the key recommendation set.
 
 #### 1. Company Management and Credential Storage
 
-Move the `client-service` company capability into `naviya`.
+Move the `client-service` company capability into `Cyan`.
 
 Why:
 
@@ -637,7 +637,7 @@ What to carry:
 
 #### 2. Factor / Invoice Domain
 
-Move the `factor-service` business rules into `naviya`.
+Move the `factor-service` business rules into `Cyan`.
 
 Why:
 
@@ -664,7 +664,7 @@ Why:
 
 #### 4. Tax Transfer and Packet Logic
 
-Move the tax integration only if `naviya` actually needs it.
+Move the tax integration only if `Cyan` actually needs it.
 
 What to carry:
 
@@ -684,7 +684,7 @@ Avoid direct transfer of:
 
 - Eureka service discovery
 - current Spring Cloud Gateway setup
-- Axon CQRS plumbing unless `naviya` already uses Axon
+- Axon CQRS plumbing unless `Cyan` already uses Axon
 - placeholder/incomplete service code
 - static localhost-based configuration
 
@@ -693,11 +693,11 @@ Reason:
 - those are implementation choices, not core business assets
 - they add complexity without clear migration value
 
-## Recommended Target Architecture for Naviya
+## Recommended Target Architecture for Cyan
 
-If `naviya` does not already require this microservice topology, the better target design is:
+If `Cyan` does not already require this microservice topology, the better target design is:
 
-- one modular billing/tax domain inside `naviya`
+- one modular billing/tax domain inside `Cyan`
 
 Suggested bounded modules:
 
@@ -750,7 +750,7 @@ Move tax submission capability.
 
 Goal:
 
-- reuse invoice data from local `naviya` domain
+- reuse invoice data from local `Cyan` domain
 - add signing/encryption and outbound tax API integration
 
 ## Guidance for Future AI Agents
@@ -777,7 +777,7 @@ This repository is best understood as:
 - a small billing domain implemented as several Spring services
 - plus a specialized tax submission integration layer
 
-The highest-value features for migration into `naviya` are:
+The highest-value features for migration into `Cyan` are:
 
 - company onboarding and secure key storage
 - factor/invoice management

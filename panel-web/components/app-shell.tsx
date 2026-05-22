@@ -11,10 +11,12 @@ type AppShellProps = {
 export function AppShell({ title, subtitle, children }: AppShellProps) {
   const navItems = [
     { href: "/", label: "Dashboard", fa: "داشبورد" },
+    { href: "/roadmap", label: "Roadmap", fa: "نقشه راه" },
     { href: "/projects", label: "Projects", fa: "پروژه ها" },
     { href: "/projects/new", label: "AI Studio", fa: "استودیو AI" },
     { href: "/maker", label: "Maker", fa: "سازنده" },
     { href: "/site-builder", label: "Site", fa: "سایت" },
+    { href: "/qa", label: "QA", fa: "تست" },
     { href: "/data", label: "Data", fa: "داده" },
     { href: "/flows", label: "Flows", fa: "فرآیند" },
     { href: "/integrations", label: "Apps/Bots", fa: "اپ/بات" },

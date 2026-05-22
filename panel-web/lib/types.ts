@@ -207,3 +207,23 @@ export type BotChannelIntegration = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type BotOutboundMessage = {
+  id?: string;
+  channel: "TELEGRAM" | "BALE";
+  integrationKey: string;
+  tenantKey?: string;
+  siteKey?: string;
+  clientKey?: string | null;
+  externalChatId: string;
+  sessionId?: string | null;
+  text: string;
+  status: string;
+  attemptCount: number;
+  errorMessage?: string | null;
+  providerResponse?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+  lastAttemptAt?: string;
+  deliveredAt?: string;
+};

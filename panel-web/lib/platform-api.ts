@@ -1,6 +1,7 @@
 import type {
   AppBlueprint,
   BotChannelIntegration,
+  BotOutboundMessage,
   ClientAppDraft,
   GeneratePlatformAppRequest,
   GeneratePlatformAppResponse,
@@ -143,9 +144,37 @@ export function sendBotMessage(request: {
   provider: string;
   externalChatId: string;
   messageText: string;
+  deliveryId: string;
+  attemptCount: number;
 }> {
   return requestJson("/endpoint/bot-adapter/messages", {
     method: "POST",
     body: JSON.stringify(request)
+  });
+}
+
+export function listBotMessages(params?: {
+  tenantKey?: string;
+  siteKey?: string;
+  integrationKey?: string;
+}): Promise<BotOutboundMessage[]> {
+  const search = new URLSearchParams();
+  if (params?.tenantKey) search.set("tenantKey", params.tenantKey);
+  if (params?.siteKey) search.set("siteKey", params.siteKey);
+  if (params?.integrationKey) search.set("integrationKey", params.integrationKey);
+  const suffix = search.size ? `?${search.toString()}` : "";
+  return requestJson<BotOutboundMessage[]>(`/endpoint/bot-adapter/messages${suffix}`, {
+    method: "GET"
+  });
+}
+
+export function retryBotMessage(messageId: string): Promise<{
+  status: string;
+  deliveryId: string;
+  attemptCount: number;
+}> {
+  return requestJson(`/endpoint/bot-adapter/messages/${encodeURIComponent(messageId)}/retry`, {
+    method: "POST",
+    body: JSON.stringify({})
   });
 }

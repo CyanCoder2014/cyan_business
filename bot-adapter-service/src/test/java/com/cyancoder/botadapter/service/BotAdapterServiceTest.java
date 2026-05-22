@@ -2,13 +2,16 @@ package com.cyancoder.botadapter.service;
 
 import com.cyancoder.botadapter.api.BotIntegrationRequest;
 import com.cyancoder.botadapter.api.WebhookResult;
+import com.cyancoder.botadapter.config.AiOrchestratorProperties;
 import com.cyancoder.botadapter.domain.BotChannel;
 import com.cyancoder.botadapter.domain.BotChannelIntegration;
 import com.cyancoder.botadapter.domain.BotChatSessionMapping;
 import com.cyancoder.botadapter.domain.BotInboundMessage;
+import com.cyancoder.botadapter.domain.BotOutboundMessage;
 import com.cyancoder.botadapter.repo.BotChannelIntegrationRepository;
 import com.cyancoder.botadapter.repo.BotChatSessionMappingRepository;
 import com.cyancoder.botadapter.repo.BotInboundMessageRepository;
+import com.cyancoder.botadapter.repo.BotOutboundMessageRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -26,6 +29,7 @@ class BotAdapterServiceTest {
     private final BotChannelIntegrationRepository integrationRepository = mock(BotChannelIntegrationRepository.class);
     private final BotChatSessionMappingRepository mappingRepository = mock(BotChatSessionMappingRepository.class);
     private final BotInboundMessageRepository inboundRepository = mock(BotInboundMessageRepository.class);
+    private final BotOutboundMessageRepository outboundRepository = mock(BotOutboundMessageRepository.class);
     private final BotWebhookParser parser = new BotWebhookParser();
     private final AiConversationClient aiClient = mock(AiConversationClient.class);
     private final BotProviderClient providerClient = mock(BotProviderClient.class);
@@ -33,6 +37,7 @@ class BotAdapterServiceTest {
             integrationRepository,
             mappingRepository,
             inboundRepository,
+            outboundRepository,
             parser,
             aiClient,
             providerClient
@@ -137,6 +142,15 @@ class BotAdapterServiceTest {
         BotChannelIntegration integration = integration();
         when(integrationRepository.findByChannelAndIntegrationKeyAndActiveTrue(BotChannel.TELEGRAM, "retail-bot"))
                 .thenReturn(Optional.of(integration));
+        when(outboundRepository.save(any(BotOutboundMessage.class))).thenAnswer(invocation -> {
+            BotOutboundMessage message = invocation.getArgument(0);
+            if (message.getId() == null) {
+                message.setId("outbound-1");
+            }
+            return message;
+        });
+        when(providerClient.sendMessage(integration, "200", "Hello from panel"))
+                .thenReturn(Map.of("ok", true));
 
         var result = service.sendOutboundMessage(new com.cyancoder.botadapter.api.OutboundMessageRequest(
                 "telegram",
@@ -146,6 +160,56 @@ class BotAdapterServiceTest {
         ));
 
         assertEquals("SENT", result.status());
+        assertEquals("outbound-1", result.deliveryId());
+        assertEquals(1, result.attemptCount());
         verify(providerClient).sendMessage(integration, "200", "Hello from panel");
+    }
+
+    @Test
+    void retryOutboundMessageReusesStoredDelivery() {
+        BotChannelIntegration integration = integration();
+        BotOutboundMessage message = new BotOutboundMessage();
+        message.setId("outbound-2");
+        message.setChannel(BotChannel.TELEGRAM);
+        message.setIntegrationKey("retail-bot");
+        message.setTenantKey("tenant-demo");
+        message.setSiteKey("site-demo");
+        message.setExternalChatId("200");
+        message.setText("Retry me");
+        message.setAttemptCount(1);
+
+        when(outboundRepository.findById("outbound-2")).thenReturn(Optional.of(message));
+        when(integrationRepository.findByChannelAndIntegrationKeyAndActiveTrue(BotChannel.TELEGRAM, "retail-bot"))
+                .thenReturn(Optional.of(integration));
+        when(outboundRepository.save(any(BotOutboundMessage.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(providerClient.sendMessage(integration, "200", "Retry me")).thenReturn(Map.of("ok", true));
+
+        var result = service.retryOutboundMessage("outbound-2");
+
+        assertEquals("SENT", result.status());
+        assertEquals("outbound-2", result.deliveryId());
+        assertEquals(2, result.attemptCount());
+    }
+
+    @Test
+    void tokenSecretResolverSupportsInlineVaultMapping() {
+        AiOrchestratorProperties properties = new AiOrchestratorProperties();
+        properties.getBotSecretValues().put("vault://bot/support", "secret-token-123");
+        BotTokenSecretResolver resolver = new BotTokenSecretResolver(properties);
+        BotChannelIntegration integration = new BotChannelIntegration();
+        integration.setIntegrationKey("support-bot");
+        integration.setTokenSecretRef("vault://bot/support");
+
+        assertEquals("secret-token-123", resolver.resolveToken(integration));
+    }
+
+    @Test
+    void tokenSecretResolverFallsBackToManagedTokenForCompatibility() {
+        BotTokenSecretResolver resolver = new BotTokenSecretResolver(new AiOrchestratorProperties());
+        BotChannelIntegration integration = new BotChannelIntegration();
+        integration.setIntegrationKey("legacy-bot");
+        integration.setManagedBotToken("legacy-token");
+
+        assertEquals("legacy-token", resolver.resolveToken(integration));
     }
 }

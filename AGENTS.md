@@ -152,8 +152,9 @@ Business services write local data and local outbox state, then hand integration
 - Every microservice must keep a unique fixed local `server.port`; do not reuse ports across modules.
 
 ## Suggested Reading Order
-1. `STRUCTURED_DYNAMIC_PLATFORM.md`
-2. `BUSINESS_PLATFORM_SERVICES.md`
-3. `BPM_SERVICE_ARCHITECTURE.md`
-4. `KAFKA_AUTOMATION_ARCHITECTURE.md`
-5. the `AGENTS.md` file inside the target microservice you are changing
+1. `LOCAL_PLATFORM_RUNBOOK.md`
+2. `STRUCTURED_DYNAMIC_PLATFORM.md`
+3. `BUSINESS_PLATFORM_SERVICES.md`
+4. `BPM_SERVICE_ARCHITECTURE.md`
+5. `KAFKA_AUTOMATION_ARCHITECTURE.md`
+6. the `AGENTS.md` file inside the target microservice you are changing

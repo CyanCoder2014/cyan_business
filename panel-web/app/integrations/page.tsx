@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { listBotIntegrations, upsertBotIntegration } from "@/lib/platform-api";
-import type { BotChannelIntegration } from "@/lib/types";
+import { listBotIntegrations, listBotMessages, registerBotWebhook, retryBotMessage, sendBotMessage, upsertBotIntegration } from "@/lib/platform-api";
+import type { BotChannelIntegration, BotOutboundMessage } from "@/lib/types";
 
 const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
 
@@ -23,7 +23,10 @@ export default function IntegrationsPage() {
   const [miniAppEnabled, setMiniAppEnabled] = useState(false);
   const [miniAppUrl, setMiniAppUrl] = useState("");
   const [miniAppStartParam, setMiniAppStartParam] = useState("");
+  const [testChatId, setTestChatId] = useState("");
+  const [testMessage, setTestMessage] = useState("Panel test message from bot-adapter-service.");
   const [integrations, setIntegrations] = useState<BotChannelIntegration[]>([]);
+  const [messages, setMessages] = useState<BotOutboundMessage[]>([]);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,12 +34,27 @@ export default function IntegrationsPage() {
     () => `${platformBaseUrl}/public/bot-adapter/${channel.toLowerCase()}/${integrationKey}/webhook`,
     [channel, integrationKey]
   );
+  const miniAppLaunchUrl = useMemo(() => {
+    if (!miniAppEnabled || !miniAppUrl.trim()) {
+      return null;
+    }
+    try {
+      const url = new URL(miniAppUrl);
+      if (miniAppStartParam.trim()) {
+        url.searchParams.set("startapp", miniAppStartParam.trim());
+      }
+      return url.toString();
+    } catch {
+      return "Invalid mini app URL";
+    }
+  }, [miniAppEnabled, miniAppStartParam, miniAppUrl]);
 
   async function refresh() {
     setLoading(true);
     setStatus(null);
     try {
       setIntegrations(await listBotIntegrations({ tenantKey, siteKey }));
+      setMessages(await listBotMessages({ tenantKey, siteKey, integrationKey }));
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Failed to load bot integrations");
     } finally {
@@ -75,6 +93,52 @@ export default function IntegrationsPage() {
       setStatus("Bot integration saved. Register the generated webhook URL with the channel provider.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Failed to save bot integration");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function registerWebhookNow() {
+    setLoading(true);
+    setStatus(null);
+    try {
+      const result = await registerBotWebhook(channel, integrationKey);
+      setStatus(`Webhook registration requested for ${result.channel}. Target URL: ${result.webhookUrl}`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to register webhook");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function sendTestMessage() {
+    setLoading(true);
+    setStatus(null);
+    try {
+      const result = await sendBotMessage({
+        channel,
+        integrationKey,
+        externalChatId: testChatId,
+        text: testMessage
+      });
+      await refresh();
+      setStatus(`Outbound message ${result.status.toLowerCase()} via ${result.provider} to chat ${result.externalChatId}. Delivery ${result.deliveryId}.`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to send outbound bot message");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function retryMessage(messageId: string) {
+    setLoading(true);
+    setStatus(null);
+    try {
+      const result = await retryBotMessage(messageId);
+      await refresh();
+      setStatus(`Retry ${result.status.toLowerCase()} for delivery ${result.deliveryId}. Attempt ${result.attemptCount}.`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to retry outbound message");
     } finally {
       setLoading(false);
     }
@@ -188,13 +252,38 @@ export default function IntegrationsPage() {
               <p className="muted">{webhookUrl}</p>
             </div>
 
+            <div className="result-card">
+              <h4>Mini app launch URL</h4>
+              <p className="muted">{miniAppLaunchUrl ?? "Enable mini app and provide a URL to generate a launch link."}</p>
+            </div>
+
             <div className="hero-actions">
               <button type="button" className="btn" onClick={saveIntegration} disabled={loading}>
                 {loading ? "Saving..." : "Save integration"}
               </button>
+              <button type="button" className="ghost-btn" onClick={registerWebhookNow} disabled={loading}>
+                Register webhook
+              </button>
               <button type="button" className="ghost-btn" onClick={refresh} disabled={loading}>
                 Refresh
               </button>
+            </div>
+
+            <div className="result-card">
+              <h4>Outbound test message</h4>
+              <div className="form-grid">
+                <div className="field">
+                  <label htmlFor="testChatId">External chat id</label>
+                  <input id="testChatId" value={testChatId} onChange={(event) => setTestChatId(event.target.value)} placeholder="Telegram/Bale chat id" />
+                </div>
+                <div className="field">
+                  <label htmlFor="testMessage">Message text</label>
+                  <textarea id="testMessage" value={testMessage} onChange={(event) => setTestMessage(event.target.value)} />
+                </div>
+                <button type="button" className="btn" onClick={sendTestMessage} disabled={loading || !testChatId.trim()}>
+                  Send test message
+                </button>
+              </div>
             </div>
 
             {status ? (
@@ -241,7 +330,33 @@ export default function IntegrationsPage() {
                     {integration.active ? "active" : "inactive"} / {integration.miniAppEnabled ? "mini app" : "bot only"}
                   </span>
                   <span className="muted">{integration.tokenFingerprint ? `token ${integration.tokenFingerprint}` : "token ref only"}</span>
+                  <span className="muted">{integration.miniAppUrl ? `mini app ${integration.miniAppUrl}` : "mini app not set"}</span>
                 </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel rail">
+            <p className="section-title">Outbound deliveries</p>
+            <div className="draft-list">
+              {messages.map((message) => (
+                <div key={message.id} className="draft-item">
+                  <strong>
+                    <span>{message.integrationKey}</span>
+                    <span className="muted">{message.status}</span>
+                  </strong>
+                  <span className="muted">chat {message.externalChatId} / attempts {message.attemptCount}</span>
+                  <span className="muted">{message.text}</span>
+                  <span className="muted">{message.errorMessage ?? "Delivered or pending without provider error."}</span>
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() => message.id && retryMessage(message.id)}
+                    disabled={loading || !message.id}
+                  >
+                    Retry
+                  </button>
+                </div>
               ))}
             </div>
           </section>

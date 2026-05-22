@@ -1,6 +1,7 @@
 package com.cyancoder.botadapter.api;
 
 import com.cyancoder.botadapter.domain.BotChannelIntegration;
+import com.cyancoder.botadapter.domain.BotOutboundMessage;
 import com.cyancoder.botadapter.service.BotAdapterService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +44,20 @@ public class BotAdapterController {
     @PostMapping("/endpoint/bot-adapter/messages")
     public OutboundMessageResult sendMessage(@RequestBody OutboundMessageRequest request) {
         return botAdapterService.sendOutboundMessage(request);
+    }
+
+    @GetMapping("/endpoint/bot-adapter/messages")
+    public List<BotOutboundMessage> listMessages(
+            @RequestParam(value = "tenantKey", required = false) String tenantKey,
+            @RequestParam(value = "siteKey", required = false) String siteKey,
+            @RequestParam(value = "integrationKey", required = false) String integrationKey
+    ) {
+        return botAdapterService.listOutboundMessages(tenantKey, siteKey, integrationKey);
+    }
+
+    @PostMapping("/endpoint/bot-adapter/messages/{messageId}/retry")
+    public RetryOutboundMessageResult retryMessage(@PathVariable String messageId) {
+        return botAdapterService.retryOutboundMessage(messageId);
     }
 
     @PostMapping("/public/bot-adapter/{channel}/{integrationKey}/webhook")

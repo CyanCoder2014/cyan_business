@@ -45,6 +45,9 @@ export default function HomePage() {
             <Link className="btn" href="/projects/new">
               Open AI studio
             </Link>
+            <Link className="ghost-btn" href="/roadmap">
+              Resume roadmap
+            </Link>
             <Link className="ghost-btn" href="/maker">
               Open maker panel
             </Link>
@@ -58,20 +61,20 @@ export default function HomePage() {
           <h2>Current direction</h2>
           <div className="timeline">
             <div className="timeline-step">
-              <strong>1. Generate</strong>
-              <span>Prompt the AI orchestrator with business intent.</span>
+              <strong>1. Visual website/page builder</strong>
+              <span>Push the site builder from record publisher to real preview, theme reuse, and publish controls.</span>
             </div>
             <div className="timeline-step">
-              <strong>2. Review</strong>
-              <span>Keep the draft in the panel before execution.</span>
+              <strong>2. Outbound Telegram/Bale messaging</strong>
+              <span>Complete secure send pipelines on top of the existing webhook and session groundwork.</span>
             </div>
             <div className="timeline-step">
-              <strong>3. Provision</strong>
-              <span>Push structured entities, routes, and flows into services.</span>
+              <strong>3. Advanced form/flow builder</strong>
+              <span>Unify entity definitions, BPM states, and automation actions into one operator path.</span>
             </div>
             <div className="timeline-step">
-              <strong>4. Publish</strong>
-              <span>Expose storefront routes and bot endpoints for the client.</span>
+              <strong>4. Test harness and readiness gate</strong>
+              <span>Block market claims until panel, gateway, storefront, bot, and multilingual checks pass.</span>
             </div>
           </div>
         </aside>

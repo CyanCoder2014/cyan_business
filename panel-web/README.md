@@ -28,6 +28,7 @@ Primary endpoint:
 Panel routes:
 
 - `/`
+- `/roadmap`
 - `/projects`
 - `/projects/new`
 - `/bot`
@@ -48,6 +49,7 @@ npm run dev
 - backend API client for the AI orchestrator
 - browser-local draft cache
 - mobile-first maker/data/flow/integration workspaces
+- roadmap workspace for the four launch-critical tracks
 - PWA manifest and installable panel metadata
 - Farsi/English direction toggle and light/dark UI toggle
 - backend-first project registry with local development fallback

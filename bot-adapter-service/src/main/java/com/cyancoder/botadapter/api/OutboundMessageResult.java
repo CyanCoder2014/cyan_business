@@ -4,6 +4,8 @@ public record OutboundMessageResult(
         String status,
         String provider,
         String externalChatId,
-        String messageText
+        String messageText,
+        String deliveryId,
+        int attemptCount
 ) {
 }

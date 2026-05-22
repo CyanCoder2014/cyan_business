@@ -34,6 +34,37 @@ The current backend already has the main contracts for this phase:
 - Add a presentation-template registry if storefront themes need versioned reusable templates beyond dynamic records.
 - Add publish-state and domain-binding workflows before promising custom domains.
 
+## Resume Roadmap 1, 2, 3, 4
+### 1. Visual website/page builder
+- Current repo baseline: `panel-web/app/site-builder/page.tsx` already creates `landing-page`, `theme-layout`, and `site-route` records.
+- Next execution slice: move from record publishing to reusable sections, theme presets, preview/publish split, and domain-ready route workflow.
+- Service boundary: `content-service` owns page records, `storefront-service` owns theme and route records, `media-service` owns assets, `search-index-service` owns discovery sync.
+- Exit gate: an operator can publish a tenant/site-scoped landing page without hand-editing JSON and verify it through `GET /public/storefront/render?path=/`.
+
+### 2. Outbound Telegram/Bale messaging
+- Current repo baseline: `bot-adapter-service` already owns webhook ingestion, channel integrations, session mapping, and idempotent inbound storage.
+- Next execution slice: add outbound provider delivery APIs, secure token-secret usage, delivery retries, and operator-facing health/status.
+- Service boundary: `bot-adapter-service` owns provider delivery and session continuity; `ai-orchestrator-service`, `notification-service`, and `bpm-service` become callers, not token owners.
+- Exit gate: Telegram and Bale can receive workflow or AI replies with observable delivery status and no token leakage.
+
+### 3. Advanced form/flow builder
+- Current repo baseline: `panel-web/app/maker/page.tsx` builds dynamic definitions and `panel-web/app/flows/page.tsx` publishes BPM flow JSON.
+- Next execution slice: connect maker fields directly to BPM form/state contracts, transition conditions, action presets, and managed-object lifecycle tooling.
+- Service boundary: `dynamic-entity-core` remains the strict schema/record layer, `bpm-service` owns workflow state, and automation fan-out must still go through `event-service`.
+- Exit gate: a form can be designed, published, attached to a flow, submitted, and advanced across at least one approval path with service-matching validation.
+
+### 4. End-to-end test harness and market-readiness checklist
+- Current repo baseline: this document already lists a market-ready gate, but it is still a manual checklist.
+- Next execution slice: script smoke paths for app generation, storefront publish/render, bot integration save, bot session continuity, and BPM flow publish; then turn mobile/PWA/Farsi-English checks into explicit pass/fail gates.
+- Service boundary: `panel-web` owns the UX gate, while `api-gateway`, `ai-orchestrator-service`, `storefront-service`, `bpm-service`, and `bot-adapter-service` provide the contracts being verified.
+- Exit gate: market-readiness claims are blocked unless panel build/lint, target backend tests, and smoke routes pass.
+
+## Suggested Execution Order
+1. Harden the website/page builder enough to publish stable public routes.
+2. Finish outbound Telegram/Bale messaging so published apps can also operate as bot channels.
+3. Merge form and flow builder contracts so structured apps can collect and route data without manual JSON surgery.
+4. Freeze the release gate with an automated harness before claiming market readiness.
+
 ## Market-Ready Test Gate
 - Build `panel-web` and run lint/type checks.
 - Run `./gradlew test` or at least targeted tests for `ai-orchestrator-service`, `storefront-service`, `bpm-service`, and `api-gateway`.

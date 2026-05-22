@@ -12,13 +12,15 @@ import java.util.Map;
 public class BotProviderClient {
     private final RestTemplate restTemplate;
     private final AiOrchestratorProperties properties;
+    private final BotTokenSecretResolver botTokenSecretResolver;
 
-    public BotProviderClient(RestTemplate restTemplate, AiOrchestratorProperties properties) {
+    public BotProviderClient(RestTemplate restTemplate, AiOrchestratorProperties properties, BotTokenSecretResolver botTokenSecretResolver) {
         this.restTemplate = restTemplate;
         this.properties = properties;
+        this.botTokenSecretResolver = botTokenSecretResolver;
     }
 
-    public void registerWebhook(BotChannelIntegration integration) {
+    public Map<String, Object> registerWebhook(BotChannelIntegration integration) {
         String token = resolveToken(integration);
         String baseUrl = baseUrl(integration.getChannel());
         String webhookUrl = properties.getPublicBaseUrl().replaceAll("/$", "")
@@ -27,7 +29,7 @@ public class BotProviderClient {
                 + "/"
                 + integration.getIntegrationKey()
                 + "/webhook";
-        restTemplate.postForObject(
+        Object response = restTemplate.postForObject(
                 baseUrl + "/bot" + token + "/setWebhook",
                 Map.of(
                         "url", webhookUrl,
@@ -35,12 +37,13 @@ public class BotProviderClient {
                 ),
                 Map.class
         );
+        return asMap(response);
     }
 
-    public void sendMessage(BotChannelIntegration integration, String externalChatId, String text) {
+    public Map<String, Object> sendMessage(BotChannelIntegration integration, String externalChatId, String text) {
         String token = resolveToken(integration);
         String baseUrl = baseUrl(integration.getChannel());
-        restTemplate.postForObject(
+        Object response = restTemplate.postForObject(
                 baseUrl + "/bot" + token + "/sendMessage",
                 Map.of(
                         "chat_id", externalChatId,
@@ -48,6 +51,7 @@ public class BotProviderClient {
                 ),
                 Map.class
         );
+        return asMap(response);
     }
 
     private String baseUrl(BotChannel channel) {
@@ -55,9 +59,14 @@ public class BotProviderClient {
     }
 
     private String resolveToken(BotChannelIntegration integration) {
-        if (integration.getManagedBotToken() == null || integration.getManagedBotToken().isBlank()) {
-            throw new IllegalStateException("No managed bot token is stored for integration " + integration.getIntegrationKey());
+        return botTokenSecretResolver.resolveToken(integration);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> asMap(Object value) {
+        if (value instanceof Map<?, ?> map) {
+            return (Map<String, Object>) map;
         }
-        return integration.getManagedBotToken();
+        return Map.of();
     }
 }

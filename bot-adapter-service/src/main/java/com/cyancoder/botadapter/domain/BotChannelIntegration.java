@@ -1,6 +1,7 @@
 package com.cyancoder.botadapter.domain;
 
 import org.springframework.data.annotation.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -21,6 +22,8 @@ public class BotChannelIntegration {
     private String appTypeHint;
     private String botId;
     private String botUsername;
+    @JsonIgnore
+    private String managedBotToken;
     private String tokenSecretRef;
     private String tokenFingerprint;
     private String webhookSecret;
@@ -50,6 +53,8 @@ public class BotChannelIntegration {
     public void setBotId(String botId) { this.botId = botId; }
     public String getBotUsername() { return botUsername; }
     public void setBotUsername(String botUsername) { this.botUsername = botUsername; }
+    public String getManagedBotToken() { return managedBotToken; }
+    public void setManagedBotToken(String managedBotToken) { this.managedBotToken = managedBotToken; }
     public String getTokenSecretRef() { return tokenSecretRef; }
     public void setTokenSecretRef(String tokenSecretRef) { this.tokenSecretRef = tokenSecretRef; }
     public String getTokenFingerprint() { return tokenFingerprint; }

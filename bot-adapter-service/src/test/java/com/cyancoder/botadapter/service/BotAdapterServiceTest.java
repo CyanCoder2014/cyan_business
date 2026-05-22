@@ -28,12 +28,14 @@ class BotAdapterServiceTest {
     private final BotInboundMessageRepository inboundRepository = mock(BotInboundMessageRepository.class);
     private final BotWebhookParser parser = new BotWebhookParser();
     private final AiConversationClient aiClient = mock(AiConversationClient.class);
+    private final BotProviderClient providerClient = mock(BotProviderClient.class);
     private final BotAdapterService service = new BotAdapterService(
             integrationRepository,
             mappingRepository,
             inboundRepository,
             parser,
-            aiClient
+            aiClient,
+            providerClient
     );
 
     @Test
@@ -126,6 +128,24 @@ class BotAdapterServiceTest {
         integration.setClientKey("client-demo");
         integration.setAppTypeHint("MIXED_BUSINESS_APP");
         integration.setActive(true);
+        integration.setManagedBotToken("123:test-token");
         return integration;
+    }
+
+    @Test
+    void sendOutboundMessageUsesProviderClient() {
+        BotChannelIntegration integration = integration();
+        when(integrationRepository.findByChannelAndIntegrationKeyAndActiveTrue(BotChannel.TELEGRAM, "retail-bot"))
+                .thenReturn(Optional.of(integration));
+
+        var result = service.sendOutboundMessage(new com.cyancoder.botadapter.api.OutboundMessageRequest(
+                "telegram",
+                "retail-bot",
+                "200",
+                "Hello from panel"
+        ));
+
+        assertEquals("SENT", result.status());
+        verify(providerClient).sendMessage(integration, "200", "Hello from panel");
     }
 }

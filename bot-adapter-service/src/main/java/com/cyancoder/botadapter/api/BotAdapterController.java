@@ -35,6 +35,16 @@ public class BotAdapterController {
         return botAdapterService.listIntegrations(tenantKey, siteKey);
     }
 
+    @PostMapping("/endpoint/bot-adapter/integrations/{channel}/{integrationKey}/register-webhook")
+    public WebhookRegistrationResult registerWebhook(@PathVariable String channel, @PathVariable String integrationKey) {
+        return botAdapterService.registerWebhook(channel, integrationKey);
+    }
+
+    @PostMapping("/endpoint/bot-adapter/messages")
+    public OutboundMessageResult sendMessage(@RequestBody OutboundMessageRequest request) {
+        return botAdapterService.sendOutboundMessage(request);
+    }
+
     @PostMapping("/public/bot-adapter/{channel}/{integrationKey}/webhook")
     public WebhookResult webhook(@PathVariable String channel,
                                  @PathVariable String integrationKey,

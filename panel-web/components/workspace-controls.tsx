@@ -6,7 +6,7 @@ type ThemeMode = "dark" | "light";
 type LocaleMode = "en" | "fa";
 
 export function WorkspaceControls() {
-  const [theme, setTheme] = useState<ThemeMode>("dark");
+  const [theme, setTheme] = useState<ThemeMode>("light");
   const [locale, setLocale] = useState<LocaleMode>("en");
 
   useEffect(() => {

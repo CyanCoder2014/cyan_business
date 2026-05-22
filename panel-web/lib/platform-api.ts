@@ -120,3 +120,32 @@ export function upsertBotIntegration(request: {
     body: JSON.stringify(request)
   });
 }
+
+export function registerBotWebhook(channel: "TELEGRAM" | "BALE", integrationKey: string): Promise<{
+  status: string;
+  channel: string;
+  integrationKey: string;
+  webhookUrl: string;
+}> {
+  return requestJson(`/endpoint/bot-adapter/integrations/${channel}/${integrationKey}/register-webhook`, {
+    method: "POST",
+    body: JSON.stringify({})
+  });
+}
+
+export function sendBotMessage(request: {
+  channel: "TELEGRAM" | "BALE";
+  integrationKey: string;
+  externalChatId: string;
+  text: string;
+}): Promise<{
+  status: string;
+  provider: string;
+  externalChatId: string;
+  messageText: string;
+}> {
+  return requestJson("/endpoint/bot-adapter/messages", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}

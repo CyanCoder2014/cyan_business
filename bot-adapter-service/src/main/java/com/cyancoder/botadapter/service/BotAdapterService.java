@@ -1,7 +1,10 @@
 package com.cyancoder.botadapter.service;
 
 import com.cyancoder.botadapter.api.BotIntegrationRequest;
+import com.cyancoder.botadapter.api.OutboundMessageRequest;
+import com.cyancoder.botadapter.api.OutboundMessageResult;
 import com.cyancoder.botadapter.api.WebhookResult;
+import com.cyancoder.botadapter.api.WebhookRegistrationResult;
 import com.cyancoder.botadapter.domain.BotChannel;
 import com.cyancoder.botadapter.domain.BotChannelIntegration;
 import com.cyancoder.botadapter.domain.BotChatSessionMapping;
@@ -28,17 +31,20 @@ public class BotAdapterService {
     private final BotInboundMessageRepository inboundMessageRepository;
     private final BotWebhookParser webhookParser;
     private final AiConversationClient aiConversationClient;
+    private final BotProviderClient botProviderClient;
 
     public BotAdapterService(BotChannelIntegrationRepository integrationRepository,
                              BotChatSessionMappingRepository mappingRepository,
                              BotInboundMessageRepository inboundMessageRepository,
                              BotWebhookParser webhookParser,
-                             AiConversationClient aiConversationClient) {
+                             AiConversationClient aiConversationClient,
+                             BotProviderClient botProviderClient) {
         this.integrationRepository = integrationRepository;
         this.mappingRepository = mappingRepository;
         this.inboundMessageRepository = inboundMessageRepository;
         this.webhookParser = webhookParser;
         this.aiConversationClient = aiConversationClient;
+        this.botProviderClient = botProviderClient;
     }
 
     public BotChannelIntegration upsertIntegration(BotIntegrationRequest request) {
@@ -54,6 +60,9 @@ public class BotAdapterService {
         integration.setAppTypeHint(request.appTypeHint());
         integration.setBotId(request.botId());
         integration.setBotUsername(request.botUsername());
+        if (request.botToken() != null && !request.botToken().isBlank()) {
+            integration.setManagedBotToken(request.botToken());
+        }
         integration.setTokenSecretRef(resolveTokenSecretRef(request));
         if (request.botToken() != null && !request.botToken().isBlank()) {
             integration.setTokenFingerprint(fingerprint(request.botToken()));
@@ -122,6 +131,28 @@ public class BotAdapterService {
         return new WebhookResult("ACCEPTED", mapping.getSessionId(), parsed.messageId(), parsed.chatId());
     }
 
+    public WebhookRegistrationResult registerWebhook(String channelValue, String integrationKey) {
+        BotChannelIntegration integration = findActiveIntegration(channelValue, integrationKey);
+        botProviderClient.registerWebhook(integration);
+        return new WebhookRegistrationResult(
+                "REGISTERED",
+                integration.getChannel().name(),
+                integration.getIntegrationKey(),
+                "public-base-url-configured/webhook"
+        );
+    }
+
+    public OutboundMessageResult sendOutboundMessage(OutboundMessageRequest request) {
+        BotChannelIntegration integration = findActiveIntegration(request.channel(), request.integrationKey());
+        botProviderClient.sendMessage(integration, required(request.externalChatId(), "externalChatId"), required(request.text(), "text"));
+        return new OutboundMessageResult(
+                "SENT",
+                integration.getChannel().name(),
+                request.externalChatId(),
+                request.text()
+        );
+    }
+
     private BotChatSessionMapping createMapping(BotChannelIntegration integration, String externalChatId) {
         String sessionId = aiConversationClient.createSession(
                 integration.getChannel().name(),
@@ -143,6 +174,13 @@ public class BotAdapterService {
         mapping.setCreatedAt(Instant.now());
         mapping.setUpdatedAt(Instant.now());
         return mappingRepository.save(mapping);
+    }
+
+    private BotChannelIntegration findActiveIntegration(String channelValue, String integrationKey) {
+        BotChannel channel = parseChannel(channelValue);
+        return integrationRepository
+                .findByChannelAndIntegrationKeyAndActiveTrue(channel, integrationKey)
+                .orElseThrow(() -> new IllegalArgumentException("Active bot integration not found"));
     }
 
     private BotChannel parseChannel(String value) {

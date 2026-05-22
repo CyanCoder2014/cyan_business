@@ -76,6 +76,25 @@ export function createDefinitionFromTemplate(
   });
 }
 
+export function saveDefinition(
+  serviceKey: DynamicServiceKey,
+  entityKey: string,
+  definitionJson: string,
+  scope: ScopedRequest
+): Promise<DynamicEntityDefinition> {
+  return requestJson<DynamicEntityDefinition>(serviceKey, `/endpoint/entities/definitions/${entityKey}`, {
+    method: "PUT",
+    tenantKey: scope.tenantKey,
+    siteKey: scope.siteKey,
+    body: JSON.stringify({
+      entityKey,
+      tenantKey: scope.tenantKey,
+      siteKey: scope.siteKey,
+      definitionJson
+    })
+  });
+}
+
 export function listRecords(
   serviceKey: DynamicServiceKey,
   entityKey: string,

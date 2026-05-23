@@ -4,6 +4,7 @@ import com.cyancoder.aiorchestrator.api.dto.CreateDraftRequest;
 import com.cyancoder.aiorchestrator.api.dto.UpdateDraftRequest;
 import com.cyancoder.aiorchestrator.domain.ClientAppDraft;
 import com.cyancoder.aiorchestrator.service.AppDraftService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,11 +26,13 @@ public class EndpointDraftController {
     }
 
     @PostMapping
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public ClientAppDraft create(@RequestBody CreateDraftRequest request) {
         return appDraftService.createDraft(request, "endpoint-user");
     }
 
     @GetMapping
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public List<ClientAppDraft> list(
             @RequestParam(value = "tenantKey", required = false) String tenantKey,
             @RequestParam(value = "siteKey", required = false) String siteKey,
@@ -39,11 +42,13 @@ public class EndpointDraftController {
     }
 
     @GetMapping("/{draftId}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public ClientAppDraft get(@PathVariable String draftId) {
         return appDraftService.getDraft(draftId);
     }
 
     @PatchMapping("/{draftId}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public ClientAppDraft update(@PathVariable String draftId, @RequestBody UpdateDraftRequest request) {
         return appDraftService.updateDraft(draftId, request, "endpoint-user");
     }

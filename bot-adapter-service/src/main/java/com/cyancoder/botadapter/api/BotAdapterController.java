@@ -4,6 +4,7 @@ import com.cyancoder.botadapter.domain.BotChannelIntegration;
 import com.cyancoder.botadapter.domain.BotMiniAppBuild;
 import com.cyancoder.botadapter.domain.BotOutboundMessage;
 import com.cyancoder.botadapter.service.BotAdapterService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,11 +26,13 @@ public class BotAdapterController {
     }
 
     @PostMapping("/endpoint/bot-adapter/integrations")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public BotChannelIntegration upsertIntegration(@RequestBody BotIntegrationRequest request) {
         return botAdapterService.upsertIntegration(request);
     }
 
     @GetMapping("/endpoint/bot-adapter/integrations")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public List<BotChannelIntegration> listIntegrations(
             @RequestParam(value = "tenantKey", required = false) String tenantKey,
             @RequestParam(value = "siteKey", required = false) String siteKey
@@ -38,16 +41,19 @@ public class BotAdapterController {
     }
 
     @PostMapping("/endpoint/bot-adapter/integrations/{channel}/{integrationKey}/register-webhook")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public WebhookRegistrationResult registerWebhook(@PathVariable String channel, @PathVariable String integrationKey) {
         return botAdapterService.registerWebhook(channel, integrationKey);
     }
 
     @PostMapping("/endpoint/bot-adapter/messages")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public OutboundMessageResult sendMessage(@RequestBody OutboundMessageRequest request) {
         return botAdapterService.sendOutboundMessage(request);
     }
 
     @GetMapping("/endpoint/bot-adapter/messages")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public List<BotOutboundMessage> listMessages(
             @RequestParam(value = "tenantKey", required = false) String tenantKey,
             @RequestParam(value = "siteKey", required = false) String siteKey,
@@ -57,16 +63,19 @@ public class BotAdapterController {
     }
 
     @PostMapping("/endpoint/bot-adapter/messages/{messageId}/retry")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public RetryOutboundMessageResult retryMessage(@PathVariable String messageId) {
         return botAdapterService.retryOutboundMessage(messageId);
     }
 
     @PostMapping("/endpoint/bot-adapter/mini-apps")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public BotMiniAppBuild upsertMiniAppBuild(@RequestBody BotMiniAppBuildRequest request) {
         return botAdapterService.upsertMiniAppBuild(request);
     }
 
     @GetMapping("/endpoint/bot-adapter/mini-apps")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public List<BotMiniAppBuild> listMiniAppBuilds(
             @RequestParam(value = "tenantKey", required = false) String tenantKey,
             @RequestParam(value = "siteKey", required = false) String siteKey
@@ -75,6 +84,7 @@ public class BotAdapterController {
     }
 
     @PostMapping("/endpoint/bot-adapter/mini-apps/{channel}/{integrationKey}/{buildKey}/publish")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public BotMiniAppBuild publishMiniAppBuild(@PathVariable String channel,
                                                @PathVariable String integrationKey,
                                                @PathVariable String buildKey) {

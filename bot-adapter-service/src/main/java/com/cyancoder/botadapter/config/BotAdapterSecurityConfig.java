@@ -1,24 +1,20 @@
-package com.cyancoder.payment.config;
+package com.cyancoder.botadapter.config;
 
-import com.cyancoder.dynamiccore.security.InternalSecurityProperties;
 import com.cyancoder.dynamiccore.security.PlatformAuthorizationService;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.context.annotation.Bean;
 
 @Configuration
 @EnableMethodSecurity
 @Import(PlatformAuthorizationService.class)
-public class PaymentSecurityConfig {
+public class BotAdapterSecurityConfig {
 
     @Bean
     @Order(1)
@@ -32,17 +28,6 @@ public class PaymentSecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain internalSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.securityMatcher("/internal/**")
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-                .httpBasic(Customizer.withDefaults());
-        return http.build();
-    }
-
-    @Bean
-    @Order(3)
     public SecurityFilterChain endpointSecurityFilterChain(HttpSecurity http) throws Exception {
         http.securityMatcher("/endpoint/**")
                 .csrf(csrf -> csrf.disable())
@@ -53,7 +38,7 @@ public class PaymentSecurityConfig {
     }
 
     @Bean
-    @Order(4)
+    @Order(3)
     public SecurityFilterChain fallbackSecurityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -61,15 +46,5 @@ public class PaymentSecurityConfig {
                         .requestMatchers("/error", "/actuator/health").permitAll()
                         .anyRequest().denyAll());
         return http.build();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService(InternalSecurityProperties properties) {
-        return new InMemoryUserDetailsManager(
-                User.withUsername(properties.getUsername())
-                        .password("{noop}" + properties.getPassword())
-                        .roles("INTERNAL")
-                        .build()
-        );
     }
 }

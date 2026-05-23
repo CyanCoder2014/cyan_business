@@ -4,6 +4,7 @@ import com.cyancoder.bpm.api.dto.BpmScope;
 import com.cyancoder.bpm.api.dto.FlowScopeResolver;
 import com.cyancoder.bpm.domain.DynamicFlowDefinition;
 import com.cyancoder.bpm.service.FlowDefinitionService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ public class EndpointDynamicFlowDefinitionController {
     }
 
     @GetMapping
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public List<DynamicFlowDefinition> list(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey
@@ -32,6 +34,7 @@ public class EndpointDynamicFlowDefinitionController {
     }
 
     @GetMapping("/{flowKey}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public DynamicFlowDefinition getLatest(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -41,6 +44,7 @@ public class EndpointDynamicFlowDefinitionController {
     }
 
     @PostMapping
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public DynamicFlowDefinition save(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -51,6 +55,7 @@ public class EndpointDynamicFlowDefinitionController {
     }
 
     @PostMapping("/{flowKey}/activate/{version}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public DynamicFlowDefinition activate(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,

@@ -84,8 +84,8 @@ public class DynamicCoreConfig {
     }
 
     @Bean
-    public EndpointDynamicEntityController endpointDynamicEntityController(DynamicRuntimeService runtimeService) {
-        return new EndpointDynamicEntityController(runtimeService);
+    public EndpointDynamicEntityController endpointDynamicEntityController(DynamicRuntimeService runtimeService, DynamicRuntimeProperties properties) {
+        return new EndpointDynamicEntityController(runtimeService, properties);
     }
 
     @Bean

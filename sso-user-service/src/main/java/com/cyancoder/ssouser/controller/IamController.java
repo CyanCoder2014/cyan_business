@@ -106,6 +106,16 @@ public class IamController {
         return iamDirectoryService.resolveAccess(username, clientId);
     }
 
+    @GetMapping("/internal/users/{username}/access")
+    public IamUserAccessSummary resolveAccessInternal(@PathVariable String username, @RequestParam(required = false) String clientId) {
+        return iamDirectoryService.resolveAccessInternal(username, clientId);
+    }
+
+    @PostMapping("/users")
+    public IamUserAccessSummary provisionManagedUser(@RequestBody com.cyancoder.sso.common.dto.ManagedUserProvisionRequest request) {
+        return iamDirectoryService.provisionManagedUser(request);
+    }
+
     @GetMapping("/users/{username}/client-assignments")
     public List<UserClientRoleAssignmentSummary> listClientAssignments(@PathVariable String username) {
         return iamDirectoryService.listClientAssignments(username);

@@ -16,6 +16,6 @@ public interface UserClient {
     @PostMapping("/api/sso/users/verify-password")
     PasswordVerificationResponse verifyPassword(@RequestBody PasswordVerificationRequest request);
 
-    @GetMapping("/api/sso/iam/users/{username}/access")
+    @GetMapping("/api/sso/iam/internal/users/{username}/access")
     IamUserAccessSummary resolveAccess(@PathVariable("username") String username, @RequestParam("clientId") String clientId);
 }

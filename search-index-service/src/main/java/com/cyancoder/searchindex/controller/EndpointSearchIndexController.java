@@ -6,6 +6,7 @@ import com.cyancoder.searchindex.model.SearchQueryResponse;
 import com.cyancoder.searchindex.model.SearchSuggestionResponse;
 import com.cyancoder.searchindex.service.SearchIndexSyncService;
 import com.cyancoder.searchindex.service.SearchQueryService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +30,7 @@ public class EndpointSearchIndexController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("@platformAuthorizationService.canReadService('search-index-service')")
     public SearchQueryResponse search(@RequestParam(required = false) String q,
                                       @RequestParam(required = false) String entityTypes,
                                       @RequestParam(required = false) String filterKey,
@@ -51,6 +53,7 @@ public class EndpointSearchIndexController {
     }
 
     @GetMapping("/suggest")
+    @PreAuthorize("@platformAuthorizationService.canReadService('search-index-service')")
     public SearchSuggestionResponse suggest(@RequestParam String q,
                                             @RequestParam(defaultValue = "8") int limit,
                                             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
@@ -59,6 +62,7 @@ public class EndpointSearchIndexController {
     }
 
     @PostMapping("/sync/{sourceServiceKey}/{sourceEntityKey}")
+    @PreAuthorize("@platformAuthorizationService.canManageService('search-index-service')")
     public SearchIndexSyncResponse sync(@PathVariable String sourceServiceKey, @PathVariable String sourceEntityKey) {
         return searchIndexSyncService.sync(sourceServiceKey, sourceEntityKey);
     }

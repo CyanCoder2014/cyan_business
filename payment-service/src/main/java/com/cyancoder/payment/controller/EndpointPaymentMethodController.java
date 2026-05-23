@@ -5,6 +5,7 @@ import com.cyancoder.payment.dto.PaymentMethodAdminResponse;
 import com.cyancoder.payment.dto.PaymentMethodRequest;
 import com.cyancoder.payment.service.PaymentMethodAdminService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,31 +20,37 @@ public class EndpointPaymentMethodController {
     }
 
     @GetMapping("/methods")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('commerce:*')")
     public List<AvailablePaymentMethodResponse> listAvailableMethods() {
         return paymentMethodAdminService.listAvailable();
     }
 
     @GetMapping("/admin/methods")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('commerce:*')")
     public List<PaymentMethodAdminResponse> listMethods() {
         return paymentMethodAdminService.list();
     }
 
     @GetMapping("/admin/methods/{methodKey}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('commerce:*')")
     public PaymentMethodAdminResponse getMethod(@PathVariable String methodKey) {
         return paymentMethodAdminService.get(methodKey);
     }
 
     @PostMapping("/admin/methods")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('commerce:*')")
     public PaymentMethodAdminResponse createMethod(@Valid @RequestBody PaymentMethodRequest request) {
         return paymentMethodAdminService.create(request);
     }
 
     @PutMapping("/admin/methods/{methodKey}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('commerce:*')")
     public PaymentMethodAdminResponse updateMethod(@PathVariable String methodKey, @Valid @RequestBody PaymentMethodRequest request) {
         return paymentMethodAdminService.update(methodKey, request);
     }
 
     @DeleteMapping("/admin/methods/{methodKey}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('commerce:*')")
     public void deleteMethod(@PathVariable String methodKey) {
         paymentMethodAdminService.delete(methodKey);
     }

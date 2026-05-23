@@ -5,13 +5,13 @@ import { AppShell } from "@/components/app-shell";
 import {
   assignIamClientRole,
   assignIamRealmRole,
-  createIamUser,
   listIamClients,
   listIamClientRoles,
   listIamMemberships,
   listIamRealms,
   listIamRealmRoles,
   listIamUsers,
+  provisionManagedIamUser,
   resolveIamAccess,
   upsertIamClient,
   upsertIamClientRole,
@@ -54,7 +54,7 @@ export default function IamPage() {
       listIamRealms(),
       listIamClients(),
       listIamMemberships(),
-      listIamUsers()
+      listIamUsers().catch(() => [])
     ]);
     setRealms(realmItems);
     setClients(clientItems);
@@ -182,7 +182,17 @@ export default function IamPage() {
                   <input value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} />
                 </div>
               </div>
-              <button type="button" className="btn" onClick={() => run(() => createIamUser({ username, password, email, phoneNumber, mfaEnabled: false, roles: ["user"] }).then(() => undefined), `User ${username} created.`)} disabled={loading}>Create user</button>
+              <button type="button" className="btn" onClick={() => run(() => provisionManagedIamUser({
+                username,
+                password,
+                email,
+                phoneNumber,
+                mfaEnabled: false,
+                realmKey,
+                clientId,
+                realmRoles: realmRoleKey ? [realmRoleKey] : [],
+                clientRoles: clientRoleKey ? [clientRoleKey] : []
+              }).then(() => undefined), `User ${username} provisioned.`)} disabled={loading}>Provision user</button>
             </div>
 
             <div className="result-card">

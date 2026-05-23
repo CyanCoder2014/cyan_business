@@ -4,6 +4,7 @@ import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.notification.model.NotificationDispatchRequest;
 import com.cyancoder.notification.model.NotificationDispatchResponse;
 import com.cyancoder.notification.service.NotificationDispatchService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,11 +17,13 @@ public class EndpointNotificationController {
     }
 
     @PostMapping("/send")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public NotificationDispatchResponse send(@RequestBody NotificationDispatchRequest request) {
         return notificationDispatchService.dispatch(request);
     }
 
     @PostMapping("/send-async")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public NotificationDispatchResponse sendAsync(@RequestBody NotificationDispatchRequest request) {
         return notificationDispatchService.dispatch(new NotificationDispatchRequest(
                 request.messageKey(),
@@ -37,6 +40,7 @@ public class EndpointNotificationController {
     }
 
     @GetMapping("/messages/{messageKey}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public DynamicEntityRecordDocument get(@PathVariable String messageKey) {
         return notificationDispatchService.getMessage(messageKey);
     }

@@ -4,6 +4,7 @@ import type {
   DynamicEntityTemplate,
   DynamicServiceKey
 } from "@/lib/types";
+import { platformAuthHeaders } from "@/lib/platform-auth";
 
 export const dynamicServices: DynamicServiceKey[] = [
   "content-service",
@@ -34,6 +35,7 @@ async function requestJson<T>(serviceKey: DynamicServiceKey, path: string, init?
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...platformAuthHeaders(),
       ...(init?.tenantKey ? { "X-Tenant-Key": init.tenantKey } : {}),
       ...(init?.siteKey ? { "X-Site-Key": init.siteKey } : {}),
       ...(init?.headers ?? {})

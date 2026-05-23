@@ -1,11 +1,13 @@
 package com.cyancoder.dynamiccore.runtime;
 
 import com.cyancoder.dynamiccore.model.DynamicValidationResult;
+import com.cyancoder.dynamiccore.config.DynamicRuntimeProperties;
 import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinition;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.dynamiccore.template.DynamicEntityTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,12 +18,15 @@ import java.util.Map;
 public class EndpointDynamicEntityController {
 
     private final DynamicRuntimeService runtimeService;
+    private final DynamicRuntimeProperties properties;
 
-    public EndpointDynamicEntityController(DynamicRuntimeService runtimeService) {
+    public EndpointDynamicEntityController(DynamicRuntimeService runtimeService, DynamicRuntimeProperties properties) {
         this.runtimeService = runtimeService;
+        this.properties = properties;
     }
 
     @PostMapping("/definitions")
+    @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
     public StoredEntityDefinition createDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -33,6 +38,7 @@ public class EndpointDynamicEntityController {
     }
 
     @PutMapping("/definitions/{entityKey}")
+    @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
     public StoredEntityDefinition updateDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -46,6 +52,7 @@ public class EndpointDynamicEntityController {
     }
 
     @GetMapping("/definitions")
+    @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
     public List<StoredEntityDefinition> listDefinitions(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey
@@ -54,6 +61,7 @@ public class EndpointDynamicEntityController {
     }
 
     @GetMapping("/definitions/{entityKey}")
+    @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
     public StoredEntityDefinition getDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -63,6 +71,7 @@ public class EndpointDynamicEntityController {
     }
 
     @DeleteMapping("/definitions/{entityKey}")
+    @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
     public void deleteDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -72,16 +81,19 @@ public class EndpointDynamicEntityController {
     }
 
     @GetMapping("/templates")
+    @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
     public List<DynamicEntityTemplate> listTemplates() {
         return runtimeService.listTemplates();
     }
 
     @GetMapping("/templates/{templateKey}")
+    @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
     public DynamicEntityTemplate getTemplate(@PathVariable String templateKey) {
         return runtimeService.getTemplate(templateKey);
     }
 
     @PostMapping("/templates/{templateKey}/definitions")
+    @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
     public StoredEntityDefinition createFromTemplate(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -95,6 +107,7 @@ public class EndpointDynamicEntityController {
     }
 
     @PostMapping("/records/{entityKey}/validate")
+    @PreAuthorize("@platformAuthorizationService.canWriteService(@endpointDynamicEntityController.serviceKey())")
     public ResponseEntity<DynamicValidationResult> validate(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -106,6 +119,7 @@ public class EndpointDynamicEntityController {
     }
 
     @PostMapping("/submit/{entityKey}")
+    @PreAuthorize("@platformAuthorizationService.canWriteService(@endpointDynamicEntityController.serviceKey())")
     public DynamicEntityRecordDocument submitMap(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -117,6 +131,7 @@ public class EndpointDynamicEntityController {
     }
 
     @PostMapping("/records/{entityKey}")
+    @PreAuthorize("@platformAuthorizationService.canWriteService(@endpointDynamicEntityController.serviceKey())")
     public DynamicEntityRecordDocument submit(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -130,6 +145,7 @@ public class EndpointDynamicEntityController {
     }
 
     @PutMapping("/records/{entityKey}/{recordKey}")
+    @PreAuthorize("@platformAuthorizationService.canWriteService(@endpointDynamicEntityController.serviceKey())")
     public DynamicEntityRecordDocument replace(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -144,6 +160,7 @@ public class EndpointDynamicEntityController {
     }
 
     @PatchMapping("/records/{entityKey}/{recordKey}")
+    @PreAuthorize("@platformAuthorizationService.canWriteService(@endpointDynamicEntityController.serviceKey())")
     public DynamicEntityRecordDocument update(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -158,6 +175,7 @@ public class EndpointDynamicEntityController {
     }
 
     @GetMapping("/records/{entityKey}")
+    @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
     public List<DynamicEntityRecordDocument> listRecords(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -167,6 +185,7 @@ public class EndpointDynamicEntityController {
     }
 
     @GetMapping("/records/{entityKey}/{recordKey}")
+    @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
     public DynamicEntityRecordDocument getRecord(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -177,6 +196,7 @@ public class EndpointDynamicEntityController {
     }
 
     @DeleteMapping("/records/{entityKey}/{recordKey}")
+    @PreAuthorize("@platformAuthorizationService.canWriteService(@endpointDynamicEntityController.serviceKey())")
     public void deleteRecord(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -184,5 +204,9 @@ public class EndpointDynamicEntityController {
             @PathVariable String recordKey
     ) {
         runtimeService.deleteRecord(entityKey, recordKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
+
+    public String serviceKey() {
+        return properties.getServiceKey();
     }
 }

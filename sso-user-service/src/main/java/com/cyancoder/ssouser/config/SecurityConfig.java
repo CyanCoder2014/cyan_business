@@ -3,6 +3,7 @@ package com.cyancoder.ssouser.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -13,7 +14,13 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/sso/users/verify-password", "/api/sso/users/*", "/api/sso/iam/internal/**").permitAll()
+                        .requestMatchers("/api/sso/iam/**", "/api/sso/users").authenticated()
+                        .anyRequest().permitAll()
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt());
         return http.build();
     }
 

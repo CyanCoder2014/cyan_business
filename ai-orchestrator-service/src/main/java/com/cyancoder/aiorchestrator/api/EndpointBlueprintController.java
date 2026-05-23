@@ -2,6 +2,7 @@ package com.cyancoder.aiorchestrator.api;
 
 import com.cyancoder.aiorchestrator.domain.AppBlueprint;
 import com.cyancoder.aiorchestrator.service.BlueprintCatalogService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,7 @@ public class EndpointBlueprintController {
     }
 
     @GetMapping
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public List<AppBlueprint> list(@RequestParam(value = "appType", required = false) String appType) {
         List<AppBlueprint> blueprints = blueprintCatalogService.listActive();
         if (appType == null || appType.isBlank()) {
@@ -29,6 +31,7 @@ public class EndpointBlueprintController {
     }
 
     @GetMapping("/{blueprintKey}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public AppBlueprint get(@PathVariable String blueprintKey) {
         return blueprintCatalogService.getActiveByBlueprintKey(blueprintKey);
     }

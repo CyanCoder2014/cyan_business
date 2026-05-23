@@ -13,6 +13,7 @@ import type {
   SearchSuggestionResponse,
   UserSummary
 } from "@/lib/types";
+import { platformAuthHeaders } from "@/lib/platform-auth";
 
 type ServiceKey =
   | "sso-user-service"
@@ -34,6 +35,7 @@ async function requestJson<T>(serviceKey: ServiceKey, path: string, init?: Reque
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...platformAuthHeaders(),
       ...(init?.tenantKey ? { "X-Tenant-Key": init.tenantKey } : {}),
       ...(init?.siteKey ? { "X-Site-Key": init.siteKey } : {}),
       ...(init?.headers ?? {})
@@ -267,6 +269,23 @@ export function createIamUser(request: {
   roles: string[];
 }) {
   return requestJson<UserSummary>("sso-user-service", "/api/sso/users", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function provisionManagedIamUser(request: {
+  username: string;
+  password: string;
+  email?: string;
+  phoneNumber?: string;
+  mfaEnabled: boolean;
+  realmKey: string;
+  clientId?: string;
+  realmRoles: string[];
+  clientRoles: string[];
+}) {
+  return requestJson<IamUserAccessSummary>("sso-user-service", "/api/sso/iam/users", {
     method: "POST",
     body: JSON.stringify(request)
   });

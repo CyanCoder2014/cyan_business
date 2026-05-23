@@ -11,6 +11,7 @@ import com.cyancoder.bpm.domain.ManagedObject;
 import com.cyancoder.bpm.service.ActorContextResolver;
 import com.cyancoder.bpm.service.ObjectFlowService;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +34,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public List<ManagedObject> list(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey
@@ -41,6 +43,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/assigned-to-me")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public List<ManagedObject> getAssignedToCurrentUser(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -51,6 +54,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/visible-to-me")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public List<ManagedObject> getVisibleToCurrentUser(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -60,6 +64,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PostMapping
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public ManagedObject createAndStart(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -70,6 +75,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PostMapping("/{objectId}/transitions")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public ManagedObject transition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -81,6 +87,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/{objectId}/transitions")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public List<TransitionOptionResponse> availableTransitions(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -96,6 +103,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/{objectId}/active-form")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public ManagedObjectActiveFormResponse getActiveForm(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -105,6 +113,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PostMapping("/{objectId}/active-form/submissions")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public ManagedObjectFormSubmissionResponse submitActiveForm(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -116,6 +125,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/{objectId}")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
     public ManagedObject get(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,

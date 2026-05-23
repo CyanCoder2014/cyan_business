@@ -40,6 +40,7 @@ async function proxy(request: Request, context: RouteContext) {
     method: request.method,
     headers: {
       "Content-Type": request.headers.get("Content-Type") ?? "application/json",
+      ...(request.headers.get("Authorization") ? { Authorization: request.headers.get("Authorization") as string } : {}),
       ...(request.headers.get("X-Tenant-Key") ? { "X-Tenant-Key": request.headers.get("X-Tenant-Key") as string } : {}),
       ...(request.headers.get("X-Site-Key") ? { "X-Site-Key": request.headers.get("X-Site-Key") as string } : {})
     },

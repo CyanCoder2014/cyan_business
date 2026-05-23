@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { PanelProvider } from "@/components/panel-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Cyan Panel",
-  description: "App-maker control panel for structured business apps, orchestrations, and drafts.",
+  description: "Multilingual control panel for AI-native business apps, workflows, data, bots, and storefront operations.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -17,7 +18,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0d1720"
+  themeColor: "#f7f8fe"
 };
 
 export default function RootLayout({
@@ -27,7 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <PanelProvider>{children}</PanelProvider>
+      </body>
     </html>
   );
 }

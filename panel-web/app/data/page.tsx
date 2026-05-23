@@ -1,196 +1,169 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AppShell } from "@/components/app-shell";
-import { dynamicServices, listDefinitions, listRecords, submitRecord } from "@/lib/dynamic-api";
-import type { DynamicEntityDefinition, DynamicEntityRecord, DynamicServiceKey } from "@/lib/types";
+import { useEffect, useMemo, useState } from "react";
+import { PanelShell } from "@/components/panel-shell";
+import { usePanel } from "@/components/panel-provider";
+import { fallbackStats } from "@/lib/panel-fixtures";
+import { listRecords } from "@/lib/dynamic-api";
+import type { DynamicEntityRecord } from "@/lib/types";
 
-export default function DataPage() {
-  const [serviceKey, setServiceKey] = useState<DynamicServiceKey>("content-service");
-  const [tenantKey, setTenantKey] = useState("tenant-demo");
-  const [siteKey, setSiteKey] = useState("site-commerce");
-  const [definitions, setDefinitions] = useState<DynamicEntityDefinition[]>([]);
-  const [entityKey, setEntityKey] = useState("");
+type EntityBucket = {
+  key: string;
+  titleEn: string;
+  titleFa: string;
+  serviceKey: "catalog-service" | "content-service" | "crm-service" | "inventory-service";
+};
+
+const entityBuckets: EntityBucket[] = [
+  { key: "product", titleEn: "Products", titleFa: "محصولات", serviceKey: "catalog-service" },
+  { key: "landing-page", titleEn: "Contents", titleFa: "محتوا", serviceKey: "content-service" },
+  { key: "customer", titleEn: "Customers", titleFa: "مشتریان", serviceKey: "crm-service" },
+  { key: "inventory-item", titleEn: "Inventory", titleFa: "موجودی", serviceKey: "inventory-service" }
+];
+
+export default function DataManagerPage() {
+  const { locale } = usePanel();
+  const [selectedBucket, setSelectedBucket] = useState(entityBuckets[0]);
   const [records, setRecords] = useState<DynamicEntityRecord[]>([]);
-  const [recordKey, setRecordKey] = useState("starter-record");
-  const [recordJson, setRecordJson] = useState(`{\n  "title": "Starter record"\n}`);
-  const [status, setStatus] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function refreshDefinitions() {
-    setLoading(true);
-    setStatus(null);
-    try {
-      const nextDefinitions = await listDefinitions(serviceKey, { tenantKey, siteKey });
-      setDefinitions(nextDefinitions);
-      setEntityKey((current) => current || nextDefinitions[0]?.entityKey || "");
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to load definitions");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function refreshRecords(nextEntityKey = entityKey) {
-    if (!nextEntityKey) {
-      setRecords([]);
-      return;
-    }
-    setLoading(true);
-    setStatus(null);
-    try {
-      setRecords(await listRecords(serviceKey, nextEntityKey, { tenantKey, siteKey }));
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to load records");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   useEffect(() => {
-    refreshDefinitions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serviceKey]);
+    listRecords(selectedBucket.serviceKey, selectedBucket.key, { tenantKey: "tenant-demo", siteKey: "site-commerce" })
+      .then(setRecords)
+      .catch(() => setRecords(fallbackRecords));
+  }, [selectedBucket]);
 
-  async function createRecord() {
-    if (!entityKey || !recordKey.trim()) {
-      setStatus("Select an entity and enter a record key.");
-      return;
-    }
-    setLoading(true);
-    setStatus(null);
-    try {
-      const parsed = recordJson.trim() ? (JSON.parse(recordJson) as Record<string, unknown>) : {};
-      await submitRecord(serviceKey, entityKey, recordKey.trim(), parsed, { tenantKey, siteKey });
-      await refreshRecords();
-      setStatus("Record saved with strict service validation.");
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to save record");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const activeRecord = useMemo(() => records[0] ?? fallbackRecords[0], [records]);
 
   return (
-    <AppShell title="Data Manager" subtitle="Manage tenant/site-scoped records after definitions are provisioned.">
-      <div className="studio-grid">
-        <section className="panel rail">
-          <div className="editor-toolbar">
-            <div>
-              <p className="section-title">Entity data workbench</p>
-              <div className="meta">Uses endpoint entity APIs and preserves strict dynamic validation.</div>
-            </div>
-            <button type="button" className="btn" onClick={() => refreshRecords()} disabled={loading || !entityKey}>
-              {loading ? "Loading..." : "Load records"}
-            </button>
-          </div>
+    <PanelShell
+      activeKey="data"
+      title="Data Manager"
+      titleFa="مدیریت داده"
+      subtitle="Manage products, content, comments, orders, CRM, finance, inventory, and report records from one panel."
+      subtitleFa="محصولات، محتوا، سفارش‌ها، CRM، موجودی و داده‌های گزارش را از یک پنل واحد مدیریت کنید."
+    >
+      <section className="metric-grid">
+        {fallbackStats.map((stat) => (
+          <article key={stat.label} className="stat-card">
+            <span className="muted">{locale === "fa" ? statToFa(stat.label) : stat.label}</span>
+            <strong>{locale === "fa" ? toFaDigits(stat.value) : stat.value}</strong>
+            <div className="stat-delta">{locale === "fa" ? toFaDigits(stat.delta) : stat.delta}</div>
+          </article>
+        ))}
+        <article className="stat-card">
+          <span className="muted">{locale === "fa" ? "نظرات در انتظار" : "Pending comments"}</span>
+          <strong>{locale === "fa" ? "۱۲۸" : "128"}</strong>
+          <div className="stat-delta">{locale === "fa" ? "۱۴ منتظر بررسی" : "14 awaiting review"}</div>
+        </article>
+      </section>
 
-          <div className="form-grid">
-            <div className="field">
-              <label htmlFor="dataService">Service</label>
-              <select id="dataService" value={serviceKey} onChange={(event) => setServiceKey(event.target.value as DynamicServiceKey)}>
-                {dynamicServices.map((service) => (
-                  <option key={service} value={service}>
-                    {service}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="field-grid">
-              <div className="field">
-                <label htmlFor="dataTenant">Tenant key</label>
-                <input id="dataTenant" value={tenantKey} onChange={(event) => setTenantKey(event.target.value)} />
-              </div>
-              <div className="field">
-                <label htmlFor="dataSite">Site key</label>
-                <input id="dataSite" value={siteKey} onChange={(event) => setSiteKey(event.target.value)} />
-              </div>
-            </div>
-
-            <div className="field-grid">
-              <div className="field">
-                <label htmlFor="entityKey">Entity</label>
-                <select
-                  id="entityKey"
-                  value={entityKey}
-                  onChange={(event) => {
-                    setEntityKey(event.target.value);
-                    refreshRecords(event.target.value);
-                  }}
-                >
-                  <option value="">Select entity</option>
-                  {definitions.map((definition) => (
-                    <option key={definition.entityKey} value={definition.entityKey}>
-                      {definition.entityKey}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor="recordKey">Record key</label>
-                <input id="recordKey" value={recordKey} onChange={(event) => setRecordKey(event.target.value)} />
-              </div>
-            </div>
-
-            <div className="field">
-              <label htmlFor="recordJson">Record data JSON</label>
-              <textarea id="recordJson" value={recordJson} onChange={(event) => setRecordJson(event.target.value)} />
-            </div>
-
-            <button type="button" className="btn" onClick={createRecord} disabled={loading}>
-              Save record
-            </button>
-
-            {status ? (
-              <div className="result-card">
-                <h4>Data status</h4>
-                <p className="muted">{status}</p>
-              </div>
-            ) : null}
-          </div>
-        </section>
-
-        <aside className="sidebar">
-          <section className="panel rail">
-            <p className="section-title">Definitions</p>
-            <div className="draft-list">
-              {definitions.map((definition) => (
+      <div className="page-grid" style={{ marginTop: 18 }}>
+        <section className="data-table-shell">
+          <div className="toolbar-row">
+            <div className="pill-row">
+              {entityBuckets.map((bucket) => (
                 <button
-                  key={definition.entityKey}
                   type="button"
-                  className={`draft-item ${entityKey === definition.entityKey ? "active" : ""}`}
-                  onClick={() => {
-                    setEntityKey(definition.entityKey);
-                    refreshRecords(definition.entityKey);
-                  }}
+                  key={bucket.key}
+                  className={selectedBucket.key === bucket.key ? "pill status-pill info" : "pill"}
+                  onClick={() => setSelectedBucket(bucket)}
                 >
-                  <strong>
-                    <span>{definition.entityKey}</span>
-                    <span className="muted">{definition.serviceKey}</span>
-                  </strong>
-                  <span className="muted">{definition.tenantKey ?? "global"} / {definition.siteKey ?? "global"}</span>
+                  {locale === "fa" ? bucket.titleFa : bucket.titleEn}
                 </button>
               ))}
             </div>
-          </section>
-
-          <section className="panel rail">
-            <p className="section-title">Records</p>
-            <div className="draft-list">
-              {records.map((record) => (
-                <div key={record.recordKey} className="draft-item">
-                  <strong>
-                    <span>{record.recordKey}</span>
-                    <span className="muted">{record.entityKey ?? entityKey}</span>
-                  </strong>
-                  <pre className="json-view">{JSON.stringify(record.data, null, 2)}</pre>
-                </div>
-              ))}
+            <div className="pill-row">
+              <button type="button" className="secondary-pill">
+                {locale === "fa" ? "ورود فایل" : "Import"}
+              </button>
+              <button type="button" className="secondary-pill">
+                {locale === "fa" ? "خروجی" : "Export"}
+              </button>
+              <button type="button" className="primary-pill">
+                {locale === "fa" ? "رکورد جدید" : "New record"}
+              </button>
             </div>
-          </section>
+          </div>
+
+          <table className="data-table" style={{ marginTop: 16 }}>
+            <thead>
+              <tr>
+                <th>{locale === "fa" ? "کلید" : "Record key"}</th>
+                <th>{locale === "fa" ? "عنوان" : "Title"}</th>
+                <th>{locale === "fa" ? "وضعیت" : "Status"}</th>
+                <th>{locale === "fa" ? "به‌روزرسانی" : "Updated"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(records.length ? records : fallbackRecords).slice(0, 7).map((record) => (
+                <tr key={record.recordKey}>
+                  <td>{record.recordKey}</td>
+                  <td>{String(record.data.title ?? record.data.name ?? record.data.label ?? record.recordKey)}</td>
+                  <td>{String(record.data.status ?? "ACTIVE")}</td>
+                  <td>{record.updatedAt ?? (locale === "fa" ? "به تازگی" : "Recently")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <aside className="panel-card">
+          <div className="card-title-row">
+            <h3>{String(activeRecord.data.title ?? activeRecord.recordKey)}</h3>
+            <span className="status-pill success">{String(activeRecord.data.status ?? "Published")}</span>
+          </div>
+          <div className="detail-list" style={{ marginTop: 16 }}>
+            {Object.entries(activeRecord.data).slice(0, 8).map(([key, value]) => (
+              <div key={key} className="detail-item">
+                <strong>{key}</strong>
+                <span className="muted-block">{typeof value === "object" ? JSON.stringify(value) : String(value)}</span>
+              </div>
+            ))}
+          </div>
         </aside>
       </div>
-    </AppShell>
+    </PanelShell>
   );
+}
+
+const fallbackRecords: DynamicEntityRecord[] = [
+  {
+    recordKey: "llc-001",
+    data: {
+      title: "Luna Lounge Chair",
+      status: "Published",
+      category: "Furniture",
+      price: 349,
+      stock: 38
+    }
+  },
+  {
+    recordKey: "bct-002",
+    data: {
+      title: "Breeze Coffee Table",
+      status: "Low stock",
+      category: "Furniture",
+      price: 229,
+      stock: 14
+    }
+  }
+];
+
+function statToFa(value: string) {
+  switch (value) {
+    case "Visitors":
+      return "بازدیدها";
+    case "Orders":
+      return "سفارش‌ها";
+    case "Publish readiness":
+      return "آماده انتشار";
+    case "Low-stock alerts":
+      return "هشدار موجودی";
+    default:
+      return value;
+  }
+}
+
+function toFaDigits(value: string) {
+  return value.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
 }

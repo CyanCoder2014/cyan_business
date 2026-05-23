@@ -1,92 +1,155 @@
+"use client";
+
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
-import { ProjectCards } from "@/components/project-cards";
-import { seedDrafts } from "@/lib/draft-store";
+import { PanelShell } from "@/components/panel-shell";
+import { usePanel } from "@/components/panel-provider";
+import { dashboardActivities, dashboardCapabilityCards, fallbackStats } from "@/lib/panel-fixtures";
 
 export default function HomePage() {
-  const drafts = seedDrafts();
+  const { locale } = usePanel();
 
   return (
-    <AppShell
-      title="Build client web apps from structured prompts, not raw glue code."
-      subtitle="Generate apps, inspect drafts, and provision the platform from one control surface."
+    <PanelShell
+      activeKey="dashboard"
+      title="Launch your business app with AI"
+      titleFa="کسب‌وکار خود را با هوش مصنوعی بسازید"
+      subtitle="Generate websites, shops, CRM portals, BPM forms, bots, and customer-facing channels from one workspace."
+      subtitleFa="وب‌سایت، فروشگاه، CRM، فرم‌ها، ربات‌ها و کانال‌های ارتباطی را از یک فضای کاری واحد بسازید."
     >
-      <div className="stats-row">
-        <div className="stat">
-          <strong>1 maker panel</strong>
-          <span>AI chat, manual maker, data manager, flows, and client channels live behind one panel.</span>
-        </div>
-        <div className="stat">
-          <strong>6 channels</strong>
-          <span>Website, PWA, shop, CRM portal, Telegram bot, and Bale bot are the launch focus.</span>
-        </div>
-        <div className="stat">
-          <strong>2 languages</strong>
-          <span>Farsi/English controls and light/dark UI are first-class panel requirements.</span>
-        </div>
-      </div>
-
-      <div className="hero-grid">
-        <section className="panel rail">
-          <h2>Control the build lifecycle</h2>
-          <div className="rail-item">
-            <strong>Prompt studio</strong>
-            <span>Capture business goals, constraints, and answers before hitting the AI endpoint.</span>
+      <div className="page-grid">
+        <section className="hero-banner">
+          <div className="split-row">
+            <span className="status-pill info">{locale === "fa" ? "پیش‌نویس" : "Draft ready"}</span>
+            <span className="muted">{locale === "fa" ? "نسخه ۱.۰" : "Version 1.0"}</span>
           </div>
-          <div className="rail-item">
-            <strong>Generated DSL</strong>
-            <span>Preview entities, routes, flows, and delivery endpoints as structured JSON.</span>
+          <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.4rem)", marginBottom: 14 }}>
+            {locale === "fa" ? (
+              <>
+                اپ فروشگاه <span className="gradient-text">آماده ساخت</span>
+              </>
+            ) : (
+              <>
+                Shop app ready to <span className="gradient-text">continue building</span>
+              </>
+            )}
+          </h2>
+          <p className="muted" style={{ maxWidth: "56ch", lineHeight: 1.9 }}>
+            {locale === "fa"
+              ? "فروشگاه کامل با کاتالوگ، سبد خرید، پرداخت، ردیابی سفارش، CRM و ربات‌های پشتیبانی در یک مسیر یکپارچه."
+              : "A complete business app with catalog, cart, checkout, CRM, order tracking, and customer support automation."}
+          </p>
+          <div className="pill-row" style={{ margin: "18px 0" }}>
+            <span className="pill">{locale === "fa" ? "۱۲ صفحه" : "12 pages"}</span>
+            <span className="pill">{locale === "fa" ? "۱۸ ماژول" : "18 modules"}</span>
+            <span className="pill">{locale === "fa" ? "۶ یکپارچگی" : "6 integrations"}</span>
           </div>
-          <div className="rail-item">
-            <strong>Provisioning trace</strong>
-            <span>See what was created, what needs review, and what still requires manual actions.</span>
-          </div>
-          <div className="hero-actions">
-            <Link className="btn" href="/projects/new">
-              Open AI studio
+          <div className="toolbar-row">
+            <Link className="primary-pill" href="/projects/new">
+              {locale === "fa" ? "ادامه ساخت" : "Continue building"}
             </Link>
-            <Link className="ghost-btn" href="/roadmap">
-              Resume roadmap
-            </Link>
-            <Link className="ghost-btn" href="/maker">
-              Open maker panel
-            </Link>
-            <Link className="ghost-btn" href="/integrations">
-              Manage apps and bots
+            <Link className="secondary-pill" href="/projects">
+              {locale === "fa" ? "مشاهده قالب‌ها" : "Browse blueprints"}
             </Link>
           </div>
         </section>
 
-        <aside className="panel rail">
-          <h2>Current direction</h2>
-          <div className="timeline">
-            <div className="timeline-step">
-              <strong>1. Visual website/page builder</strong>
-              <span>Push the site builder from record publisher to real preview, theme reuse, and publish controls.</span>
-            </div>
-            <div className="timeline-step">
-              <strong>2. Outbound Telegram/Bale messaging</strong>
-              <span>Complete secure send pipelines on top of the existing webhook and session groundwork.</span>
-            </div>
-            <div className="timeline-step">
-              <strong>3. Advanced form/flow builder</strong>
-              <span>Unify entity definitions, BPM states, and automation actions into one operator path.</span>
-            </div>
-            <div className="timeline-step">
-              <strong>4. Test harness and readiness gate</strong>
-              <span>Block market claims until panel, gateway, storefront, bot, and multilingual checks pass.</span>
-            </div>
+        <aside className="panel-card">
+          <div className="card-title-row">
+            <h3>{locale === "fa" ? "آخرین فعالیت‌ها" : "Recent activity"}</h3>
+            <Link href="/roadmap" className="muted">
+              {locale === "fa" ? "مشاهده همه" : "View all"}
+            </Link>
+          </div>
+          <div className="activity-list" style={{ marginTop: 16 }}>
+            {dashboardActivities.map((item) => (
+              <div key={item.en} className="activity-item">
+                <strong>{locale === "fa" ? item.fa : item.en}</strong>
+                <span className="muted-block">{locale === "fa" ? item.timeFa : item.timeEn}</span>
+              </div>
+            ))}
           </div>
         </aside>
       </div>
 
-      <section style={{ padding: "24px" }}>
-        <p className="section-title">Seeded drafts</p>
-        <ProjectCards drafts={drafts} />
-        <p className="footer-note">
-          The panel currently uses browser-local draft seeds and is wired to the orchestrator endpoint for live generation.
-        </p>
+      <section className="stats-grid" style={{ marginTop: 18 }}>
+        {fallbackStats.map((stat) => (
+          <article key={stat.label} className="stat-card">
+            <span className="muted">{locale === "fa" ? translateStat(stat.label) : stat.label}</span>
+            <strong>{locale === "fa" ? toFaDigits(stat.value) : stat.value}</strong>
+            <div className="stat-delta">{locale === "fa" ? toFaDigits(stat.delta) : stat.delta}</div>
+          </article>
+        ))}
       </section>
-    </AppShell>
+
+      <section className="feature-grid" style={{ marginTop: 18 }}>
+        {dashboardCapabilityCards.map((card) => (
+          <article key={card.key} className="capability-card">
+            <div className="card-title-row">
+              <span className="status-pill info">{card.icon}</span>
+              <strong>{locale === "fa" ? card.titleFa : card.titleEn}</strong>
+            </div>
+            <p className="muted" style={{ lineHeight: 1.9 }}>
+              {locale === "fa" ? card.descFa : card.descEn}
+            </p>
+          </article>
+        ))}
+      </section>
+
+      <section className="page-grid" style={{ marginTop: 18 }}>
+        <article className="panel-card">
+          <div className="card-title-row">
+            <h3>{locale === "fa" ? "ورود سریع به مسیرها" : "Launch-critical routes"}</h3>
+          </div>
+          <div className="pill-row" style={{ marginTop: 16 }}>
+            <Link className="pill" href="/projects/new">
+              {locale === "fa" ? "استودیوی هوش مصنوعی" : "AI Studio"}
+            </Link>
+            <Link className="pill" href="/maker">
+              {locale === "fa" ? "سازنده" : "Maker"}
+            </Link>
+            <Link className="pill" href="/data">
+              {locale === "fa" ? "مدیریت داده" : "Data manager"}
+            </Link>
+            <Link className="pill" href="/flows">
+              {locale === "fa" ? "فلوساز" : "Flow Builder"}
+            </Link>
+            <Link className="pill" href="/integrations">
+              {locale === "fa" ? "اپ‌ها / بات‌ها" : "Apps / Bots"}
+            </Link>
+          </div>
+        </article>
+
+        <article className="panel-card">
+          <div className="card-title-row">
+            <h3>{locale === "fa" ? "آمادگی انتشار" : "Publish readiness"}</h3>
+            <span className="status-pill success">{locale === "fa" ? "فعال" : "On track"}</span>
+          </div>
+          <p className="muted" style={{ lineHeight: 1.9 }}>
+            {locale === "fa"
+              ? "ساختارهای داده، بات‌ها، مسیرهای سایت و فلوهای اصلی برای انتشار نسخه اولیه در یک مسیر واحد قرار گرفته‌اند."
+              : "Core data, site routes, bots, and workflow surfaces are now aligned under one panel-ready delivery path."}
+          </p>
+        </article>
+      </section>
+    </PanelShell>
   );
+}
+
+function toFaDigits(value: string) {
+  return value.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)] ?? digit);
+}
+
+function translateStat(label: string) {
+  switch (label) {
+    case "Visitors":
+      return "بازدیدها";
+    case "Orders":
+      return "سفارش‌ها";
+    case "Publish readiness":
+      return "آماده برای انتشار";
+    case "Low-stock alerts":
+      return "هشدار کمبود موجودی";
+    default:
+      return label;
+  }
 }

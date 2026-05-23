@@ -1,407 +1,87 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { AppShell } from "@/components/app-shell";
-import { generatePlatformApp } from "@/lib/platform-api";
-import { appendBotMessage, createBotSession, listBotSessions, updateBotSession } from "@/lib/bot-session-api";
-import type { BotChannel, BotConversationSession, GeneratePlatformAppResponse, PlatformAppType } from "@/lib/types";
+import { PanelShell } from "@/components/panel-shell";
+import { usePanel } from "@/components/panel-provider";
 
-const channelPresets: Record<BotChannel, { label: string; command: string; help: string }> = {
-  telegram: {
-    label: "Telegram",
-    command: "/newapp",
-    help: "Start a structured app generation conversation inside Telegram."
-  },
-  bale: {
-    label: "Bale",
-    command: "/create",
-    help: "Use the same orchestrator flow for Bale-based operator onboarding."
-  }
-};
-
-function parseAnswersJson(value: string): Record<string, unknown> {
-  return value.trim() ? (JSON.parse(value) as Record<string, unknown>) : {};
-}
-
-export default function BotStudioPage() {
-  const [channel, setChannel] = useState<BotChannel>("telegram");
-  const [prompt, setPrompt] = useState("Build a CRM and storefront app for a local retailer.");
-  const [tenantKey, setTenantKey] = useState("tenant-demo");
-  const [siteKey, setSiteKey] = useState("site-retail");
-  const [appType, setAppType] = useState<PlatformAppType>("MIXED_BUSINESS_APP");
-  const [answers, setAnswers] = useState(`{\n  "businessName": "Retail Demo"\n}`);
-  const [response, setResponse] = useState<GeneratePlatformAppResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sessions, setSessions] = useState<BotConversationSession[]>([]);
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [messageText, setMessageText] = useState("Need a storefront with CRM and invoice workflow.");
-  const [welcomeReply, setWelcomeReply] = useState("Welcome. I can launch the site, open checkout, or collect the next workflow step.");
-  const [bpmFlowKey, setBpmFlowKey] = useState("customer-intake");
-  const [automationFlowKey, setAutomationFlowKey] = useState("welcome-sequence");
-  const [notificationTemplateKey, setNotificationTemplateKey] = useState("welcome-webhook");
-  const [miniAppBuildKey, setMiniAppBuildKey] = useState("retail-mini-app");
-
-  const currentPreset = useMemo(() => channelPresets[channel], [channel]);
-
-  const activeSession = sessions.find((session) => session.id === activeSessionId) ?? null;
-  const botWorkflowContract = useMemo(
-    () => ({
-      channel,
-      appType,
-      welcomeReply,
-      steps: [
-        { type: "AI_REPLY", reply: welcomeReply },
-        { type: "BPM_FLOW", flowKey: bpmFlowKey, handoffRoute: "/flows" },
-        { type: "AUTOMATION", automationFlowKey },
-        { type: "NOTIFICATION", templateKey: notificationTemplateKey },
-        { type: "MINI_APP", buildKey: miniAppBuildKey }
-      ]
-    }),
-    [appType, automationFlowKey, bpmFlowKey, channel, miniAppBuildKey, notificationTemplateKey, welcomeReply]
-  );
-
-  useEffect(() => {
-    listBotSessions().then((items) => {
-      setSessions(items);
-      setActiveSessionId((current) => current ?? items[0]?.id ?? null);
-      if (items[0]) {
-        setChannel(items[0].channel);
-        setTenantKey(items[0].tenantKey);
-        setSiteKey(items[0].siteKey);
-      }
-    });
-  }, []);
-
-  async function refreshSessions() {
-    const items = await listBotSessions();
-    setSessions(items);
-  }
-
-  async function createThread() {
-    try {
-      const session = await createBotSession({
-        channel,
-        title: `${currentPreset.label} thread`,
-        tenantKey,
-        siteKey,
-        draftId: null,
-        status: "OPEN",
-        appType,
-        lastPrompt: prompt,
-        answers: parseAnswersJson(answers),
-        messages: []
-      });
-      await appendBotMessage(session.id, {
-        role: "system",
-        content: `Session started for ${currentPreset.label} with command ${currentPreset.command}.`
-      });
-      await appendBotMessage(session.id, {
-        role: "user",
-        content: prompt
-      });
-      await refreshSessions();
-      setActiveSessionId(session.id);
-    } catch (ex) {
-      setError(ex instanceof Error ? ex.message : "Failed to create session");
-    }
-  }
-
-  async function generateForBot() {
-    setLoading(true);
-    setError(null);
-    try {
-      const parsedAnswers = parseAnswersJson(answers);
-      const generated = await generatePlatformApp({
-        prompt,
-        tenantKey,
-        siteKey,
-        execute: false,
-        answers: {
-          ...parsedAnswers,
-          channel,
-          appType
-        }
-      });
-      setResponse(generated);
-
-      if (activeSession) {
-        const session = await updateBotSession(activeSession.id, {
-          channel,
-          tenantKey,
-          siteKey,
-          appType,
-          title: generated.dsl.app.title ?? activeSession.title,
-          draftId: generated.dsl.app.appKey ?? activeSession.draftId,
-          status: generated.nextQuestions.length ? "WAITING_FOR_ANSWERS" : "RESOLVED",
-          lastPrompt: prompt,
-          answers: parsedAnswers,
-        });
-        if (session) {
-          await appendBotMessage(session.id, {
-            role: "assistant",
-            content: generated.nextQuestions.length
-              ? `I need one more thing: ${generated.nextQuestions[0]}`
-              : `Generated ${generated.dsl.app.title ?? "the app"} and it is ready for review.`
-          });
-          await refreshSessions();
-          setActiveSessionId(session.id);
-        }
-      }
-    } catch (ex) {
-      setError(ex instanceof Error ? ex.message : "Bot generation failed");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function sendMessage() {
-    if (!activeSession || !messageText.trim()) {
-      return;
-    }
-    await appendBotMessage(activeSession.id, {
-      role: "user",
-      content: messageText.trim()
-    });
-    await updateBotSession(activeSession.id, {
-      lastPrompt: messageText.trim(),
-      status: "OPEN"
-    });
-    setMessageText("");
-    await refreshSessions();
-  }
+export default function BotExperiencePage() {
+  const { locale } = usePanel();
 
   return (
-    <AppShell
-      title="Bot Adapter Flow"
-      subtitle="Use the same orchestration endpoint from Telegram or Bale conversations."
+    <PanelShell
+      activeKey="integrations"
+      title="Bot Experience"
+      titleFa="تجربه بات"
+      subtitle="Preview how customers experience Telegram and Bale journeys powered by Cyan."
+      subtitleFa="تجربه مشتری در تلگرام و بله را که با Cyan مدیریت می‌شود، پیش‌نمایش کنید."
     >
-      <div className="studio-grid">
-        <section className="panel rail">
-          <div className="editor-toolbar">
-            <div>
-              <p className="section-title">Sessions</p>
-              <div className="meta">Resume bot threads across Telegram and Bale.</div>
-            </div>
-            <button type="button" className="btn" onClick={createThread}>
-              Start thread
-            </button>
-          </div>
-
-          <div className="draft-list" style={{ marginBottom: 20 }}>
-            {sessions.map((session) => (
-              <button
-                key={session.id}
-                type="button"
-                className={`draft-item ${activeSessionId === session.id ? "active" : ""}`}
-                onClick={() => {
-                  setActiveSessionId(session.id);
-                  setChannel(session.channel);
-                  setTenantKey(session.tenantKey);
-                  setSiteKey(session.siteKey);
-                  setPrompt(session.lastPrompt);
-                  setAnswers(JSON.stringify(session.answers, null, 2));
-                }}
-              >
-                <strong>
-                  <span>{session.title}</span>
-                  <span className="muted">{session.channel}</span>
-                </strong>
-                <span className="muted">{session.status}</span>
-                <span className="muted">{session.tenantKey} / {session.siteKey}</span>
-              </button>
-            ))}
-          </div>
-
-          <p className="section-title">Conversation builder</p>
-          <div className="form-grid">
-            <div className="field">
-              <label>Channel</label>
-              <div className="chip-row">
-                {(["telegram", "bale"] as const).map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    className={`chip ${channel === item ? "active" : ""}`}
-                    onClick={() => setChannel(item)}
-                  >
-                    {channelPresets[item].label}
-                  </button>
-                ))}
+      <div className="page-grid">
+        <section className="panel-card">
+          <div className="two-column-grid">
+            <article className="preview-frame">
+              <div className="card-title-row">
+                <h3>Telegram</h3>
+                <span className="status-pill success">{locale === "fa" ? "زنده" : "Live"}</span>
               </div>
-            </div>
-
-            <div className="field-grid">
-              <div className="field">
-                <label htmlFor="botTenant">Tenant key</label>
-                <input id="botTenant" value={tenantKey} onChange={(event) => setTenantKey(event.target.value)} />
+              <div className="activity-list" style={{ marginTop: 16 }}>
+                <div className="chat-message">
+                  <strong>{locale === "fa" ? "سلام، من بات فروشگاه هستم." : "Hi, I'm Acme Store Bot."}</strong>
+                  <div className="muted-block">{locale === "fa" ? "چطور کمکتان کنم؟" : "How can I help you today?"}</div>
+                </div>
+                <div className="pill-row">
+                  <span className="pill">{locale === "fa" ? "پیگیری سفارش" : "Track order"}</span>
+                  <span className="pill">{locale === "fa" ? "مرور محصولات" : "Browse products"}</span>
+                </div>
+                <div className="chat-message outbound">
+                  <strong>{locale === "fa" ? "پیگیری سفارش #ACM12345" : "Track my order #ACM12345"}</strong>
+                </div>
+                <div className="chat-message">
+                  <strong>{locale === "fa" ? "سفارش در مسیر است" : "Your order is in transit"}</strong>
+                  <div className="muted-block">{locale === "fa" ? "تحویل فردا" : "Arriving tomorrow"}</div>
+                </div>
               </div>
-              <div className="field">
-                <label htmlFor="botSite">Site key</label>
-                <input id="botSite" value={siteKey} onChange={(event) => setSiteKey(event.target.value)} />
+            </article>
+
+            <article className="preview-frame" style={{ background: "linear-gradient(180deg, rgba(255,246,252,0.96), rgba(255,250,253,0.96))" }}>
+              <div className="card-title-row">
+                <h3>Bale</h3>
+                <span className="status-pill success">{locale === "fa" ? "زنده" : "Live"}</span>
               </div>
-            </div>
-
-            <div className="field">
-              <label htmlFor="botPrompt">User message</label>
-              <textarea id="botPrompt" value={prompt} onChange={(event) => setPrompt(event.target.value)} />
-            </div>
-
-            <div className="field">
-              <label htmlFor="botAnswers">Structured answers JSON</label>
-              <textarea id="botAnswers" value={answers} onChange={(event) => setAnswers(event.target.value)} />
-            </div>
-
-            <div className="hero-actions">
-              <button type="button" className="btn" onClick={generateForBot} disabled={loading}>
-                {loading ? "Generating bot payload..." : `Generate ${currentPreset.label} payload`}
-              </button>
-              <button type="button" className="ghost-btn" onClick={sendMessage} disabled={!activeSession}>
-                Send message to thread
-              </button>
-            </div>
-
-            <div className="field">
-              <label htmlFor="botMessage">Thread message</label>
-              <textarea id="botMessage" value={messageText} onChange={(event) => setMessageText(event.target.value)} />
-            </div>
-
-            {error ? (
-              <div className="result-card" style={{ borderColor: "rgba(255, 127, 127, 0.35)" }}>
-                <h4>Bot flow error</h4>
-                <p className="muted">{error}</p>
+              <div className="activity-list" style={{ marginTop: 16 }}>
+                <div className="chat-message">
+                  <strong>{locale === "fa" ? "چطور می‌توانیم کمک کنیم؟" : "How can we assist you today?"}</strong>
+                </div>
+                <div className="pill-row">
+                  <span className="pill">{locale === "fa" ? "درخواست مرجوعی" : "Request return"}</span>
+                  <span className="pill">{locale === "fa" ? "تعویض کالا" : "Replace item"}</span>
+                </div>
+                <div className="chat-message outbound">
+                  <strong>{locale === "fa" ? "کالای اشتباه دریافت کردم." : "I received the wrong item."}</strong>
+                </div>
               </div>
-            ) : null}
+            </article>
           </div>
         </section>
 
-        <aside className="sidebar">
-          <section className="panel rail">
-            <p className="section-title">Adapter hints</p>
-            <div className="timeline">
-              <div className="timeline-step">
-                <strong>Command</strong>
-                <span>{currentPreset.command}</span>
-              </div>
-              <div className="timeline-step">
-                <strong>Flow</strong>
-                <span>{currentPreset.help}</span>
-              </div>
-              <div className="timeline-step">
-                <strong>Backend</strong>
-                <span>Both Telegram and Bale should call the same orchestrator endpoint.</span>
-              </div>
-              <div className="timeline-step">
-                <strong>Active thread</strong>
-                <span>{activeSession?.title ?? "none"}</span>
-              </div>
+        <aside className="panel-card">
+          <div className="card-title-row">
+            <h3>{locale === "fa" ? "قابلیت‌های بات" : "Bot capabilities"}</h3>
+          </div>
+          <div className="detail-list" style={{ marginTop: 16 }}>
+            <div className="detail-item">
+              <strong>{locale === "fa" ? "پاسخ هوشمند" : "AI replies"}</strong>
+              <span className="muted-block">{locale === "fa" ? "پاسخ فوری بر پایه داده‌ها و دستورها" : "Instant replies using your data and instructions."}</span>
             </div>
-          </section>
-
-          <section className="panel rail">
-            <p className="section-title">Generated bot payload</p>
-            {activeSession ? (
-              <div className="editor-toolbar" style={{ marginBottom: 16 }}>
-                <div className="meta">Thread id: {activeSession.id}</div>
-                <Link href={`/bot/${activeSession.id}`} className="ghost-btn">
-                  Open thread
-                </Link>
-              </div>
-            ) : null}
-            {response ? (
-              <div className="result-grid">
-                <div className="result-card">
-                  <h4>{response.dsl.app.title ?? "Generated app"}</h4>
-                  <p className="muted">
-                    {response.dsl.delivery.botApis.length} bot endpoints are available for chat adapter wiring.
-                  </p>
-                </div>
-                <div className="result-card">
-                  <h4>Chat response</h4>
-                  {response.nextQuestions.length ? (
-                    <ul className="result-list">
-                      {response.nextQuestions.map((question) => (
-                        <li key={question}>{question}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="muted">The bot can proceed directly to the next step.</p>
-                  )}
-                </div>
-                <div className="result-card">
-                  <h4>Delivery endpoints</h4>
-                  <ul className="result-list">
-                    {response.dsl.delivery.botApis.map((api) => (
-                      <li key={api}>{api}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            ) : (
-              <p className="muted">Generate a bot payload to preview how the orchestrator should answer chat-based app requests.</p>
-            )}
-            <div className="result-card" style={{ marginTop: 16 }}>
-              <h4>Workflow designer</h4>
-              <div className="form-grid">
-                <div className="field">
-                  <label>Welcome reply</label>
-                  <textarea value={welcomeReply} onChange={(event) => setWelcomeReply(event.target.value)} />
-                </div>
-                <div className="field-grid">
-                  <div className="field">
-                    <label>BPM flow key</label>
-                    <input value={bpmFlowKey} onChange={(event) => setBpmFlowKey(event.target.value)} />
-                  </div>
-                  <div className="field">
-                    <label>Automation flow key</label>
-                    <input value={automationFlowKey} onChange={(event) => setAutomationFlowKey(event.target.value)} />
-                  </div>
-                </div>
-                <div className="field-grid">
-                  <div className="field">
-                    <label>Notification template</label>
-                    <input value={notificationTemplateKey} onChange={(event) => setNotificationTemplateKey(event.target.value)} />
-                  </div>
-                  <div className="field">
-                    <label>Mini app build key</label>
-                    <input value={miniAppBuildKey} onChange={(event) => setMiniAppBuildKey(event.target.value)} />
-                  </div>
-                </div>
-              </div>
-              <pre className="json-view">{JSON.stringify(botWorkflowContract, null, 2)}</pre>
+            <div className="detail-item">
+              <strong>{locale === "fa" ? "هندآف فلو" : "Workflow handoff"}</strong>
+              <span className="muted-block">{locale === "fa" ? "انتقال درخواست پیچیده به تیم یا عامل درست" : "Escalates complex requests to the right team or agent."}</span>
             </div>
-          </section>
+            <div className="detail-item">
+              <strong>{locale === "fa" ? "فرم‌های هوشمند" : "Smart forms"}</strong>
+              <span className="muted-block">{locale === "fa" ? "جمع‌آوری ساختاریافته اطلاعات" : "Collects structured information with dynamic forms."}</span>
+            </div>
+          </div>
         </aside>
       </div>
-
-      <section style={{ padding: "24px" }}>
-        <p className="section-title">Bot DSL preview</p>
-        <pre className="json-view">
-{JSON.stringify(
-  response?.dsl ?? {
-    app: {
-      appKey: "bot-preview",
-      title: "Bot Preview",
-      type: appType,
-      tenantKey,
-      siteKey,
-      capabilities: ["website", "shop"]
-    },
-    entities: [],
-    routes: [],
-    flows: [],
-    delivery: {
-      publicApis: ["/public/storefront/render?path=/"],
-      botApis: ["/api/content-service/**", "/api/catalog-service/**"]
-    },
-    manualActions: []
-  },
-  null,
-  2
-)}
-        </pre>
-      </section>
-    </AppShell>
+    </PanelShell>
   );
 }

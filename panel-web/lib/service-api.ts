@@ -31,15 +31,21 @@ type ScopedRequest = {
 };
 
 async function requestJson<T>(serviceKey: ServiceKey, path: string, init?: RequestInit & ScopedRequest): Promise<T> {
+  const headers = new Headers(init?.headers);
+  headers.set("Content-Type", "application/json");
+  for (const [key, value] of Object.entries(platformAuthHeaders())) {
+    headers.set(key, value);
+  }
+  if (init?.tenantKey) {
+    headers.set("X-Tenant-Key", init.tenantKey);
+  }
+  if (init?.siteKey) {
+    headers.set("X-Site-Key", init.siteKey);
+  }
+
   const response = await fetch(`/api/platform/service/${serviceKey}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...platformAuthHeaders(),
-      ...(init?.tenantKey ? { "X-Tenant-Key": init.tenantKey } : {}),
-      ...(init?.siteKey ? { "X-Site-Key": init.siteKey } : {}),
-      ...(init?.headers ?? {})
-    },
+    headers,
     cache: "no-store"
   });
 

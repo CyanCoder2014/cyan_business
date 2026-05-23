@@ -1,470 +1,162 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { AppShell } from "@/components/app-shell";
-import { listBotIntegrations, listBotMessages, listMiniAppBuilds, publishMiniAppBuild, registerBotWebhook, retryBotMessage, sendBotMessage, upsertBotIntegration, upsertMiniAppBuild } from "@/lib/platform-api";
+import { useEffect, useState } from "react";
+import { PanelShell } from "@/components/panel-shell";
+import { usePanel } from "@/components/panel-provider";
+import { listBotIntegrations, listBotMessages, listMiniAppBuilds } from "@/lib/platform-api";
 import type { BotChannelIntegration, BotMiniAppBuild, BotOutboundMessage } from "@/lib/types";
 
-const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
-
 export default function IntegrationsPage() {
-  const [channel, setChannel] = useState<"TELEGRAM" | "BALE">("TELEGRAM");
-  const [integrationKey, setIntegrationKey] = useState("retail-bot");
-  const [tenantKey, setTenantKey] = useState("tenant-demo");
-  const [siteKey, setSiteKey] = useState("site-commerce");
-  const [clientKey, setClientKey] = useState("client-demo");
-  const [appTypeHint, setAppTypeHint] = useState("MIXED_BUSINESS_APP");
-  const [botId, setBotId] = useState("");
-  const [botUsername, setBotUsername] = useState("retail_demo_bot");
-  const [botToken, setBotToken] = useState("");
-  const [tokenSecretRef, setTokenSecretRef] = useState("vault://bots/retail-demo");
-  const [webhookSecret, setWebhookSecret] = useState("");
-  const [miniAppEnabled, setMiniAppEnabled] = useState(false);
-  const [miniAppUrl, setMiniAppUrl] = useState("");
-  const [miniAppStartParam, setMiniAppStartParam] = useState("");
-  const [testChatId, setTestChatId] = useState("");
-  const [testMessage, setTestMessage] = useState("Panel test message from bot-adapter-service.");
+  const { locale } = usePanel();
   const [integrations, setIntegrations] = useState<BotChannelIntegration[]>([]);
   const [messages, setMessages] = useState<BotOutboundMessage[]>([]);
-  const [miniAppBuilds, setMiniAppBuilds] = useState<BotMiniAppBuild[]>([]);
-  const [miniAppBuildKey, setMiniAppBuildKey] = useState("retail-mini-app");
-  const [miniAppTitle, setMiniAppTitle] = useState("Retail Demo Mini App");
-  const [miniAppManifestJson, setMiniAppManifestJson] = useState('{\n  "entry": "/start",\n  "pages": ["/", "/products", "/checkout"]\n}');
-  const [status, setStatus] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const webhookUrl = useMemo(
-    () => `${platformBaseUrl}/public/bot-adapter/${channel.toLowerCase()}/${integrationKey}/webhook`,
-    [channel, integrationKey]
-  );
-  const miniAppLaunchUrl = useMemo(() => {
-    if (!miniAppEnabled || !miniAppUrl.trim()) {
-      return null;
-    }
-    try {
-      const url = new URL(miniAppUrl);
-      if (miniAppStartParam.trim()) {
-        url.searchParams.set("startapp", miniAppStartParam.trim());
-      }
-      return url.toString();
-    } catch {
-      return "Invalid mini app URL";
-    }
-  }, [miniAppEnabled, miniAppStartParam, miniAppUrl]);
-
-  async function refresh() {
-    setLoading(true);
-    setStatus(null);
-    try {
-      setIntegrations(await listBotIntegrations({ tenantKey, siteKey }));
-      setMessages(await listBotMessages({ tenantKey, siteKey, integrationKey }));
-      setMiniAppBuilds(await listMiniAppBuilds({ tenantKey, siteKey }));
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to load bot integrations");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [miniApps, setMiniApps] = useState<BotMiniAppBuild[]>([]);
 
   useEffect(() => {
-    refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    Promise.all([
+      listBotIntegrations({ tenantKey: "tenant-demo", siteKey: "site-commerce" }).catch(() => []),
+      listBotMessages({ tenantKey: "tenant-demo", siteKey: "site-commerce" }).catch(() => []),
+      listMiniAppBuilds({ tenantKey: "tenant-demo", siteKey: "site-commerce" }).catch(() => [])
+    ]).then(([integrationItems, messageItems, miniAppItems]) => {
+      setIntegrations(integrationItems);
+      setMessages(messageItems);
+      setMiniApps(miniAppItems);
+    });
   }, []);
 
-  async function saveIntegration() {
-    setLoading(true);
-    setStatus(null);
-    try {
-      await upsertBotIntegration({
-        channel,
-        integrationKey,
-        tenantKey,
-        siteKey,
-        clientKey,
-        appTypeHint,
-        botId,
-        botUsername,
-        botToken,
-        tokenSecretRef,
-        webhookSecret,
-        miniAppEnabled,
-        miniAppUrl,
-        miniAppStartParam,
-        active: true
-      });
-      setBotToken("");
-      await refresh();
-      setStatus("Bot integration saved. Register the generated webhook URL with the channel provider.");
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to save bot integration");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function registerWebhookNow() {
-    setLoading(true);
-    setStatus(null);
-    try {
-      const result = await registerBotWebhook(channel, integrationKey);
-      setStatus(`Webhook registration requested for ${result.channel}. Target URL: ${result.webhookUrl}`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to register webhook");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function sendTestMessage() {
-    setLoading(true);
-    setStatus(null);
-    try {
-      const result = await sendBotMessage({
-        channel,
-        integrationKey,
-        externalChatId: testChatId,
-        text: testMessage
-      });
-      await refresh();
-      setStatus(`Outbound message ${result.status.toLowerCase()} via ${result.provider} to chat ${result.externalChatId}. Delivery ${result.deliveryId}.`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to send outbound bot message");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function retryMessage(messageId: string) {
-    setLoading(true);
-    setStatus(null);
-    try {
-      const result = await retryBotMessage(messageId);
-      await refresh();
-      setStatus(`Retry ${result.status.toLowerCase()} for delivery ${result.deliveryId}. Attempt ${result.attemptCount}.`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to retry outbound message");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function saveMiniAppBuild() {
-    setLoading(true);
-    setStatus(null);
-    try {
-      await upsertMiniAppBuild({
-        channel,
-        integrationKey,
-        buildKey: miniAppBuildKey,
-        title: miniAppTitle,
-        launchUrl: miniAppLaunchUrl ?? miniAppUrl,
-        manifest: miniAppManifestJson.trim() ? JSON.parse(miniAppManifestJson) : {}
-      });
-      await refresh();
-      setStatus(`Mini app build ${miniAppBuildKey} saved.`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to save mini app build");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function publishMiniApp() {
-    setLoading(true);
-    setStatus(null);
-    try {
-      const build = await publishMiniAppBuild(channel, integrationKey, miniAppBuildKey);
-      await refresh();
-      setStatus(`Mini app ${build.buildKey} published to ${build.publishedUrl ?? build.launchUrl ?? "runtime URL"}.`);
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Failed to publish mini app build");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const cards = integrations.length ? integrations : fallbackIntegrations;
+  const selected = cards[0];
 
   return (
-    <AppShell title="Client Apps And Bots" subtitle="Manage every presentation channel attached to a generated business app.">
-      <div className="studio-grid">
-        <section className="panel rail">
-          <div className="editor-toolbar">
-            <div>
-              <p className="section-title">Telegram/Bale integration</p>
-              <div className="meta">Stores token references only. Webhooks are idempotently forwarded to AI sessions.</div>
+    <PanelShell
+      activeKey="integrations"
+      title="Client Apps / Bots"
+      titleFa="اپ‌ها / بات‌های مشتری"
+      subtitle="Connect and manage website, Telegram, Bale, mini-app, and mobile channels from one operational control room."
+      subtitleFa="وب‌سایت، تلگرام، بله، مینی‌اپ و کانال‌های موبایل را از یک اتاق فرمان واحد متصل و مدیریت کنید."
+    >
+      <div className="page-grid">
+        <section className="panel-card">
+          <div className="toolbar-row">
+            <div className="pill-row">
+              <span className="status-pill success">{locale === "fa" ? "AI Orchestrator سالم" : "AI Orchestrator healthy"}</span>
+              <span className="status-pill success">{locale === "fa" ? "اعلان سالم" : "Notifications healthy"}</span>
+              <span className="status-pill success">{locale === "fa" ? "BPM سالم" : "BPM healthy"}</span>
             </div>
-            <Link className="ghost-btn" href="/bot">
-              Open bot flow
-            </Link>
+            <button type="button" className="secondary-pill">
+              {locale === "fa" ? "افزودن کانال" : "Add channel"}
+            </button>
           </div>
 
-          <div className="form-grid">
-            <div className="field">
-              <label>Channel</label>
-              <div className="chip-row">
-                {(["TELEGRAM", "BALE"] as const).map((item) => (
-                  <button key={item} type="button" className={`chip ${channel === item ? "active" : ""}`} onClick={() => setChannel(item)}>
-                    {item}
+          <div className="blueprint-grid" style={{ marginTop: 18 }}>
+            {cards.map((integration) => (
+              <article key={integration.integrationKey} className="channel-card">
+                <strong>{integration.channel === "TELEGRAM" ? "Telegram Bot" : integration.channel === "BALE" ? "Bale Bot" : integration.integrationKey}</strong>
+                <div className="muted-block">{integration.active ? (locale === "fa" ? "متصل" : "Connected") : locale === "fa" ? "در انتظار" : "Pending"}</div>
+                <div className="toolbar-row" style={{ marginTop: 16 }}>
+                  <span className="pill">{integration.active ? "Production" : "Staging"}</span>
+                  <button type="button" className="primary-pill">
+                    {locale === "fa" ? "باز کردن" : "Open"}
                   </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="field-grid">
-              <div className="field">
-                <label htmlFor="integrationKey">Integration key</label>
-                <input id="integrationKey" value={integrationKey} onChange={(event) => setIntegrationKey(event.target.value)} />
-              </div>
-              <div className="field">
-                <label htmlFor="botId">Bot id</label>
-                <input id="botId" value={botId} onChange={(event) => setBotId(event.target.value)} placeholder="123456789" />
-              </div>
-            </div>
-
-            <div className="field-grid">
-              <div className="field">
-                <label htmlFor="botUsername">Bot username</label>
-                <input id="botUsername" value={botUsername} onChange={(event) => setBotUsername(event.target.value)} />
-              </div>
-              <div className="field">
-                <label htmlFor="botToken">Bot token/key</label>
-                <input
-                  id="botToken"
-                  value={botToken}
-                  onChange={(event) => setBotToken(event.target.value)}
-                  placeholder="Write-only; not returned by API"
-                />
-              </div>
-            </div>
-
-            <div className="field-grid">
-              <div className="field">
-                <label htmlFor="tenantKey">Tenant key</label>
-                <input id="tenantKey" value={tenantKey} onChange={(event) => setTenantKey(event.target.value)} />
-              </div>
-              <div className="field">
-                <label htmlFor="siteKey">Site key</label>
-                <input id="siteKey" value={siteKey} onChange={(event) => setSiteKey(event.target.value)} />
-              </div>
-            </div>
-
-            <div className="field-grid">
-              <div className="field">
-                <label htmlFor="clientKey">Client key</label>
-                <input id="clientKey" value={clientKey} onChange={(event) => setClientKey(event.target.value)} />
-              </div>
-              <div className="field">
-                <label htmlFor="appTypeHint">App type hint</label>
-                <input id="appTypeHint" value={appTypeHint} onChange={(event) => setAppTypeHint(event.target.value)} />
-              </div>
-            </div>
-
-            <div className="field">
-              <label htmlFor="tokenSecretRef">Token secret reference</label>
-              <input id="tokenSecretRef" value={tokenSecretRef} onChange={(event) => setTokenSecretRef(event.target.value)} />
-            </div>
-
-            <div className="field">
-              <label htmlFor="webhookSecret">Webhook secret</label>
-              <input id="webhookSecret" value={webhookSecret} onChange={(event) => setWebhookSecret(event.target.value)} />
-            </div>
-
-            <div className="field">
-              <label>Mini app</label>
-              <button type="button" className={`chip ${miniAppEnabled ? "active" : ""}`} onClick={() => setMiniAppEnabled((value) => !value)}>
-                {miniAppEnabled ? "Mini app enabled" : "Mini app disabled"}
-              </button>
-            </div>
-
-            <div className="field-grid">
-              <div className="field">
-                <label htmlFor="miniAppUrl">Mini app URL</label>
-                <input id="miniAppUrl" value={miniAppUrl} onChange={(event) => setMiniAppUrl(event.target.value)} />
-              </div>
-              <div className="field">
-                <label htmlFor="miniAppStartParam">Mini app start param</label>
-                <input id="miniAppStartParam" value={miniAppStartParam} onChange={(event) => setMiniAppStartParam(event.target.value)} />
-              </div>
-            </div>
-
-            <div className="result-card">
-              <h4>Webhook URL</h4>
-              <p className="muted">{webhookUrl}</p>
-            </div>
-
-            <div className="result-card">
-              <h4>Mini app launch URL</h4>
-              <p className="muted">{miniAppLaunchUrl ?? "Enable mini app and provide a URL to generate a launch link."}</p>
-            </div>
-
-            <div className="result-card">
-              <h4>Mini app runtime build</h4>
-              <div className="form-grid">
-                <div className="field-grid">
-                  <div className="field">
-                    <label>Build key</label>
-                    <input value={miniAppBuildKey} onChange={(event) => setMiniAppBuildKey(event.target.value)} />
-                  </div>
-                  <div className="field">
-                    <label>Title</label>
-                    <input value={miniAppTitle} onChange={(event) => setMiniAppTitle(event.target.value)} />
-                  </div>
                 </div>
-                <div className="field">
-                  <label>Manifest JSON</label>
-                  <textarea value={miniAppManifestJson} onChange={(event) => setMiniAppManifestJson(event.target.value)} />
+              </article>
+            ))}
+            {!cards.find((item) => item.integrationKey === "mini-app") ? (
+              <article className="channel-card">
+                <strong>{locale === "fa" ? "مینی‌اپ" : "Mini App"}</strong>
+                <div className="muted-block">
+                  {miniApps.length ? `${miniApps.length} builds` : locale === "fa" ? "آماده راه‌اندازی" : "Provision-ready"}
                 </div>
-                <div className="hero-actions">
-                  <button type="button" className="btn" onClick={saveMiniAppBuild} disabled={loading || !miniAppEnabled}>Save mini app build</button>
-                  <button type="button" className="ghost-btn" onClick={publishMiniApp} disabled={loading || !miniAppEnabled}>Publish mini app</button>
-                </div>
-              </div>
-            </div>
-
-            <div className="hero-actions">
-              <button type="button" className="btn" onClick={saveIntegration} disabled={loading}>
-                {loading ? "Saving..." : "Save integration"}
-              </button>
-              <button type="button" className="ghost-btn" onClick={registerWebhookNow} disabled={loading}>
-                Register webhook
-              </button>
-              <button type="button" className="ghost-btn" onClick={refresh} disabled={loading}>
-                Refresh
-              </button>
-            </div>
-
-            <div className="result-card">
-              <h4>Outbound test message</h4>
-              <div className="form-grid">
-                <div className="field">
-                  <label htmlFor="testChatId">External chat id</label>
-                  <input id="testChatId" value={testChatId} onChange={(event) => setTestChatId(event.target.value)} placeholder="Telegram/Bale chat id" />
-                </div>
-                <div className="field">
-                  <label htmlFor="testMessage">Message text</label>
-                  <textarea id="testMessage" value={testMessage} onChange={(event) => setTestMessage(event.target.value)} />
-                </div>
-                <button type="button" className="btn" onClick={sendTestMessage} disabled={loading || !testChatId.trim()}>
-                  Send test message
-                </button>
-              </div>
-            </div>
-
-            {status ? (
-              <div className="result-card">
-                <h4>Status</h4>
-                <p className="muted">{status}</p>
-              </div>
+              </article>
             ) : null}
+          </div>
+
+          <div className="data-table-shell" style={{ marginTop: 18 }}>
+            <div className="card-title-row">
+              <h3>{locale === "fa" ? "ارسال پیام‌های خروجی" : "Outbound message delivery"}</h3>
+            </div>
+            <table className="data-table" style={{ marginTop: 12 }}>
+              <thead>
+                <tr>
+                  <th>{locale === "fa" ? "کانال" : "Channel"}</th>
+                  <th>{locale === "fa" ? "گیرنده" : "Recipient"}</th>
+                  <th>{locale === "fa" ? "پیام" : "Message"}</th>
+                  <th>{locale === "fa" ? "وضعیت" : "Status"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(messages.length ? messages : fallbackMessages).slice(0, 5).map((message) => (
+                  <tr key={`${message.integrationKey}-${message.externalChatId}-${message.text}`}>
+                    <td>{message.channel}</td>
+                    <td>{message.externalChatId}</td>
+                    <td>{message.text}</td>
+                    <td>{message.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </section>
 
-        <aside className="sidebar">
-          <section className="panel rail">
-            <p className="section-title">Saved bot integrations</p>
-            <div className="draft-list">
-              {integrations.map((integration) => (
-                <button
-                  key={`${integration.channel}-${integration.integrationKey}`}
-                  type="button"
-                  className="draft-item"
-                  onClick={() => {
-                    setChannel(integration.channel);
-                    setIntegrationKey(integration.integrationKey);
-                    setTenantKey(integration.tenantKey);
-                    setSiteKey(integration.siteKey);
-                    setClientKey(integration.clientKey ?? "");
-                    setAppTypeHint(integration.appTypeHint ?? "");
-                    setBotId(integration.botId ?? "");
-                    setBotUsername(integration.botUsername ?? "");
-                    setBotToken("");
-                    setTokenSecretRef(integration.tokenSecretRef ?? "");
-                    setWebhookSecret(integration.webhookSecret ?? "");
-                    setMiniAppEnabled(Boolean(integration.miniAppEnabled));
-                    setMiniAppUrl(integration.miniAppUrl ?? "");
-                    setMiniAppStartParam(integration.miniAppStartParam ?? "");
-                  }}
-                >
-                  <strong>
-                    <span>{integration.integrationKey}</span>
-                    <span className="muted">{integration.channel}</span>
-                  </strong>
-                  <span className="muted">{integration.tenantKey} / {integration.siteKey}</span>
-                  <span className="muted">
-                    {integration.active ? "active" : "inactive"} / {integration.miniAppEnabled ? "mini app" : "bot only"}
-                  </span>
-                  <span className="muted">{integration.tokenFingerprint ? `token ${integration.tokenFingerprint}` : "token ref only"}</span>
-                  <span className="muted">{integration.miniAppUrl ? `mini app ${integration.miniAppUrl}` : "mini app not set"}</span>
-                </button>
-              ))}
+        <aside className="panel-card">
+          <div className="card-title-row">
+            <h3>{selected.channel === "TELEGRAM" ? "Telegram Bot" : "Bale Bot"}</h3>
+            <span className="status-pill success">{locale === "fa" ? "متصل" : "Connected"}</span>
+          </div>
+          <div className="detail-list" style={{ marginTop: 16 }}>
+            <div className="detail-item">
+              <strong>{locale === "fa" ? "نام ربات" : "Bot name"}</strong>
+              <span className="muted-block">{selected.botUsername ?? "@cyan_assistant_bot"}</span>
             </div>
-          </section>
-
-          <section className="panel rail">
-            <p className="section-title">Outbound deliveries</p>
-            <div className="draft-list">
-              {messages.map((message) => (
-                <div key={message.id} className="draft-item">
-                  <strong>
-                    <span>{message.integrationKey}</span>
-                    <span className="muted">{message.status}</span>
-                  </strong>
-                  <span className="muted">chat {message.externalChatId} / attempts {message.attemptCount}</span>
-                  <span className="muted">{message.text}</span>
-                  <span className="muted">{message.errorMessage ?? "Delivered or pending without provider error."}</span>
-                  <button
-                    type="button"
-                    className="chip"
-                    onClick={() => message.id && retryMessage(message.id)}
-                    disabled={loading || !message.id}
-                  >
-                    Retry
-                  </button>
-                </div>
-              ))}
+            <div className="detail-item">
+              <strong>{locale === "fa" ? "آخرین همگام‌سازی" : "Last sync"}</strong>
+              <span className="muted-block">{selected.updatedAt ?? (locale === "fa" ? "۱ دقیقه پیش" : "1 minute ago")}</span>
             </div>
-          </section>
-
-          <section className="panel rail">
-            <p className="section-title">Mini app builds</p>
-            <div className="draft-list">
-              {miniAppBuilds.map((build) => (
-                <button
-                  key={build.id ?? `${build.channel}-${build.integrationKey}-${build.buildKey}`}
-                  type="button"
-                  className="draft-item"
-                  onClick={() => {
-                    setChannel(build.channel);
-                    setIntegrationKey(build.integrationKey);
-                    setMiniAppBuildKey(build.buildKey);
-                    setMiniAppTitle(build.title ?? build.buildKey);
-                    setMiniAppManifestJson(JSON.stringify(build.manifest ?? {}, null, 2));
-                  }}
-                >
-                  <strong>
-                    <span>{build.buildKey}</span>
-                    <span className="muted">{build.status ?? "DRAFT"}</span>
-                  </strong>
-                  <span className="muted">{build.launchUrl ?? "launch URL missing"}</span>
-                  <span className="muted">{build.publishedUrl ?? "not published"}</span>
-                </button>
-              ))}
+            <div className="detail-item">
+              <strong>{locale === "fa" ? "مینی‌اپ" : "Mini app"}</strong>
+              <span className="muted-block">{selected.miniAppUrl ?? "https://preview.cyan.app/mini-app"}</span>
             </div>
-          </section>
-
-          <section className="panel rail">
-            <p className="section-title">Next channels</p>
-            <div className="mini-grid" style={{ gridTemplateColumns: "1fr" }}>
-              {["Website/PWA publish", "Mobile app shell"].map((title) => (
-                <div key={title} className="mini-card">
-                  <h3>{title}</h3>
-                  <p>Planned after bot, mini app runtime, tenant mapping, and public app contracts are stable.</p>
-                </div>
-              ))}
-            </div>
-          </section>
+          </div>
         </aside>
       </div>
-    </AppShell>
+    </PanelShell>
   );
 }
+
+const fallbackIntegrations: BotChannelIntegration[] = [
+  {
+    channel: "TELEGRAM",
+    integrationKey: "telegram-main",
+    tenantKey: "tenant-demo",
+    siteKey: "site-commerce",
+    botUsername: "@cyan_assistant_bot",
+    active: true
+  },
+  {
+    channel: "BALE",
+    integrationKey: "bale-main",
+    tenantKey: "tenant-demo",
+    siteKey: "site-commerce",
+    botUsername: "@cyan_bale_bot",
+    active: true
+  }
+];
+
+const fallbackMessages: BotOutboundMessage[] = [
+  {
+    channel: "TELEGRAM",
+    integrationKey: "telegram-main",
+    externalChatId: "@john_doe",
+    text: "Order #12345 has been confirmed.",
+    status: "Delivered",
+    attemptCount: 1
+  },
+  {
+    channel: "BALE",
+    integrationKey: "bale-main",
+    externalChatId: "user_98432",
+    text: "Your appointment is scheduled for tomorrow.",
+    status: "Delivered",
+    attemptCount: 1
+  }
+];

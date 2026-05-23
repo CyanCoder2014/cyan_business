@@ -136,6 +136,15 @@ export type DynamicEntityDefinition = {
   active?: boolean;
 };
 
+export type UserSummary = {
+  username: string;
+  email?: string;
+  phoneNumber?: string;
+  mfaEnabled: boolean;
+  roles: string[];
+  active: boolean;
+};
+
 export type DynamicEntityRecord = {
   id?: string;
   serviceKey?: string;
@@ -244,6 +253,48 @@ export type BotMiniAppBuild = {
   manifest?: Record<string, unknown>;
   createdAt?: string;
   updatedAt?: string;
+};
+
+export type RealmSummary = {
+  realmKey: string;
+  displayName: string;
+  description?: string;
+  active: boolean;
+};
+
+export type ClientSummary = {
+  clientId: string;
+  realmKey: string;
+  displayName: string;
+  description?: string;
+  active: boolean;
+  publicClient: boolean;
+  redirectUris: string[];
+};
+
+export type RoleCatalogSummary = {
+  scopeType: string;
+  scopeKey: string;
+  roleKey: string;
+  displayName: string;
+  description?: string;
+  active: boolean;
+  permissions: string[];
+};
+
+export type IamClientAccessSummary = {
+  clientId: string;
+  realmKey: string;
+  clientRoles: string[];
+  clientPermissions: string[];
+};
+
+export type IamUserAccessSummary = {
+  username: string;
+  realmKey: string;
+  realmRoles: string[];
+  realmPermissions: string[];
+  clients: IamClientAccessSummary[];
 };
 
 export type NotificationDispatchResponse = {

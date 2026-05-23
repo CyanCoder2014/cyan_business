@@ -1,5 +1,7 @@
 package com.cyancoder.ssoauth.service;
 
+import com.cyancoder.sso.common.dto.IamClientAccessSummary;
+import com.cyancoder.sso.common.dto.IamUserAccessSummary;
 import com.cyancoder.sso.common.dto.SessionResponse;
 import com.cyancoder.sso.common.dto.TokenResponse;
 import com.cyancoder.sso.common.dto.UserSummary;
@@ -33,12 +35,20 @@ public class JwtTokenService {
         this.refreshTokenService = refreshTokenService;
     }
 
-    public TokenResponse issue(String clientId, UserSummary user, SessionResponse sessionResponse) {
+    public TokenResponse issue(String clientId, UserSummary user, IamUserAccessSummary access, SessionResponse sessionResponse) {
         Instant issuedAt = Instant.now();
         Instant expiresAt = issuedAt.plusSeconds(jwtConfigurationProperties.getTtlSeconds());
 
         Map<String, Object> resourceAccess = new HashMap<>();
-        resourceAccess.put(jwtConfigurationProperties.getAudience(), Map.of("roles", normalizeRoles(user.roles())));
+        access.clients().forEach(client -> resourceAccess.put(client.clientId(), Map.of(
+                "roles", normalizeRoles(client.clientRoles()),
+                "permissions", normalizeRoles(client.clientPermissions())
+        )));
+        IamClientAccessSummary activeClient = access.clients().stream()
+                .filter(client -> clientId.equals(client.clientId()))
+                .findFirst()
+                .orElse(new IamClientAccessSummary(clientId, access.realmKey(), List.of(), List.of()));
+        resourceAccess.put(jwtConfigurationProperties.getAudience(), Map.of("roles", normalizeRoles(activeClient.clientRoles())));
 
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
                 .issuer(jwtConfigurationProperties.getIssuer())
@@ -46,10 +56,14 @@ public class JwtTokenService {
                 .expiresAt(expiresAt)
                 .subject(user.username())
                 .claim("client_id", clientId)
+                .claim("realm", access.realmKey())
                 .claim("preferred_username", user.username())
                 .claim("scope", "openid profile")
                 .claim("session_id", sessionResponse.sessionId())
-                .claim("realm_access", Map.of("roles", normalizeRoles(user.roles())))
+                .claim("realm_access", Map.of(
+                        "roles", normalizeRoles(access.realmRoles()),
+                        "permissions", normalizeRoles(access.realmPermissions())
+                ))
                 .claim("resource_access", resourceAccess)
                 .build();
 

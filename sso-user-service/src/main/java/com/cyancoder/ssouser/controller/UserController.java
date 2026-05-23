@@ -24,6 +24,11 @@ public class UserController {
         return userDirectoryService.register(request);
     }
 
+    @GetMapping
+    public java.util.List<UserSummary> listUsers() {
+        return userDirectoryService.listUsers();
+    }
+
     @GetMapping("/{username}")
     public UserSummary getUser(@PathVariable String username) {
         return userDirectoryService.getUser(username);

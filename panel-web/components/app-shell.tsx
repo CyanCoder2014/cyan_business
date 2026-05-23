@@ -15,6 +15,7 @@ export function AppShell({ title, subtitle, children }: AppShellProps) {
     { href: "/projects", label: "Projects", fa: "پروژه ها" },
     { href: "/projects/new", label: "AI Studio", fa: "استودیو AI" },
     { href: "/maker", label: "Maker", fa: "سازنده" },
+    { href: "/iam", label: "IAM", fa: "دسترسی" },
     { href: "/site-builder", label: "Site", fa: "سایت" },
     { href: "/commerce", label: "Commerce", fa: "تجارت" },
     { href: "/notifications", label: "Notify", fa: "اعلان" },

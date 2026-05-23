@@ -2,6 +2,7 @@ package com.cyancoder.ssoauth.client;
 
 import com.cyancoder.sso.common.dto.PasswordVerificationRequest;
 import com.cyancoder.sso.common.dto.PasswordVerificationResponse;
+import com.cyancoder.sso.common.dto.IamUserAccessSummary;
 import com.cyancoder.sso.common.dto.UserSummary;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -14,4 +15,7 @@ public interface UserClient {
 
     @PostMapping("/api/sso/users/verify-password")
     PasswordVerificationResponse verifyPassword(@RequestBody PasswordVerificationRequest request);
+
+    @GetMapping("/api/sso/iam/users/{username}/access")
+    IamUserAccessSummary resolveAccess(@PathVariable("username") String username, @RequestParam("clientId") String clientId);
 }

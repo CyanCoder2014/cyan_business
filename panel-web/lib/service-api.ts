@@ -1,15 +1,21 @@
 import type {
   AutomationExecution,
+  ClientSummary,
+  IamUserAccessSummary,
   NotificationDispatchResponse,
   PaymentMethodAdmin,
   PaymentMethodRequest,
   PaymentSessionRequest,
   PaymentSessionResponse,
+  RealmSummary,
+  RoleCatalogSummary,
   SearchQueryResponse,
-  SearchSuggestionResponse
+  SearchSuggestionResponse,
+  UserSummary
 } from "@/lib/types";
 
 type ServiceKey =
+  | "sso-user-service"
   | "bot-adapter-service"
   | "storefront-service"
   | "notification-service"
@@ -140,6 +146,127 @@ export function updatePaymentMethod(methodKey: string, request: PaymentMethodReq
 
 export function initiatePaymentSession(request: PaymentSessionRequest) {
   return requestJson<PaymentSessionResponse>("payment-orchestrator-service", "/endpoint/payment-orchestrator/sessions/initiate", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function listIamRealms() {
+  return requestJson<RealmSummary[]>("sso-user-service", "/api/sso/iam/realms", { method: "GET" });
+}
+
+export function upsertIamRealm(request: { realmKey: string; displayName: string; description?: string; active: boolean }) {
+  return requestJson<RealmSummary>("sso-user-service", "/api/sso/iam/realms", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function listIamClients(realmKey?: string) {
+  const suffix = realmKey ? `?realmKey=${encodeURIComponent(realmKey)}` : "";
+  return requestJson<ClientSummary[]>("sso-user-service", `/api/sso/iam/clients${suffix}`, { method: "GET" });
+}
+
+export function upsertIamClient(request: {
+  clientId: string;
+  realmKey: string;
+  displayName: string;
+  description?: string;
+  active: boolean;
+  publicClient: boolean;
+  redirectUris: string[];
+}) {
+  return requestJson<ClientSummary>("sso-user-service", "/api/sso/iam/clients", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function listIamRealmRoles(realmKey: string) {
+  return requestJson<RoleCatalogSummary[]>("sso-user-service", `/api/sso/iam/realm-roles?realmKey=${encodeURIComponent(realmKey)}`, { method: "GET" });
+}
+
+export function upsertIamRealmRole(request: {
+  scopeType: "REALM";
+  scopeKey: string;
+  roleKey: string;
+  displayName: string;
+  description?: string;
+  active: boolean;
+  permissions: string[];
+}) {
+  return requestJson<RoleCatalogSummary>("sso-user-service", "/api/sso/iam/realm-roles", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function listIamClientRoles(clientId: string) {
+  return requestJson<RoleCatalogSummary[]>("sso-user-service", `/api/sso/iam/client-roles?clientId=${encodeURIComponent(clientId)}`, { method: "GET" });
+}
+
+export function upsertIamClientRole(request: {
+  scopeType: "CLIENT";
+  scopeKey: string;
+  roleKey: string;
+  displayName: string;
+  description?: string;
+  active: boolean;
+  permissions: string[];
+}) {
+  return requestJson<RoleCatalogSummary>("sso-user-service", "/api/sso/iam/client-roles", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function listIamMemberships(params?: { username?: string; realmKey?: string }) {
+  const search = new URLSearchParams();
+  if (params?.username) search.set("username", params.username);
+  if (params?.realmKey) search.set("realmKey", params.realmKey);
+  const suffix = search.size ? `?${search.toString()}` : "";
+  return requestJson<Array<{ username: string; realmKey: string; active: boolean; defaultRealm: boolean }>>("sso-user-service", `/api/sso/iam/memberships${suffix}`, { method: "GET" });
+}
+
+export function upsertIamMembership(request: { username: string; realmKey: string; active: boolean; defaultRealm: boolean }) {
+  return requestJson<{ username: string; realmKey: string; active: boolean; defaultRealm: boolean }>("sso-user-service", "/api/sso/iam/memberships", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function assignIamRealmRole(realmKey: string, request: { username: string; roleKey: string }) {
+  return requestJson<IamUserAccessSummary>("sso-user-service", `/api/sso/iam/realms/${encodeURIComponent(realmKey)}/assign-role`, {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function assignIamClientRole(clientId: string, request: { username: string; roleKey: string }) {
+  return requestJson<IamUserAccessSummary>("sso-user-service", `/api/sso/iam/clients/${encodeURIComponent(clientId)}/assign-role`, {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function resolveIamAccess(username: string, clientId?: string) {
+  const suffix = clientId ? `?clientId=${encodeURIComponent(clientId)}` : "";
+  return requestJson<IamUserAccessSummary>("sso-user-service", `/api/sso/iam/users/${encodeURIComponent(username)}/access${suffix}`, { method: "GET" });
+}
+
+export function listIamUsers() {
+  return requestJson<UserSummary[]>("sso-user-service", "/api/sso/users", { method: "GET" });
+}
+
+export function createIamUser(request: {
+  username: string;
+  password: string;
+  email?: string;
+  phoneNumber?: string;
+  mfaEnabled: boolean;
+  roles: string[];
+}) {
+  return requestJson<UserSummary>("sso-user-service", "/api/sso/users", {
     method: "POST",
     body: JSON.stringify(request)
   });

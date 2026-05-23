@@ -90,7 +90,8 @@ public class AuthService {
         SessionResponse sessionResponse = sessionClient.create(
                 new SessionCreateRequest(request.username(), request.clientId(), request.deviceId())
         );
-        return jwtTokenService.issue(request.clientId(), user, sessionResponse);
+        IamUserAccessSummary access = userClient.resolveAccess(user.username(), request.clientId());
+        return jwtTokenService.issue(request.clientId(), user, access, sessionResponse);
     }
 
     public SessionResponse logout(LogoutRequest request) {
@@ -114,7 +115,8 @@ public class AuthService {
         if (sessionResponse == null || !sessionResponse.active()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session inactive");
         }
-        return jwtTokenService.issue(request.clientId(), user, sessionResponse);
+        IamUserAccessSummary access = userClient.resolveAccess(user.username(), request.clientId());
+        return jwtTokenService.issue(request.clientId(), user, access, sessionResponse);
     }
 
     public TokenIntrospectionResponse introspect(TokenIntrospectionRequest request) {

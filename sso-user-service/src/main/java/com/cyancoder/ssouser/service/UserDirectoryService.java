@@ -61,6 +61,10 @@ public class UserDirectoryService {
         return storedUser == null ? null : toSummary(storedUser);
     }
 
+    public List<UserSummary> listUsers() {
+        return storedUserRepository.findAll().stream().map(this::toSummary).toList();
+    }
+
     public PasswordVerificationResponse verifyPassword(String username, String password) {
         StoredUserEntity storedUser = storedUserRepository.findById(username).orElse(null);
         if (storedUser == null || !storedUser.isActive()) {

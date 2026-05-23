@@ -107,11 +107,13 @@ export type DynamicServiceKey =
   | "inventory-service"
   | "report-service"
   | "storefront-service"
+  | "media-service"
   | "cart-service"
   | "checkout-service"
   | "payment-service"
   | "pricing-promotion-service"
   | "notification-service"
+  | "search-index-service"
   | "bpm-service";
 
 export type DynamicEntityTemplate = {
@@ -226,4 +228,97 @@ export type BotOutboundMessage = {
   updatedAt?: string;
   lastAttemptAt?: string;
   deliveredAt?: string;
+};
+
+export type BotMiniAppBuild = {
+  id?: string;
+  channel: "TELEGRAM" | "BALE";
+  integrationKey: string;
+  buildKey: string;
+  tenantKey?: string;
+  siteKey?: string;
+  title?: string;
+  status?: string;
+  launchUrl?: string;
+  publishedUrl?: string;
+  manifest?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type NotificationDispatchResponse = {
+  messageKey?: string;
+  status?: string;
+  provider?: string;
+  providerMessageId?: string;
+  details?: string;
+  [key: string]: unknown;
+};
+
+export type SearchQueryResponse = {
+  query?: string;
+  total?: number;
+  page?: number;
+  size?: number;
+  results?: Array<Record<string, unknown>>;
+  [key: string]: unknown;
+};
+
+export type SearchSuggestionResponse = {
+  query?: string;
+  suggestions?: string[];
+  [key: string]: unknown;
+};
+
+export type AutomationExecution = {
+  executionId?: string;
+  automationKey?: string;
+  status?: string;
+  startedAt?: string;
+  finishedAt?: string;
+  [key: string]: unknown;
+};
+
+export type PaymentMethodRequest = {
+  methodKey: string;
+  displayName: string;
+  providerCode: string;
+  region: string;
+  flowType: string;
+  enabled: boolean;
+  active: boolean;
+  priorityOrder: number;
+  supportedCurrencies: string[];
+  configuration: Record<string, unknown>;
+  description?: string;
+};
+
+export type PaymentMethodAdmin = PaymentMethodRequest & {
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type PaymentSessionRequest = {
+  paymentMethodKey: string;
+  orderKey?: string;
+  invoiceKey?: string;
+  customerKey?: string;
+  relatedService?: string;
+  relatedEntityType?: string;
+  relatedEntityKey?: string;
+  amount: number;
+  currency: string;
+  callbackUrl?: string;
+  successUrl?: string;
+  failureUrl?: string;
+  metaData?: Record<string, string>;
+};
+
+export type PaymentSessionResponse = {
+  paymentSessionKey?: string;
+  transactionKey?: string;
+  status?: string;
+  paymentUrl?: string;
+  methodKey?: string;
+  [key: string]: unknown;
 };

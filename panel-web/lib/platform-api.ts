@@ -1,6 +1,7 @@
 import type {
   AppBlueprint,
   BotChannelIntegration,
+  BotMiniAppBuild,
   BotOutboundMessage,
   ClientAppDraft,
   GeneratePlatformAppRequest,
@@ -174,6 +175,40 @@ export function retryBotMessage(messageId: string): Promise<{
   attemptCount: number;
 }> {
   return requestJson(`/endpoint/bot-adapter/messages/${encodeURIComponent(messageId)}/retry`, {
+    method: "POST",
+    body: JSON.stringify({})
+  });
+}
+
+export function listMiniAppBuilds(params?: {
+  tenantKey?: string;
+  siteKey?: string;
+}): Promise<BotMiniAppBuild[]> {
+  const search = new URLSearchParams();
+  if (params?.tenantKey) search.set("tenantKey", params.tenantKey);
+  if (params?.siteKey) search.set("siteKey", params.siteKey);
+  const suffix = search.size ? `?${search.toString()}` : "";
+  return requestJson<BotMiniAppBuild[]>(`/endpoint/bot-adapter/mini-apps${suffix}`, {
+    method: "GET"
+  });
+}
+
+export function upsertMiniAppBuild(request: {
+  channel: "TELEGRAM" | "BALE";
+  integrationKey: string;
+  buildKey: string;
+  title: string;
+  launchUrl: string;
+  manifest: Record<string, unknown>;
+}): Promise<BotMiniAppBuild> {
+  return requestJson<BotMiniAppBuild>("/endpoint/bot-adapter/mini-apps", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function publishMiniAppBuild(channel: "TELEGRAM" | "BALE", integrationKey: string, buildKey: string): Promise<BotMiniAppBuild> {
+  return requestJson<BotMiniAppBuild>(`/endpoint/bot-adapter/mini-apps/${channel}/${integrationKey}/${buildKey}/publish`, {
     method: "POST",
     body: JSON.stringify({})
   });

@@ -37,10 +37,30 @@ export default function BotStudioPage() {
   const [sessions, setSessions] = useState<BotConversationSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("Need a storefront with CRM and invoice workflow.");
+  const [welcomeReply, setWelcomeReply] = useState("Welcome. I can launch the site, open checkout, or collect the next workflow step.");
+  const [bpmFlowKey, setBpmFlowKey] = useState("customer-intake");
+  const [automationFlowKey, setAutomationFlowKey] = useState("welcome-sequence");
+  const [notificationTemplateKey, setNotificationTemplateKey] = useState("welcome-webhook");
+  const [miniAppBuildKey, setMiniAppBuildKey] = useState("retail-mini-app");
 
   const currentPreset = useMemo(() => channelPresets[channel], [channel]);
 
   const activeSession = sessions.find((session) => session.id === activeSessionId) ?? null;
+  const botWorkflowContract = useMemo(
+    () => ({
+      channel,
+      appType,
+      welcomeReply,
+      steps: [
+        { type: "AI_REPLY", reply: welcomeReply },
+        { type: "BPM_FLOW", flowKey: bpmFlowKey, handoffRoute: "/flows" },
+        { type: "AUTOMATION", automationFlowKey },
+        { type: "NOTIFICATION", templateKey: notificationTemplateKey },
+        { type: "MINI_APP", buildKey: miniAppBuildKey }
+      ]
+    }),
+    [appType, automationFlowKey, bpmFlowKey, channel, miniAppBuildKey, notificationTemplateKey, welcomeReply]
+  );
 
   useEffect(() => {
     listBotSessions().then((items) => {
@@ -321,6 +341,36 @@ export default function BotStudioPage() {
             ) : (
               <p className="muted">Generate a bot payload to preview how the orchestrator should answer chat-based app requests.</p>
             )}
+            <div className="result-card" style={{ marginTop: 16 }}>
+              <h4>Workflow designer</h4>
+              <div className="form-grid">
+                <div className="field">
+                  <label>Welcome reply</label>
+                  <textarea value={welcomeReply} onChange={(event) => setWelcomeReply(event.target.value)} />
+                </div>
+                <div className="field-grid">
+                  <div className="field">
+                    <label>BPM flow key</label>
+                    <input value={bpmFlowKey} onChange={(event) => setBpmFlowKey(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label>Automation flow key</label>
+                    <input value={automationFlowKey} onChange={(event) => setAutomationFlowKey(event.target.value)} />
+                  </div>
+                </div>
+                <div className="field-grid">
+                  <div className="field">
+                    <label>Notification template</label>
+                    <input value={notificationTemplateKey} onChange={(event) => setNotificationTemplateKey(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label>Mini app build key</label>
+                    <input value={miniAppBuildKey} onChange={(event) => setMiniAppBuildKey(event.target.value)} />
+                  </div>
+                </div>
+              </div>
+              <pre className="json-view">{JSON.stringify(botWorkflowContract, null, 2)}</pre>
+            </div>
           </section>
         </aside>
       </div>

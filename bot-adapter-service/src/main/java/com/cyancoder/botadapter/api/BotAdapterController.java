@@ -1,6 +1,7 @@
 package com.cyancoder.botadapter.api;
 
 import com.cyancoder.botadapter.domain.BotChannelIntegration;
+import com.cyancoder.botadapter.domain.BotMiniAppBuild;
 import com.cyancoder.botadapter.domain.BotOutboundMessage;
 import com.cyancoder.botadapter.service.BotAdapterService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,6 +59,26 @@ public class BotAdapterController {
     @PostMapping("/endpoint/bot-adapter/messages/{messageId}/retry")
     public RetryOutboundMessageResult retryMessage(@PathVariable String messageId) {
         return botAdapterService.retryOutboundMessage(messageId);
+    }
+
+    @PostMapping("/endpoint/bot-adapter/mini-apps")
+    public BotMiniAppBuild upsertMiniAppBuild(@RequestBody BotMiniAppBuildRequest request) {
+        return botAdapterService.upsertMiniAppBuild(request);
+    }
+
+    @GetMapping("/endpoint/bot-adapter/mini-apps")
+    public List<BotMiniAppBuild> listMiniAppBuilds(
+            @RequestParam(value = "tenantKey", required = false) String tenantKey,
+            @RequestParam(value = "siteKey", required = false) String siteKey
+    ) {
+        return botAdapterService.listMiniAppBuilds(tenantKey, siteKey);
+    }
+
+    @PostMapping("/endpoint/bot-adapter/mini-apps/{channel}/{integrationKey}/{buildKey}/publish")
+    public BotMiniAppBuild publishMiniAppBuild(@PathVariable String channel,
+                                               @PathVariable String integrationKey,
+                                               @PathVariable String buildKey) {
+        return botAdapterService.publishMiniAppBuild(channel, integrationKey, buildKey);
     }
 
     @PostMapping("/public/bot-adapter/{channel}/{integrationKey}/webhook")

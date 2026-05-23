@@ -23,22 +23,33 @@ public class StorefrontRouteService {
     }
 
     public ResolvedRouteResponse resolve(String path, DynamicScope scope) {
+        return resolve(path, null, scope);
+    }
+
+    public ResolvedRouteResponse resolve(String path, String host, DynamicScope scope) {
         String normalizedPath = normalizePath(path);
+        Map<String, Object> binding = resolveDomainBinding(host, normalizedPath, scope);
+        String resolvedPath = firstNonBlank(binding.get("targetPath"), normalizedPath);
+        String routeKey = Objects.toString(binding.get("routeKey"), "");
         DynamicEntityRecordDocument route = dynamicRuntimeService.listRecords("site-route", scope).stream()
                 .filter(record -> "ACTIVE".equalsIgnoreCase(record.getStatus()))
                 .filter(record -> "PUBLISHED".equalsIgnoreCase(Objects.toString(recordData(record).get("publicationStatus"), "")))
-                .filter(record -> normalizedPath.equals(Objects.toString(recordData(record).get("path"), "")))
+                .filter(record -> routeKey.isBlank() || routeKey.equals(Objects.toString(recordData(record).get("routeKey"), "")))
+                .filter(record -> resolvedPath.equals(Objects.toString(recordData(record).get("path"), "")))
                 .findFirst()
                 .orElseThrow();
 
         Map<String, Object> routeData = new LinkedHashMap<>(recordData(route));
+        if (!binding.isEmpty()) {
+            routeData.put("domainBinding", binding);
+        }
         Map<String, Object> target = resolveTarget(routeData, scope);
         Map<String, Object> theme = resolveTheme(routeData, scope);
 
         ResolvedRouteResponse response = new ResolvedRouteResponse();
         response.setTenantKey(scope.tenantKey());
         response.setSiteKey(scope.siteKey());
-        response.setPath(normalizedPath);
+        response.setPath(resolvedPath);
         response.setRoute(routeData);
         response.setTarget(target);
         response.setTheme(theme);
@@ -46,7 +57,11 @@ public class StorefrontRouteService {
     }
 
     public Map<String, Object> render(String path, DynamicScope scope) {
-        ResolvedRouteResponse resolved = resolve(path, scope);
+        return render(path, null, scope);
+    }
+
+    public Map<String, Object> render(String path, String host, DynamicScope scope) {
+        ResolvedRouteResponse resolved = resolve(path, host, scope);
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("tenantKey", resolved.getTenantKey());
         response.put("siteKey", resolved.getSiteKey());
@@ -55,39 +70,54 @@ public class StorefrontRouteService {
         response.put("target", resolved.getTarget());
         response.put("theme", resolved.getTheme());
         response.put("html", renderHtml(resolved));
+        response.put("resolvedHost", host);
         return response;
     }
 
     public String renderHtml(String path, DynamicScope scope) {
-        return renderHtml(resolve(path, scope));
+        return renderHtml(path, null, scope);
+    }
+
+    public String renderHtml(String path, String host, DynamicScope scope) {
+        return renderHtml(resolve(path, host, scope));
     }
 
     public List<Map<String, Object>> sitemap(DynamicScope scope) {
+        return sitemap(null, scope);
+    }
+
+    public List<Map<String, Object>> sitemap(String host, DynamicScope scope) {
         return dynamicRuntimeService.listRecords("site-route", scope).stream()
                 .filter(record -> record.getData() != null)
                 .filter(record -> "PUBLISHED".equalsIgnoreCase(Objects.toString(record.getData().get("publicationStatus"), "")))
                 .filter(record -> "true".equalsIgnoreCase(Objects.toString(record.getData().get("indexingEnabled"), "true")))
                 .map(record -> {
                     Map<String, Object> route = record.getData();
+                    Map<String, Object> binding = resolveDomainBinding(host, Objects.toString(route.get("path"), "/"), scope);
                     Map<String, Object> sitemapRow = new LinkedHashMap<>();
                     sitemapRow.put("path", Objects.toString(route.get("path"), ""));
                     sitemapRow.put("routeType", Objects.toString(route.get("routeType"), ""));
                     sitemapRow.put("sitemapPriority", Objects.toString(route.get("sitemapPriority"), "0.8"));
-                    sitemapRow.put("canonicalUrl", Objects.toString(nestedValue(route, "seo", "canonicalUrl"), ""));
+                    sitemapRow.put("canonicalUrl", firstNonBlank(nestedValue(route, "seo", "canonicalUrl"), absoluteUrl(route, binding, host)));
                     sitemapRow.put("lastModified", Objects.toString(record.getUpdatedAt(), ""));
+                    sitemapRow.put("changeFrequency", Objects.toString(nestedValue(route, "seo", "changeFrequency"), "weekly"));
                     return sitemapRow;
                 })
                 .toList();
     }
 
     public String sitemapXml(DynamicScope scope) {
-        List<Map<String, Object>> routes = sitemap(scope);
+        return sitemapXml(null, scope);
+    }
+
+    public String sitemapXml(String host, DynamicScope scope) {
+        List<Map<String, Object>> routes = sitemap(host, scope);
         StringBuilder xml = new StringBuilder();
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
         xml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">");
         for (Map<String, Object> route : routes) {
             xml.append("<url>");
-            xml.append("<loc>").append(escapeXml(absoluteUrl(route))).append("</loc>");
+            xml.append("<loc>").append(escapeXml(absoluteUrl(route, Map.of(), null))).append("</loc>");
             String lastModified = Objects.toString(route.get("lastModified"), "");
             if (!lastModified.isBlank()) {
                 xml.append("<lastmod>").append(escapeXml(lastModified)).append("</lastmod>");
@@ -101,12 +131,20 @@ public class StorefrontRouteService {
     }
 
     public String robotsTxt(DynamicScope scope) {
-        String sitemapUrl = sitemap(scope).stream()
+        return robotsTxt(null, scope);
+    }
+
+    public String robotsTxt(String host, DynamicScope scope) {
+        String sitemapUrl = sitemap(host, scope).stream()
                 .findFirst()
-                .map(this::absoluteUrl)
+                .map(route -> absoluteUrl(route, Map.of(), host))
                 .map(url -> url.endsWith("/") ? url + "public/storefront/sitemap.xml" : url.substring(0, url.lastIndexOf('/')) + "/public/storefront/sitemap.xml")
                 .orElse("/public/storefront/sitemap.xml");
         return "User-agent: *\nAllow: /\nSitemap: " + sitemapUrl + "\n";
+    }
+
+    public String resolveHost(String host, String forwardedHost) {
+        return normalizeHost(firstNonBlank(forwardedHost, host));
     }
 
     private Map<String, Object> resolveTarget(Map<String, Object> routeData, DynamicScope scope) {
@@ -175,12 +213,19 @@ public class StorefrontRouteService {
         Map<String, Object> targetData = targetRecord.get("data") instanceof Map<?, ?> data ? (Map<String, Object>) data : Map.of();
         Map<String, Object> theme = resolved.getTheme() == null ? Map.of() : resolved.getTheme();
         Map<String, Object> seo = route.get("seo") instanceof Map<?, ?> data ? (Map<String, Object>) data : Map.of();
+        Map<String, Object> domainBinding = route.get("domainBinding") instanceof Map<?, ?> data ? (Map<String, Object>) data : Map.of();
         String title = firstNonBlank(seo.get("title"), targetData.get("title"), targetData.get("name"), Objects.toString(route.get("routeKey"), "Storefront"));
         String description = firstNonBlank(seo.get("description"), targetData.get("summary"), targetData.get("description"), "");
         String brandName = Objects.toString(theme.get("brandName"), "Dynamic Storefront");
         String bodyTitle = firstNonBlank(targetData.get("title"), targetData.get("name"), title);
         String bodyContent = firstNonBlank(targetData.get("body"), targetData.get("content"), targetData.get("summary"), targetData.get("description"), "");
-        String canonicalUrl = firstNonBlank(seo.get("canonicalUrl"), nestedValue(targetData, "seo", "canonicalUrl"), nestedValue(targetData, "routing", "primaryPath"), resolved.getPath());
+        String canonicalUrl = firstNonBlank(
+                seo.get("canonicalUrl"),
+                absoluteUrl(route, domainBinding, null),
+                nestedValue(targetData, "seo", "canonicalUrl"),
+                nestedValue(targetData, "routing", "primaryPath"),
+                resolved.getPath()
+        );
         String robots = firstNonBlank(seo.get("robots"), "index,follow");
         String ogImage = firstNonBlank(seo.get("ogImage"), nestedMediaUrl(targetData), "");
         String twitterCard = firstNonBlank(seo.get("twitterCard"), "summary_large_image");
@@ -303,13 +348,55 @@ public class StorefrontRouteService {
         return toJson(String.valueOf(value));
     }
 
-    private String absoluteUrl(Map<String, Object> route) {
+    private String absoluteUrl(Map<String, Object> route, Map<String, Object> domainBinding, String host) {
         String canonical = Objects.toString(route.get("canonicalUrl"), "");
         if (!canonical.isBlank()) {
             return canonical;
         }
         String path = Objects.toString(route.get("path"), "/");
+        String boundHost = firstNonBlank(domainBinding.get("hostname"), host);
+        if (!boundHost.isBlank()) {
+            return "https://" + normalizeHost(boundHost) + normalizePath(path);
+        }
         return path.startsWith("http") ? path : "https://example.com" + path;
+    }
+
+    private Map<String, Object> resolveDomainBinding(String host, String path, DynamicScope scope) {
+        String normalizedHost = normalizeHost(host);
+        if (normalizedHost.isBlank()) {
+            return Map.of();
+        }
+        return dynamicRuntimeService.listRecords("domain-binding", scope).stream()
+                .map(this::recordData)
+                .filter(binding -> !"FAILED".equalsIgnoreCase(Objects.toString(binding.get("status"), "")))
+                .filter(binding -> !"PENDING".equalsIgnoreCase(Objects.toString(binding.get("status"), "")))
+                .filter(binding -> normalizedHost.equals(normalizeHost(Objects.toString(binding.get("hostname"), ""))))
+                .filter(binding -> {
+                    String targetPath = Objects.toString(binding.get("targetPath"), "");
+                    return targetPath.isBlank() || normalizePath(targetPath).equals(normalizePath(path));
+                })
+                .findFirst()
+                .or(() -> dynamicRuntimeService.listRecords("domain-binding", scope).stream()
+                        .map(this::recordData)
+                        .filter(binding -> normalizedHost.equals(normalizeHost(Objects.toString(binding.get("hostname"), ""))))
+                        .findFirst())
+                .orElse(Map.of());
+    }
+
+    private String normalizeHost(String host) {
+        if (host == null || host.isBlank()) {
+            return "";
+        }
+        String normalized = host.trim().toLowerCase();
+        int commaIndex = normalized.indexOf(',');
+        if (commaIndex >= 0) {
+            normalized = normalized.substring(0, commaIndex).trim();
+        }
+        int colonIndex = normalized.indexOf(':');
+        if (colonIndex >= 0) {
+            normalized = normalized.substring(0, colonIndex);
+        }
+        return normalized;
     }
 
     private String defaulted(Object value, String fallback) {

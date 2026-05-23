@@ -1,6 +1,7 @@
 package com.cyancoder.botadapter.service;
 
 import com.cyancoder.botadapter.api.BotIntegrationRequest;
+import com.cyancoder.botadapter.api.BotMiniAppBuildRequest;
 import com.cyancoder.botadapter.api.OutboundMessageRequest;
 import com.cyancoder.botadapter.api.OutboundMessageResult;
 import com.cyancoder.botadapter.api.RetryOutboundMessageResult;
@@ -10,10 +11,12 @@ import com.cyancoder.botadapter.domain.BotChannel;
 import com.cyancoder.botadapter.domain.BotChannelIntegration;
 import com.cyancoder.botadapter.domain.BotChatSessionMapping;
 import com.cyancoder.botadapter.domain.BotInboundMessage;
+import com.cyancoder.botadapter.domain.BotMiniAppBuild;
 import com.cyancoder.botadapter.domain.BotOutboundMessage;
 import com.cyancoder.botadapter.repo.BotChannelIntegrationRepository;
 import com.cyancoder.botadapter.repo.BotChatSessionMappingRepository;
 import com.cyancoder.botadapter.repo.BotInboundMessageRepository;
+import com.cyancoder.botadapter.repo.BotMiniAppBuildRepository;
 import com.cyancoder.botadapter.repo.BotOutboundMessageRepository;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +36,7 @@ public class BotAdapterService {
     private final BotChatSessionMappingRepository mappingRepository;
     private final BotInboundMessageRepository inboundMessageRepository;
     private final BotOutboundMessageRepository outboundMessageRepository;
+    private final BotMiniAppBuildRepository miniAppBuildRepository;
     private final BotWebhookParser webhookParser;
     private final AiConversationClient aiConversationClient;
     private final BotProviderClient botProviderClient;
@@ -41,6 +45,7 @@ public class BotAdapterService {
                              BotChatSessionMappingRepository mappingRepository,
                              BotInboundMessageRepository inboundMessageRepository,
                              BotOutboundMessageRepository outboundMessageRepository,
+                             BotMiniAppBuildRepository miniAppBuildRepository,
                              BotWebhookParser webhookParser,
                              AiConversationClient aiConversationClient,
                              BotProviderClient botProviderClient) {
@@ -48,6 +53,7 @@ public class BotAdapterService {
         this.mappingRepository = mappingRepository;
         this.inboundMessageRepository = inboundMessageRepository;
         this.outboundMessageRepository = outboundMessageRepository;
+        this.miniAppBuildRepository = miniAppBuildRepository;
         this.webhookParser = webhookParser;
         this.aiConversationClient = aiConversationClient;
         this.botProviderClient = botProviderClient;
@@ -186,6 +192,45 @@ public class BotAdapterService {
         return new RetryOutboundMessageResult(result.status(), result.deliveryId(), result.attemptCount());
     }
 
+    public BotMiniAppBuild upsertMiniAppBuild(BotMiniAppBuildRequest request) {
+        BotChannelIntegration integration = findActiveIntegration(request.channel(), request.integrationKey());
+        String buildKey = required(request.buildKey(), "buildKey");
+        BotMiniAppBuild build = miniAppBuildRepository
+                .findByChannelAndIntegrationKeyAndBuildKey(integration.getChannel(), integration.getIntegrationKey(), buildKey)
+                .orElseGet(BotMiniAppBuild::new);
+        build.setChannel(integration.getChannel());
+        build.setIntegrationKey(integration.getIntegrationKey());
+        build.setBuildKey(buildKey);
+        build.setTenantKey(integration.getTenantKey());
+        build.setSiteKey(integration.getSiteKey());
+        build.setTitle(firstNonBlank(request.title(), buildKey));
+        build.setLaunchUrl(firstNonBlank(request.launchUrl(), integration.getMiniAppUrl()));
+        build.setManifest(request.manifest() == null ? Map.of() : request.manifest());
+        build.setStatus("DRAFT");
+        if (build.getCreatedAt() == null) {
+            build.setCreatedAt(Instant.now());
+        }
+        build.setUpdatedAt(Instant.now());
+        return miniAppBuildRepository.save(build);
+    }
+
+    public List<BotMiniAppBuild> listMiniAppBuilds(String tenantKey, String siteKey) {
+        if (tenantKey != null && !tenantKey.isBlank() && siteKey != null && !siteKey.isBlank()) {
+            return miniAppBuildRepository.findByTenantKeyAndSiteKeyOrderByUpdatedAtDesc(tenantKey, siteKey);
+        }
+        return miniAppBuildRepository.findAll();
+    }
+
+    public BotMiniAppBuild publishMiniAppBuild(String channelValue, String integrationKey, String buildKey) {
+        BotChannel channel = parseChannel(channelValue);
+        BotMiniAppBuild build = miniAppBuildRepository.findByChannelAndIntegrationKeyAndBuildKey(channel, integrationKey, buildKey)
+                .orElseThrow(() -> new IllegalArgumentException("Mini app build not found"));
+        build.setStatus("PUBLISHED");
+        build.setPublishedUrl(firstNonBlank(build.getLaunchUrl(), "https://example.com/mini-app/" + build.getBuildKey()));
+        build.setUpdatedAt(Instant.now());
+        return miniAppBuildRepository.save(build);
+    }
+
     private OutboundMessageResult dispatchOutboundMessage(BotChannelIntegration integration, BotOutboundMessage message) {
         message.setAttemptCount(message.getAttemptCount() + 1);
         message.setLastAttemptAt(Instant.now());
@@ -289,5 +334,14 @@ public class BotAdapterService {
             throw new IllegalArgumentException(field + " is required");
         }
         return value;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return "";
     }
 }

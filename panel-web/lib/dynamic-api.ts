@@ -14,11 +14,13 @@ export const dynamicServices: DynamicServiceKey[] = [
   "inventory-service",
   "report-service",
   "storefront-service",
+  "media-service",
   "cart-service",
   "checkout-service",
   "payment-service",
   "pricing-promotion-service",
   "notification-service",
+  "search-index-service",
   "bpm-service"
 ];
 

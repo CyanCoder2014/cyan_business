@@ -13,6 +13,8 @@ public class AiOrchestratorProperties {
     private String baleBaseUrl = "https://tapi.bale.ai";
     private String botSecretsFile;
     private String botSecretEnvPrefix = "CYAN_BOT_SECRET_";
+    private String botSecretHttpBaseUrl;
+    private String botSecretHttpAuthToken;
     private Map<String, String> botSecretValues = new LinkedHashMap<>();
 
     public String getBaseUrl() {
@@ -61,6 +63,22 @@ public class AiOrchestratorProperties {
 
     public void setBotSecretEnvPrefix(String botSecretEnvPrefix) {
         this.botSecretEnvPrefix = botSecretEnvPrefix;
+    }
+
+    public String getBotSecretHttpBaseUrl() {
+        return botSecretHttpBaseUrl;
+    }
+
+    public void setBotSecretHttpBaseUrl(String botSecretHttpBaseUrl) {
+        this.botSecretHttpBaseUrl = botSecretHttpBaseUrl;
+    }
+
+    public String getBotSecretHttpAuthToken() {
+        return botSecretHttpAuthToken;
+    }
+
+    public void setBotSecretHttpAuthToken(String botSecretHttpAuthToken) {
+        this.botSecretHttpAuthToken = botSecretHttpAuthToken;
     }
 
     public Map<String, String> getBotSecretValues() {

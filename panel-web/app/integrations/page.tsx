@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
-import { listBotIntegrations, listBotMessages, registerBotWebhook, retryBotMessage, sendBotMessage, upsertBotIntegration } from "@/lib/platform-api";
-import type { BotChannelIntegration, BotOutboundMessage } from "@/lib/types";
+import { listBotIntegrations, listBotMessages, listMiniAppBuilds, publishMiniAppBuild, registerBotWebhook, retryBotMessage, sendBotMessage, upsertBotIntegration, upsertMiniAppBuild } from "@/lib/platform-api";
+import type { BotChannelIntegration, BotMiniAppBuild, BotOutboundMessage } from "@/lib/types";
 
 const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
 
@@ -27,6 +27,10 @@ export default function IntegrationsPage() {
   const [testMessage, setTestMessage] = useState("Panel test message from bot-adapter-service.");
   const [integrations, setIntegrations] = useState<BotChannelIntegration[]>([]);
   const [messages, setMessages] = useState<BotOutboundMessage[]>([]);
+  const [miniAppBuilds, setMiniAppBuilds] = useState<BotMiniAppBuild[]>([]);
+  const [miniAppBuildKey, setMiniAppBuildKey] = useState("retail-mini-app");
+  const [miniAppTitle, setMiniAppTitle] = useState("Retail Demo Mini App");
+  const [miniAppManifestJson, setMiniAppManifestJson] = useState('{\n  "entry": "/start",\n  "pages": ["/", "/products", "/checkout"]\n}');
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -55,6 +59,7 @@ export default function IntegrationsPage() {
     try {
       setIntegrations(await listBotIntegrations({ tenantKey, siteKey }));
       setMessages(await listBotMessages({ tenantKey, siteKey, integrationKey }));
+      setMiniAppBuilds(await listMiniAppBuilds({ tenantKey, siteKey }));
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Failed to load bot integrations");
     } finally {
@@ -139,6 +144,41 @@ export default function IntegrationsPage() {
       setStatus(`Retry ${result.status.toLowerCase()} for delivery ${result.deliveryId}. Attempt ${result.attemptCount}.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Failed to retry outbound message");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function saveMiniAppBuild() {
+    setLoading(true);
+    setStatus(null);
+    try {
+      await upsertMiniAppBuild({
+        channel,
+        integrationKey,
+        buildKey: miniAppBuildKey,
+        title: miniAppTitle,
+        launchUrl: miniAppLaunchUrl ?? miniAppUrl,
+        manifest: miniAppManifestJson.trim() ? JSON.parse(miniAppManifestJson) : {}
+      });
+      await refresh();
+      setStatus(`Mini app build ${miniAppBuildKey} saved.`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to save mini app build");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function publishMiniApp() {
+    setLoading(true);
+    setStatus(null);
+    try {
+      const build = await publishMiniAppBuild(channel, integrationKey, miniAppBuildKey);
+      await refresh();
+      setStatus(`Mini app ${build.buildKey} published to ${build.publishedUrl ?? build.launchUrl ?? "runtime URL"}.`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to publish mini app build");
     } finally {
       setLoading(false);
     }
@@ -257,6 +297,30 @@ export default function IntegrationsPage() {
               <p className="muted">{miniAppLaunchUrl ?? "Enable mini app and provide a URL to generate a launch link."}</p>
             </div>
 
+            <div className="result-card">
+              <h4>Mini app runtime build</h4>
+              <div className="form-grid">
+                <div className="field-grid">
+                  <div className="field">
+                    <label>Build key</label>
+                    <input value={miniAppBuildKey} onChange={(event) => setMiniAppBuildKey(event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label>Title</label>
+                    <input value={miniAppTitle} onChange={(event) => setMiniAppTitle(event.target.value)} />
+                  </div>
+                </div>
+                <div className="field">
+                  <label>Manifest JSON</label>
+                  <textarea value={miniAppManifestJson} onChange={(event) => setMiniAppManifestJson(event.target.value)} />
+                </div>
+                <div className="hero-actions">
+                  <button type="button" className="btn" onClick={saveMiniAppBuild} disabled={loading || !miniAppEnabled}>Save mini app build</button>
+                  <button type="button" className="ghost-btn" onClick={publishMiniApp} disabled={loading || !miniAppEnabled}>Publish mini app</button>
+                </div>
+              </div>
+            </div>
+
             <div className="hero-actions">
               <button type="button" className="btn" onClick={saveIntegration} disabled={loading}>
                 {loading ? "Saving..." : "Save integration"}
@@ -362,12 +426,39 @@ export default function IntegrationsPage() {
           </section>
 
           <section className="panel rail">
+            <p className="section-title">Mini app builds</p>
+            <div className="draft-list">
+              {miniAppBuilds.map((build) => (
+                <button
+                  key={build.id ?? `${build.channel}-${build.integrationKey}-${build.buildKey}`}
+                  type="button"
+                  className="draft-item"
+                  onClick={() => {
+                    setChannel(build.channel);
+                    setIntegrationKey(build.integrationKey);
+                    setMiniAppBuildKey(build.buildKey);
+                    setMiniAppTitle(build.title ?? build.buildKey);
+                    setMiniAppManifestJson(JSON.stringify(build.manifest ?? {}, null, 2));
+                  }}
+                >
+                  <strong>
+                    <span>{build.buildKey}</span>
+                    <span className="muted">{build.status ?? "DRAFT"}</span>
+                  </strong>
+                  <span className="muted">{build.launchUrl ?? "launch URL missing"}</span>
+                  <span className="muted">{build.publishedUrl ?? "not published"}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel rail">
             <p className="section-title">Next channels</p>
             <div className="mini-grid" style={{ gridTemplateColumns: "1fr" }}>
-              {["Website/PWA publish", "Telegram mini app", "Mobile app shell"].map((title) => (
+              {["Website/PWA publish", "Mobile app shell"].map((title) => (
                 <div key={title} className="mini-card">
                   <h3>{title}</h3>
-                  <p>Planned after bot webhook, tenant mapping, and public app contracts are stable.</p>
+                  <p>Planned after bot, mini app runtime, tenant mapping, and public app contracts are stable.</p>
                 </div>
               ))}
             </div>

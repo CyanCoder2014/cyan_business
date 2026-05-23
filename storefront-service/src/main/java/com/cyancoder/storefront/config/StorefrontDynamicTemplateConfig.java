@@ -75,6 +75,9 @@ public class StorefrontDynamicTemplateConfig {
                           "fields":{
                             "themeKey":{"id":"themeKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
                             "brandName":{"id":"brandName","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "templateKey":{"id":"templateKey","type":"string"},
+                            "themeCategory":{"id":"themeCategory","type":"string"},
+                            "previewImage":{"id":"previewImage","type":"string"},
                             "status":{"id":"status","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["ACTIVE","INACTIVE","DRAFT"]}}]},
                             "navigation":{"id":"navigation","type":"list","itemValidations":{
                               "label":{"id":"label","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
@@ -92,6 +95,74 @@ public class StorefrontDynamicTemplateConfig {
                               "componentType":{"id":"componentType","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
                               "props":{"id":"props","type":"object"}
                             }}
+                          }
+                        }
+                        """),
+                new DynamicEntityTemplate("theme-template", "STOREFRONT", "Theme Template", "Reusable theme registry record that can be applied across multiple projects and sites.", """
+                        {
+                          "entityKey":"theme-template",
+                          "entityType":"STOREFRONT",
+                          "title":"Theme Template",
+                          "defaultValues":{"status":"ACTIVE"},
+                          "fields":{
+                            "templateKey":{"id":"templateKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "title":{"id":"title","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "category":{"id":"category","type":"string"},
+                            "description":{"id":"description","type":"string"},
+                            "previewImage":{"id":"previewImage","type":"string"},
+                            "status":{"id":"status","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["ACTIVE","DRAFT","ARCHIVED"]}}]},
+                            "themeLayout":{"id":"themeLayout","type":"object"},
+                            "recommendedRoute":{"id":"recommendedRoute","type":"object"}
+                          }
+                        }
+                        """),
+                new DynamicEntityTemplate("domain-binding", "STOREFRONT", "Domain Binding", "Custom domain mapping and verification workflow for storefront routes and themes.", """
+                        {
+                          "entityKey":"domain-binding",
+                          "entityType":"STOREFRONT",
+                          "title":"Domain Binding",
+                          "defaultValues":{"status":"PENDING","sslStatus":"PENDING","verificationMethod":"DNS_TXT"},
+                          "fields":{
+                            "bindingKey":{"id":"bindingKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "hostname":{"id":"hostname","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "routeKey":{"id":"routeKey","type":"string"},
+                            "themeKey":{"id":"themeKey","type":"string"},
+                            "targetPath":{"id":"targetPath","type":"string"},
+                            "verificationMethod":{"id":"verificationMethod","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["DNS_TXT","CNAME","HTTP_FILE"]}}]},
+                            "verificationToken":{"id":"verificationToken","type":"string"},
+                            "dnsTarget":{"id":"dnsTarget","type":"string"},
+                            "status":{"id":"status","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["PENDING","VERIFYING","VERIFIED","ACTIVE","FAILED"]}}]},
+                            "sslStatus":{"id":"sslStatus","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["PENDING","PROVISIONING","ACTIVE","FAILED"]}}]},
+                            "canonicalPolicy":{"id":"canonicalPolicy","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["PRIMARY","REDIRECT_TO_PRIMARY","KEEP_PATH"]}}]},
+                            "notes":{"id":"notes","type":"string"}
+                          }
+                        }
+                        """),
+                new DynamicEntityTemplate("theme-layout-version", "STOREFRONT", "Theme Layout Version", "Immutable snapshot of a theme layout for rollback and release history.", """
+                        {
+                          "entityKey":"theme-layout-version",
+                          "entityType":"STOREFRONT",
+                          "title":"Theme Layout Version",
+                          "fields":{
+                            "themeKey":{"id":"themeKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "versionKey":{"id":"versionKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "label":{"id":"label","type":"string"},
+                            "snapshot":{"id":"snapshot","type":"object","validations":[{"validation":"REQUIRED","order":1}]},
+                            "published":{"id":"published","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["true","false"]}}]}
+                          }
+                        }
+                        """),
+                new DynamicEntityTemplate("site-route-version", "STOREFRONT", "Site Route Version", "Immutable snapshot of a route record for rollback and release history.", """
+                        {
+                          "entityKey":"site-route-version",
+                          "entityType":"STOREFRONT",
+                          "title":"Site Route Version",
+                          "fields":{
+                            "routeKey":{"id":"routeKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "versionKey":{"id":"versionKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                            "label":{"id":"label","type":"string"},
+                            "snapshot":{"id":"snapshot","type":"object","validations":[{"validation":"REQUIRED","order":1}]},
+                            "published":{"id":"published","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["true","false"]}}]}
                           }
                         }
                         """)

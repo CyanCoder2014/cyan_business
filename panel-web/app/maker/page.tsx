@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
-import { listDefinitions } from "@/lib/dynamic-api";
+import { listDefinitions, saveDefinition } from "@/lib/dynamic-api";
 import type { DynamicEntityDefinition } from "@/lib/types";
 
 type FieldSummary = {
@@ -17,6 +17,7 @@ export default function MakerPage() {
   const { locale } = usePanel();
   const [definitions, setDefinitions] = useState<DynamicEntityDefinition[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     listDefinitions("catalog-service", { tenantKey: "tenant-demo", siteKey: "site-commerce" })
@@ -27,6 +28,20 @@ export default function MakerPage() {
   const entities = definitions.length ? definitions : fallbackDefinitions;
   const selected = entities[selectedIndex] ?? entities[0];
   const fields = useMemo(() => toFieldSummaries(selected), [selected]);
+
+  async function publishSchema() {
+    setStatus(locale === "fa" ? "در حال انتشار..." : "Publishing...");
+    try {
+      const saved = await saveDefinition("catalog-service", selected.entityKey, selected.definitionJson, {
+        tenantKey: selected.tenantKey ?? "tenant-demo",
+        siteKey: selected.siteKey ?? "site-commerce"
+      });
+      setDefinitions((current) => current.map((item) => (item.entityKey === saved.entityKey ? saved : item)));
+      setStatus(locale === "fa" ? "شِما منتشر شد." : "Schema published.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "انتشار ناموفق بود." : "Publish failed.");
+    }
+  }
 
   return (
     <PanelShell
@@ -44,11 +59,12 @@ export default function MakerPage() {
               <button type="button" className="secondary-pill">
                 {locale === "fa" ? "افزودن فیلد" : "Add field"}
               </button>
-              <button type="button" className="primary-pill">
+              <button type="button" className="primary-pill" onClick={publishSchema}>
                 {locale === "fa" ? "انتشار شِما" : "Publish schema"}
               </button>
             </div>
           </div>
+          {status ? <div className="status-pill info" style={{ marginTop: 14 }}>{status}</div> : null}
 
           <div className="two-column-grid maker-layout" style={{ marginTop: 18 }}>
             <div className="entity-list">
@@ -186,7 +202,7 @@ export default function MakerPage() {
             <span>{selected.entityKey}</span>
           </div>
         </div>
-        <button type="button" className="primary-pill auth-submit">
+        <button type="button" className="primary-pill auth-submit" onClick={publishSchema}>
           {locale === "fa" ? "انتشار شِما" : "Publish schema"}
         </button>
       </div>

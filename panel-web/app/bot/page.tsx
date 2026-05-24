@@ -14,7 +14,7 @@ export default function BotExperiencePage() {
       subtitle="Preview how customers experience Telegram and Bale journeys powered by Cyan."
       subtitleFa="تجربه مشتری در تلگرام و بله را که با Cyan مدیریت می‌شود، پیش‌نمایش کنید."
     >
-      <div className="page-grid">
+      <div className="desktop-only page-grid">
         <section className="panel-card">
           <div className="pill-row" style={{ marginBottom: 16 }}>
             <span className="pill status-pill info">Telegram</span>
@@ -41,6 +41,10 @@ export default function BotExperiencePage() {
                 <div className="chat-message">
                   <strong>{locale === "fa" ? "سفارش در مسیر است" : "Your order is in transit"}</strong>
                   <div className="muted-block">{locale === "fa" ? "تحویل فردا" : "Arriving tomorrow"}</div>
+                </div>
+                <div className="mini-card">
+                  <strong>{locale === "fa" ? "در مسیر" : "In Transit"}</strong>
+                  <span className="muted-block">{locale === "fa" ? "بسته‌بندی شده و ارسال شده" : "Packed and shipped."}</span>
                 </div>
                 <div className="toolbar-row">
                   <button type="button" className="secondary-pill">{locale === "fa" ? "اشتراک‌گذاری رهگیری" : "Share tracking"}</button>
@@ -104,6 +108,35 @@ export default function BotExperiencePage() {
             <div className="mini-card"><strong>1.1%</strong><span className="muted-block">{locale === "fa" ? "ناموفق" : "Failed"}</span></div>
           </div>
         </aside>
+      </div>
+
+      <div className="mobile-only mobile-screen">
+        <div className="mobile-screen-header">
+          <div>
+            <strong style={{ display: "block", fontSize: "2rem" }}>{locale === "fa" ? "تجربه بات" : "Bot Experience"}</strong>
+            <span className="muted-block">Telegram / Bale</span>
+          </div>
+          <button type="button" className="secondary-pill">{locale === "fa" ? "باز کردن" : "Open"}</button>
+        </div>
+        <div className="mobile-tab-strip">
+          <span className="status-pill info">Telegram</span>
+          <span className="pill">Bale</span>
+          <span className="pill">{locale === "fa" ? "قابلیت‌ها" : "Capabilities"}</span>
+        </div>
+        <div className="mobile-list">
+          <div className="mobile-list-item">
+            <strong>{locale === "fa" ? "Acme Store Bot" : "Acme Store Bot"}</strong>
+            <span className="muted-block">{locale === "fa" ? "سلام، چگونه کمک کنم؟" : "Hi, how can I help you today?"}</span>
+          </div>
+          <div className="mobile-list-item">
+            <strong>{locale === "fa" ? "پیگیری سفارش" : "Track Order"}</strong>
+            <span className="muted-block">#ACM12345</span>
+          </div>
+          <div className="mobile-list-item">
+            <strong>{locale === "fa" ? "در مسیر" : "In Transit"}</strong>
+            <span className="muted-block">{locale === "fa" ? "تحویل فردا" : "Arriving tomorrow"}</span>
+          </div>
+        </div>
       </div>
     </PanelShell>
   );

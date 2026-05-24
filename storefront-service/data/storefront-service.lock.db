@@ -1,0 +1,6 @@
+#FileLock
+#Sun May 24 14:32:01 IRST 2026
+hostName=localhost
+id=19e59a625dbade458cfaa054e7f169ebcc8e20b2469
+method=file
+server=localhost\:50509

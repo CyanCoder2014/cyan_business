@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
+import { createDefinitionFromTemplate, submitRecord } from "@/lib/dynamic-api";
 import { renderStorefrontRoute, resolveStorefrontRoute, type StorefrontRenderedPage, type StorefrontResolvedRoute } from "@/lib/storefront-api";
 
 export default function SiteBuilderPage() {
   const { locale } = usePanel();
   const [resolved, setResolved] = useState<StorefrontResolvedRoute | null>(null);
   const [rendered, setRendered] = useState<StorefrontRenderedPage | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -20,6 +22,58 @@ export default function SiteBuilderPage() {
     });
   }, []);
 
+  async function persistRoute(publicationStatus: "DRAFT" | "PUBLISHED") {
+    setStatus(locale === "fa" ? "در حال ذخیره..." : "Saving...");
+    const scope = { tenantKey: "tenant-demo", siteKey: "site-commerce" };
+    try {
+      await createDefinitionFromTemplate("storefront-service", "site-route", "site-route", scope).catch(() => null);
+      await submitRecord(
+        "storefront-service",
+        "site-route",
+        "home",
+        {
+          routeKey: "home",
+          path: "/",
+          routeType: "LANDING",
+          entityRef: {
+            service: "content-service",
+            entityKey: "landing-page",
+            recordKey: "home"
+          },
+          navigation: { label: "Home", menuKey: "main", sortOrder: 1, visible: "true" },
+          seo: {
+            title: "Cyan - AI-native business platform",
+            description: "Build, automate, and launch production-ready business apps with Cyan.",
+            robots: "index,follow",
+            twitterCard: "summary_large_image",
+            structuredDataBlocks: []
+          },
+          rendering: {
+            themeKey: "cyan-light",
+            templateKey: "landing-v1",
+            cacheTtlSeconds: 300,
+            preloadAssets: [],
+            hydrateTargetEntity: "false"
+          },
+          indexingEnabled: "true",
+          sitemapPriority: "0.8",
+          publicationStatus,
+          routeLifecycle: {}
+        },
+        scope
+      );
+      const [resolveResult, renderResult] = await Promise.all([
+        resolveStorefrontRoute("/", scope).catch(() => null),
+        renderStorefrontRoute("/", scope).catch(() => null)
+      ]);
+      setResolved(resolveResult);
+      setRendered(renderResult);
+      setStatus(publicationStatus === "PUBLISHED" ? (locale === "fa" ? "منتشر شد." : "Published.") : locale === "fa" ? "پیش‌نویس ذخیره شد." : "Draft saved.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "ذخیره ناموفق بود." : "Save failed.");
+    }
+  }
+
   return (
     <PanelShell
       activeKey="site-builder"
@@ -28,7 +82,7 @@ export default function SiteBuilderPage() {
       subtitle="Visually build, preview, and publish production-ready routes without dropping into raw JSON."
       subtitleFa="بدون ورود به JSON خام، مسیرهای سایت را به‌صورت بصری بسازید، پیش‌نمایش بگیرید و منتشر کنید."
     >
-      <div className="site-builder-grid">
+      <div className="desktop-only site-builder-grid">
         <aside className="panel-card">
           <div className="card-title-row">
             <h3>{locale === "fa" ? "صفحه‌ها" : "Pages"}</h3>
@@ -69,9 +123,18 @@ export default function SiteBuilderPage() {
               <button type="button" className="secondary-pill">
                 {locale === "fa" ? "پیش‌نویس" : "Draft"}
               </button>
-              <button type="button" className="primary-pill">
+              <button type="button" className="primary-pill" onClick={() => persistRoute("PUBLISHED")}>
                 {locale === "fa" ? "انتشار" : "Publish"}
               </button>
+            </div>
+          </div>
+          {status ? <div className="status-pill info" style={{ marginBottom: 16 }}>{status}</div> : null}
+
+          <div className="toolbar-row" style={{ marginBottom: 16 }}>
+            <div className="pill-row">
+              <span className="pill">{locale === "fa" ? "مسیر" : "Route"}: {resolved?.path ?? "/"}</span>
+              <span className="pill">{locale === "fa" ? "دامنه" : "Domain"}: acme.cyan.app</span>
+              <span className="status-pill success">{locale === "fa" ? "تاییدشده" : "Verified"}</span>
             </div>
           </div>
 
@@ -111,15 +174,13 @@ export default function SiteBuilderPage() {
             </div>
           </div>
 
-          <div className="two-column-grid" style={{ marginTop: 18 }}>
-            <article className="mini-card">
-              <strong>{locale === "fa" ? "وضعیت مسیر" : "Route status"}</strong>
-              <span className="muted-block">{resolved?.path ?? "/"}</span>
-            </article>
-            <article className="mini-card">
-              <strong>{locale === "fa" ? "پیش‌نمایش رندر" : "Render preview"}</strong>
-              <span className="muted-block">{rendered ? "HTML ready" : locale === "fa" ? "حالت نمونه" : "Fallback mode"}</span>
-            </article>
+          <div className="three-column-grid" style={{ marginTop: 18 }}>
+            {["Visual App Builder", "Workflow Automation", "AI Studio"].map((item) => (
+              <article key={item} className="mini-card">
+                <strong>{item}</strong>
+                <span className="muted-block">{locale === "fa" ? "بخش فعال در صفحه" : "Visible in the current section"}</span>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -152,10 +213,36 @@ export default function SiteBuilderPage() {
             </div>
           </div>
           <div className="toolbar-row" style={{ marginTop: 18 }}>
-            <button type="button" className="secondary-pill">{locale === "fa" ? "ذخیره پیش‌نویس" : "Save draft"}</button>
-            <button type="button" className="primary-pill">{locale === "fa" ? "انتشار" : "Publish"}</button>
+            <button type="button" className="secondary-pill" onClick={() => persistRoute("DRAFT")}>{locale === "fa" ? "ذخیره پیش‌نویس" : "Save draft"}</button>
+            <button type="button" className="primary-pill" onClick={() => persistRoute("PUBLISHED")}>{locale === "fa" ? "انتشار" : "Publish"}</button>
           </div>
         </aside>
+      </div>
+
+      <div className="mobile-only mobile-screen">
+        <div className="mobile-screen-header">
+          <div>
+            <strong style={{ display: "block", fontSize: "2rem" }}>{locale === "fa" ? "سایت‌ساز" : "Site Builder"}</strong>
+            <span className="muted-block">acme.cyan.app</span>
+          </div>
+          <button type="button" className="primary-pill">{locale === "fa" ? "انتشار" : "Publish"}</button>
+        </div>
+        <div className="mobile-card">
+          <div className="toolbar-row">
+            <span className="status-pill success">{locale === "fa" ? "منتشرشده" : "Published"}</span>
+            <span className="pill">/</span>
+          </div>
+          <h3 style={{ fontSize: "2rem", marginBottom: 8 }}>{locale === "fa" ? "بسازید، خودکار کنید و منتشر کنید" : "Build, automate, and launch with confidence"}</h3>
+          <p className="muted">{locale === "fa" ? "پیش‌نمایش زنده از صفحه خانه" : "Live preview of the homepage section."}</p>
+        </div>
+        <div className="mobile-list">
+          {["Home", "About", "Shop", "Product", "Contact"].map((page) => (
+            <div key={page} className="mobile-list-item">
+              <strong>{page}</strong>
+              <span className="muted-block">{page === "Home" ? "/" : `/${page.toLowerCase()}`}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </PanelShell>
   );

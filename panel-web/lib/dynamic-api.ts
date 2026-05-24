@@ -132,3 +132,56 @@ export function submitRecord(
     })
   });
 }
+
+export function replaceRecord(
+  serviceKey: DynamicServiceKey,
+  entityKey: string,
+  recordKey: string,
+  data: Record<string, unknown>,
+  scope: ScopedRequest
+): Promise<DynamicEntityRecord> {
+  return requestJson<DynamicEntityRecord>(serviceKey, `/endpoint/entities/records/${entityKey}/${encodeURIComponent(recordKey)}`, {
+    method: "PUT",
+    tenantKey: scope.tenantKey,
+    siteKey: scope.siteKey,
+    body: JSON.stringify({
+      recordKey,
+      tenantKey: scope.tenantKey,
+      siteKey: scope.siteKey,
+      data
+    })
+  });
+}
+
+export function updateRecord(
+  serviceKey: DynamicServiceKey,
+  entityKey: string,
+  recordKey: string,
+  data: Record<string, unknown>,
+  scope: ScopedRequest
+): Promise<DynamicEntityRecord> {
+  return requestJson<DynamicEntityRecord>(serviceKey, `/endpoint/entities/records/${entityKey}/${encodeURIComponent(recordKey)}`, {
+    method: "PATCH",
+    tenantKey: scope.tenantKey,
+    siteKey: scope.siteKey,
+    body: JSON.stringify({
+      recordKey,
+      tenantKey: scope.tenantKey,
+      siteKey: scope.siteKey,
+      data
+    })
+  });
+}
+
+export function deleteRecord(
+  serviceKey: DynamicServiceKey,
+  entityKey: string,
+  recordKey: string,
+  scope: ScopedRequest
+): Promise<void> {
+  return requestJson<void>(serviceKey, `/endpoint/entities/records/${entityKey}/${encodeURIComponent(recordKey)}`, {
+    method: "DELETE",
+    tenantKey: scope.tenantKey,
+    siteKey: scope.siteKey
+  });
+}

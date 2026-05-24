@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
 import { blueprintVisuals } from "@/lib/panel-fixtures";
-import { listBlueprints, listClientDrafts } from "@/lib/platform-api";
+import { createClientDraft, listBlueprints, listClientDrafts, provisionClientDraft } from "@/lib/platform-api";
 import type { AppBlueprint, ClientAppDraft } from "@/lib/types";
 
 export default function BlueprintsPage() {
@@ -12,6 +12,7 @@ export default function BlueprintsPage() {
   const [blueprints, setBlueprints] = useState<AppBlueprint[]>([]);
   const [drafts, setDrafts] = useState<ClientAppDraft[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([listBlueprints().catch(() => []), listClientDrafts().catch(() => [])]).then(([items, draftItems]) => {
@@ -22,6 +23,29 @@ export default function BlueprintsPage() {
 
   const cards = blueprints.length ? blueprints : fallbackBlueprints();
   const selected = cards[selectedIndex] ?? cards[0];
+
+  async function generateFromBlueprint(blueprint: AppBlueprint) {
+    setStatus(locale === "fa" ? "در حال ساخت پیش‌نویس..." : "Generating draft...");
+    try {
+      const draft = await createClientDraft({
+        appType: blueprint.appType,
+        blueprintKey: blueprint.blueprintKey,
+        tenantKey: "tenant-demo",
+        siteKey: "site-commerce",
+        clientKey: "panel",
+        title: blueprint.title,
+        prompt: `Generate ${blueprint.title}`,
+        answers: blueprint.defaultAnswers ?? {}
+      });
+      if (draft.status === "READY" || draft.status === "DRAFT") {
+        await provisionClientDraft(draft.draftId).catch(() => null);
+      }
+      setDrafts((current) => [draft, ...current.filter((item) => item.draftId !== draft.draftId)]);
+      setStatus(locale === "fa" ? "پیش‌نویس ایجاد شد." : "Draft generated.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "تولید پیش‌نویس ناموفق بود." : "Draft generation failed.");
+    }
+  }
 
   return (
     <PanelShell
@@ -44,6 +68,7 @@ export default function BlueprintsPage() {
               <span className="pill">{locale === "fa" ? "همه پیچیدگی‌ها" : "All complexity"}</span>
             </div>
           </div>
+          {status ? <div className="status-pill info" style={{ marginTop: 12 }}>{status}</div> : null}
           <div className="pill-row" style={{ marginTop: 18 }}>
             <span className="pill status-pill info">{locale === "fa" ? "همه" : "All"}</span>
             <span className="pill">Website</span>
@@ -84,7 +109,10 @@ export default function BlueprintsPage() {
                 </div>
                 <div className="toolbar-row" style={{ marginTop: 14 }}>
                   <button type="button" className="secondary-pill">{locale === "fa" ? "پیش‌نمایش" : "Preview"}</button>
-                  <button type="button" className="primary-pill">{locale === "fa" ? "استفاده از قالب" : "Use Blueprint"}</button>
+                  <button type="button" className="primary-pill" onClick={(event) => {
+                    event.stopPropagation();
+                    void generateFromBlueprint(card);
+                  }}>{locale === "fa" ? "استفاده از قالب" : "Use Blueprint"}</button>
                 </div>
               </button>
             ))}
@@ -155,7 +183,7 @@ ${(selected.capabilities ?? ["website", "shop", "crm"]).map((item) => `- ${item}
             </div>
           </div>
           <div className="toolbar-row" style={{ marginTop: 16 }}>
-            <button type="button" className="primary-pill wide-pill">{locale === "fa" ? "تولید از روی قالب" : "Generate from blueprint"}</button>
+            <button type="button" className="primary-pill wide-pill" onClick={() => generateFromBlueprint(selected)}>{locale === "fa" ? "تولید از روی قالب" : "Generate from blueprint"}</button>
           </div>
         </aside>
       </div>

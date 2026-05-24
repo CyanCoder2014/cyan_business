@@ -16,7 +16,7 @@ const serviceBaseUrls: Record<string, string> = {
   "payment-service": process.env.PAYMENT_SERVICE_BASE_URL ?? "http://localhost:9114",
   "pricing-promotion-service": process.env.PRICING_PROMOTION_SERVICE_BASE_URL ?? "http://localhost:9124",
   "notification-service": process.env.NOTIFICATION_SERVICE_BASE_URL ?? "http://localhost:9122",
-  "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9123"
+  "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9125"
 };
 
 type RouteContext = {

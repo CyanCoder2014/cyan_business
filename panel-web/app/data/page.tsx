@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
 import { fallbackStats } from "@/lib/panel-fixtures";
-import { listRecords } from "@/lib/dynamic-api";
+import { listRecords, submitRecord, updateRecord } from "@/lib/dynamic-api";
 import type { DynamicEntityRecord } from "@/lib/types";
 
 type EntityBucket = {
@@ -25,6 +25,7 @@ export default function DataManagerPage() {
   const { locale } = usePanel();
   const [selectedBucket, setSelectedBucket] = useState(entityBuckets[0]);
   const [records, setRecords] = useState<DynamicEntityRecord[]>([]);
+  const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     listRecords(selectedBucket.serviceKey, selectedBucket.key, { tenantKey: "tenant-demo", siteKey: "site-commerce" })
@@ -33,6 +34,47 @@ export default function DataManagerPage() {
   }, [selectedBucket]);
 
   const activeRecord = useMemo(() => records[0] ?? fallbackRecords[0], [records]);
+
+  async function createDemoRecord() {
+    setStatus(locale === "fa" ? "در حال ایجاد رکورد..." : "Creating record...");
+    const recordKey = `${selectedBucket.key}-${Date.now()}`;
+    try {
+      const created = await submitRecord(
+        selectedBucket.serviceKey,
+        selectedBucket.key,
+        recordKey,
+        {
+          title: selectedBucket.key === "product" ? "New Product" : "New Record",
+          status: "DRAFT",
+          category: "General",
+          price: 0,
+          stock: 0
+        },
+        { tenantKey: "tenant-demo", siteKey: "site-commerce" }
+      );
+      setRecords((current) => [created, ...current]);
+      setStatus(locale === "fa" ? "رکورد ایجاد شد." : "Record created.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "ایجاد رکورد ناموفق بود." : "Create failed.");
+    }
+  }
+
+  async function markActiveRecordEdited() {
+    setStatus(locale === "fa" ? "در حال ذخیره..." : "Saving...");
+    try {
+      const updated = await updateRecord(
+        selectedBucket.serviceKey,
+        selectedBucket.key,
+        activeRecord.recordKey,
+        { ...activeRecord.data, status: "Published" },
+        { tenantKey: "tenant-demo", siteKey: "site-commerce" }
+      );
+      setRecords((current) => current.map((item) => (item.recordKey === updated.recordKey ? updated : item)));
+      setStatus(locale === "fa" ? "رکورد ذخیره شد." : "Record saved.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "ذخیره ناموفق بود." : "Save failed.");
+    }
+  }
 
   return (
     <PanelShell
@@ -89,11 +131,12 @@ export default function DataManagerPage() {
               <button type="button" className="secondary-pill">
                 {locale === "fa" ? "خروجی" : "Export"}
               </button>
-              <button type="button" className="primary-pill">
+              <button type="button" className="primary-pill" onClick={createDemoRecord}>
                 {locale === "fa" ? "رکورد جدید" : "New record"}
               </button>
               </div>
             </div>
+          {status ? <div className="status-pill info" style={{ marginTop: 12 }}>{status}</div> : null}
 
           <table className="data-table" style={{ marginTop: 16 }}>
             <thead>
@@ -148,7 +191,7 @@ export default function DataManagerPage() {
           </div>
           <div className="toolbar-row" style={{ marginTop: 18 }}>
             <button type="button" className="secondary-pill">{locale === "fa" ? "پیش‌نمایش" : "Preview"}</button>
-            <button type="button" className="primary-pill">{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
+            <button type="button" className="primary-pill" onClick={markActiveRecordEdited}>{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
           </div>
         </aside>
       </div>
@@ -214,7 +257,7 @@ export default function DataManagerPage() {
           </div>
           <div className="toolbar-row" style={{ marginTop: 16 }}>
             <button type="button" className="secondary-pill">{locale === "fa" ? "پیش‌نمایش" : "Preview"}</button>
-            <button type="button" className="primary-pill">{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
+            <button type="button" className="primary-pill" onClick={markActiveRecordEdited}>{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
           </div>
         </div>
       </div>

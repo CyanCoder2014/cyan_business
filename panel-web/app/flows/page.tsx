@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
-import { getConditionMetadata, listActionMetadata, listFlows, type BpmActionStructure, type BpmConditionStructure, type DynamicFlowDefinition } from "@/lib/bpm-api";
+import { activateFlow, getConditionMetadata, listActionMetadata, listFlows, saveFlow, type BpmActionStructure, type BpmConditionStructure, type DynamicFlowDefinition } from "@/lib/bpm-api";
 
 export default function FlowsPage() {
   const { locale } = usePanel();
   const [flows, setFlows] = useState<DynamicFlowDefinition[]>([]);
   const [actions, setActions] = useState<BpmActionStructure[]>([]);
   const [conditions, setConditions] = useState<BpmConditionStructure | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -24,6 +25,24 @@ export default function FlowsPage() {
   }, []);
 
   const flow = flows[0] ?? fallbackFlow;
+
+  async function saveCurrentFlow(activate: boolean) {
+    setStatus(locale === "fa" ? "در حال ذخیره فلو..." : "Saving flow...");
+    const draft = flow.states.length ? flow : fallbackFlow;
+    try {
+      const saved = await saveFlow(draft, { tenantKey: "tenant-demo", siteKey: "site-commerce" });
+      if (activate) {
+        await activateFlow(saved.flowKey, saved.version ?? 1, { tenantKey: "tenant-demo", siteKey: "site-commerce" });
+      }
+      setFlows((current) => {
+        const next = current.filter((item) => item.flowKey !== saved.flowKey);
+        return [saved, ...next];
+      });
+      setStatus(activate ? (locale === "fa" ? "فلو منتشر شد." : "Flow published.") : locale === "fa" ? "پیش‌نویس فلو ذخیره شد." : "Flow draft saved.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "ذخیره فلو ناموفق بود." : "Flow save failed.");
+    }
+  }
 
   return (
     <PanelShell
@@ -53,14 +72,18 @@ export default function FlowsPage() {
             <span className="status-pill success">{locale === "fa" ? "پیش‌نویس" : "Draft"}</span>
             <div className="pill-row">
               <button type="button" className="secondary-pill">
+                {locale === "fa" ? "تست ارسال" : "Test submission"}
+              </button>
+              <button type="button" className="secondary-pill" onClick={() => saveCurrentFlow(false)}>
                 {locale === "fa" ? "ذخیره" : "Save draft"}
               </button>
-              <button type="button" className="primary-pill">
+              <button type="button" className="primary-pill" onClick={() => saveCurrentFlow(true)}>
                 {locale === "fa" ? "انتشار فلو" : "Publish flow"}
               </button>
             </div>
           </div>
-          <div className="flow-canvas" style={{ marginTop: 18 }}>
+          {status ? <div className="status-pill info" style={{ marginTop: 12 }}>{status}</div> : null}
+          <div className="flow-canvas flow-canvas-wide" style={{ marginTop: 18 }}>
             <div className="kanban-node">
               <strong>Draft</strong>
               <span className="muted-block">{locale === "fa" ? "فرم درخواست" : "PO request form"}</span>
@@ -127,6 +150,12 @@ export default function FlowsPage() {
           <div className="card-title-row">
             <h3>{locale === "fa" ? "نود انتخاب‌شده" : "Selected node"}</h3>
           </div>
+          <div className="pill-row" style={{ marginTop: 12 }}>
+            <span className="pill status-pill info">{locale === "fa" ? "پیکربندی" : "Configure"}</span>
+            <span className="pill">{locale === "fa" ? "ترنزیشن‌ها" : "Transitions"}</span>
+            <span className="pill">{locale === "fa" ? "اکشن‌ها" : "Actions"}</span>
+            <span className="pill">{locale === "fa" ? "رویدادها" : "Events"}</span>
+          </div>
           <div className="detail-list" style={{ marginTop: 16 }}>
             <div className="detail-item">
               <strong>{locale === "fa" ? "عنوان" : "Title"}</strong>
@@ -139,6 +168,12 @@ export default function FlowsPage() {
             <div className="detail-item">
               <strong>{locale === "fa" ? "رویدادها" : "Events"}</strong>
               <span className="muted-block">review.completed, review.rejected</span>
+            </div>
+          </div>
+          <div className="detail-list" style={{ marginTop: 16 }}>
+            <div className="detail-item">
+              <strong>{locale === "fa" ? "قوانین انتقال" : "Transition rules"}</strong>
+              <span className="muted-block">{locale === "fa" ? "Approve → Approved / Reject → Rejected" : "Approve → Approved / Reject → Rejected"}</span>
             </div>
           </div>
         </aside>
@@ -199,8 +234,21 @@ const fallbackFlow: DynamicFlowDefinition = {
   flowKey: "purchase_order_approval",
   name: "Purchase Order Approval",
   startState: "Draft",
-  states: [],
-  transitions: []
+  states: [
+    { id: "Draft", displayName: "Draft", terminal: false, formKey: "po_request" },
+    { id: "Submitted", displayName: "Submitted", terminal: false, formKey: "po_request" },
+    { id: "Review", displayName: "Review", terminal: false, formKey: "review_form" },
+    { id: "Approved", displayName: "Approved", terminal: false, formKey: "approval_form" },
+    { id: "Rejected", displayName: "Rejected", terminal: true, formKey: "rejection_form" },
+    { id: "Completed", displayName: "Completed", terminal: true }
+  ],
+  transitions: [
+    { id: "submit", fromState: "Draft", toState: "Submitted", label: "Submit" },
+    { id: "route-to-review", fromState: "Submitted", toState: "Review", label: "Route to review" },
+    { id: "approve", fromState: "Review", toState: "Approved", label: "Approve" },
+    { id: "reject", fromState: "Review", toState: "Rejected", label: "Reject" },
+    { id: "complete", fromState: "Approved", toState: "Completed", label: "Auto-complete" }
+  ]
 };
 
 const fallbackActions: BpmActionStructure[] = [

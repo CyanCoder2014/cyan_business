@@ -55,9 +55,7 @@ export default function IntegrationsPage() {
                 <div className="muted-block">{integration.active ? (locale === "fa" ? "متصل" : "Connected") : locale === "fa" ? "در انتظار" : "Pending"}</div>
                 <div className="toolbar-row" style={{ marginTop: 16 }}>
                   <span className="pill">{integration.active ? "Production" : "Staging"}</span>
-                  <button type="button" className="primary-pill">
-                    {locale === "fa" ? "باز کردن" : "Open"}
-                  </button>
+                  <button type="button" className={integration.channel === "TELEGRAM" ? "primary-pill" : "secondary-pill"}>{locale === "fa" ? "باز کردن" : "Open"}</button>
                 </div>
               </article>
             ))}
@@ -95,6 +93,10 @@ export default function IntegrationsPage() {
                 ))}
               </tbody>
             </table>
+            <div className="summary-grid" style={{ marginTop: 18 }}>
+              <div className="mini-card"><strong>1,248</strong><span className="muted-block">{locale === "fa" ? "ارسال‌شده" : "Sent"}</span></div>
+              <div className="mini-card"><strong>1,152</strong><span className="muted-block">{locale === "fa" ? "تحویل‌شده" : "Delivered"}</span></div>
+            </div>
           </div>
         </section>
 
@@ -116,6 +118,13 @@ export default function IntegrationsPage() {
               <strong>{locale === "fa" ? "مینی‌اپ" : "Mini app"}</strong>
               <span className="muted-block">{selected.miniAppUrl ?? "https://preview.cyan.app/mini-app"}</span>
             </div>
+          </div>
+          <div className="card-title-row" style={{ marginTop: 18 }}>
+            <h3>{locale === "fa" ? "اتصال / تست" : "Connect / Test"}</h3>
+          </div>
+          <div className="mini-card" style={{ marginTop: 12 }}>
+            <strong>QR</strong>
+            <span className="muted-block">{locale === "fa" ? "برای باز کردن بات اسکن کنید" : "Scan to open chat with this bot"}</span>
           </div>
         </aside>
       </div>

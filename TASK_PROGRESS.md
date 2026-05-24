@@ -123,3 +123,36 @@
 
 ### Known issues
 - The root README uses the reference images from `UI-UX`, so future product screenshot updates should keep those image paths stable or update the README accordingly.
+
+## Step 5: Responsive, dark-mode, and missing-screen fidelity pass
+
+### What changed
+- Added a dedicated auth route at [panel-web/app/auth/page.tsx](/Users/farid/Projects/naviya/old-cyan/cyan_business/panel-web/app/auth/page.tsx) to cover the missing `UI-UX/1.png` auth screen and its mobile variant.
+- Tightened the global dark theme tokens and surface styling to move closer to the `UI-UX/Dark` references.
+- Added mobile-only route compositions for the screens most explicitly represented in `UI-UX/PWA`:
+  - AI Studio
+  - Blueprints
+  - Maker
+  - Data Manager
+  - Flow Builder
+- Added mobile-only utility/layout classes in the shared stylesheet to support the PWA card, bottom-sheet, and stacked-control patterns.
+
+### Files modified
+- [panel-web/app/auth/page.tsx](/Users/farid/Projects/naviya/old-cyan/cyan_business/panel-web/app/auth/page.tsx)
+- [panel-web/app/projects/new/page.tsx](/Users/farid/Projects/naviya/old-cyan/cyan_business/panel-web/app/projects/new/page.tsx)
+- [panel-web/app/projects/page.tsx](/Users/farid/Projects/naviya/old-cyan/cyan_business/panel-web/app/projects/page.tsx)
+- [panel-web/app/maker/page.tsx](/Users/farid/Projects/naviya/old-cyan/cyan_business/panel-web/app/maker/page.tsx)
+- [panel-web/app/data/page.tsx](/Users/farid/Projects/naviya/old-cyan/cyan_business/panel-web/app/data/page.tsx)
+- [panel-web/app/flows/page.tsx](/Users/farid/Projects/naviya/old-cyan/cyan_business/panel-web/app/flows/page.tsx)
+- [panel-web/app/globals.css](/Users/farid/Projects/naviya/old-cyan/cyan_business/panel-web/app/globals.css)
+
+### Remaining steps
+- Verify exact visual parity in a live browser session once an in-app browser target is available in the thread.
+- Continue closing backend gaps for richer editor-grade interactions where the reference shows behavior beyond the current service contracts.
+
+### Tests run
+- `cd panel-web && npm run build`
+
+### Known issues
+- The browser automation plugin was available, but no in-app browser target was attached to this thread, so I could not complete live screenshot verification against `localhost:3000`.
+- Current “exactness” is based on code-side alignment to the `UI-UX`, `PWA`, and `Dark` references, not on browser-captured image diffs from this session.

@@ -136,18 +136,5 @@ cd panel-web
 npm run build
 ```
 
-## Current implementation notes
-
-- the panel now follows the `UI-UX` references with a shared shell and light-default presentation
-- Farsi mode is supported with local Vazir font assets
-- the panel uses live microservice wiring where service contracts already exist
-- current panel/API gaps are documented in [PANEL_UI_UX_ROADMAP.md](PANEL_UI_UX_ROADMAP.md)
-
-## Repository guide
-
-- `panel-web/`: multilingual operator panel
-- `UI-UX/`: visual product references used for the panel redesign
-- `docs/` and root architecture markdown files: platform design and rollout context
-- service directories: business capabilities owned by each microservice
 
 Cyan is built to help teams launch faster, operate with more structure, and unify public experience with real business execution. If you need one platform that can generate, model, publish, automate, and scale business apps, this repository is the foundation.

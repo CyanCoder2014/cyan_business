@@ -44,6 +44,16 @@ export default function SiteBuilderPage() {
               </div>
             ))}
           </div>
+          <div className="card-title-row" style={{ marginTop: 18 }}>
+            <h3>{locale === "fa" ? "افزودن بخش" : "Add Section"}</h3>
+          </div>
+          <div className="entity-list" style={{ marginTop: 12 }}>
+            {["Hero", "Features", "Product Grid", "Testimonials", "FAQ", "CTA", "Footer"].map((item) => (
+              <div key={item} className="entity-item">
+                <strong>{item}</strong>
+              </div>
+            ))}
+          </div>
         </aside>
 
         <section className="preview-frame">
@@ -95,6 +105,9 @@ export default function SiteBuilderPage() {
               <strong>Cyan</strong>
               <h3 style={{ fontSize: "2rem" }}>{locale === "fa" ? "کسب‌وکارتان را آنلاین کنید" : "Launch your business digitally"}</h3>
               <p className="muted">{locale === "fa" ? "از وب تا ربات و PWA" : "From web to bots and PWA"}</p>
+              <button type="button" className="primary-pill" style={{ width: "100%", marginTop: 16 }}>
+                {locale === "fa" ? "شروع کنید" : "Get Started"}
+              </button>
             </div>
           </div>
 
@@ -115,6 +128,11 @@ export default function SiteBuilderPage() {
             <h3>{locale === "fa" ? "بخش" : "Section"}</h3>
             <span className="pill">#hero-1</span>
           </div>
+          <div className="pill-row" style={{ marginTop: 14 }}>
+            <span className="pill status-pill info">{locale === "fa" ? "محتوا" : "Content"}</span>
+            <span className="pill">{locale === "fa" ? "استایل" : "Style"}</span>
+            <span className="pill">{locale === "fa" ? "پیشرفته" : "Advanced"}</span>
+          </div>
           <div className="detail-list" style={{ marginTop: 16 }}>
             <div className="detail-item">
               <strong>{locale === "fa" ? "چیدمان" : "Layout"}</strong>
@@ -132,6 +150,10 @@ export default function SiteBuilderPage() {
               <strong>{locale === "fa" ? "وضعیت انتشار" : "Publish status"}</strong>
               <span className="muted-block">{locale === "fa" ? "منتشر شده" : "Published"}</span>
             </div>
+          </div>
+          <div className="toolbar-row" style={{ marginTop: 18 }}>
+            <button type="button" className="secondary-pill">{locale === "fa" ? "ذخیره پیش‌نویس" : "Save draft"}</button>
+            <button type="button" className="primary-pill">{locale === "fa" ? "انتشار" : "Publish"}</button>
           </div>
         </aside>
       </div>

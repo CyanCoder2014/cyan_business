@@ -72,58 +72,78 @@ export default function AiStudioPage() {
       subtitle="Create websites, PWAs, shops, CRM, BPM forms, automations, and Telegram/Bale bots with one structured prompt."
       subtitleFa="وب‌سایت، PWA، فروشگاه، CRM، فرم‌های BPM، اتوماسیون و ربات‌های تلگرام/بله را با یک درخواست ساختارمند تولید کنید."
     >
-      <div className="page-grid">
-        <section className="hero-banner">
-          <div className="chat-shell">
-            <div className="chat-message">
-              <strong>{locale === "fa" ? "سلام، من سیان هستم." : "Hi, I'm Cyan AI."}</strong>
-              <div className="muted-block">
-                {locale === "fa" ? "چه چیزی برای شما بسازم؟" : "What would you like to build today?"}
+      <div className="desktop-only page-grid">
+        <section>
+          <article className="hero-banner studio-panel">
+            <div className="chat-shell">
+              <div className="chat-message">
+                <strong>{locale === "fa" ? "سلام، من Cyan AI هستم." : "Hi! I'm Cyan AI."}</strong>
+                <div className="muted-block">
+                  {locale === "fa" ? "چه چیزی برای شما بسازم؟" : "What would you like to build today?"}
+                </div>
+              </div>
+              <div className="chat-message outbound">
+                <strong>{locale === "fa" ? "می‌خواهم یک فروشگاه کامل بسازم." : "I want a shop with product catalog, cart, checkout, payments and order tracking."}</strong>
+                <div className="muted-block">{locale === "fa" ? "۱۰:۲۴" : "10:24 AM"}</div>
+              </div>
+              <div className="chat-message">
+                <strong>{locale === "fa" ? "عالی، پیش‌نویس را آماده می‌کنم." : "Great! I'll generate a shop app draft for you."}</strong>
+                <div className="muted-block">
+                  {locale === "fa"
+                    ? "وب‌سایت، فروشگاه، CRM، فرم‌ها و ربات‌ها در خروجی قرار می‌گیرند."
+                    : "Catalog, secure checkout, CRM, forms, and bot channels are included in the output."}
+                </div>
               </div>
             </div>
-            <div className="chat-message outbound">
-              <strong>{locale === "fa" ? "فروشگاه کامل با پرداخت و پیگیری سفارش" : "A complete shop with payments and order tracking"}</strong>
-              <div className="muted-block">{prompt}</div>
+
+            <div className="pill-row" style={{ marginTop: 18 }}>
+              <span className="pill studio-suggestion">{locale === "fa" ? "ساخت فروشگاه" : "Create a shop"}</span>
+              <span className="pill studio-suggestion">{locale === "fa" ? "ساخت CRM" : "Build a CRM"}</span>
+              <span className="pill studio-suggestion">{locale === "fa" ? "فرم BPM" : "Make a BPM form"}</span>
+              <span className="pill studio-suggestion">{locale === "fa" ? "ربات تلگرام" : "Telegram bot"}</span>
+              <span className="pill studio-suggestion">PWA</span>
             </div>
-            <div className="chat-message">
-              <strong>{locale === "fa" ? "پیش‌نویس شما آماده است." : "Your draft is ready."}</strong>
-              <div className="muted-block">
-                {locale === "fa"
-                  ? "وب‌سایت، فروشگاه، CRM، فرم‌ها و کانال‌های پیام‌رسان در این خروجی ساختارمند شده‌اند."
-                  : "Website, commerce, CRM, forms, and bot channels are captured in the generated output."}
+
+            <div className="chat-composer" style={{ marginTop: 16 }}>
+              <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder={locale === "fa" ? "اپ یا سناریوی خود را توضیح دهید..." : "Describe your app or ask anything..."} />
+              <div className="toolbar-row">
+                <div className="pill-row">
+                  <button type="button" className="secondary-pill">
+                    {locale === "fa" ? "بهبود درخواست" : "Enhance prompt"}
+                  </button>
+                  <span className="pill">{locale === "fa" ? "هوشمند" : "Smart"}</span>
+                </div>
+                <button type="button" className="primary-pill" onClick={handleGenerate} disabled={loading}>
+                  {loading ? (locale === "fa" ? "در حال تولید..." : "Generating...") : locale === "fa" ? "تولید پیش‌نویس" : "Generate draft"}
+                </button>
               </div>
+              <div className="muted-block studio-disclaimer">
+                {locale === "fa" ? "Cyan AI ممکن است اشتباه کند. خروجی را پیش از انتشار بررسی کنید." : "Cyan AI can make mistakes. Please review the output."}
+              </div>
+              {status ? <div className="status-pill info">{status}</div> : null}
             </div>
-          </div>
+          </article>
 
-          <div className="pill-row" style={{ marginTop: 18 }}>
-            <span className="pill">{locale === "fa" ? "ساخت فروشگاه" : "Create a shop"}</span>
-            <span className="pill">{locale === "fa" ? "ساخت CRM" : "Build a CRM"}</span>
-            <span className="pill">{locale === "fa" ? "فرم BPM" : "Make a BPM form"}</span>
-            <span className="pill">{locale === "fa" ? "ربات تلگرام" : "Telegram bot"}</span>
-            <span className="pill">PWA</span>
-          </div>
-
-          <div className="chat-composer" style={{ marginTop: 16 }}>
-            <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} />
-            <div className="toolbar-row">
-              <button type="button" className="secondary-pill">
-                {locale === "fa" ? "بهبود درخواست" : "Enhance prompt"}
-              </button>
-              <button type="button" className="primary-pill" onClick={handleGenerate} disabled={loading}>
-                {loading ? (locale === "fa" ? "در حال تولید..." : "Generating...") : locale === "fa" ? "تولید پیش‌نویس" : "Generate draft"}
-              </button>
-            </div>
-            {status ? <div className="status-pill info">{status}</div> : null}
-          </div>
-
-          <section className="summary-grid" style={{ marginTop: 18 }}>
+          <section className="studio-summary-grid" style={{ marginTop: 18 }}>
             <article className="summary-card">
               <span className="muted">{locale === "fa" ? "پیش‌نویس DSL" : "Draft DSL"}</span>
               <strong>{response?.dsl.app.appKey ?? "shop_app_v0.1.dsl"}</strong>
+              <a href="#" className="muted-block">{locale === "fa" ? "مشاهده فایل" : "View file"}</a>
             </article>
             <article className="summary-card">
-              <span className="muted">{locale === "fa" ? "وضعیت انتشار" : "Publish readiness"}</span>
+              <span className="muted">{locale === "fa" ? "سرویس‌ها" : "Services"}</span>
+              <strong>{summary.services}</strong>
+              <a href="#" className="muted-block">{locale === "fa" ? "مدیریت سرویس‌ها" : "Manage services"}</a>
+            </article>
+            <article className="summary-card">
+              <span className="muted">{locale === "fa" ? "آمادگی انتشار" : "Publish readiness"}</span>
               <strong>{locale === "fa" ? "۹۲٪" : "92%"}</strong>
+              <a href="#" className="muted-block">{locale === "fa" ? "مشاهده چک‌لیست" : "View checklist"}</a>
+            </article>
+            <article className="summary-card">
+              <span className="muted">{locale === "fa" ? "لینک پیش‌نمایش" : "Preview link"}</span>
+              <strong style={{ fontSize: "1rem" }}>https://preview.cyan.app/shop-app-v0-1</strong>
+              <a href="#" className="muted-block">{locale === "fa" ? "باز کردن پیش‌نمایش" : "Open preview"}</a>
             </article>
           </section>
         </section>
@@ -139,7 +159,7 @@ export default function AiStudioPage() {
               ? "اپ کامل با کاتالوگ، سبد خرید، پرداخت، پیگیری سفارش و مسیرهای CRM."
               : "Complete app with catalog, cart, checkout, payments, order tracking, and CRM flows."}
           </p>
-          <div className="summary-grid" style={{ marginTop: 16 }}>
+          <div className="studio-module-grid" style={{ marginTop: 16 }}>
             <div className="mini-card">
               <span className="muted">{locale === "fa" ? "صفحات / مسیرها" : "Routes"}</span>
               <strong>{summary.routes}</strong>
@@ -158,7 +178,11 @@ export default function AiStudioPage() {
             </div>
           </div>
 
-          <div className="activity-list" style={{ marginTop: 16 }}>
+          <div className="card-title-row" style={{ marginTop: 18 }}>
+            <h3>{locale === "fa" ? "آخرین تولیدها" : "Recent generations"}</h3>
+            <a href="#" className="muted">{locale === "fa" ? "مشاهده همه" : "View all"}</a>
+          </div>
+          <div className="activity-list studio-generation-list" style={{ marginTop: 16 }}>
             {(drafts.slice(0, 5).length
               ? drafts.slice(0, 5).map((draft) => ({
                   title: draft.title,
@@ -172,7 +196,72 @@ export default function AiStudioPage() {
               </div>
             ))}
           </div>
+
+          <div className="summary-grid dashboard-summary-grid" style={{ marginTop: 20 }}>
+            {[
+              ["Website", "12 pages"],
+              ["Shop", "18 modules"],
+              ["CRM", "9 modules"],
+              ["Forms", "6 forms"],
+              ["Flow", "14 workflows"],
+              ["Bot", "Telegram bot"]
+            ].map(([title, meta]) => (
+              <div key={title} className="mini-card">
+                <strong>{title}</strong>
+                <span className="muted-block">{meta}</span>
+              </div>
+            ))}
+          </div>
         </aside>
+      </div>
+
+      <div className="mobile-only mobile-screen">
+        <div className="mobile-screen-header">
+          <button type="button" className="icon-pill">←</button>
+          <strong style={{ fontSize: "2rem" }}>{locale === "fa" ? "استودیوی هوش مصنوعی" : "AI Studio"}</strong>
+          <span className="pill">{locale === "fa" ? "پیش‌نویس" : "Draft"}</span>
+        </div>
+        <div className="mobile-chat-thread">
+          <div className="mobile-list-item">
+            <strong>{locale === "fa" ? "Cyan AI" : "Cyan AI"}</strong>
+            <span className="muted-block">{locale === "fa" ? "چه چیزی برای شما بسازم؟" : "What would you like to build today?"}</span>
+          </div>
+          <div className="mobile-list-item" style={{ justifySelf: "end", background: "linear-gradient(135deg, rgba(37,141,247,0.12), rgba(126,73,255,0.1))" }}>
+            <strong>{locale === "fa" ? "می‌خواهم یک اپ فروشگاهی بسازم" : "I want to build a shop app"}</strong>
+            <span className="muted-block">{prompt}</span>
+          </div>
+          <div className="mobile-list-item">
+            <strong>{locale === "fa" ? "در حال تولید اپ شما..." : "Generating your app..."}</strong>
+            <span className="muted-block">{locale === "fa" ? "وب‌سایت، فروشگاه، CRM و فرم‌ها در حال آماده‌سازی هستند." : "Website, shop, CRM, and forms are being prepared."}</span>
+          </div>
+          <div className="mobile-tab-strip">
+            <span className="pill">{locale === "fa" ? "فروشگاه" : "Create a shop"}</span>
+            <span className="pill">CRM</span>
+            <span className="pill">Telegram</span>
+          </div>
+          <div className="mobile-card">
+            <strong>{locale === "fa" ? "در حال ساخت" : "Generating your app..."}</strong>
+            <div className="mobile-list" style={{ marginTop: 14 }}>
+              {[
+                [locale === "fa" ? "وب‌سایت" : "Website", locale === "fa" ? "آماده" : "Ready"],
+                [locale === "fa" ? "فروشگاه" : "Shop", locale === "fa" ? "آماده" : "Ready"],
+                ["CRM", locale === "fa" ? "در حال انجام" : "In progress"],
+                [locale === "fa" ? "فرم‌ها" : "Forms", locale === "fa" ? "در انتظار" : "Pending"]
+              ].map(([a, b]) => (
+                <div key={String(a)} className="mobile-list-item">
+                  <strong>{a}</strong>
+                  <span className="muted-block">{b}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="chat-composer">
+            <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} />
+            <button type="button" className="primary-pill" onClick={handleGenerate} disabled={loading}>
+              {loading ? (locale === "fa" ? "در حال تولید..." : "Generating...") : locale === "fa" ? "ارسال" : "Send"}
+            </button>
+          </div>
+        </div>
       </div>
     </PanelShell>
   );

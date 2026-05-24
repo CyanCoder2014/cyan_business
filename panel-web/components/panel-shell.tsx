@@ -22,11 +22,11 @@ const navigation = [
   { href: "/data", key: "data", icon: "◍", en: "Data", fa: "داده‌ها" },
   { href: "/flows", key: "flows", icon: "⌇", en: "Flow Builder", fa: "فلوساز" },
   { href: "/integrations", key: "integrations", icon: "⬡", en: "Client Apps/Bots", fa: "اپ‌ها / بات‌ها" },
+  { href: "/bot", key: "bot", icon: "☻", en: "Bot Experience", fa: "تجربه بات" },
   { href: "/site-builder", key: "site-builder", icon: "▣", en: "Site Builder", fa: "سایت‌ساز" },
-  { href: "/search", key: "search", icon: "⌕", en: "Search", fa: "جستجو" },
-  { href: "/automation", key: "automation", icon: "⚙", en: "Automation", fa: "اتوماسیون" },
-  { href: "/iam", key: "iam", icon: "◎", en: "IAM", fa: "دسترسی" },
-  { href: "/notifications", key: "notifications", icon: "◌", en: "Notifications", fa: "اعلان‌ها" }
+  { href: "/search", key: "search", icon: "⌕", en: "Media", fa: "مدیا" },
+  { href: "/automation", key: "automation", icon: "◔", en: "Analytics", fa: "آنالیتیکس" },
+  { href: "/iam", key: "iam", icon: "⚙", en: "Settings", fa: "تنظیمات" }
 ];
 
 export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, children }: PanelShellProps) {
@@ -122,7 +122,13 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
           </section>
           {children}
           <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
-            {navigation.slice(0, 5).map((item) => (
+            {[
+              navigation[0],
+              navigation[1],
+              navigation[4],
+              navigation[5],
+              navigation[6]
+            ].map((item) => (
               <Link key={item.href} href={item.href}>
                 <span>{item.icon}</span>
                 <span>{locale === "fa" ? item.fa : item.en}</span>

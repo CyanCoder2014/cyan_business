@@ -8,7 +8,7 @@ export default function BotExperiencePage() {
 
   return (
     <PanelShell
-      activeKey="integrations"
+      activeKey="bot"
       title="Bot Experience"
       titleFa="تجربه بات"
       subtitle="Preview how customers experience Telegram and Bale journeys powered by Cyan."
@@ -16,6 +16,10 @@ export default function BotExperiencePage() {
     >
       <div className="page-grid">
         <section className="panel-card">
+          <div className="pill-row" style={{ marginBottom: 16 }}>
+            <span className="pill status-pill info">Telegram</span>
+            <span className="pill">Bale</span>
+          </div>
           <div className="two-column-grid">
             <article className="preview-frame">
               <div className="card-title-row">
@@ -38,6 +42,10 @@ export default function BotExperiencePage() {
                   <strong>{locale === "fa" ? "سفارش در مسیر است" : "Your order is in transit"}</strong>
                   <div className="muted-block">{locale === "fa" ? "تحویل فردا" : "Arriving tomorrow"}</div>
                 </div>
+                <div className="toolbar-row">
+                  <button type="button" className="secondary-pill">{locale === "fa" ? "اشتراک‌گذاری رهگیری" : "Share tracking"}</button>
+                  <button type="button" className="secondary-pill">{locale === "fa" ? "مشاهده جزئیات" : "View details"}</button>
+                </div>
               </div>
             </article>
 
@@ -57,12 +65,20 @@ export default function BotExperiencePage() {
                 <div className="chat-message outbound">
                   <strong>{locale === "fa" ? "کالای اشتباه دریافت کردم." : "I received the wrong item."}</strong>
                 </div>
+                <div className="pill-row">
+                  <span className="pill">{locale === "fa" ? "درخواست مرجوعی" : "Request return"}</span>
+                  <span className="pill">{locale === "fa" ? "تعویض کالا" : "Replace item"}</span>
+                  <span className="pill">{locale === "fa" ? "ارتباط با اپراتور" : "Talk to an Agent"}</span>
+                </div>
               </div>
             </article>
           </div>
         </section>
 
         <aside className="panel-card">
+          <div className="toolbar-row">
+            <button type="button" className="secondary-pill">{locale === "fa" ? "باز کردن در سازنده" : "Open in Maker"}</button>
+          </div>
           <div className="card-title-row">
             <h3>{locale === "fa" ? "قابلیت‌های بات" : "Bot capabilities"}</h3>
           </div>
@@ -79,6 +95,13 @@ export default function BotExperiencePage() {
               <strong>{locale === "fa" ? "فرم‌های هوشمند" : "Smart forms"}</strong>
               <span className="muted-block">{locale === "fa" ? "جمع‌آوری ساختاریافته اطلاعات" : "Collects structured information with dynamic forms."}</span>
             </div>
+          </div>
+          <div className="card-title-row" style={{ marginTop: 18 }}>
+            <h3>{locale === "fa" ? "وضعیت اپراتور" : "Operator status"}</h3>
+          </div>
+          <div className="summary-grid" style={{ marginTop: 12 }}>
+            <div className="mini-card"><strong>98.6%</strong><span className="muted-block">{locale === "fa" ? "تحویل‌شده" : "Delivered"}</span></div>
+            <div className="mini-card"><strong>1.1%</strong><span className="muted-block">{locale === "fa" ? "ناموفق" : "Failed"}</span></div>
           </div>
         </aside>
       </div>

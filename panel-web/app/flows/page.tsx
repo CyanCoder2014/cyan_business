@@ -33,7 +33,7 @@ export default function FlowsPage() {
       subtitle="Design BPM workflows with forms, rules, approvals, and automation handoffs."
       subtitleFa="فلوهای BPM را همراه با فرم، قوانین، تاییدها و هندآف‌های اتوماسیون طراحی کنید."
     >
-      <div className="flow-grid">
+      <div className="desktop-only flow-grid">
         <aside className="panel-card">
           <div className="card-title-row">
             <h3>{locale === "fa" ? "افزودن نود" : "Add node"}</h3>
@@ -77,6 +77,14 @@ export default function FlowsPage() {
               <strong>Rejected</strong>
               <span className="muted-block">{locale === "fa" ? "عدم تطابق با سیاست" : "Does not meet policy"}</span>
             </div>
+            <div className="kanban-node green">
+              <strong>Approved</strong>
+              <span className="muted-block">{locale === "fa" ? "همه کنترل‌ها موفق" : "All checks passed"}</span>
+            </div>
+            <div className="kanban-node">
+              <strong>Completed</strong>
+              <span className="muted-block">{locale === "fa" ? "بدون فرم" : "No form"}</span>
+            </div>
           </div>
           <div className="data-table-shell" style={{ marginTop: 18 }}>
             <div className="card-title-row">
@@ -103,6 +111,16 @@ export default function FlowsPage() {
               </tbody>
             </table>
           </div>
+          <div className="summary-grid" style={{ marginTop: 18 }}>
+            <div className="mini-card">
+              <strong>{locale === "fa" ? "گزارش فعالیت" : "Activity log"}</strong>
+              <span className="muted-block">May 20, 2025 10:16 AM</span>
+            </div>
+            <div className="mini-card">
+              <strong>{locale === "fa" ? "تست فلو" : "Test this flow"}</strong>
+              <span className="muted-block">{locale === "fa" ? "شبیه‌سازی ارسال" : "Simulate a submission"}</span>
+            </div>
+          </div>
         </section>
 
         <aside className="panel-card">
@@ -124,6 +142,54 @@ export default function FlowsPage() {
             </div>
           </div>
         </aside>
+      </div>
+
+      <div className="mobile-only mobile-screen">
+        <div className="mobile-screen-header">
+          <button type="button" className="icon-pill">←</button>
+          <div className="mobile-brand">
+            <span className="tile-icon">✎</span>
+            <strong style={{ fontSize: "2rem" }}>{locale === "fa" ? "فلوساز" : "Flow Builder"}</strong>
+          </div>
+          <span className="pill">{locale === "fa" ? "پیش‌نویس" : "Draft"}</span>
+        </div>
+        <div className="mobile-tab-strip">
+          <span className="status-pill info">{locale === "fa" ? "فلو" : "Flow"}</span>
+          <span className="pill">{locale === "fa" ? "اکشن‌ها" : "Actions"}</span>
+          <span className="pill">{locale === "fa" ? "رویدادها" : "Events"}</span>
+        </div>
+        <div className="flow-mobile-path">
+          {[
+            ["Draft", locale === "fa" ? "درخواست ایجاد شد" : "PO is created"],
+            ["Submitted", locale === "fa" ? "ارسال برای تایید" : "Sent for approval"],
+            ["Review", locale === "fa" ? "بررسی مدیر" : "Manager review"],
+            ["Approved", locale === "fa" ? "تایید نهایی" : "PO approved"],
+            ["Rejected", locale === "fa" ? "رد درخواست" : "PO rejected"],
+            ["Completed", locale === "fa" ? "پایان فرآیند" : "PO process complete"]
+          ].map(([title, meta]) => (
+            <div key={title} className="flow-mobile-node">
+              <strong>{title}</strong>
+              <span className="muted-block">{meta}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mobile-bottom-sheet">
+          <div className="mobile-handle" />
+          <div className="toolbar-row">
+            <strong>{locale === "fa" ? "Review" : "Review"}</strong>
+            <button type="button" className="icon-pill">×</button>
+          </div>
+          <div className="mobile-list" style={{ marginTop: 14 }}>
+            <div className="mobile-list-item">
+              <strong>{locale === "fa" ? "تایید" : "Approve"}</strong>
+              <span className="muted-block">{locale === "fa" ? "همه شروط برقرار است → Approved" : "All conditions met → Approved"}</span>
+            </div>
+            <div className="mobile-list-item">
+              <strong>{locale === "fa" ? "رد" : "Reject"}</strong>
+              <span className="muted-block">{locale === "fa" ? "همیشه در دسترس → Rejected" : "Always available → Rejected"}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </PanelShell>
   );

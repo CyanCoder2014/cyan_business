@@ -27,6 +27,12 @@ public class SecurityConfig {
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/eureka/**")
                         .permitAll()
+                        .pathMatchers("/api/sso/**")
+                        .permitAll()
+                        .pathMatchers("/public/payment/**")
+                        .permitAll()
+                        .pathMatchers("/.well-known/**")
+                        .permitAll()
                         .pathMatchers("/realms/cyan/protocol/openid-connect/**")
                         .permitAll()
                         .anyExchange()

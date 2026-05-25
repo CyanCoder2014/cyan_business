@@ -1,0 +1,20 @@
+{
+  "name": "Cyan App Maker Panel",
+  "short_name": "Cyan",
+  "description": "Mobile-first AI app, website, PWA, and bot maker panel.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#081118",
+  "theme_color": "#0d1720",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

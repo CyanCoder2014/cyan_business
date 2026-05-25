@@ -1,0 +1,638 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "AI Orchestrator"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/endpoint/ai-orchestrator/generate/app": {
+      "post": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Generate Platform App",
+        "description": "Generate Platform App for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "prompt": "Want an e-commerce site like Spiffy with CRM, notifications, and Zarinpal payment.",
+                "appType": "ECOMMERCE",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "clientKey": "{{client_key}}",
+                "sessionId": "{{ai_session_id}}",
+                "execute": false,
+                "answers": {
+                  "subdomain": "spiffy-demo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/ai-orchestrator/blueprints": {
+      "get": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "List Blueprints",
+        "description": "List Blueprints for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/ai-orchestrator/blueprints/{blueprintKey}": {
+      "get": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Get Blueprint",
+        "description": "Get Blueprint for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "blueprintKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ecommerce-crm-zarinpal-v1"
+          }
+        ]
+      }
+    },
+    "/endpoint/ai-orchestrator/drafts": {
+      "post": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Create Draft",
+        "description": "Create Draft for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "appType": "ECOMMERCE",
+                "blueprintKey": "ecommerce-crm-zarinpal-v1",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "clientKey": "{{client_key}}",
+                "title": "Spiffy Clone",
+                "prompt": "Spiffy-like ecommerce with CRM and notifications.",
+                "answers": {
+                  "subdomain": "spiffy-demo",
+                  "brandName": "Spiffy Demo"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "List Drafts",
+        "description": "List Drafts for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/ai-orchestrator/drafts/{draftId}": {
+      "get": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Get Draft",
+        "description": "Get Draft for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{draft_id}}"
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Patch Draft",
+        "description": "Patch Draft for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{draft_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "prompt": "Spiffy-like ecommerce with CRM, notifications, and Zarinpal.",
+                "title": "Spiffy Demo Updated",
+                "answersPatch": {
+                  "subdomain": "spiffy-shop",
+                  "primaryCurrency": "IRR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/ai-orchestrator/drafts/{draftId}/provision": {
+      "post": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Provision Draft",
+        "description": "Provision Draft for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{draft_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "mode": "EXECUTE",
+                "idempotencyKey": "prov-{{draft_id}}",
+                "triggerType": "MANUAL",
+                "triggeredBy": "postman"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/ai-orchestrator/drafts/{draftId}/runs": {
+      "get": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "List Provisioning Runs",
+        "description": "List Provisioning Runs for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "draftId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{draft_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/ai-orchestrator/runs/{runId}": {
+      "get": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Get Provisioning Run",
+        "description": "Get Provisioning Run for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "runId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{run_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/ai-orchestrator/sessions": {
+      "post": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Create Conversation Session",
+        "description": "Create Conversation Session for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "channelType": "CHAT",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "clientKey": "{{client_key}}",
+                "draftId": "{{draft_id}}",
+                "appTypeHint": "ECOMMERCE",
+                "title": "Spiffy Intake",
+                "extractedAnswers": {
+                  "subdomain": "spiffy-demo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/ai-orchestrator/sessions/{sessionId}": {
+      "get": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Get Conversation Session",
+        "description": "Get Conversation Session for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{session_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/ai-orchestrator/sessions/{sessionId}/message": {
+      "post": {
+        "tags": [
+          "AI Orchestrator"
+        ],
+        "summary": "Send Conversation Message",
+        "description": "Send Conversation Message for AI Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{session_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "role": "USER",
+                "content": "Use a subdomain and add CRM plus notification flows.",
+                "answersPatch": {
+                  "subdomain": "spiffy-demo",
+                  "crmEnabled": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

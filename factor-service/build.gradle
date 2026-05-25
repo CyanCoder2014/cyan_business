@@ -24,16 +24,17 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     implementation 'com.github.eloyzone:jalali-calendar:1.0.0'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     implementation 'org.axonframework:axon-spring-boot-starter:4.9.0'
 
-	implementation 'com.mysql:mysql-connector-j'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	runtimeOnly 'org.postgresql:postgresql'
 //	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
 //	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 //	testImplementation 'io.projectreactor:reactor-test'
@@ -44,6 +45,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     implementation project(':generic')
+    implementation files(project(':generic').sourceSets.main.output.classesDirs)
+    implementation project(':dynamic-entity-core')
 }
 
 dependencyManagement {

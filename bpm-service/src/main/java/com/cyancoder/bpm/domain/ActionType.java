@@ -1,0 +1,19 @@
+package com.cyancoder.bpm.domain;
+
+public enum ActionType {
+    NONE,
+    ADD_AUDIT_ENTRY,
+    NOTIFY_OWNER,
+    CALL_API,
+    CALL_API_ASYNC,
+    RUN_AUTOMATION_BLOCK,
+    CALL_OPERATOR,
+    CALL_OPERATOR_ASYNC,
+    LOCK_OBJECT,
+    UNLOCK_OBJECT,
+    UPDATE_OBJECT_FIELDS,
+    COPY_FIELDS,
+    REMOVE_FIELDS,
+    SET_ASSIGNEE,
+    SET_ACCESS_RULE
+}

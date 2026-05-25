@@ -1,0 +1,86 @@
+package com.cyancoder.storefront.controller;
+
+import com.cyancoder.dynamiccore.runtime.DynamicScopeResolver;
+import com.cyancoder.storefront.model.ResolvedRouteResponse;
+import com.cyancoder.storefront.service.StorefrontRouteService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/public/storefront")
+public class PublicStorefrontController {
+    private final StorefrontRouteService storefrontRouteService;
+
+    public PublicStorefrontController(StorefrontRouteService storefrontRouteService) {
+        this.storefrontRouteService = storefrontRouteService;
+    }
+
+    @GetMapping("/resolve")
+    public ResolvedRouteResponse resolve(
+            @RequestParam String path,
+            @RequestHeader(value = "Host", required = false) String host,
+            @RequestHeader(value = "X-Forwarded-Host", required = false) String forwardedHost,
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+    ) {
+        return storefrontRouteService.resolve(path, storefrontRouteService.resolveHost(host, forwardedHost), DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
+
+    @GetMapping("/render")
+    public Map<String, Object> render(
+            @RequestParam String path,
+            @RequestHeader(value = "Host", required = false) String host,
+            @RequestHeader(value = "X-Forwarded-Host", required = false) String forwardedHost,
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+    ) {
+        return storefrontRouteService.render(path, storefrontRouteService.resolveHost(host, forwardedHost), DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
+
+    @GetMapping(value = "/page", produces = "text/html;charset=UTF-8")
+    public String page(
+            @RequestParam String path,
+            @RequestHeader(value = "Host", required = false) String host,
+            @RequestHeader(value = "X-Forwarded-Host", required = false) String forwardedHost,
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+    ) {
+        return storefrontRouteService.renderHtml(path, storefrontRouteService.resolveHost(host, forwardedHost), DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
+
+    @GetMapping("/sitemap")
+    public List<Map<String, Object>> sitemap(
+            @RequestHeader(value = "Host", required = false) String host,
+            @RequestHeader(value = "X-Forwarded-Host", required = false) String forwardedHost,
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+    ) {
+        return storefrontRouteService.sitemap(storefrontRouteService.resolveHost(host, forwardedHost), DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
+
+    @GetMapping(value = "/sitemap.xml", produces = "application/xml;charset=UTF-8")
+    public String sitemapXml(
+            @RequestHeader(value = "Host", required = false) String host,
+            @RequestHeader(value = "X-Forwarded-Host", required = false) String forwardedHost,
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+    ) {
+        return storefrontRouteService.sitemapXml(storefrontRouteService.resolveHost(host, forwardedHost), DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
+
+    @GetMapping(value = "/robots.txt", produces = "text/plain;charset=UTF-8")
+    public String robotsTxt(
+            @RequestHeader(value = "Host", required = false) String host,
+            @RequestHeader(value = "X-Forwarded-Host", required = false) String forwardedHost,
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+    ) {
+        return storefrontRouteService.robotsTxt(storefrontRouteService.resolveHost(host, forwardedHost), DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+    }
+}

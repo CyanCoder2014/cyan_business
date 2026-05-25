@@ -1,0 +1,305 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Checkout"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/checkout/sessions/{entityKey}/{recordKey}/snapshot": {
+      "get": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Get Checkout Snapshot",
+        "description": "Get Checkout Snapshot for Checkout.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{record_key}}"
+          }
+        ]
+      }
+    },
+    "/internal/checkout/sessions/{entityKey}/{recordKey}/initiate-payment": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Initiate Checkout Payment",
+        "description": "Initiate Checkout Payment for Checkout.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{record_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "paymentMethodKey": "zarinpal-main",
+                "orderKey": "order-1001",
+                "invoiceKey": "invoice-1001",
+                "customerKey": "customer-farid",
+                "relatedService": "checkout-service",
+                "relatedEntityType": "order",
+                "relatedEntityKey": "order-1001",
+                "amount": 1250000,
+                "currency": "IRR",
+                "description": "Checkout payment",
+                "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+                "successUrl": "http://localhost:3000/checkout/success",
+                "failureUrl": "http://localhost:3000/checkout/failure",
+                "metaData": {
+                  "cartKey": "cart-1001"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/checkout/sessions/{entityKey}/{recordKey}/verify-payment": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Verify Checkout Payment",
+        "description": "Verify Checkout Payment for Checkout.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{record_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "transactionKey": "{{transaction_key}}",
+                "payload": {
+                  "authority": "A0000001",
+                  "status": "OK"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/checkout/sessions/{entityKey}/{recordKey}/advance": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "summary": "Advance Checkout Lifecycle",
+        "description": "Advance Checkout Lifecycle for Checkout.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          },
+          {
+            "name": "recordKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{record_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "status": "COMPLETED",
+                "orderStatus": "CONFIRMED",
+                "paymentStatus": "PAID",
+                "fulfillmentStatus": "PENDING",
+                "sendNotifications": true,
+                "eventCode": "ORDER_CONFIRMED"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

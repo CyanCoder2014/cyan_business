@@ -1,0 +1,200 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Notification Internal"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/notifications/send": {
+      "post": {
+        "tags": [
+          "Notification Internal"
+        ],
+        "summary": "Send Notification",
+        "description": "Send Notification for Notification Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "messageKey": "order-created-1001",
+                "channel": "EMAIL",
+                "templateKey": "order-created-email",
+                "provider": "smtp-default",
+                "dispatchMode": "SYNC",
+                "recipient": "customer@example.com",
+                "subject": "Your order is confirmed",
+                "body": "Order {{orderNumber}} has been created.",
+                "model": {
+                  "orderNumber": "1001",
+                  "customerName": "Farid"
+                },
+                "relatedRef": {
+                  "service": "checkout-service",
+                  "entityKey": "order",
+                  "recordKey": "order-1001"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/notifications/send-async": {
+      "post": {
+        "tags": [
+          "Notification Internal"
+        ],
+        "summary": "Send Notification Async",
+        "description": "Send Notification Async for Notification Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "messageKey": "order-created-1001",
+                "channel": "EMAIL",
+                "templateKey": "order-created-email",
+                "provider": "smtp-default",
+                "dispatchMode": "ASYNC",
+                "recipient": "customer@example.com",
+                "subject": "Your order is confirmed",
+                "body": "Order {{orderNumber}} has been created.",
+                "model": {
+                  "orderNumber": "1001",
+                  "customerName": "Farid"
+                },
+                "relatedRef": {
+                  "service": "checkout-service",
+                  "entityKey": "order",
+                  "recordKey": "order-1001"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/notifications/messages/{messageKey}": {
+      "get": {
+        "tags": [
+          "Notification Internal"
+        ],
+        "summary": "Get Notification Message",
+        "description": "Get Notification Message for Notification Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "messageKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{message_key}}"
+          }
+        ]
+      }
+    }
+  }
+}

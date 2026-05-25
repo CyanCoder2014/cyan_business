@@ -1,0 +1,395 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8080"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Tax Pay Sys"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/v2/api/tax-service": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Service Home",
+        "description": "Tax Service Home for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/api/tax-service/test": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Service Test",
+        "description": "Tax Service Test for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/api/tax-service/sign": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Service Sign",
+        "description": "Tax Service Sign for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "data",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "hello"
+          }
+        ]
+      }
+    },
+    "/v2/api/tax-service/encrypt": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Service Encrypt",
+        "description": "Tax Service Encrypt for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "data",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "hello"
+          }
+        ]
+      }
+    },
+    "/v2/api/tax-service/get-factors": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Service Get Factors",
+        "description": "Tax Service Get Factors for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/api/tax/auth/set-token": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Auth Set Token",
+        "description": "Tax Auth Set Token for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/api/tax/invoice/send-invoice": {
+      "post": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Send Invoice",
+        "description": "Tax Send Invoice for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "invoiceNumber": "1001",
+                "amount": 1250000
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/api/tax/inquiry/get-by-uid": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Inquiry By UID",
+        "description": "Tax Inquiry By UID for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "uid-1001"
+          }
+        ]
+      }
+    },
+    "/v2/api/tax/inquiry/get-by-reference": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Inquiry By Reference",
+        "description": "Tax Inquiry By Reference for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "referenceNumber",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ref-1001"
+          }
+        ]
+      }
+    },
+    "/v2/api/tax/server-info/get-info": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Server Info",
+        "description": "Tax Server Info for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/api/tax-service/person-data/get-info": {
+      "get": {
+        "tags": [
+          "Tax Pay Sys"
+        ],
+        "summary": "Tax Person Data",
+        "description": "Tax Person Data for Tax Pay Sys.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "nationalId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "0012345678"
+          }
+        ]
+      }
+    }
+  }
+}

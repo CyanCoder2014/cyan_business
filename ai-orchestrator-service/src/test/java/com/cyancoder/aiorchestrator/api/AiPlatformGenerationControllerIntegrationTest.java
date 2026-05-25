@@ -221,10 +221,11 @@ class AiPlatformGenerationControllerIntegrationTest {
                                 }
                                 """))
                 .andExpect(status().isServiceUnavailable())
-                .andExpect(jsonPath("$.serviceKey").value("storefront-service"))
-                .andExpect(jsonPath("$.path").value("/internal/entities/records/theme-layout"))
-                .andExpect(jsonPath("$.downstreamStatus").value(500))
-                .andExpect(jsonPath("$.downstreamBody").value("{\"message\":\"themeKey is required\"}"));
+                .andExpect(jsonPath("$.errorCode").value("ERR_DOWNSTREAM_SERVICE"))
+                .andExpect(jsonPath("$.details.serviceKey").value("storefront-service"))
+                .andExpect(jsonPath("$.details.path").value("/internal/entities/records/theme-layout"))
+                .andExpect(jsonPath("$.details.downstreamStatus").value(500))
+                .andExpect(jsonPath("$.details.downstreamBody").value("{\"message\":\"themeKey is required\"}"));
     }
 
     private Map<String, Object> platformMetadata() {

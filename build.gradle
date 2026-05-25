@@ -32,6 +32,12 @@ subprojects {
 	configurations.configureEach {
 		resolutionStrategy.force 'org.projectlombok:lombok:1.18.34'
 	}
+
+	plugins.withId('org.springframework.boot') {
+		dependencies {
+			implementation project(':platform-error-handling')
+		}
+	}
 }
 
 ext {

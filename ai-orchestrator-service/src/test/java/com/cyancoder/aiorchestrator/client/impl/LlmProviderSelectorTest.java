@@ -42,6 +42,7 @@ class LlmProviderSelectorTest {
 
         properties.getOpenrouter().setBaseUrl("https://openrouter.ai");
         assertFalse(LlmProviderSelector.isAvailable(properties, AiProvider.OPENROUTER));
+        assertEquals("apiKey is missing", LlmProviderSelector.unavailabilityReason(properties, AiProvider.OPENROUTER));
 
         properties.getOllama().setBaseUrl("http://localhost:11434");
         assertTrue(LlmProviderSelector.isAvailable(properties, AiProvider.OLLAMA));

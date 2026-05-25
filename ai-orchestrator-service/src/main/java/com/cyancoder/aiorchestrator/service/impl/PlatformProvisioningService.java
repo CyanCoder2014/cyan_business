@@ -148,12 +148,37 @@ public class PlatformProvisioningService {
                 "/internal/entities/records/theme-layout",
                 buildIdempotencyKey(requestIdempotencyKey, draftId, "storefront-service", "theme-main", "record"),
                 () -> provisioningClient.createRecord("storefront-service", "theme-layout", "theme-main", Map.of(
-                        "name", "Default Theme",
+                        "themeKey", "theme-main",
+                        "brandName", dslBrandName(draftId, tenantKey, siteKey),
                         "status", "ACTIVE",
-                        "layoutType", "site",
-                        "tokens", Map.of("brandColor", "#0f766e", "surfaceColor", "#ffffff")
+                        "templateKey", "default-theme",
+                        "themeCategory", "SITE",
+                        "previewImage", "",
+                        "navigation", List.of(
+                                Map.of("label", "Home", "path", "/", "children", List.of()),
+                                Map.of("label", "About", "path", "/about", "children", List.of())
+                        ),
+                        "globalSeo", Map.of(
+                                "siteName", dslBrandName(draftId, tenantKey, siteKey),
+                                "defaultTitleTemplate", dslBrandName(draftId, tenantKey, siteKey) + " | %s",
+                                "defaultDescription", "Provisioned storefront theme",
+                                "organizationJsonLd", ""
+                        ),
+                        "blocks", List.of(
+                                Map.of("blockKey", "hero", "componentType", "hero-banner", "props", Map.of())
+                        )
                 ), tenantKey, siteKey)
         ));
+    }
+
+    private String dslBrandName(String draftId, String tenantKey, String siteKey) {
+        if (siteKey != null && !siteKey.isBlank()) {
+            return siteKey;
+        }
+        if (tenantKey != null && !tenantKey.isBlank()) {
+            return tenantKey;
+        }
+        return draftId == null || draftId.isBlank() ? "Default Theme" : draftId;
     }
 
     private Map<String, Object> recordStep(ProvisioningRun run,

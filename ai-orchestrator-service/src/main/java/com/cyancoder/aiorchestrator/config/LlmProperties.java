@@ -11,6 +11,8 @@ import java.util.Map;
 public class LlmProperties {
     private AiProvider provider = AiProvider.AUTO;
     private int maxParseAttempts = 3;
+    private int connectTimeoutMs = 3000;
+    private int readTimeoutMs = 30000;
     private List<AiProvider> fallbackOrder = new ArrayList<>(List.of(AiProvider.OPENAI, AiProvider.GAPGPT, AiProvider.OPENROUTER, AiProvider.OLLAMA, AiProvider.HEURISTIC));
     private ProviderProperties openai = new ProviderProperties();
     private ProviderProperties openrouter = new ProviderProperties();
@@ -21,6 +23,10 @@ public class LlmProperties {
     public void setProvider(AiProvider provider) { this.provider = provider; }
     public int getMaxParseAttempts() { return maxParseAttempts; }
     public void setMaxParseAttempts(int maxParseAttempts) { this.maxParseAttempts = maxParseAttempts; }
+    public int getConnectTimeoutMs() { return connectTimeoutMs; }
+    public void setConnectTimeoutMs(int connectTimeoutMs) { this.connectTimeoutMs = connectTimeoutMs; }
+    public int getReadTimeoutMs() { return readTimeoutMs; }
+    public void setReadTimeoutMs(int readTimeoutMs) { this.readTimeoutMs = readTimeoutMs; }
     public List<AiProvider> getFallbackOrder() { return fallbackOrder; }
     public void setFallbackOrder(List<AiProvider> fallbackOrder) { this.fallbackOrder = fallbackOrder; }
     public ProviderProperties getOpenai() { return openai; }

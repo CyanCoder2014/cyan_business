@@ -4,16 +4,22 @@ import com.cyancoder.aiorchestrator.client.LlmClient;
 import com.cyancoder.aiorchestrator.config.AiProvider;
 import com.cyancoder.aiorchestrator.config.LlmProperties;
 import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
+import com.cyancoder.aiorchestrator.exception.LlmGenerationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Primary
 @Component
 public class RoutingLlmClient implements LlmClient {
+    private static final Logger log = LoggerFactory.getLogger(RoutingLlmClient.class);
+
     private final LlmProperties llmProperties;
     private final OllamaLlmClient ollamaLlmClient;
     private final HeuristicLlmClient heuristicLlmClient;
@@ -32,15 +38,25 @@ public class RoutingLlmClient implements LlmClient {
 
     @Override
     public PlatformAppDslDefinition generateDsl(String prompt) {
+        Map<AiProvider, String> failures = new LinkedHashMap<>();
         for (AiProvider provider : LlmProviderSelector.selectCandidates(llmProperties)) {
-            if (LlmProviderSelector.isAvailable(llmProperties, provider)) {
-                try {
-                    return getClient(provider).generateDsl(prompt);
-                } catch (RuntimeException ignored) {
-                }
+            if (!LlmProviderSelector.isAvailable(llmProperties, provider)) {
+                failures.put(provider, LlmProviderSelector.unavailabilityReason(llmProperties, provider));
+                continue;
+            }
+            try {
+                log.info("Attempting DSL generation with provider {}", provider);
+                return getClient(provider).generateDsl(prompt);
+            } catch (RuntimeException ex) {
+                failures.put(provider, summarizeFailure(ex));
+                log.warn("Provider {} failed DSL generation: {}", provider, failures.get(provider));
             }
         }
-        return heuristicLlmClient.generateDsl(prompt);
+        if (LlmProviderSelector.selectCandidates(llmProperties).contains(AiProvider.HEURISTIC)) {
+            log.warn("Falling back to HEURISTIC DSL generation after provider failures: {}", failures);
+            return heuristicLlmClient.generateDsl(prompt);
+        }
+        throw new LlmGenerationException("No configured LLM provider produced a valid DSL", failures);
     }
 
     private LlmClient getClient(AiProvider provider) {
@@ -59,5 +75,14 @@ public class RoutingLlmClient implements LlmClient {
                 llmProperties.getProviderProperties(provider),
                 objectMapper
         );
+    }
+
+    private String summarizeFailure(RuntimeException ex) {
+        Throwable current = ex;
+        while (current.getCause() != null) {
+            current = current.getCause();
+        }
+        String message = current.getMessage();
+        return message == null || message.isBlank() ? current.getClass().getSimpleName() : message;
     }
 }

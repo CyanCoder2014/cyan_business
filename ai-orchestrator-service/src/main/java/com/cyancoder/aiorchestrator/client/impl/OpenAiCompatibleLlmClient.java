@@ -6,6 +6,9 @@ import com.cyancoder.aiorchestrator.config.LlmProperties;
 import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,12 +18,17 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OpenAiCompatibleLlmClient implements LlmClient {
+    private static final Pattern JSON_BLOCK = Pattern.compile("\\{.*}", Pattern.DOTALL);
+    private static final Logger log = LoggerFactory.getLogger(OpenAiCompatibleLlmClient.class);
+
     private final AiProvider provider;
     private final LlmProperties llmProperties;
     private final LlmProperties.ProviderProperties providerProperties;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     public OpenAiCompatibleLlmClient(AiProvider provider,
@@ -31,6 +39,7 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
         this.llmProperties = llmProperties;
         this.providerProperties = providerProperties;
         this.objectMapper = objectMapper;
+        this.restTemplate = buildRestTemplate(llmProperties);
     }
 
     @Override
@@ -40,9 +49,14 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
         for (int attempt = 0; attempt < llmProperties.getMaxParseAttempts(); attempt++) {
             String response = callChatCompletion(currentPrompt);
             try {
-                return objectMapper.readValue(response, PlatformAppDslDefinition.class);
+                PlatformAppDslDefinition dsl = objectMapper.readValue(extractJson(response), PlatformAppDslDefinition.class);
+                if (dsl.getApp() == null || dsl.getApp().getAppKey() == null || dsl.getApp().getAppKey().isBlank()) {
+                    throw new IllegalStateException("Provider response did not include app.appKey");
+                }
+                return dsl;
             } catch (RuntimeException | java.io.IOException exception) {
                 last = new IllegalStateException("Failed to parse provider response", exception);
+                log.warn("Provider {} returned an invalid DSL payload on attempt {}: {}", provider, attempt + 1, summarizePayload(response));
                 currentPrompt = buildPrompt(prompt + "\nReturn valid JSON only.");
             }
         }
@@ -94,7 +108,31 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
         );
     }
 
+    private String extractJson(String response) {
+        String trimmed = response == null ? "" : response.trim();
+        if (trimmed.startsWith("```")) {
+            trimmed = trimmed.replaceFirst("^```(?:json)?\\s*", "").replaceFirst("\\s*```$", "");
+        }
+        Matcher matcher = JSON_BLOCK.matcher(trimmed);
+        return matcher.find() ? matcher.group() : trimmed;
+    }
+
     private String buildPrompt(String prompt) {
         return prompt + "\nReturn strict JSON matching PlatformAppDslDefinition with no markdown.";
+    }
+
+    private String summarizePayload(String response) {
+        if (response == null) {
+            return "empty";
+        }
+        String normalized = response.replaceAll("\\s+", " ").trim();
+        return normalized.length() <= 240 ? normalized : normalized.substring(0, 240) + "...";
+    }
+
+    private RestTemplate buildRestTemplate(LlmProperties properties) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(properties.getConnectTimeoutMs());
+        requestFactory.setReadTimeout(properties.getReadTimeoutMs());
+        return new RestTemplate(requestFactory);
     }
 }

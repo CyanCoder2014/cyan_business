@@ -18,18 +18,28 @@ final class LlmProviderSelector {
     }
 
     static boolean isAvailable(LlmProperties properties, AiProvider provider) {
+        return unavailabilityReason(properties, provider) == null;
+    }
+
+    static String unavailabilityReason(LlmProperties properties, AiProvider provider) {
         if (provider == AiProvider.HEURISTIC) {
-            return true;
+            return null;
         }
         LlmProperties.ProviderProperties providerProperties = properties.getProviderProperties(provider);
         if (providerProperties == null) {
-            return false;
+            return "provider properties are missing";
         }
         if (provider == AiProvider.OLLAMA) {
-            return providerProperties.getBaseUrl() != null && !providerProperties.getBaseUrl().isBlank();
+            return providerProperties.getBaseUrl() != null && !providerProperties.getBaseUrl().isBlank()
+                    ? null
+                    : "baseUrl is missing";
         }
-        return providerProperties.getApiKey() != null && !providerProperties.getApiKey().isBlank()
-                && providerProperties.getBaseUrl() != null && !providerProperties.getBaseUrl().isBlank();
+        if (providerProperties.getApiKey() == null || providerProperties.getApiKey().isBlank()) {
+            return "apiKey is missing";
+        }
+        if (providerProperties.getBaseUrl() == null || providerProperties.getBaseUrl().isBlank()) {
+            return "baseUrl is missing";
+        }
+        return null;
     }
 }
-

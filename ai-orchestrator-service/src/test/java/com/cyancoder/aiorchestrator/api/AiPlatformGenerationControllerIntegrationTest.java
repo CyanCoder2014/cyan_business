@@ -10,6 +10,7 @@ import com.cyancoder.aiorchestrator.domain.EntityBlueprint;
 import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
 import com.cyancoder.aiorchestrator.domain.PlatformAppType;
 import com.cyancoder.aiorchestrator.domain.RouteBlueprint;
+import com.cyancoder.aiorchestrator.exception.DownstreamServiceException;
 import com.cyancoder.aiorchestrator.repo.ProvisioningRunRepository;
 import com.cyancoder.aiorchestrator.service.AiPromptBuilder;
 import com.cyancoder.aiorchestrator.service.AppDraftService;
@@ -91,6 +92,10 @@ class AiPlatformGenerationControllerIntegrationTest {
     @MockBean
     private ConversationSessionService conversationSessionService;
 
+    private static final Map<String, Object> BUILDER_PERMISSIONS = Map.of(
+            "permissions", List.of("builder:use")
+    );
+
     @BeforeEach
     void setUp() {
         when(appDraftService.resolveKnownAppDraft(any(), any(), any(), any(), any())).thenReturn(Optional.empty());
@@ -117,7 +122,7 @@ class AiPlatformGenerationControllerIntegrationTest {
                 ));
 
         mockMvc.perform(post("/endpoint/ai-orchestrator/generate/app")
-                        .with(jwt().jwt(jwt -> jwt.subject("tester")))
+                        .with(jwt().jwt(jwt -> jwt.subject("tester").claim("realm_access", BUILDER_PERMISSIONS)))
                         .contentType("application/json")
                         .content("""
                                 {
@@ -166,7 +171,7 @@ class AiPlatformGenerationControllerIntegrationTest {
         ));
 
         mockMvc.perform(post("/endpoint/ai-orchestrator/generate/app")
-                        .with(jwt().jwt(jwt -> jwt.subject("tester")))
+                        .with(jwt().jwt(jwt -> jwt.subject("tester").claim("realm_access", BUILDER_PERMISSIONS)))
                         .contentType("application/json")
                         .content("""
                                 {
@@ -184,6 +189,42 @@ class AiPlatformGenerationControllerIntegrationTest {
 
         verify(provisioningClient, never()).createDefinitionFromTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
         verifyNoInteractions(provisioningRunRepository);
+    }
+
+    @Test
+    void generateEndpointReturnsStructuredDownstreamErrors() throws Exception {
+        when(llmClient.generateDsl("compiled-platform-prompt")).thenReturn(storefrontShopDsl());
+        when(followUpQuestionService.resolveForBlueprint(any(), any(), any(), anyString())).thenReturn(List.of());
+        when(provisioningClient.createDefinitionFromTemplate(eq("storefront-service"), eq("theme-layout"), eq("theme-layout"), anyString(), anyString()))
+                .thenThrow(new DownstreamServiceException(
+                        "Downstream service returned an error: storefront-service /internal/entities/records/theme-layout",
+                        "storefront-service",
+                        "/internal/entities/records/theme-layout",
+                        500,
+                        "{\"message\":\"themeKey is required\"}",
+                        null
+                ));
+
+        mockMvc.perform(post("/endpoint/ai-orchestrator/generate/app")
+                        .with(jwt().jwt(jwt -> jwt.subject("tester").claim("realm_access", BUILDER_PERMISSIONS)))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "prompt": "Build a storefront with a starter product and homepage",
+                                  "tenantKey": "tenant-demo",
+                                  "siteKey": "site-demo",
+                                  "clientKey": "client-demo",
+                                  "execute": true,
+                                  "answers": {
+                                    "brandName": "Demo Shop"
+                                  }
+                                }
+                                """))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.serviceKey").value("storefront-service"))
+                .andExpect(jsonPath("$.path").value("/internal/entities/records/theme-layout"))
+                .andExpect(jsonPath("$.downstreamStatus").value(500))
+                .andExpect(jsonPath("$.downstreamBody").value("{\"message\":\"themeKey is required\"}"));
     }
 
     private Map<String, Object> platformMetadata() {

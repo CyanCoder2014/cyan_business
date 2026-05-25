@@ -1,6 +1,7 @@
 package com.cyancoder.aiorchestrator.client.impl;
 
 import com.cyancoder.aiorchestrator.client.PlatformProvisioningClient;
+import com.cyancoder.aiorchestrator.exception.DownstreamServiceException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,8 @@ public class HttpPlatformProvisioningClient implements PlatformProvisioningClien
                     tenantKey,
                     siteKey);
             return objectMapper.readValue(body, Map.class);
+        } catch (DownstreamServiceException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to create definition from template " + templateKey + " in " + serviceKey, ex);
         }
@@ -45,6 +48,8 @@ public class HttpPlatformProvisioningClient implements PlatformProvisioningClien
             body.put("data", data);
             String response = httpSupport.post(serviceKey, "/internal/entities/records/" + entityKey, body, tenantKey, siteKey);
             return objectMapper.readValue(response, Map.class);
+        } catch (DownstreamServiceException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to create record " + recordKey + " in " + serviceKey + "/" + entityKey, ex);
         }
@@ -55,6 +60,8 @@ public class HttpPlatformProvisioningClient implements PlatformProvisioningClien
         try {
             String response = httpSupport.post("bpm-service", "/internal/bpm/flows", flowDefinition, tenantKey, siteKey);
             return objectMapper.readValue(response, Map.class);
+        } catch (DownstreamServiceException ex) {
+            throw ex;
         } catch (Exception ex) {
             throw new IllegalStateException("Failed to create BPM flow", ex);
         }

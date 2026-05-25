@@ -63,4 +63,43 @@ class OpenAiCompatibleLlmClientOpenRouterContractTest {
             assertEquals(3, dsl.getApp().getCapabilities().size());
         }
     }
+
+    @Test
+    void parsesJsonWrappedInMarkdownCodeFence() throws Exception {
+        try (MockWebServer server = new MockWebServer()) {
+            server.enqueue(new MockResponse()
+                    .setHeader("Content-Type", "application/json")
+                    .setBody("""
+                            {
+                              "choices": [
+                                {
+                                  "message": {
+                                    "content": "```json\\n{\\"app\\":{\\"appKey\\":\\"shop-crm-fenced\\",\\"title\\":\\"Shop CRM Fenced\\",\\"type\\":\\"SHOP\\",\\"tenantKey\\":\\"tenant-shop\\",\\"siteKey\\":\\"site-shop\\",\\"capabilities\\":[\\"website\\",\\"shop\\"]},\\"entities\\":[],\\"routes\\":[],\\"flows\\":[],\\"delivery\\":{\\"publicApis\\":[\\"/public/storefront/render?path=/\\"],\\"botApis\\":[\\"/endpoint/ai-orchestrator/drafts\\"]},\\"manualActions\\":[]}\\n```"
+                                  }
+                                }
+                              ]
+                            }
+                            """));
+            server.start();
+
+            LlmProperties properties = new LlmProperties();
+            properties.setMaxParseAttempts(1);
+            LlmProperties.ProviderProperties openrouter = properties.getOpenrouter();
+            openrouter.setApiKey("openrouter-test-key");
+            openrouter.setBaseUrl(server.url("/").toString().replaceAll("/$", ""));
+            openrouter.setCompletionsPath("/api/v1/chat/completions");
+            openrouter.setModel("openrouter/free");
+
+            OpenAiCompatibleLlmClient client = new OpenAiCompatibleLlmClient(
+                    AiProvider.OPENROUTER,
+                    properties,
+                    openrouter,
+                    new ObjectMapper()
+            );
+
+            PlatformAppDslDefinition dsl = client.generateDsl("Generate a shop and crm app");
+
+            assertEquals("shop-crm-fenced", dsl.getApp().getAppKey());
+        }
+    }
 }

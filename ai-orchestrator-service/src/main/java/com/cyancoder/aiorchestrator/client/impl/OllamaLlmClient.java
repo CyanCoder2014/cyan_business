@@ -5,6 +5,7 @@ import com.cyancoder.aiorchestrator.config.LlmProperties;
 import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,13 +18,17 @@ import java.util.Map;
 
 @Component
 public class OllamaLlmClient implements LlmClient {
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final LlmProperties properties;
     private final ObjectMapper objectMapper;
 
     public OllamaLlmClient(LlmProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
         this.objectMapper = objectMapper;
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(properties.getConnectTimeoutMs());
+        requestFactory.setReadTimeout(properties.getReadTimeoutMs());
+        this.restTemplate = new RestTemplate(requestFactory);
     }
 
     @Override

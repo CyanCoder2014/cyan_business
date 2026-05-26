@@ -1,6 +1,8 @@
 package com.cyancoder.taxpaysys.modules.content.dto;
 
+import lombok.ToString;
 
+@ToString
 public class PaymentDto {
 
     /**

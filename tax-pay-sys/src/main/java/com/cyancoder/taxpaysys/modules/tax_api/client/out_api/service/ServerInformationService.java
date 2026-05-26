@@ -8,6 +8,7 @@ import com.cyancoder.taxpaysys.modules.tax_api.model.dto.req.fiscal_info.FiscalI
 import com.cyancoder.taxpaysys.modules.tax_api.model.dto.res.server_info.ServerInfoResponseModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,7 +26,8 @@ public class ServerInformationService {
     private final ServerInformationClientController serverInformationClientController;
 
 
-    public ServerInfoResponseModel getServerInformation(String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+//    @Cacheable(value = "serverInfoCache", key = "#privateKey")
+    public ServerInfoResponseModel getServerInformation(String privateKRey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         Random rnd = new Random();
         Header header = new Header("2023-cyanbusiness-srv-2320011"+ rnd.nextInt(10));

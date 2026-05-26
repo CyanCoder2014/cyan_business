@@ -36,4 +36,9 @@ public class CreateFactorReqModel {
     private String note;
 
 
+    private String type;
+    private String pattern;
+    private String contractId;
+
+
 }

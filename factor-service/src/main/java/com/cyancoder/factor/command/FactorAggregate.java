@@ -36,6 +36,9 @@ public class FactorAggregate {
     private String state;
     private String note;
 
+    private String type;
+    private String pattern;
+    private String contractId;
 
     public  FactorAggregate(){
 

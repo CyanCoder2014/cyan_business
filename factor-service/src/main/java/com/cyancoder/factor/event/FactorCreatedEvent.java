@@ -31,7 +31,9 @@ public class FactorCreatedEvent {
     private String state;
     private String note;
 
-
+    private String type;
+    private String pattern;
+    private String contractId;
 
 
 }

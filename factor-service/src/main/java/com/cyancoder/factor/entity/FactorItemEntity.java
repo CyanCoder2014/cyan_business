@@ -3,6 +3,9 @@ package com.cyancoder.factor.entity;
 
 import com.cyancoder.factor.model.FactorItemModel;
 import com.cyancoder.factor.model.Status;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -44,6 +47,8 @@ public class FactorItemEntity {
 
     @ManyToOne
     @JoinColumn(name = "factor_id")
+    @JsonBackReference
+    @JsonIgnore
     private FactorEntity factor;
 //
 //    @Column(name = "product_id")

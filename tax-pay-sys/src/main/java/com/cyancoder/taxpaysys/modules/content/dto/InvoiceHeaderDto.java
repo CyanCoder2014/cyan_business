@@ -1,8 +1,11 @@
 package com.cyancoder.taxpaysys.modules.content.dto;
 
 
+import lombok.ToString;
+
 import java.math.BigDecimal;
 
+@ToString
 public class InvoiceHeaderDto {
 
     /**
@@ -168,7 +171,7 @@ public class InvoiceHeaderDto {
     /**
      * contractRegistrationNumber
      */
-    private Integer crn;
+    private String crn;
 
 
     public Long getIndati2m() {
@@ -427,11 +430,11 @@ public class InvoiceHeaderDto {
         this.bpn = bpn;
     }
 
-    public Integer getCrn() {
+    public String getCrn() {
         return crn;
     }
 
-    public void setCrn(Integer crn) {
+    public void setCrn(String crn) {
         this.crn = crn;
     }
 }

@@ -4,10 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
-import java.util.List;
 
 
 @Table(name = "t_factor_tax")
@@ -32,12 +30,36 @@ public class FactorTaxEntity {
     private String factorId;
 
 
-
     @Column(name = "tax_api_uid")
     private String taxApiUid;
 
     @Column(name = "tax_api_reference")
     private String taxApiReference;
+
+
+    @Column(name = "successed_at")
+    private Date successesAt;
+
+    @Column(name = "tax_api_successed_uid")
+    private String taxApiSuccessesUid;
+
+    @Column(name = "tax_api_successed_reference")
+    private String taxApiSuccessesReference;
+
+
+
+    @Column(name = "tax_api_correction_uid")
+    private String taxApiCorrectionUid;
+
+    @Column(name = "tax_api_correction_reference")
+    private String taxApiCorrectionReference;
+
+    @Column(name = "tax_api_cancellation_uid")
+    private String taxApiCancellationUid;
+
+    @Column(name = "tax_api_cancellation_reference")
+    private String taxApiCancellationReference;
+
 
     @Column(name = "tax_api_state")
     private String taxApiState; // need enum

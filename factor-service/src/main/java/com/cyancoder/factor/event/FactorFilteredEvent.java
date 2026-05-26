@@ -31,6 +31,9 @@ public class FactorFilteredEvent {
     private Double payed;
     private String state;
 
+    private String type;
+    private String pattern;
+    private String contractId;
 
 
 }

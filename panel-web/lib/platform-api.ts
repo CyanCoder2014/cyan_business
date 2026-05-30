@@ -10,10 +10,10 @@ import type {
 } from "@/lib/types";
 import { platformFetch } from "@/lib/platform-auth";
 
-const baseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
+type PlatformServiceKey = "ai-orchestrator-service" | "bot-adapter-service";
 
-async function requestJson<T>(path: string, init: RequestInit): Promise<T> {
-  const response = await platformFetch(`${baseUrl}${path}`, {
+async function requestJson<T>(serviceKey: PlatformServiceKey, path: string, init: RequestInit): Promise<T> {
+  const response = await platformFetch(`/api/platform/service/${serviceKey}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -31,7 +31,7 @@ async function requestJson<T>(path: string, init: RequestInit): Promise<T> {
 }
 
 export async function generatePlatformApp(request: GeneratePlatformAppRequest): Promise<GeneratePlatformAppResponse> {
-  return requestJson<GeneratePlatformAppResponse>("/endpoint/ai-orchestrator/generate/app", {
+  return requestJson<GeneratePlatformAppResponse>("ai-orchestrator-service", "/endpoint/ai-orchestrator/generate/app", {
     method: "POST",
     body: JSON.stringify(request)
   });
@@ -39,7 +39,7 @@ export async function generatePlatformApp(request: GeneratePlatformAppRequest): 
 
 export function listBlueprints(appType?: string): Promise<AppBlueprint[]> {
   const suffix = appType ? `?appType=${encodeURIComponent(appType)}` : "";
-  return requestJson<AppBlueprint[]>(`/endpoint/ai-orchestrator/blueprints${suffix}`, {
+  return requestJson<AppBlueprint[]>("ai-orchestrator-service", `/endpoint/ai-orchestrator/blueprints${suffix}`, {
     method: "GET"
   });
 }
@@ -54,7 +54,7 @@ export function listClientDrafts(params?: {
   if (params?.siteKey) search.set("siteKey", params.siteKey);
   if (params?.clientKey) search.set("clientKey", params.clientKey);
   const suffix = search.size ? `?${search.toString()}` : "";
-  return requestJson<ClientAppDraft[]>(`/endpoint/ai-orchestrator/drafts${suffix}`, {
+  return requestJson<ClientAppDraft[]>("ai-orchestrator-service", `/endpoint/ai-orchestrator/drafts${suffix}`, {
     method: "GET"
   });
 }
@@ -69,21 +69,21 @@ export function createClientDraft(request: {
   prompt?: string;
   answers?: Record<string, unknown>;
 }): Promise<ClientAppDraft> {
-  return requestJson<ClientAppDraft>("/endpoint/ai-orchestrator/drafts", {
+  return requestJson<ClientAppDraft>("ai-orchestrator-service", "/endpoint/ai-orchestrator/drafts", {
     method: "POST",
     body: JSON.stringify(request)
   });
 }
 
 export function provisionClientDraft(draftId: string): Promise<ProvisioningRun> {
-  return requestJson<ProvisioningRun>(`/endpoint/ai-orchestrator/drafts/${draftId}/provision`, {
+  return requestJson<ProvisioningRun>("ai-orchestrator-service", `/endpoint/ai-orchestrator/drafts/${draftId}/provision`, {
     method: "POST",
     body: JSON.stringify({})
   });
 }
 
 export function listProvisioningRuns(draftId: string): Promise<ProvisioningRun[]> {
-  return requestJson<ProvisioningRun[]>(`/endpoint/ai-orchestrator/drafts/${draftId}/runs`, {
+  return requestJson<ProvisioningRun[]>("ai-orchestrator-service", `/endpoint/ai-orchestrator/drafts/${draftId}/runs`, {
     method: "GET"
   });
 }
@@ -96,7 +96,7 @@ export function listBotIntegrations(params?: {
   if (params?.tenantKey) search.set("tenantKey", params.tenantKey);
   if (params?.siteKey) search.set("siteKey", params.siteKey);
   const suffix = search.size ? `?${search.toString()}` : "";
-  return requestJson<BotChannelIntegration[]>(`/endpoint/bot-adapter/integrations${suffix}`, {
+  return requestJson<BotChannelIntegration[]>("bot-adapter-service", `/endpoint/bot-adapter/integrations${suffix}`, {
     method: "GET"
   });
 }
@@ -118,7 +118,7 @@ export function upsertBotIntegration(request: {
   miniAppStartParam?: string;
   active?: boolean;
 }): Promise<BotChannelIntegration> {
-  return requestJson<BotChannelIntegration>("/endpoint/bot-adapter/integrations", {
+  return requestJson<BotChannelIntegration>("bot-adapter-service", "/endpoint/bot-adapter/integrations", {
     method: "POST",
     body: JSON.stringify(request)
   });
@@ -130,7 +130,7 @@ export function registerBotWebhook(channel: "TELEGRAM" | "BALE", integrationKey:
   integrationKey: string;
   webhookUrl: string;
 }> {
-  return requestJson(`/endpoint/bot-adapter/integrations/${channel}/${integrationKey}/register-webhook`, {
+  return requestJson("bot-adapter-service", `/endpoint/bot-adapter/integrations/${channel}/${integrationKey}/register-webhook`, {
     method: "POST",
     body: JSON.stringify({})
   });
@@ -149,7 +149,7 @@ export function sendBotMessage(request: {
   deliveryId: string;
   attemptCount: number;
 }> {
-  return requestJson("/endpoint/bot-adapter/messages", {
+  return requestJson("bot-adapter-service", "/endpoint/bot-adapter/messages", {
     method: "POST",
     body: JSON.stringify(request)
   });
@@ -165,7 +165,7 @@ export function listBotMessages(params?: {
   if (params?.siteKey) search.set("siteKey", params.siteKey);
   if (params?.integrationKey) search.set("integrationKey", params.integrationKey);
   const suffix = search.size ? `?${search.toString()}` : "";
-  return requestJson<BotOutboundMessage[]>(`/endpoint/bot-adapter/messages${suffix}`, {
+  return requestJson<BotOutboundMessage[]>("bot-adapter-service", `/endpoint/bot-adapter/messages${suffix}`, {
     method: "GET"
   });
 }
@@ -175,7 +175,7 @@ export function retryBotMessage(messageId: string): Promise<{
   deliveryId: string;
   attemptCount: number;
 }> {
-  return requestJson(`/endpoint/bot-adapter/messages/${encodeURIComponent(messageId)}/retry`, {
+  return requestJson("bot-adapter-service", `/endpoint/bot-adapter/messages/${encodeURIComponent(messageId)}/retry`, {
     method: "POST",
     body: JSON.stringify({})
   });
@@ -189,7 +189,7 @@ export function listMiniAppBuilds(params?: {
   if (params?.tenantKey) search.set("tenantKey", params.tenantKey);
   if (params?.siteKey) search.set("siteKey", params.siteKey);
   const suffix = search.size ? `?${search.toString()}` : "";
-  return requestJson<BotMiniAppBuild[]>(`/endpoint/bot-adapter/mini-apps${suffix}`, {
+  return requestJson<BotMiniAppBuild[]>("bot-adapter-service", `/endpoint/bot-adapter/mini-apps${suffix}`, {
     method: "GET"
   });
 }
@@ -202,14 +202,14 @@ export function upsertMiniAppBuild(request: {
   launchUrl: string;
   manifest: Record<string, unknown>;
 }): Promise<BotMiniAppBuild> {
-  return requestJson<BotMiniAppBuild>("/endpoint/bot-adapter/mini-apps", {
+  return requestJson<BotMiniAppBuild>("bot-adapter-service", "/endpoint/bot-adapter/mini-apps", {
     method: "POST",
     body: JSON.stringify(request)
   });
 }
 
 export function publishMiniAppBuild(channel: "TELEGRAM" | "BALE", integrationKey: string, buildKey: string): Promise<BotMiniAppBuild> {
-  return requestJson<BotMiniAppBuild>(`/endpoint/bot-adapter/mini-apps/${channel}/${integrationKey}/${buildKey}/publish`, {
+  return requestJson<BotMiniAppBuild>("bot-adapter-service", `/endpoint/bot-adapter/mini-apps/${channel}/${integrationKey}/${buildKey}/publish`, {
     method: "POST",
     body: JSON.stringify({})
   });

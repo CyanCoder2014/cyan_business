@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 const serviceBaseUrls: Record<string, string> = {
   "sso-user-service": process.env.SSO_USER_SERVICE_BASE_URL ?? "http://localhost:9002",
   "bot-adapter-service": process.env.BOT_ADAPTER_SERVICE_BASE_URL ?? "http://localhost:9126",
+  "ai-orchestrator-service": process.env.AI_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9121",
   "storefront-service": process.env.STOREFRONT_SERVICE_BASE_URL ?? "http://localhost:9115",
   "notification-service": process.env.NOTIFICATION_SERVICE_BASE_URL ?? "http://localhost:9122",
   "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9123",

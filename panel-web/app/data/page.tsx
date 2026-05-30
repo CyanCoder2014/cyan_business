@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
-import { fallbackStats } from "@/lib/panel-fixtures";
 import { listRecords, submitRecord, updateRecord } from "@/lib/dynamic-api";
 import type { DynamicEntityRecord } from "@/lib/types";
 
@@ -25,15 +24,44 @@ export default function DataManagerPage() {
   const { locale } = usePanel();
   const [selectedBucket, setSelectedBucket] = useState(entityBuckets[0]);
   const [records, setRecords] = useState<DynamicEntityRecord[]>([]);
+  const [recordCounts, setRecordCounts] = useState<Record<string, number>>({});
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     listRecords(selectedBucket.serviceKey, selectedBucket.key, { tenantKey: "tenant-demo", siteKey: "site-commerce" })
       .then(setRecords)
-      .catch(() => setRecords(fallbackRecords));
-  }, [selectedBucket]);
+      .catch((error) => {
+        setRecords([]);
+        setStatus(error instanceof Error ? error.message : locale === "fa" ? "رکوردها بارگیری نشدند." : "Records could not be loaded.");
+      });
+  }, [locale, selectedBucket]);
 
-  const activeRecord = useMemo(() => records[0] ?? fallbackRecords[0], [records]);
+  useEffect(() => {
+    Promise.allSettled(
+      entityBuckets.map((bucket) =>
+        listRecords(bucket.serviceKey, bucket.key, { tenantKey: "tenant-demo", siteKey: "site-commerce" }).then((items) => ({
+          key: bucket.key,
+          count: items.length
+        }))
+      )
+    ).then((results) => {
+      const nextCounts: Record<string, number> = {};
+      for (const result of results) {
+        if (result.status === "fulfilled") {
+          nextCounts[result.value.key] = result.value.count;
+        }
+      }
+      setRecordCounts(nextCounts);
+    });
+  }, []);
+
+  const activeRecord = useMemo(() => records[0] ?? null, [records]);
+  const stats = [
+    { label: locale === "fa" ? "همه رکوردها" : "All records", value: String(Object.values(recordCounts).reduce((sum, count) => sum + count, 0)) },
+    { label: locale === "fa" ? "رکوردهای این بخش" : "This bucket", value: String(records.length) },
+    { label: locale === "fa" ? "منتشرشده" : "Published", value: String(records.filter((item) => String(item.data.status ?? "").toUpperCase().includes("PUBLISH")).length) },
+    { label: locale === "fa" ? "نیازمند بررسی" : "Needs review", value: String(records.filter((item) => String(item.data.status ?? "").toUpperCase().includes("DRAFT") || String(item.data.status ?? "").toUpperCase().includes("LOW")).length) }
+  ];
 
   async function createDemoRecord() {
     setStatus(locale === "fa" ? "در حال ایجاد رکورد..." : "Creating record...");
@@ -61,6 +89,10 @@ export default function DataManagerPage() {
 
   async function markActiveRecordEdited() {
     setStatus(locale === "fa" ? "در حال ذخیره..." : "Saving...");
+    if (!activeRecord) {
+      setStatus(locale === "fa" ? "رکوردی برای ویرایش وجود ندارد." : "No record is available to edit.");
+      return;
+    }
     try {
       const updated = await updateRecord(
         selectedBucket.serviceKey,
@@ -85,18 +117,12 @@ export default function DataManagerPage() {
       subtitleFa="محصولات، محتوا، سفارش‌ها، CRM، موجودی و داده‌های گزارش را از یک پنل واحد مدیریت کنید."
     >
       <section className="desktop-only metric-grid">
-        {fallbackStats.map((stat) => (
+        {stats.map((stat) => (
           <article key={stat.label} className="stat-card">
-            <span className="muted">{locale === "fa" ? statToFa(stat.label) : stat.label}</span>
+            <span className="muted">{stat.label}</span>
             <strong>{locale === "fa" ? toFaDigits(stat.value) : stat.value}</strong>
-            <div className="stat-delta">{locale === "fa" ? toFaDigits(stat.delta) : stat.delta}</div>
           </article>
         ))}
-        <article className="stat-card">
-          <span className="muted">{locale === "fa" ? "نظرات در انتظار" : "Pending comments"}</span>
-          <strong>{locale === "fa" ? "۱۲۸" : "128"}</strong>
-          <div className="stat-delta">{locale === "fa" ? "۱۴ منتظر بررسی" : "14 awaiting review"}</div>
-        </article>
       </section>
 
       <div className="desktop-only data-manager-grid" style={{ marginTop: 18 }}>
@@ -110,7 +136,7 @@ export default function DataManagerPage() {
                 onClick={() => setSelectedBucket(bucket)}
               >
                 <strong>{locale === "fa" ? bucket.titleFa : bucket.titleEn}</strong>
-                <span className="muted-block">{locale === "fa" ? "رکوردها" : "records"}</span>
+                <span className="muted-block">{recordCounts[bucket.key] ?? 0} {locale === "fa" ? "رکورد" : "records"}</span>
               </button>
             ))}
           </div>
@@ -151,7 +177,7 @@ export default function DataManagerPage() {
               </tr>
             </thead>
             <tbody>
-              {(records.length ? records : fallbackRecords).slice(0, 7).map((record) => (
+              {records.slice(0, 7).map((record) => (
                 <tr key={record.recordKey}>
                   <td>{record.recordKey}</td>
                   <td>{String(record.data.title ?? record.data.name ?? record.data.label ?? record.recordKey)}</td>
@@ -162,6 +188,11 @@ export default function DataManagerPage() {
                   <td>{record.updatedAt ?? (locale === "fa" ? "به تازگی" : "Recently")}</td>
                 </tr>
               ))}
+              {!records.length ? (
+                <tr>
+                  <td colSpan={7}>{locale === "fa" ? "رکوردی از API این بخش دریافت نشد." : "No records were returned for this bucket."}</td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
           <div className="summary-grid" style={{ marginTop: 18 }}>
@@ -178,20 +209,25 @@ export default function DataManagerPage() {
 
         <aside className="panel-card">
           <div className="card-title-row">
-            <h3>{String(activeRecord.data.title ?? activeRecord.recordKey)}</h3>
-            <span className="status-pill success">{String(activeRecord.data.status ?? "Published")}</span>
+            <h3>{activeRecord ? String(activeRecord.data.title ?? activeRecord.recordKey) : locale === "fa" ? "رکوردی انتخاب نشده" : "No record selected"}</h3>
+            <span className={activeRecord ? "status-pill success" : "status-pill warning"}>{activeRecord ? String(activeRecord.data.status ?? "Published") : locale === "fa" ? "خالی" : "Empty"}</span>
           </div>
           <div className="detail-list" style={{ marginTop: 16 }}>
-            {Object.entries(activeRecord.data).slice(0, 8).map(([key, value]) => (
+            {activeRecord ? Object.entries(activeRecord.data).slice(0, 8).map(([key, value]) => (
               <div key={key} className="detail-item">
                 <strong>{key}</strong>
                 <span className="muted-block">{typeof value === "object" ? JSON.stringify(value) : String(value)}</span>
               </div>
-            ))}
+            )) : (
+              <div className="detail-item">
+                <strong>{locale === "fa" ? "هیچ داده‌ای برای نمایش وجود ندارد" : "No record data available"}</strong>
+                <span className="muted-block">{locale === "fa" ? "صفحه دیگر از داده ساختگی استفاده نمی‌کند." : "This page no longer renders fabricated records."}</span>
+              </div>
+            )}
           </div>
           <div className="toolbar-row" style={{ marginTop: 18 }}>
             <button type="button" className="secondary-pill">{locale === "fa" ? "پیش‌نمایش" : "Preview"}</button>
-            <button type="button" className="primary-pill" onClick={markActiveRecordEdited}>{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
+            <button type="button" className="primary-pill" onClick={markActiveRecordEdited} disabled={!activeRecord}>{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
           </div>
         </aside>
       </div>
@@ -205,9 +241,9 @@ export default function DataManagerPage() {
           <button type="button" className="icon-pill">⎚</button>
         </div>
         <section className="three-column-grid">
-          {fallbackStats.slice(0, 3).map((stat) => (
+          {stats.slice(0, 3).map((stat) => (
             <article key={stat.label} className="stat-card">
-              <span className="muted">{locale === "fa" ? statToFa(stat.label) : stat.label}</span>
+              <span className="muted">{stat.label}</span>
               <strong>{locale === "fa" ? toFaDigits(stat.value) : stat.value}</strong>
             </article>
           ))}
@@ -220,7 +256,7 @@ export default function DataManagerPage() {
           ))}
         </div>
         <div className="mobile-list">
-          {(records.length ? records : fallbackRecords).map((record) => (
+          {records.map((record) => (
             <div key={record.recordKey} className="mobile-list-item">
               <strong>{String(record.data.title ?? record.recordKey)}</strong>
               <span className="muted-block">
@@ -231,76 +267,44 @@ export default function DataManagerPage() {
               </span>
             </div>
           ))}
+          {!records.length ? (
+            <div className="mobile-list-item">
+              <strong>{locale === "fa" ? "رکوردی یافت نشد" : "No records found"}</strong>
+              <span className="muted-block">{locale === "fa" ? "برای این entity داده‌ای از backend برنگشته است." : "The backend returned no data for this entity."}</span>
+            </div>
+          ) : null}
         </div>
         <div className="mobile-bottom-sheet">
           <div className="mobile-handle" />
           <div className="toolbar-row">
             <div>
-              <strong>{String(activeRecord.data.title ?? activeRecord.recordKey)}</strong>
-              <span className="muted-block">{String(activeRecord.data.category ?? "")}</span>
+              <strong>{activeRecord ? String(activeRecord.data.title ?? activeRecord.recordKey) : locale === "fa" ? "بدون رکورد" : "No record"}</strong>
+              <span className="muted-block">{activeRecord ? String(activeRecord.data.category ?? "") : "—"}</span>
             </div>
             <button type="button" className="icon-pill">×</button>
           </div>
           <div className="three-column-grid" style={{ marginTop: 14 }}>
             <div className="mini-card">
               <span className="muted">Price</span>
-              <strong>{activeRecord.data.price ? `$${String(activeRecord.data.price)}` : "—"}</strong>
+              <strong>{activeRecord?.data.price ? `$${String(activeRecord.data.price)}` : "—"}</strong>
             </div>
             <div className="mini-card">
               <span className="muted">Stock</span>
-              <strong>{String(activeRecord.data.stock ?? "—")}</strong>
+              <strong>{String(activeRecord?.data.stock ?? "—")}</strong>
             </div>
             <div className="mini-card">
               <span className="muted">Status</span>
-              <strong>{String(activeRecord.data.status ?? "Published")}</strong>
+              <strong>{String(activeRecord?.data.status ?? "—")}</strong>
             </div>
           </div>
           <div className="toolbar-row" style={{ marginTop: 16 }}>
             <button type="button" className="secondary-pill">{locale === "fa" ? "پیش‌نمایش" : "Preview"}</button>
-            <button type="button" className="primary-pill" onClick={markActiveRecordEdited}>{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
+            <button type="button" className="primary-pill" onClick={markActiveRecordEdited} disabled={!activeRecord}>{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
           </div>
         </div>
       </div>
     </PanelShell>
   );
-}
-
-const fallbackRecords: DynamicEntityRecord[] = [
-  {
-    recordKey: "llc-001",
-    data: {
-      title: "Luna Lounge Chair",
-      status: "Published",
-      category: "Furniture",
-      price: 349,
-      stock: 38
-    }
-  },
-  {
-    recordKey: "bct-002",
-    data: {
-      title: "Breeze Coffee Table",
-      status: "Low stock",
-      category: "Furniture",
-      price: 229,
-      stock: 14
-    }
-  }
-];
-
-function statToFa(value: string) {
-  switch (value) {
-    case "Visitors":
-      return "بازدیدها";
-    case "Orders":
-      return "سفارش‌ها";
-    case "Publish readiness":
-      return "آماده انتشار";
-    case "Low-stock alerts":
-      return "هشدار موجودی";
-    default:
-      return value;
-  }
 }
 
 function toFaDigits(value: string) {

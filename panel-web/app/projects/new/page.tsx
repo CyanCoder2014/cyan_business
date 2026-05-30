@@ -16,29 +16,42 @@ export default function AiStudioPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    Promise.all([listBlueprints().catch(() => []), listClientDrafts().catch(() => [])]).then(([blueprintItems, draftItems]) => {
-      setBlueprints(blueprintItems);
-      setDrafts(draftItems);
+    Promise.allSettled([listBlueprints(), listClientDrafts()]).then(([blueprintItems, draftItems]) => {
+      const errors: string[] = [];
+      if (blueprintItems.status === "fulfilled") {
+        setBlueprints(blueprintItems.value);
+      } else {
+        errors.push(locale === "fa" ? "قالب‌ها بارگیری نشدند." : "Blueprints could not be loaded.");
+      }
+      if (draftItems.status === "fulfilled") {
+        setDrafts(draftItems.value);
+      } else {
+        errors.push(locale === "fa" ? "پیش‌نویس‌ها بارگیری نشدند." : "Drafts could not be loaded.");
+      }
+      if (errors.length) {
+        setStatus(errors.join(" "));
+      }
     });
-  }, []);
+  }, [locale]);
 
   const summary = useMemo(() => {
-    if (!response?.dsl) {
+    const dsl = response?.dsl ?? drafts[0]?.resolvedDsl;
+    if (!dsl) {
       return {
-        title: locale === "fa" ? "اپ فروشگاه" : "Shop App",
-        routes: 12,
-        services: 18,
-        modules: 9
+        title: locale === "fa" ? "پیش‌نویسی وجود ندارد" : "No draft available",
+        routes: 0,
+        services: 0,
+        modules: 0
       };
     }
 
     return {
-      title: response.dsl.app.title ?? (locale === "fa" ? "اپ تولیدشده" : "Generated app"),
-      routes: response.dsl.routes.length,
-      services: response.dsl.delivery.publicApis.length + response.dsl.delivery.botApis.length,
-      modules: response.dsl.entities.length
+      title: dsl.app.title ?? (locale === "fa" ? "اپ تولیدشده" : "Generated app"),
+      routes: dsl.routes.length,
+      services: dsl.delivery.publicApis.length + dsl.delivery.botApis.length,
+      modules: dsl.entities.length
     };
-  }, [locale, response]);
+  }, [drafts, locale, response]);
 
   async function handleGenerate() {
     setLoading(true);
@@ -127,23 +140,23 @@ export default function AiStudioPage() {
           <section className="studio-summary-grid" style={{ marginTop: 18 }}>
             <article className="summary-card">
               <span className="muted">{locale === "fa" ? "پیش‌نویس DSL" : "Draft DSL"}</span>
-              <strong>{response?.dsl.app.appKey ?? "shop_app_v0.1.dsl"}</strong>
-              <a href="#" className="muted-block">{locale === "fa" ? "مشاهده فایل" : "View file"}</a>
+              <strong>{response?.dsl.app.appKey ?? drafts[0]?.draftId ?? "—"}</strong>
+              <span className="muted-block">{locale === "fa" ? "خروجی زنده از orchestrator" : "Live output from orchestrator"}</span>
             </article>
             <article className="summary-card">
               <span className="muted">{locale === "fa" ? "سرویس‌ها" : "Services"}</span>
               <strong>{summary.services}</strong>
-              <a href="#" className="muted-block">{locale === "fa" ? "مدیریت سرویس‌ها" : "Manage services"}</a>
+              <span className="muted-block">{locale === "fa" ? "بر پایه DSL و delivery APIها" : "Based on DSL and delivery APIs"}</span>
             </article>
             <article className="summary-card">
               <span className="muted">{locale === "fa" ? "آمادگی انتشار" : "Publish readiness"}</span>
-              <strong>{locale === "fa" ? "۹۲٪" : "92%"}</strong>
-              <a href="#" className="muted-block">{locale === "fa" ? "مشاهده چک‌لیست" : "View checklist"}</a>
+              <strong>{locale === "fa" ? `${summary.routes} مسیر` : `${summary.routes} routes`}</strong>
+              <span className="muted-block">{locale === "fa" ? "بر پایه DSL فعلی" : "Based on the current DSL"}</span>
             </article>
             <article className="summary-card">
               <span className="muted">{locale === "fa" ? "لینک پیش‌نمایش" : "Preview link"}</span>
-              <strong style={{ fontSize: "1rem" }}>https://preview.cyan.app/shop-app-v0-1</strong>
-              <a href="#" className="muted-block">{locale === "fa" ? "باز کردن پیش‌نمایش" : "Open preview"}</a>
+              <strong style={{ fontSize: "1rem" }}>{drafts[0]?.siteKey ? `/${drafts[0].siteKey}` : "—"}</strong>
+              <span className="muted-block">{locale === "fa" ? "پس از provision قابل استفاده است" : "Available after provisioning"}</span>
             </article>
           </section>
         </section>
@@ -174,37 +187,35 @@ export default function AiStudioPage() {
             </div>
             <div className="mini-card">
               <span className="muted">{locale === "fa" ? "قالب‌های فعال" : "Blueprints"}</span>
-              <strong>{blueprints.length || 6}</strong>
+              <strong>{blueprints.length}</strong>
             </div>
           </div>
 
           <div className="card-title-row" style={{ marginTop: 18 }}>
             <h3>{locale === "fa" ? "آخرین تولیدها" : "Recent generations"}</h3>
-            <a href="#" className="muted">{locale === "fa" ? "مشاهده همه" : "View all"}</a>
+            <span className="muted">{locale === "fa" ? "خروجی زنده orchestrator" : "Live orchestrator output"}</span>
           </div>
           <div className="activity-list studio-generation-list" style={{ marginTop: 16 }}>
-            {(drafts.slice(0, 5).length
-              ? drafts.slice(0, 5).map((draft) => ({
-                  title: draft.title,
-                  time: draft.updatedAt ?? (locale === "fa" ? "به تازگی" : "Recently")
-                }))
-              : fallbackDrafts(locale)
-            ).map((draft) => (
+            {drafts.slice(0, 5).map((draft) => (
               <div key={draft.title} className="activity-item">
                 <strong>{draft.title}</strong>
-                <span className="muted-block">{draft.time}</span>
+                <span className="muted-block">{draft.updatedAt ?? (locale === "fa" ? "به تازگی" : "Recently")}</span>
               </div>
             ))}
+            {!drafts.length ? (
+              <div className="activity-item">
+                <strong>{locale === "fa" ? "پیش‌نویسی از backend برنگشته است" : "No drafts returned by backend"}</strong>
+                <span className="muted-block">{locale === "fa" ? "اولین خروجی پس از Generate اینجا نمایش داده می‌شود." : "The first generated draft will appear here."}</span>
+              </div>
+            ) : null}
           </div>
 
           <div className="summary-grid dashboard-summary-grid" style={{ marginTop: 20 }}>
             {[
-              ["Website", "12 pages"],
-              ["Shop", "18 modules"],
-              ["CRM", "9 modules"],
-              ["Forms", "6 forms"],
-              ["Flow", "14 workflows"],
-              ["Bot", "Telegram bot"]
+              ["Routes", `${summary.routes}`],
+              ["Services", `${summary.services}`],
+              ["Modules", `${summary.modules}`],
+              ["Blueprints", `${blueprints.length}`]
             ].map(([title, meta]) => (
               <div key={title} className="mini-card">
                 <strong>{title}</strong>
@@ -265,12 +276,4 @@ export default function AiStudioPage() {
       </div>
     </PanelShell>
   );
-}
-
-function fallbackDrafts(locale: "en" | "fa") {
-  return [
-    { title: locale === "fa" ? "اپ فروشگاه" : "Shop App", time: locale === "fa" ? "همین حالا" : "Just now" },
-    { title: locale === "fa" ? "CRM فروش" : "Sales CRM", time: locale === "fa" ? "۲ ساعت پیش" : "2h ago" },
-    { title: locale === "fa" ? "فرم منابع انسانی" : "HR onboarding", time: locale === "fa" ? "دیروز" : "Yesterday" }
-  ];
 }

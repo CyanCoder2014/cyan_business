@@ -13,22 +13,36 @@ export default function FlowsPage() {
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      listFlows({ tenantKey: "tenant-demo", siteKey: "site-commerce" }).catch(() => []),
-      listActionMetadata({ tenantKey: "tenant-demo", siteKey: "site-commerce" }).catch(() => []),
-      getConditionMetadata({ tenantKey: "tenant-demo", siteKey: "site-commerce" }).catch(() => null)
+    Promise.allSettled([
+      listFlows({ tenantKey: "tenant-demo", siteKey: "site-commerce" }),
+      listActionMetadata({ tenantKey: "tenant-demo", siteKey: "site-commerce" }),
+      getConditionMetadata({ tenantKey: "tenant-demo", siteKey: "site-commerce" })
     ]).then(([flowItems, actionItems, conditionItems]) => {
-      setFlows(flowItems);
-      setActions(actionItems);
-      setConditions(conditionItems);
+      const errors: string[] = [];
+      if (flowItems.status === "fulfilled") {
+        setFlows(flowItems.value);
+      } else {
+        errors.push(locale === "fa" ? "فلوها بارگیری نشدند." : "Flows could not be loaded.");
+      }
+      if (actionItems.status === "fulfilled") {
+        setActions(actionItems.value);
+      } else {
+        errors.push(locale === "fa" ? "متادیتای اکشن‌ها بارگیری نشد." : "Action metadata could not be loaded.");
+      }
+      if (conditionItems.status === "fulfilled") {
+        setConditions(conditionItems.value);
+      } else {
+        errors.push(locale === "fa" ? "متادیتای شرط‌ها بارگیری نشد." : "Condition metadata could not be loaded.");
+      }
+      setStatus(errors.length ? errors.join(" ") : null);
     });
-  }, []);
+  }, [locale]);
 
-  const flow = flows[0] ?? fallbackFlow;
+  const flow = flows[0] ?? null;
 
   async function saveCurrentFlow(activate: boolean) {
     setStatus(locale === "fa" ? "در حال ذخیره فلو..." : "Saving flow...");
-    const draft = flow.states.length ? flow : fallbackFlow;
+    const draft = flow ?? createStarterFlow();
     try {
       const saved = await saveFlow(draft, { tenantKey: "tenant-demo", siteKey: "site-commerce" });
       if (activate) {
@@ -58,18 +72,24 @@ export default function FlowsPage() {
             <h3>{locale === "fa" ? "افزودن نود" : "Add node"}</h3>
           </div>
           <div className="flow-list" style={{ marginTop: 16 }}>
-            {(actions.length ? actions.slice(0, 6) : fallbackActions).map((action) => (
+            {actions.slice(0, 6).map((action) => (
               <div key={action.type} className="flow-item">
                 <strong>{action.type}</strong>
                 <span className="muted-block">{action.description}</span>
               </div>
             ))}
+            {!actions.length ? (
+              <div className="flow-item">
+                <strong>{locale === "fa" ? "اکشنی دریافت نشد" : "No actions returned"}</strong>
+                <span className="muted-block">{locale === "fa" ? "متادیتای BPM باید این لیست را تامین کند." : "The BPM metadata endpoint should populate this list."}</span>
+              </div>
+            ) : null}
           </div>
         </aside>
 
         <section className="panel-card">
           <div className="toolbar-row">
-            <span className="status-pill success">{locale === "fa" ? "پیش‌نویس" : "Draft"}</span>
+            <span className={flow ? "status-pill success" : "status-pill warning"}>{flow ? (locale === "fa" ? "بارگیری شد" : "Loaded") : locale === "fa" ? "خالی" : "Empty"}</span>
             <div className="pill-row">
               <button type="button" className="secondary-pill">
                 {locale === "fa" ? "تست ارسال" : "Test submission"}
@@ -84,30 +104,17 @@ export default function FlowsPage() {
           </div>
           {status ? <div className="status-pill info" style={{ marginTop: 12 }}>{status}</div> : null}
           <div className="flow-canvas flow-canvas-wide" style={{ marginTop: 18 }}>
-            <div className="kanban-node">
-              <strong>Draft</strong>
-              <span className="muted-block">{locale === "fa" ? "فرم درخواست" : "PO request form"}</span>
-            </div>
-            <div className="kanban-node green">
-              <strong>Submitted</strong>
-              <span className="muted-block">{locale === "fa" ? "اعتبارسنجی کامل" : "All required fields valid"}</span>
-            </div>
-            <div className="kanban-node violet">
-              <strong>Review</strong>
-              <span className="muted-block">{locale === "fa" ? "فرم بررسی" : "Review form"}</span>
-            </div>
-            <div className="kanban-node red">
-              <strong>Rejected</strong>
-              <span className="muted-block">{locale === "fa" ? "عدم تطابق با سیاست" : "Does not meet policy"}</span>
-            </div>
-            <div className="kanban-node green">
-              <strong>Approved</strong>
-              <span className="muted-block">{locale === "fa" ? "همه کنترل‌ها موفق" : "All checks passed"}</span>
-            </div>
-            <div className="kanban-node">
-              <strong>Completed</strong>
-              <span className="muted-block">{locale === "fa" ? "بدون فرم" : "No form"}</span>
-            </div>
+            {flow ? flow.states.map((state) => (
+              <div key={state.id} className={`kanban-node${state.terminal ? " green" : ""}`}>
+                <strong>{state.displayName}</strong>
+                <span className="muted-block">{state.formKey ?? (locale === "fa" ? "بدون فرم" : "No form")}</span>
+              </div>
+            )) : (
+              <div className="mini-card" style={{ width: "100%" }}>
+                <strong>{locale === "fa" ? "هیچ فلویی از API برنگشته است" : "No flow was returned by the API"}</strong>
+                <span className="muted-block">{locale === "fa" ? "برای ایجاد فلو اولیه می‌توانید Save draft را بزنید." : "Use Save draft to create a starter flow if needed."}</span>
+              </div>
+            )}
           </div>
           <div className="data-table-shell" style={{ marginTop: 18 }}>
             <div className="card-title-row">
@@ -117,15 +124,15 @@ export default function FlowsPage() {
               <tbody>
                 <tr>
                   <th>{locale === "fa" ? "کلید فلو" : "Flow key"}</th>
-                  <td>{flow.flowKey}</td>
+                  <td>{flow?.flowKey ?? "—"}</td>
                 </tr>
                 <tr>
                   <th>{locale === "fa" ? "نام" : "Name"}</th>
-                  <td>{flow.name}</td>
+                  <td>{flow?.name ?? "—"}</td>
                 </tr>
                 <tr>
                   <th>{locale === "fa" ? "استیت آغازین" : "Start state"}</th>
-                  <td>{flow.startState}</td>
+                  <td>{flow?.startState ?? "—"}</td>
                 </tr>
                 <tr>
                   <th>{locale === "fa" ? "عملگرهای شرط" : "Condition operators"}</th>
@@ -159,21 +166,21 @@ export default function FlowsPage() {
           <div className="detail-list" style={{ marginTop: 16 }}>
             <div className="detail-item">
               <strong>{locale === "fa" ? "عنوان" : "Title"}</strong>
-              <span className="muted-block">Review</span>
+              <span className="muted-block">{flow?.states[0]?.displayName ?? "—"}</span>
             </div>
             <div className="detail-item">
               <strong>{locale === "fa" ? "اکشن‌ها" : "Actions"}</strong>
-              <span className="muted-block">Notify reviewer, create audit record</span>
+              <span className="muted-block">{actions.slice(0, 2).map((item) => item.type).join(", ") || "—"}</span>
             </div>
             <div className="detail-item">
               <strong>{locale === "fa" ? "رویدادها" : "Events"}</strong>
-              <span className="muted-block">review.completed, review.rejected</span>
+              <span className="muted-block">{flow?.transitions.map((item) => item.label).join(", ") || "—"}</span>
             </div>
           </div>
           <div className="detail-list" style={{ marginTop: 16 }}>
             <div className="detail-item">
               <strong>{locale === "fa" ? "قوانین انتقال" : "Transition rules"}</strong>
-              <span className="muted-block">{locale === "fa" ? "Approve → Approved / Reject → Rejected" : "Approve → Approved / Reject → Rejected"}</span>
+              <span className="muted-block">{flow?.transitions.length ? `${flow.transitions.length} ${locale === "fa" ? "ترنزیشن" : "transitions"}` : "—"}</span>
             </div>
           </div>
         </aside>
@@ -194,35 +201,32 @@ export default function FlowsPage() {
           <span className="pill">{locale === "fa" ? "رویدادها" : "Events"}</span>
         </div>
         <div className="flow-mobile-path">
-          {[
-            ["Draft", locale === "fa" ? "درخواست ایجاد شد" : "PO is created"],
-            ["Submitted", locale === "fa" ? "ارسال برای تایید" : "Sent for approval"],
-            ["Review", locale === "fa" ? "بررسی مدیر" : "Manager review"],
-            ["Approved", locale === "fa" ? "تایید نهایی" : "PO approved"],
-            ["Rejected", locale === "fa" ? "رد درخواست" : "PO rejected"],
-            ["Completed", locale === "fa" ? "پایان فرآیند" : "PO process complete"]
-          ].map(([title, meta]) => (
-            <div key={title} className="flow-mobile-node">
-              <strong>{title}</strong>
-              <span className="muted-block">{meta}</span>
+          {(flow?.states ?? []).map((state) => (
+            <div key={state.id} className="flow-mobile-node">
+              <strong>{state.displayName}</strong>
+              <span className="muted-block">{state.formKey ?? (locale === "fa" ? "بدون فرم" : "No form")}</span>
             </div>
           ))}
+          {!flow ? (
+            <div className="flow-mobile-node">
+              <strong>{locale === "fa" ? "فلویی وجود ندارد" : "No flow available"}</strong>
+              <span className="muted-block">{locale === "fa" ? "خروجی مستقیم از BPM نمایش داده می‌شود." : "This now renders directly from BPM output."}</span>
+            </div>
+          ) : null}
         </div>
         <div className="mobile-bottom-sheet">
           <div className="mobile-handle" />
           <div className="toolbar-row">
-            <strong>{locale === "fa" ? "Review" : "Review"}</strong>
+            <strong>{flow?.states[0]?.displayName ?? (locale === "fa" ? "بدون فلو" : "No flow")}</strong>
             <button type="button" className="icon-pill">×</button>
           </div>
           <div className="mobile-list" style={{ marginTop: 14 }}>
-            <div className="mobile-list-item">
-              <strong>{locale === "fa" ? "تایید" : "Approve"}</strong>
-              <span className="muted-block">{locale === "fa" ? "همه شروط برقرار است → Approved" : "All conditions met → Approved"}</span>
-            </div>
-            <div className="mobile-list-item">
-              <strong>{locale === "fa" ? "رد" : "Reject"}</strong>
-              <span className="muted-block">{locale === "fa" ? "همیشه در دسترس → Rejected" : "Always available → Rejected"}</span>
-            </div>
+            {(flow?.transitions ?? []).slice(0, 2).map((transition) => (
+              <div key={transition.id} className="mobile-list-item">
+                <strong>{transition.label}</strong>
+                <span className="muted-block">{transition.fromState} → {transition.toState}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -230,31 +234,25 @@ export default function FlowsPage() {
   );
 }
 
-const fallbackFlow: DynamicFlowDefinition = {
-  flowKey: "purchase_order_approval",
-  name: "Purchase Order Approval",
-  startState: "Draft",
-  states: [
-    { id: "Draft", displayName: "Draft", terminal: false, formKey: "po_request" },
-    { id: "Submitted", displayName: "Submitted", terminal: false, formKey: "po_request" },
-    { id: "Review", displayName: "Review", terminal: false, formKey: "review_form" },
-    { id: "Approved", displayName: "Approved", terminal: false, formKey: "approval_form" },
-    { id: "Rejected", displayName: "Rejected", terminal: true, formKey: "rejection_form" },
-    { id: "Completed", displayName: "Completed", terminal: true }
-  ],
-  transitions: [
-    { id: "submit", fromState: "Draft", toState: "Submitted", label: "Submit" },
-    { id: "route-to-review", fromState: "Submitted", toState: "Review", label: "Route to review" },
-    { id: "approve", fromState: "Review", toState: "Approved", label: "Approve" },
-    { id: "reject", fromState: "Review", toState: "Rejected", label: "Reject" },
-    { id: "complete", fromState: "Approved", toState: "Completed", label: "Auto-complete" }
-  ]
-};
-
-const fallbackActions: BpmActionStructure[] = [
-  { type: "FORM_STEP", description: "Collect data with a form" },
-  { type: "APPROVAL", description: "Human approval step" },
-  { type: "NOTIFICATION", description: "Send email, in-app, or SMS" },
-  { type: "WEBHOOK", description: "Call external endpoint" },
-  { type: "AI_ACTION", description: "AI decision or generation" }
-];
+function createStarterFlow(): DynamicFlowDefinition {
+  return {
+    flowKey: "purchase_order_approval",
+    name: "Purchase Order Approval",
+    startState: "Draft",
+    states: [
+      { id: "Draft", displayName: "Draft", terminal: false, formKey: "po_request" },
+      { id: "Submitted", displayName: "Submitted", terminal: false, formKey: "po_request" },
+      { id: "Review", displayName: "Review", terminal: false, formKey: "review_form" },
+      { id: "Approved", displayName: "Approved", terminal: false, formKey: "approval_form" },
+      { id: "Rejected", displayName: "Rejected", terminal: true, formKey: "rejection_form" },
+      { id: "Completed", displayName: "Completed", terminal: true }
+    ],
+    transitions: [
+      { id: "submit", fromState: "Draft", toState: "Submitted", label: "Submit" },
+      { id: "route-to-review", fromState: "Submitted", toState: "Review", label: "Route to review" },
+      { id: "approve", fromState: "Review", toState: "Approved", label: "Approve" },
+      { id: "reject", fromState: "Review", toState: "Rejected", label: "Reject" },
+      { id: "complete", fromState: "Approved", toState: "Completed", label: "Auto-complete" }
+    ]
+  };
+}

@@ -22,15 +22,19 @@ export default function MakerPage() {
   useEffect(() => {
     listDefinitions("catalog-service", { tenantKey: "tenant-demo", siteKey: "site-commerce" })
       .then(setDefinitions)
-      .catch(() => setDefinitions(fallbackDefinitions));
-  }, []);
+      .catch((error) => setStatus(error instanceof Error ? error.message : locale === "fa" ? "تعریف‌ها بارگیری نشدند." : "Definitions could not be loaded."));
+  }, [locale]);
 
-  const entities = definitions.length ? definitions : fallbackDefinitions;
-  const selected = entities[selectedIndex] ?? entities[0];
+  const entities = definitions;
+  const selected = entities[selectedIndex] ?? null;
   const fields = useMemo(() => toFieldSummaries(selected), [selected]);
 
   async function publishSchema() {
     setStatus(locale === "fa" ? "در حال انتشار..." : "Publishing...");
+    if (!selected) {
+      setStatus(locale === "fa" ? "تعریفی برای انتشار وجود ندارد." : "No definition is available to publish.");
+      return;
+    }
     try {
       const saved = await saveDefinition("catalog-service", selected.entityKey, selected.definitionJson, {
         tenantKey: selected.tenantKey ?? "tenant-demo",
@@ -80,6 +84,12 @@ export default function MakerPage() {
                   <span className="muted-block">{definition.entityKey}</span>
                 </button>
               ))}
+              {!entities.length ? (
+                <div className="mini-card">
+                  <strong>{locale === "fa" ? "تعریفی از backend دریافت نشد" : "No definitions returned by backend"}</strong>
+                  <span className="muted-block">{locale === "fa" ? "پس از ساخت definition در سرویس، این فهرست پر می‌شود." : "This list fills after definitions are created in the service."}</span>
+                </div>
+              ) : null}
             </div>
 
             <div className="data-table-shell">
@@ -90,7 +100,7 @@ export default function MakerPage() {
                 <span className="pill">{locale === "fa" ? "دسترسی‌ها" : "Permissions"}</span>
               </div>
               <div className="toolbar-row" style={{ marginTop: 14 }}>
-                <strong>{selected.title ?? selected.entityKey}</strong>
+                <strong>{selected?.title ?? selected?.entityKey ?? (locale === "fa" ? "بدون انتخاب" : "No selection")}</strong>
                 <div className="pill-row">
                   <button type="button" className="secondary-pill">{locale === "fa" ? "مرتب‌سازی" : "Reorder"}</button>
                   <button type="button" className="secondary-pill">{locale === "fa" ? "اقدام گروهی" : "Bulk actions"}</button>
@@ -114,6 +124,11 @@ export default function MakerPage() {
                       <td>{field.description ?? "—"}</td>
                     </tr>
                   ))}
+                  {!fields.length ? (
+                    <tr>
+                      <td colSpan={4}>{locale === "fa" ? "فیلدی برای این definition موجود نیست." : "No fields are available for this definition."}</td>
+                    </tr>
+                  ) : null}
                 </tbody>
               </table>
               <button type="button" className="secondary-pill" style={{ marginTop: 14 }}>
@@ -126,35 +141,42 @@ export default function MakerPage() {
         <aside className="panel-card maker-side-panel">
           <div className="card-title-row">
             <h3>{locale === "fa" ? "خلاصه API و DSL" : "API & DSL summary"}</h3>
-            <span className="status-pill success">{locale === "fa" ? "منتشر شده" : "Published"}</span>
+            <span className={selected ? "status-pill success" : "status-pill warning"}>{selected ? (locale === "fa" ? "بارگیری شد" : "Loaded") : locale === "fa" ? "خالی" : "Empty"}</span>
           </div>
-          <div className="detail-list" style={{ marginTop: 16 }}>
-            <div className="detail-item">
-              <strong>{locale === "fa" ? "کلید موجودیت" : "Entity key"}</strong>
-              <span className="muted-block">{selected.entityKey}</span>
-            </div>
-            <div className="detail-item">
-              <strong>{locale === "fa" ? "سرویس" : "Service"}</strong>
-              <span className="muted-block">{selected.serviceKey}</span>
-            </div>
-            <div className="detail-item">
-              <strong>{locale === "fa" ? "دامنه" : "Scope"}</strong>
-              <span className="muted-block">
-                {(selected.tenantKey ?? "tenant-demo")} / {(selected.siteKey ?? "site-commerce")}
-              </span>
-            </div>
-          </div>
-          <pre className="code-block" style={{ marginTop: 16 }}>
+          {selected ? (
+            <>
+              <div className="detail-list" style={{ marginTop: 16 }}>
+                <div className="detail-item">
+                  <strong>{locale === "fa" ? "کلید موجودیت" : "Entity key"}</strong>
+                  <span className="muted-block">{selected.entityKey}</span>
+                </div>
+                <div className="detail-item">
+                  <strong>{locale === "fa" ? "سرویس" : "Service"}</strong>
+                  <span className="muted-block">{selected.serviceKey}</span>
+                </div>
+                <div className="detail-item">
+                  <strong>{locale === "fa" ? "دامنه" : "Scope"}</strong>
+                  <span className="muted-block">
+                    {(selected.tenantKey ?? "tenant-demo")} / {(selected.siteKey ?? "site-commerce")}
+                  </span>
+                </div>
+              </div>
+              <pre className="code-block" style={{ marginTop: 16 }}>
 {selected.definitionJson}
-          </pre>
+              </pre>
+            </>
+          ) : (
+            <div className="mini-card" style={{ marginTop: 16 }}>
+              <strong>{locale === "fa" ? "داده‌ای برای خلاصه API وجود ندارد" : "No API summary data available"}</strong>
+              <span className="muted-block">{locale === "fa" ? "این صفحه دیگر از definitionهای ساختگی استفاده نمی‌کند." : "This page no longer falls back to fabricated definitions."}</span>
+            </div>
+          )}
           <div className="card-title-row" style={{ marginTop: 20 }}>
             <h3>{locale === "fa" ? "نقشه شِما" : "Schema map"}</h3>
           </div>
           <div className="summary-grid" style={{ marginTop: 12 }}>
-            <div className="mini-card"><strong>Products</strong><span className="muted-block">7 fields</span></div>
-            <div className="mini-card"><strong>Orders</strong><span className="muted-block">N:M</span></div>
-            <div className="mini-card"><strong>Media</strong><span className="muted-block">N:M</span></div>
-            <div className="mini-card"><strong>Categories</strong><span className="muted-block">1:N</span></div>
+            <div className="mini-card"><strong>{selected?.title ?? "—"}</strong><span className="muted-block">{fields.length} {locale === "fa" ? "فیلد" : "fields"}</span></div>
+            <div className="mini-card"><strong>{entities.length}</strong><span className="muted-block">{locale === "fa" ? "تعریف" : "definitions"}</span></div>
           </div>
         </aside>
       </div>
@@ -164,7 +186,7 @@ export default function MakerPage() {
           <button type="button" className="icon-pill">←</button>
           <div>
             <strong style={{ display: "block", fontSize: "2rem" }}>{locale === "fa" ? "سازنده" : "Maker"}</strong>
-            <span className="muted-block">{locale === "fa" ? "موجودیت: محصولات" : "Entity: Products"}</span>
+            <span className="muted-block">{selected ? `${locale === "fa" ? "موجودیت" : "Entity"}: ${selected.title ?? selected.entityKey}` : locale === "fa" ? "موجودیتی بارگیری نشده" : "No entity loaded"}</span>
           </div>
           <button type="button" className="icon-pill">…</button>
         </div>
@@ -199,10 +221,10 @@ export default function MakerPage() {
         <div className="mobile-card compact">
           <div className="toolbar-row">
             <strong>{locale === "fa" ? "شناسه API" : "API identifier"}</strong>
-            <span>{selected.entityKey}</span>
+            <span>{selected?.entityKey ?? "—"}</span>
           </div>
         </div>
-        <button type="button" className="primary-pill auth-submit" onClick={publishSchema}>
+        <button type="button" className="primary-pill auth-submit" onClick={publishSchema} disabled={!selected}>
           {locale === "fa" ? "انتشار شِما" : "Publish schema"}
         </button>
       </div>
@@ -210,7 +232,10 @@ export default function MakerPage() {
   );
 }
 
-function toFieldSummaries(definition: DynamicEntityDefinition): FieldSummary[] {
+function toFieldSummaries(definition: DynamicEntityDefinition | null): FieldSummary[] {
+  if (!definition) {
+    return [];
+  }
   try {
     const parsed = JSON.parse(definition.definitionJson) as { fields?: Array<Record<string, unknown>> };
     const fields = parsed.fields ?? [];
@@ -223,29 +248,7 @@ function toFieldSummaries(definition: DynamicEntityDefinition): FieldSummary[] {
       }));
     }
   } catch {
-    return fallbackFields;
+    return [];
   }
-  return fallbackFields;
+  return [];
 }
-
-const fallbackFields: FieldSummary[] = [
-  { name: "title", type: "String", required: true, description: "Product title" },
-  { name: "slug", type: "Slug", required: true, description: "Unique route slug" },
-  { name: "price", type: "Decimal", required: true, description: "Price (USD)" },
-  { name: "stock", type: "Integer", required: true, description: "Available inventory" }
-];
-
-const fallbackDefinitions: DynamicEntityDefinition[] = [
-  {
-    serviceKey: "catalog-service",
-    entityKey: "products",
-    title: "Products",
-    definitionJson: JSON.stringify({ fields: fallbackFields }, null, 2)
-  },
-  {
-    serviceKey: "catalog-service",
-    entityKey: "orders",
-    title: "Orders",
-    definitionJson: JSON.stringify({ fields: fallbackFields }, null, 2)
-  }
-];

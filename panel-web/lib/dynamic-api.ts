@@ -4,7 +4,7 @@ import type {
   DynamicEntityTemplate,
   DynamicServiceKey
 } from "@/lib/types";
-import { platformAuthHeaders } from "@/lib/platform-auth";
+import { platformFetch } from "@/lib/platform-auth";
 
 export const dynamicServices: DynamicServiceKey[] = [
   "content-service",
@@ -33,9 +33,6 @@ type ScopedRequest = {
 async function requestJson<T>(serviceKey: DynamicServiceKey, path: string, init?: RequestInit & ScopedRequest): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Content-Type", "application/json");
-  for (const [key, value] of Object.entries(platformAuthHeaders())) {
-    headers.set(key, value);
-  }
   if (init?.tenantKey) {
     headers.set("X-Tenant-Key", init.tenantKey);
   }
@@ -43,7 +40,7 @@ async function requestJson<T>(serviceKey: DynamicServiceKey, path: string, init?
     headers.set("X-Site-Key", init.siteKey);
   }
 
-  const response = await fetch(`/api/platform/dynamic/${serviceKey}${path}`, {
+  const response = await platformFetch(`/api/platform/dynamic/${serviceKey}${path}`, {
     ...init,
     headers,
     cache: "no-store"

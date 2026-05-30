@@ -4,6 +4,7 @@ import com.cyancoder.sso.common.dto.PasswordVerificationRequest;
 import com.cyancoder.sso.common.dto.PasswordVerificationResponse;
 import com.cyancoder.sso.common.dto.UserRegistrationRequest;
 import com.cyancoder.sso.common.dto.UserSummary;
+import com.cyancoder.ssouser.service.IamDirectoryService;
 import com.cyancoder.ssouser.service.IamSecurityService;
 import com.cyancoder.ssouser.service.UserDirectoryService;
 import org.springframework.http.HttpStatus;
@@ -15,10 +16,12 @@ public class UserController {
 
     private final UserDirectoryService userDirectoryService;
     private final IamSecurityService iamSecurityService;
+    private final IamDirectoryService iamDirectoryService;
 
-    public UserController(UserDirectoryService userDirectoryService, IamSecurityService iamSecurityService) {
+    public UserController(UserDirectoryService userDirectoryService, IamSecurityService iamSecurityService, IamDirectoryService iamDirectoryService) {
         this.userDirectoryService = userDirectoryService;
         this.iamSecurityService = iamSecurityService;
+        this.iamDirectoryService = iamDirectoryService;
     }
 
     @PostMapping
@@ -26,6 +29,12 @@ public class UserController {
     public UserSummary register(@RequestBody UserRegistrationRequest request) {
         iamSecurityService.requirePlatformAdmin();
         return userDirectoryService.register(request);
+    }
+
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserSummary registerPublic(@RequestBody UserRegistrationRequest request) {
+        return iamDirectoryService.registerPublicUser(request);
     }
 
     @GetMapping

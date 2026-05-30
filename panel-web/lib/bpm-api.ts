@@ -1,3 +1,5 @@
+import { platformFetch } from "@/lib/platform-auth";
+
 const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
 
 export type FlowActionDraft = {
@@ -138,7 +140,7 @@ export type TransitionOptionResponse = {
 };
 
 async function requestJson<T>(path: string, init?: RequestInit & { tenantKey?: string; siteKey?: string }): Promise<T> {
-  const response = await fetch(`${platformBaseUrl}${path}`, {
+  const response = await platformFetch(`${platformBaseUrl}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",

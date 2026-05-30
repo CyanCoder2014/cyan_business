@@ -9,10 +9,12 @@ import com.cyancoder.sso.common.dto.RealmSummary;
 import com.cyancoder.sso.common.dto.RealmUpsertRequest;
 import com.cyancoder.sso.common.dto.RoleCatalogSummary;
 import com.cyancoder.sso.common.dto.RoleCatalogUpsertRequest;
+import com.cyancoder.sso.common.dto.UserRegistrationRequest;
 import com.cyancoder.sso.common.dto.UserClientRoleAssignmentSummary;
 import com.cyancoder.sso.common.dto.UserRealmMembershipSummary;
 import com.cyancoder.sso.common.dto.UserRealmMembershipUpsertRequest;
 import com.cyancoder.sso.common.dto.UserRoleAssignmentRequest;
+import com.cyancoder.sso.common.dto.UserSummary;
 import com.cyancoder.ssouser.entity.ClientEntity;
 import com.cyancoder.ssouser.entity.ClientRoleEntity;
 import com.cyancoder.ssouser.entity.RealmEntity;
@@ -41,6 +43,11 @@ import java.util.Map;
 
 @Service
 public class IamDirectoryService {
+    private static final String DEFAULT_REALM_KEY = "cyan";
+    private static final String DEFAULT_CLIENT_ID = "cyan-panel";
+    private static final String DEFAULT_PUBLIC_REALM_ROLE = "realm-user";
+    private static final String DEFAULT_PUBLIC_CLIENT_ROLE = "client-owner";
+
     private final RealmRepository realmRepository;
     private final ClientRepository clientRepository;
     private final RealmRoleRepository realmRoleRepository;
@@ -360,6 +367,36 @@ public class IamDirectoryService {
         return grouped.entrySet().stream()
                 .map(entry -> new UserClientRoleAssignmentSummary(username, entry.getKey(), entry.getValue()))
                 .toList();
+    }
+
+    @Transactional
+    public UserSummary registerPublicUser(UserRegistrationRequest request) {
+        String username = request.username();
+        if (username == null || username.isBlank()) {
+            username = request.email();
+        }
+
+        realmRepository.findById(DEFAULT_REALM_KEY)
+                .orElseThrow(() -> new IllegalStateException("Default realm is not configured"));
+        ClientEntity client = clientRepository.findById(DEFAULT_CLIENT_ID)
+                .orElseThrow(() -> new IllegalStateException("Default panel client is not configured"));
+        if (!DEFAULT_REALM_KEY.equals(client.getRealmKey())) {
+            throw new IllegalStateException("Default panel client does not belong to the default realm");
+        }
+
+        UserSummary user = userDirectoryService.register(new UserRegistrationRequest(
+                required(username, "username"),
+                required(request.password(), "password"),
+                request.email(),
+                request.phoneNumber(),
+                false,
+                List.of("user")
+        ));
+
+        saveSeedMembership(user.username(), DEFAULT_REALM_KEY, true, true);
+        saveSeedRealmAssignment(user.username(), DEFAULT_REALM_KEY, DEFAULT_PUBLIC_REALM_ROLE);
+        saveSeedClientAssignment(user.username(), DEFAULT_CLIENT_ID, DEFAULT_PUBLIC_CLIENT_ROLE);
+        return user;
     }
 
     @Transactional

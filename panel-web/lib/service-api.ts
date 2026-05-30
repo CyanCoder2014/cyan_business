@@ -13,7 +13,7 @@ import type {
   SearchSuggestionResponse,
   UserSummary
 } from "@/lib/types";
-import { platformAuthHeaders } from "@/lib/platform-auth";
+import { platformFetch } from "@/lib/platform-auth";
 
 type ServiceKey =
   | "sso-user-service"
@@ -33,9 +33,6 @@ type ScopedRequest = {
 async function requestJson<T>(serviceKey: ServiceKey, path: string, init?: RequestInit & ScopedRequest): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Content-Type", "application/json");
-  for (const [key, value] of Object.entries(platformAuthHeaders())) {
-    headers.set(key, value);
-  }
   if (init?.tenantKey) {
     headers.set("X-Tenant-Key", init.tenantKey);
   }
@@ -43,7 +40,7 @@ async function requestJson<T>(serviceKey: ServiceKey, path: string, init?: Reque
     headers.set("X-Site-Key", init.siteKey);
   }
 
-  const response = await fetch(`/api/platform/service/${serviceKey}${path}`, {
+  const response = await platformFetch(`/api/platform/service/${serviceKey}${path}`, {
     ...init,
     headers,
     cache: "no-store"

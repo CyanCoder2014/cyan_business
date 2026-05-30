@@ -111,6 +111,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
 input,
 textarea,
 select {
@@ -786,6 +791,17 @@ select:focus {
   color: var(--blue);
 }
 
+.status-pill.danger {
+  color: #d92d20;
+}
+
+.text-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--blue);
+}
+
 .code-block,
 .json-view {
   display: block;
@@ -1153,6 +1169,12 @@ select:focus {
 .auth-submit {
   min-height: 52px;
   justify-content: center;
+}
+
+.auth-captcha-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
 }
 
 .auth-divider {

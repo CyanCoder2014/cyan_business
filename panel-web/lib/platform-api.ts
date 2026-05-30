@@ -8,11 +8,12 @@ import type {
   GeneratePlatformAppResponse,
   ProvisioningRun
 } from "@/lib/types";
+import { platformFetch } from "@/lib/platform-auth";
 
 const baseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
 
 async function requestJson<T>(path: string, init: RequestInit): Promise<T> {
-  const response = await fetch(`${baseUrl}${path}`, {
+  const response = await platformFetch(`${baseUrl}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",

@@ -1,4 +1,5 @@
 import type {
+  AiConversationSession,
   AppBlueprint,
   BotChannelIntegration,
   BotMiniAppBuild,
@@ -44,6 +45,12 @@ export function listBlueprints(appType?: string): Promise<AppBlueprint[]> {
   });
 }
 
+export function getClientDraft(draftId: string): Promise<ClientAppDraft> {
+  return requestJson<ClientAppDraft>("ai-orchestrator-service", `/endpoint/ai-orchestrator/drafts/${encodeURIComponent(draftId)}`, {
+    method: "GET"
+  });
+}
+
 export function listClientDrafts(params?: {
   tenantKey?: string;
   siteKey?: string;
@@ -85,6 +92,55 @@ export function provisionClientDraft(draftId: string): Promise<ProvisioningRun> 
 export function listProvisioningRuns(draftId: string): Promise<ProvisioningRun[]> {
   return requestJson<ProvisioningRun[]>("ai-orchestrator-service", `/endpoint/ai-orchestrator/drafts/${draftId}/runs`, {
     method: "GET"
+  });
+}
+
+export function listConversationSessions(params?: {
+  tenantKey?: string;
+  siteKey?: string;
+  clientKey?: string;
+  draftId?: string;
+}): Promise<AiConversationSession[]> {
+  const search = new URLSearchParams();
+  if (params?.tenantKey) search.set("tenantKey", params.tenantKey);
+  if (params?.siteKey) search.set("siteKey", params.siteKey);
+  if (params?.clientKey) search.set("clientKey", params.clientKey);
+  if (params?.draftId) search.set("draftId", params.draftId);
+  const suffix = search.size ? `?${search.toString()}` : "";
+  return requestJson<AiConversationSession[]>("ai-orchestrator-service", `/endpoint/ai-orchestrator/sessions${suffix}`, {
+    method: "GET"
+  });
+}
+
+export function getConversationSession(sessionId: string): Promise<AiConversationSession> {
+  return requestJson<AiConversationSession>("ai-orchestrator-service", `/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}`, {
+    method: "GET"
+  });
+}
+
+export function createConversationSession(request: {
+  channelType?: string;
+  tenantKey?: string;
+  siteKey?: string;
+  clientKey?: string;
+  draftId?: string;
+  appTypeHint?: string;
+  title?: string;
+  extractedAnswers?: Record<string, unknown>;
+}): Promise<AiConversationSession> {
+  return requestJson<AiConversationSession>("ai-orchestrator-service", "/endpoint/ai-orchestrator/sessions", {
+    method: "POST",
+    body: JSON.stringify(request)
+  });
+}
+
+export function appendConversationMessage(
+  sessionId: string,
+  request: { role: string; content: string; answersPatch?: Record<string, unknown> }
+): Promise<AiConversationSession> {
+  return requestJson<AiConversationSession>("ai-orchestrator-service", `/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}/message`, {
+    method: "POST",
+    body: JSON.stringify(request)
   });
 }
 

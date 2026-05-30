@@ -98,6 +98,33 @@ export type ProvisioningRun = {
   result?: ProvisioningResult | null;
 };
 
+export type AiConversationMessage = {
+  messageId: string;
+  role: string;
+  content: string;
+  createdAt?: string;
+};
+
+export type AiConversationSession = {
+  id?: string;
+  sessionId: string;
+  channelType?: string | null;
+  tenantKey?: string | null;
+  siteKey?: string | null;
+  clientKey?: string | null;
+  draftId?: string | null;
+  appTypeHint?: string | null;
+  status: string;
+  messages: AiConversationMessage[];
+  extractedAnswers: Record<string, unknown>;
+  pendingQuestionKeys: string[];
+  pendingQuestions: string[];
+  latestPrompt?: string | null;
+  latestQuestion?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type DynamicServiceKey =
   | "content-service"
   | "catalog-service"

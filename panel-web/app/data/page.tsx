@@ -3,21 +3,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
-import { listRecords, submitRecord, updateRecord } from "@/lib/dynamic-api";
+import { createDefinitionFromTemplate, listRecords, submitRecord, updateRecord } from "@/lib/dynamic-api";
 import type { DynamicEntityRecord } from "@/lib/types";
 
 type EntityBucket = {
   key: string;
+  templateKey: string;
   titleEn: string;
   titleFa: string;
   serviceKey: "catalog-service" | "content-service" | "crm-service" | "inventory-service";
 };
 
 const entityBuckets: EntityBucket[] = [
-  { key: "product", titleEn: "Products", titleFa: "محصولات", serviceKey: "catalog-service" },
-  { key: "landing-page", titleEn: "Contents", titleFa: "محتوا", serviceKey: "content-service" },
-  { key: "customer", titleEn: "Customers", titleFa: "مشتریان", serviceKey: "crm-service" },
-  { key: "inventory-item", titleEn: "Inventory", titleFa: "موجودی", serviceKey: "inventory-service" }
+  { key: "catalog-product", templateKey: "catalog-product", titleEn: "Products", titleFa: "محصولات", serviceKey: "catalog-service" },
+  { key: "landing-page", templateKey: "landing-page", titleEn: "Contents", titleFa: "محتوا", serviceKey: "content-service" },
+  { key: "crm-contact", templateKey: "crm-contact", titleEn: "Customers", titleFa: "مشتریان", serviceKey: "crm-service" },
+  { key: "stock-item", templateKey: "stock-item", titleEn: "Inventory", titleFa: "موجودی", serviceKey: "inventory-service" }
 ];
 
 export default function DataManagerPage() {
@@ -67,20 +68,22 @@ export default function DataManagerPage() {
     setStatus(locale === "fa" ? "در حال ایجاد رکورد..." : "Creating record...");
     const recordKey = `${selectedBucket.key}-${Date.now()}`;
     try {
+      await createDefinitionFromTemplate(selectedBucket.serviceKey, selectedBucket.templateKey, selectedBucket.key, {
+        tenantKey: "tenant-demo",
+        siteKey: "site-commerce"
+      }).catch(() => null);
       const created = await submitRecord(
         selectedBucket.serviceKey,
         selectedBucket.key,
         recordKey,
-        {
-          title: selectedBucket.key === "product" ? "New Product" : "New Record",
-          status: "DRAFT",
-          category: "General",
-          price: 0,
-          stock: 0
-        },
+        buildRecordData(selectedBucket, recordKey),
         { tenantKey: "tenant-demo", siteKey: "site-commerce" }
       );
       setRecords((current) => [created, ...current]);
+      setRecordCounts((current) => ({
+        ...current,
+        [selectedBucket.key]: (current[selectedBucket.key] ?? 0) + 1
+      }));
       setStatus(locale === "fa" ? "رکورد ایجاد شد." : "Record created.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : locale === "fa" ? "ایجاد رکورد ناموفق بود." : "Create failed.");
@@ -98,7 +101,7 @@ export default function DataManagerPage() {
         selectedBucket.serviceKey,
         selectedBucket.key,
         activeRecord.recordKey,
-        { ...activeRecord.data, status: "Published" },
+        buildEditedRecordData(selectedBucket, activeRecord),
         { tenantKey: "tenant-demo", siteKey: "site-commerce" }
       );
       setRecords((current) => current.map((item) => (item.recordKey === updated.recordKey ? updated : item)));
@@ -227,7 +230,7 @@ export default function DataManagerPage() {
           </div>
           <div className="toolbar-row" style={{ marginTop: 18 }}>
             <button type="button" className="secondary-pill">{locale === "fa" ? "پیش‌نمایش" : "Preview"}</button>
-            <button type="button" className="primary-pill" onClick={markActiveRecordEdited} disabled={!activeRecord}>{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
+            <button type="button" className="primary-pill" onClick={markActiveRecordEdited} disabled={!activeRecord}>{locale === "fa" ? "به‌روزرسانی رکورد" : "Update record"}</button>
           </div>
         </aside>
       </div>
@@ -299,12 +302,96 @@ export default function DataManagerPage() {
           </div>
           <div className="toolbar-row" style={{ marginTop: 16 }}>
             <button type="button" className="secondary-pill">{locale === "fa" ? "پیش‌نمایش" : "Preview"}</button>
-            <button type="button" className="primary-pill" onClick={markActiveRecordEdited} disabled={!activeRecord}>{locale === "fa" ? "ویرایش محصول" : "Edit product"}</button>
+            <button type="button" className="primary-pill" onClick={markActiveRecordEdited} disabled={!activeRecord}>{locale === "fa" ? "به‌روزرسانی رکورد" : "Update record"}</button>
           </div>
         </div>
       </div>
     </PanelShell>
   );
+}
+
+function buildRecordData(bucket: EntityBucket, recordKey: string) {
+  if (bucket.key === "catalog-product") {
+    return {
+      itemType: "PRODUCT",
+      name: "Live Starter Product",
+      sku: `LIVE-${recordKey.slice(-6).toUpperCase()}`,
+      categoryKey: "platform",
+      unit: "pcs",
+      defaultPrice: 1250000,
+      currency: "IRR",
+      active: true,
+      slug: recordKey.toLowerCase(),
+      details: {
+        brand: "Cyan",
+        shortDescription: "Created from the live panel flow."
+      }
+    };
+  }
+  if (bucket.key === "landing-page") {
+    return {
+      slug: recordKey.toLowerCase(),
+      title: "Live Landing Page",
+      heroTitle: "Built from the panel",
+      heroSubtitle: "This page was created during the live end-to-end flow.",
+      publicationStatus: "DRAFT",
+      sections: [
+        {
+          blockType: "TEXT",
+          title: "Launch faster",
+          body: "Connected to the real content-service and storefront route pipeline."
+        }
+      ]
+    };
+  }
+  if (bucket.key === "crm-contact") {
+    return {
+      recordType: "CONTACT",
+      fullName: "Live Customer",
+      companyName: "Cyan Demo",
+      email: `contact-${recordKey.slice(-6)}@example.com`,
+      mobile: "+15550002222",
+      status: "ACTIVE",
+      source: "PANEL",
+      notes: "Created from the live panel flow."
+    };
+  }
+  return {
+    catalogItemKey: "starter-product",
+    warehouseKey: "main-warehouse",
+    onHandQuantity: 12,
+    reservedQuantity: 0,
+    reorderPoint: 2,
+    unit: "pcs"
+  };
+}
+
+function buildEditedRecordData(bucket: EntityBucket, record: DynamicEntityRecord) {
+  if (bucket.key === "catalog-product") {
+    return {
+      ...record.data,
+      defaultPrice: Number(record.data.defaultPrice ?? 0) + 1000,
+      active: true
+    };
+  }
+  if (bucket.key === "landing-page") {
+    return {
+      ...record.data,
+      heroSubtitle: "Updated from the live panel flow.",
+      publicationStatus: "PUBLISHED"
+    };
+  }
+  if (bucket.key === "crm-contact") {
+    return {
+      ...record.data,
+      status: "ACTIVE",
+      notes: "Updated from the live panel flow."
+    };
+  }
+  return {
+    ...record.data,
+    onHandQuantity: Number(record.data.onHandQuantity ?? 0) + 5
+  };
 }
 
 function toFaDigits(value: string) {

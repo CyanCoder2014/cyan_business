@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
-import { listDefinitions, saveDefinition } from "@/lib/dynamic-api";
-import type { DynamicEntityDefinition } from "@/lib/types";
+import { createDefinitionFromTemplate, listDefinitions, listTemplates, saveDefinition } from "@/lib/dynamic-api";
+import type { DynamicEntityDefinition, DynamicEntityTemplate } from "@/lib/types";
 
 type FieldSummary = {
   name: string;
@@ -16,18 +16,36 @@ type FieldSummary = {
 export default function MakerPage() {
   const { locale } = usePanel();
   const [definitions, setDefinitions] = useState<DynamicEntityDefinition[]>([]);
+  const [templates, setTemplates] = useState<DynamicEntityTemplate[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState("catalog-product");
+  const [definitionDraft, setDefinitionDraft] = useState("");
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    listDefinitions("catalog-service", { tenantKey: "tenant-demo", siteKey: "site-commerce" })
-      .then(setDefinitions)
-      .catch((error) => setStatus(error instanceof Error ? error.message : locale === "fa" ? "تعریف‌ها بارگیری نشدند." : "Definitions could not be loaded."));
+    Promise.allSettled([
+      listDefinitions("catalog-service", { tenantKey: "tenant-demo", siteKey: "site-commerce" }),
+      listTemplates("catalog-service")
+    ]).then(([definitionsResult, templatesResult]) => {
+      if (definitionsResult.status === "fulfilled") {
+        setDefinitions(definitionsResult.value);
+      } else {
+        setStatus(definitionsResult.reason instanceof Error ? definitionsResult.reason.message : locale === "fa" ? "تعریف‌ها بارگیری نشدند." : "Definitions could not be loaded.");
+      }
+      if (templatesResult.status === "fulfilled") {
+        setTemplates(templatesResult.value);
+        setSelectedTemplateKey(templatesResult.value[0]?.templateKey ?? "catalog-product");
+      }
+    });
   }, [locale]);
 
   const entities = definitions;
   const selected = entities[selectedIndex] ?? null;
   const fields = useMemo(() => toFieldSummaries(selected), [selected]);
+
+  useEffect(() => {
+    setDefinitionDraft(selected?.definitionJson ?? "");
+  }, [selected]);
 
   async function publishSchema() {
     setStatus(locale === "fa" ? "در حال انتشار..." : "Publishing...");
@@ -36,14 +54,34 @@ export default function MakerPage() {
       return;
     }
     try {
-      const saved = await saveDefinition("catalog-service", selected.entityKey, selected.definitionJson, {
+      const saved = await saveDefinition("catalog-service", selected.entityKey, definitionDraft, {
         tenantKey: selected.tenantKey ?? "tenant-demo",
         siteKey: selected.siteKey ?? "site-commerce"
       });
       setDefinitions((current) => current.map((item) => (item.entityKey === saved.entityKey ? saved : item)));
+      setDefinitionDraft(saved.definitionJson);
       setStatus(locale === "fa" ? "شِما منتشر شد." : "Schema published.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : locale === "fa" ? "انتشار ناموفق بود." : "Publish failed.");
+    }
+  }
+
+  async function createDefinition() {
+    setStatus(locale === "fa" ? "در حال ساخت تعریف..." : "Creating definition...");
+    try {
+      const created = await createDefinitionFromTemplate("catalog-service", selectedTemplateKey, selectedTemplateKey, {
+        tenantKey: "tenant-demo",
+        siteKey: "site-commerce"
+      });
+      setDefinitions((current) => {
+        const next = [created, ...current.filter((item) => item.entityKey !== created.entityKey)];
+        setSelectedIndex(0);
+        return next;
+      });
+      setDefinitionDraft(created.definitionJson);
+      setStatus(locale === "fa" ? "تعریف ایجاد شد." : "Definition created.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "ایجاد تعریف ناموفق بود." : "Definition creation failed.");
     }
   }
 
@@ -58,10 +96,10 @@ export default function MakerPage() {
       <div className="desktop-only maker-page-grid">
         <section className="panel-card maker-main-panel">
           <div className="toolbar-row">
-            <input placeholder={locale === "fa" ? "جستجوی موجودیت..." : "Search entities..."} />
-            <div className="pill-row">
-              <button type="button" className="secondary-pill">
-                {locale === "fa" ? "افزودن فیلد" : "Add field"}
+              <input placeholder={locale === "fa" ? "جستجوی موجودیت..." : "Search entities..."} />
+              <div className="pill-row">
+              <button type="button" className="secondary-pill" onClick={createDefinition}>
+                {locale === "fa" ? "ساخت از قالب" : "Create from template"}
               </button>
               <button type="button" className="primary-pill" onClick={publishSchema}>
                 {locale === "fa" ? "انتشار شِما" : "Publish schema"}
@@ -69,6 +107,18 @@ export default function MakerPage() {
             </div>
           </div>
           {status ? <div className="status-pill info" style={{ marginTop: 14 }}>{status}</div> : null}
+          <div className="toolbar-row" style={{ marginTop: 14, gap: 12, flexWrap: "wrap" }}>
+            <label style={{ display: "grid", gap: 6, minWidth: 240 }}>
+              <span className="muted-block">{locale === "fa" ? "قالب" : "Template"}</span>
+              <select value={selectedTemplateKey} onChange={(event) => setSelectedTemplateKey(event.target.value)}>
+                {templates.map((template) => (
+                  <option key={template.templateKey} value={template.templateKey}>
+                    {template.title ?? template.templateKey}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           <div className="two-column-grid maker-layout" style={{ marginTop: 18 }}>
             <div className="entity-list">
@@ -131,9 +181,14 @@ export default function MakerPage() {
                   ) : null}
                 </tbody>
               </table>
-              <button type="button" className="secondary-pill" style={{ marginTop: 14 }}>
-                {locale === "fa" ? "افزودن فیلد" : "Add field"}
-              </button>
+              <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+                <span className="muted-block">{locale === "fa" ? "JSON تعریف" : "Definition JSON"}</span>
+                <textarea
+                  value={definitionDraft}
+                  onChange={(event) => setDefinitionDraft(event.target.value)}
+                  style={{ minHeight: 220, width: "100%", resize: "vertical" }}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -162,13 +217,13 @@ export default function MakerPage() {
                 </div>
               </div>
               <pre className="code-block" style={{ marginTop: 16 }}>
-{selected.definitionJson}
+{definitionDraft}
               </pre>
             </>
           ) : (
             <div className="mini-card" style={{ marginTop: 16 }}>
               <strong>{locale === "fa" ? "داده‌ای برای خلاصه API وجود ندارد" : "No API summary data available"}</strong>
-              <span className="muted-block">{locale === "fa" ? "این صفحه دیگر از definitionهای ساختگی استفاده نمی‌کند." : "This page no longer falls back to fabricated definitions."}</span>
+              <span className="muted-block">{locale === "fa" ? "یک قالب را انتخاب و تعریف را از backend بسازید." : "Select a template and create the definition from backend templates."}</span>
             </div>
           )}
           <div className="card-title-row" style={{ marginTop: 20 }}>

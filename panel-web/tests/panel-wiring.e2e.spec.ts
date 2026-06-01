@@ -148,6 +148,177 @@ test("data and flows pages show backend-empty states instead of fixture data", a
   await expect(page.getByText("Route to review")).toHaveCount(0);
 });
 
+test("site builder loads backend routes and publishes a route without static page fixtures", async ({ page }) => {
+  let routes = [
+    {
+      recordKey: "home",
+      data: {
+        routeKey: "home",
+        path: "/",
+        routeType: "LANDING",
+        navigation: { label: "Home" },
+        publicationStatus: "PUBLISHED",
+        entityRef: {
+          service: "content-service",
+          entityKey: "landing-page",
+          recordKey: "home"
+        }
+      }
+    }
+  ];
+
+  await page.route("**/api/platform/dynamic/storefront-service/endpoint/entities/records/site-route", async (route, request) => {
+    if (request.method() === "GET") {
+      await route.fulfill({ json: routes });
+      return;
+    }
+    if (request.method() === "POST") {
+      const body = JSON.parse(request.postData() ?? "{}");
+      routes = [
+        ...routes.filter((item) => item.recordKey !== body.recordKey),
+        {
+          recordKey: body.recordKey,
+          data: body.data
+        }
+      ];
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          recordKey: body.recordKey,
+          data: body.data
+        })
+      });
+      return;
+    }
+    await route.fallback();
+  });
+  await page.route("**/api/platform/dynamic/storefront-service/endpoint/entities/templates/site-route/definitions", async (route) => {
+    await route.fulfill({
+      json: {
+        serviceKey: "storefront-service",
+        entityKey: "site-route",
+        definitionJson: "{\"fields\":[]}"
+      }
+    });
+  });
+  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):8001\/public\/storefront\/resolve\?path=.*/, async (route) => {
+    const url = new URL(route.request().url());
+    const path = url.searchParams.get("path") ?? "/";
+    const record = routes.find((item) => item.data.path === path);
+    await route.fulfill({
+      json: {
+        tenantKey: "tenant-demo",
+        siteKey: "site-commerce",
+        path,
+        route: record?.data ?? { path },
+        target: { recordKey: record?.recordKey ?? "missing" },
+        theme: { templateKey: "landing-v1" }
+      }
+    });
+  });
+  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):8001\/public\/storefront\/render\?path=.*/, async (route) => {
+    const url = new URL(route.request().url());
+    const path = url.searchParams.get("path") ?? "/";
+    await route.fulfill({
+      json: {
+        tenantKey: "tenant-demo",
+        siteKey: "site-commerce",
+        path,
+        route: { path },
+        target: { rendered: true },
+        theme: { templateKey: "landing-v1" },
+        html: `<main>${path}</main>`
+      }
+    });
+  });
+
+  await page.goto("/site-builder");
+
+  await expect(page.getByRole("button", { name: /Home/ }).first()).toBeVisible();
+  await expect(page.getByText("/", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("About")).toHaveCount(0);
+
+  await page.getByLabel("Page title").fill("Support");
+  await page.getByLabel("Path").fill("/support");
+  await page.getByRole("button", { name: "Publish" }).first().click();
+
+  await expect(page.getByText("Published.")).toBeVisible();
+  await expect(page.getByLabel("Path")).toHaveValue("/support");
+  await expect(page.getByRole("button", { name: /Support/ }).first()).toBeVisible();
+});
+
+test("integrations page stays empty without backend data and reflects real mini app publishing", async ({ page }) => {
+  let integrations = [
+    {
+      channel: "TELEGRAM",
+      integrationKey: "telegram-main",
+      tenantKey: "tenant-demo",
+      siteKey: "site-commerce",
+      botUsername: "@cyan_assistant_bot",
+      tokenSecretRef: "vault://bots/retail-demo",
+      miniAppUrl: "https://preview.cyan.app/mini-app",
+      miniAppEnabled: true,
+      active: true
+    }
+  ];
+  let messages: Array<Record<string, unknown>> = [];
+  let miniApps: Array<Record<string, unknown>> = [];
+
+  await page.route("**/api/platform/service/bot-adapter-service/endpoint/bot-adapter/integrations?tenantKey=tenant-demo&siteKey=site-commerce", async (route) => {
+    await route.fulfill({ json: integrations });
+  });
+  await page.route("**/api/platform/service/bot-adapter-service/endpoint/bot-adapter/messages?tenantKey=tenant-demo&siteKey=site-commerce", async (route) => {
+    await route.fulfill({ json: messages });
+  });
+  await page.route("**/api/platform/service/bot-adapter-service/endpoint/bot-adapter/mini-apps?tenantKey=tenant-demo&siteKey=site-commerce", async (route) => {
+    await route.fulfill({ json: miniApps });
+  });
+  await page.route("**/api/platform/service/bot-adapter-service/endpoint/bot-adapter/mini-apps", async (route, request) => {
+    const body = JSON.parse(request.postData() ?? "{}");
+    miniApps = [
+      {
+        channel: body.channel,
+        integrationKey: body.integrationKey,
+        buildKey: body.buildKey,
+        title: body.title,
+        launchUrl: body.launchUrl,
+        status: "DRAFT"
+      }
+    ];
+    await route.fulfill({ json: miniApps[0] });
+  });
+  await page.route("**/api/platform/service/bot-adapter-service/endpoint/bot-adapter/mini-apps/TELEGRAM/telegram-main/telegram-main-build/publish", async (route) => {
+    miniApps = [
+      {
+        channel: "TELEGRAM",
+        integrationKey: "telegram-main",
+        buildKey: "telegram-main-build",
+        title: "Telegram Main Mini App",
+        launchUrl: "https://preview.cyan.app/mini-app",
+        publishedUrl: "https://miniapp.cyan.app/telegram-main",
+        status: "PUBLISHED"
+      }
+    ];
+    await route.fulfill({ json: miniApps[0] });
+  });
+
+  await page.goto("/integrations");
+
+  await expect(page.getByText("No outbound messages were returned for this channel.")).toBeVisible();
+  await expect(page.getByText("Bale Bot")).toHaveCount(0);
+  await expect(page.getByText("1248")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Create build" }).click();
+  await expect(page.getByText("Mini app provisioned.")).toBeVisible();
+
+  const publishButton = page.getByRole("button", { name: "Publish mini app" });
+  await publishButton.scrollIntoViewIfNeeded();
+  await publishButton.click({ force: true });
+  await expect(page.getByText("Mini app published.")).toBeVisible();
+  await expect(page.getByText("https://miniapp.cyan.app/telegram-main").first()).toBeVisible();
+});
+
 async function seedAuth(page: Page) {
   await page.addInitScript((keys) => {
     window.localStorage.setItem(keys.accessToken, "seeded-access");

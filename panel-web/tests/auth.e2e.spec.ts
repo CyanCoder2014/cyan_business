@@ -24,6 +24,12 @@ const storageKeys = {
 };
 
 test("redirects to auth on protected 401 and returns after sign in", async ({ page }) => {
+  await page.addInitScript((keys) => {
+    window.localStorage.removeItem(keys.accessToken);
+    window.localStorage.removeItem(keys.refreshToken);
+    window.localStorage.removeItem(keys.expiresAt);
+    window.localStorage.removeItem(keys.sessionId);
+  }, storageKeys);
   await routeCaptcha(page);
   await page.route("**/api/sso/auth/login", async (route) => {
     const body = route.request().postDataJSON() as Record<string, unknown>;

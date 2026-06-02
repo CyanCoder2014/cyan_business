@@ -41,6 +41,11 @@ public class BotTokenSecretResolver {
     }
 
     private String resolveByReference(String secretRef) {
+        String inline = properties.getBotSecretValues().get(secretRef);
+        if (inline != null && !inline.isBlank()) {
+            return inline;
+        }
+
         if (secretRef.startsWith("env://")) {
             return System.getenv(secretRef.substring("env://".length()));
         }
@@ -49,11 +54,6 @@ public class BotTokenSecretResolver {
         }
         if (secretRef.startsWith("vault://")) {
             return fetchExternalSecret(secretRef.substring("vault://".length()));
-        }
-
-        String inline = properties.getBotSecretValues().get(secretRef);
-        if (inline != null && !inline.isBlank()) {
-            return inline;
         }
 
         String envValue = System.getenv(toEnvKey(secretRef));

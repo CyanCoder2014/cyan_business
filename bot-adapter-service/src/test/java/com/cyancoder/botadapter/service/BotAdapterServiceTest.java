@@ -11,6 +11,7 @@ import com.cyancoder.botadapter.domain.BotOutboundMessage;
 import com.cyancoder.botadapter.repo.BotChannelIntegrationRepository;
 import com.cyancoder.botadapter.repo.BotChatSessionMappingRepository;
 import com.cyancoder.botadapter.repo.BotInboundMessageRepository;
+import com.cyancoder.botadapter.repo.BotMiniAppBuildRepository;
 import com.cyancoder.botadapter.repo.BotOutboundMessageRepository;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,7 @@ class BotAdapterServiceTest {
     private final BotChatSessionMappingRepository mappingRepository = mock(BotChatSessionMappingRepository.class);
     private final BotInboundMessageRepository inboundRepository = mock(BotInboundMessageRepository.class);
     private final BotOutboundMessageRepository outboundRepository = mock(BotOutboundMessageRepository.class);
+    private final BotMiniAppBuildRepository miniAppBuildRepository = mock(BotMiniAppBuildRepository.class);
     private final BotWebhookParser parser = new BotWebhookParser();
     private final AiConversationClient aiClient = mock(AiConversationClient.class);
     private final BotProviderClient providerClient = mock(BotProviderClient.class);
@@ -38,6 +40,7 @@ class BotAdapterServiceTest {
             mappingRepository,
             inboundRepository,
             outboundRepository,
+            miniAppBuildRepository,
             parser,
             aiClient,
             providerClient

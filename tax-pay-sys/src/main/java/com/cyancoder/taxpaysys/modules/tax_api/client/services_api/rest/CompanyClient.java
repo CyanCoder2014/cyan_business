@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-//@FeignClient(name = "client-service")////////// need to consider :lb
-@FeignClient(url = "http://cyancoder.ir:8001", name = "company")////////// need to consider :lb
+@FeignClient(url = "${client.service.base-url:http://client-service:8010}", name = "company")
 public interface CompanyClient {
 
 

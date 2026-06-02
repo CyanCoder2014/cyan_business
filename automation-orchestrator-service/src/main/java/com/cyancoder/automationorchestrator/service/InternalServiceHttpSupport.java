@@ -53,10 +53,6 @@ public class InternalServiceHttpSupport {
     }
 
     private URI resolveBaseUri(ServiceInstance instance) {
-        String host = instance.getHost();
-        if (host == null || host.isBlank() || "localhost".equalsIgnoreCase(host) || "127.0.0.1".equals(host)) {
-            return instance.getUri();
-        }
-        return URI.create(instance.isSecure() ? "https://localhost:" + instance.getPort() : "http://localhost:" + instance.getPort());
+        return instance.getUri();
     }
 }

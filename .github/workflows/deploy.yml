@@ -1,0 +1,79 @@
+name: Build and deploy Cyan Business
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io/${{ github.repository_owner }}/cyan-business
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [tax-pay-sys, factor-service, buyer-service, product-service, client-service, sso-auth-service, sso-user-service, sso-captcha-service, sso-otp-service, sso-session-service, sso-fido-service, content-service, catalog-service, crm-service, commerce-service, finance-service, inventory-service, report-service, processor-service, event-service, crm-automation-service, finance-automation-service, inventory-automation-service, report-automation-service, payment-service, storefront-service, media-service, cart-service, checkout-service, bpm-service, automation-orchestrator-service, ai-orchestrator-service, notification-service, payment-orchestrator-service, pricing-promotion-service, search-index-service, bot-adapter-service]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build service jar
+        run: ./gradlew :${{ matrix.service }}:bootJar
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ matrix.service }}:${{ github.ref_name }}-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ matrix.service }}:${{ github.ref_name }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    env:
+      KUBE_NAMESPACE: ${{ github.ref_name == 'main' && 'cyan-production' || 'cyan-staging' }}
+      IMAGE_TAG: ${{ github.ref_name }}-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${KUBE_CONFIG}" | base64 -d > ~/.kube/config
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      - name: Apply manifests
+        run: |
+          kubectl create namespace "${KUBE_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n "${KUBE_NAMESPACE}" apply -k deploy/kubernetes
+      - name: Roll images
+        run: |
+          services="tax-pay-sys factor-service buyer-service product-service client-service sso-auth-service sso-user-service sso-captcha-service sso-otp-service sso-session-service sso-fido-service content-service catalog-service crm-service commerce-service finance-service inventory-service report-service processor-service event-service crm-automation-service finance-automation-service inventory-automation-service report-automation-service payment-service storefront-service media-service cart-service checkout-service bpm-service automation-orchestrator-service ai-orchestrator-service notification-service payment-orchestrator-service pricing-promotion-service search-index-service bot-adapter-service"
+          for service in ${services}; do
+            kubectl -n "${KUBE_NAMESPACE}" set image deployment/${service} ${service}=${REGISTRY}/${service}:${IMAGE_TAG}
+          done
+      - name: Wait for rollout
+        run: |
+          services="tax-pay-sys factor-service buyer-service product-service client-service sso-auth-service sso-user-service sso-captcha-service sso-otp-service sso-session-service sso-fido-service content-service catalog-service crm-service commerce-service finance-service inventory-service report-service processor-service event-service crm-automation-service finance-automation-service inventory-automation-service report-automation-service payment-service storefront-service media-service cart-service checkout-service bpm-service automation-orchestrator-service ai-orchestrator-service notification-service payment-orchestrator-service pricing-promotion-service search-index-service bot-adapter-service"
+          for service in ${services}; do
+            kubectl -n "${KUBE_NAMESPACE}" rollout status deployment/${service} --timeout=180s
+          done

@@ -1,4 +1,6 @@
-FROM openjdk:21-jdk-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "cb-tax-service.jar"]
+EXPOSE 8002
+ENV SPRING_PROFILES_ACTIVE=server
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]

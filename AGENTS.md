@@ -151,6 +151,45 @@ Business services write local data and local outbox state, then hand integration
 - Keep new docs and code aligned with actual routes in `api-gateway`.
 - Every microservice must keep a unique fixed local `server.port`; do not reuse ports across modules.
 
+
+## Git / Commit Rules
+
+When you finish a task:
+
+1. Run formatting, linting, and tests when available.
+    - Prefer project commands from README, package.json, Makefile, Maven/Gradle, etc.
+    - If tests cannot run, explain why.
+
+2. Review all changes before committing:
+    - Run `git status`
+    - Run `git diff`
+    - Check for unrelated changes, secrets, generated junk, logs, IDE files, and temporary files.
+
+3. Add all new files that are required for the task:
+    - Include source files, configs, migrations, tests, docs, assets, and new directories.
+    - Do not add `.env`, secrets, local IDE files, build outputs, caches, or unrelated files.
+
+4. Split work into several clean commits, not one large commit.
+   Each commit should represent one logical change.
+
+5. Use good commit messages:
+    - `feat: ...` for new features
+    - `fix: ...` for bug fixes
+    - `refactor: ...` for internal improvements
+    - `test: ...` for tests
+    - `docs: ...` for documentation
+    - `chore: ...` for tooling/config
+
+6. Before each commit:
+    - Stage only files related to that commit.
+    - Use `git diff --cached` to verify the staged content.
+
+7. After committing:
+    - Run `git log --oneline -n 5`
+    - Report the commit hashes and short messages.
+    - Mention any tests that passed or failed.
+
+
 ## Suggested Reading Order
 1. `LOCAL_PLATFORM_RUNBOOK.md`
 2. `STRUCTURED_DYNAMIC_PLATFORM.md`

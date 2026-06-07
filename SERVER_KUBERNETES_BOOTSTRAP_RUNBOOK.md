@@ -1,4 +1,4 @@
-# Cyan Business Kubernetes Bootstrap Runbook
+# Kubernetes Bootstrap Runbook
 
 This runbook starts from a fresh Linux server and ends with the Cyan Business services running behind Envoy Gateway. It complements `SERVER_DEPLOYMENT_GUIDE.md`, which assumes a working Kubernetes cluster already exists.
 
@@ -38,6 +38,31 @@ On RHEL/Rocky/Alma/CentOS:
 ```bash
 dnf update -y
 dnf install -y curl ca-certificates git jq tar gzip unzip openssl bind-utils
+```
+
+If `dnf` fails with `rpmdb open failed`, `disk I/O error`, or `cannot open Packages database in /var/lib/rpm`, stop and check the host before retrying package installs:
+
+```bash
+df -h
+df -ih
+mount | grep ' / '
+mount | grep ' /var '
+dmesg -T | tail -100
+ls -ld /var/lib/rpm
+```
+
+If `/` or `/var` is full, clear space first. If the mount is read-only or `dmesg` shows real storage I/O errors, fix the disk/filesystem problem before rebuilding RPM metadata.
+
+After the disk is writable and has free space, back up and rebuild the RPM database:
+
+```bash
+mkdir -p /root/rpmdb-backup
+cp -a /var/lib/rpm "/root/rpmdb-backup/rpm-$(date +%F-%H%M%S)"
+rpm --rebuilddb
+rpm -qa >/dev/null
+dnf clean all
+dnf makecache
+dnf update -y
 ```
 
 On Ubuntu/Debian:

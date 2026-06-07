@@ -358,7 +358,7 @@ function serverProfile(appName) {
 
 function dockerfile(port) {
   return [
-    "FROM eclipse-temurin:17-jre",
+    "FROM eclipse-temurin:25-jre",
     "WORKDIR /app",
     "COPY build/libs/*.jar app.jar",
     `EXPOSE ${port}`,
@@ -586,7 +586,7 @@ function githubWorkflowYaml() {
     "      - uses: actions/setup-java@v4",
     "        with:",
     "          distribution: temurin",
-    "          java-version: '17'",
+    "          java-version: '25'",
     "      - uses: gradle/actions/setup-gradle@v4",
     "      - name: Build service jar",
     "        run: ./gradlew :${{ matrix.service }}:bootJar",

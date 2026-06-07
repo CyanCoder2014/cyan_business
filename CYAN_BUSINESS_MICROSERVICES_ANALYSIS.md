@@ -15,7 +15,7 @@ Most service READMEs are placeholders and are not useful as architecture referen
 
 ## Repository Summary
 
-This repository is a Java 17 / Spring Boot 3 multi-module Gradle project with these modules:
+This repository is a Java 25 / Spring Boot 4 multi-module Gradle project with these modules:
 
 - `discovery-server`
 - `api-gateway`

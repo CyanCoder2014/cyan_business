@@ -7,8 +7,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.Where;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Date;
@@ -19,7 +19,7 @@ import java.util.List;
 @Data
 @Entity
 @SQLDelete(sql = "UPDATE f_factors SET deleted = 1 WHERE factor_id=?")
-@Where(clause = "deleted != 1")
+@SQLRestriction("deleted != 1")
 public class FactorEntity {
 
     public FactorEntity(FactorModel factorModel){

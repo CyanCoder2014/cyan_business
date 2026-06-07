@@ -573,19 +573,19 @@ test -f deploy/kubernetes/envoy-gateway.yaml
 
 ## 10. Build And Push Images Manually
 
-Install Java 17 if needed.
+Install Java 25 if needed.
 
 On RHEL/Rocky/Alma/CentOS:
 
 ```bash
-dnf install -y java-17-openjdk java-17-openjdk-devel
+dnf install -y java-25-openjdk java-25-openjdk-devel
 java -version
 ```
 
 On Ubuntu/Debian:
 
 ```bash
-apt-get install -y openjdk-17-jdk
+apt-get install -y openjdk-25-jdk
 java -version
 ```
 
@@ -781,7 +781,7 @@ The repository also has `Jenkinsfile`.
 Jenkins requirements:
 
 ```text
-Java 17
+Java 25
 Docker CLI with registry access
 Git
 kubectl

@@ -18,7 +18,7 @@ The repository is a Gradle multi-project microservice platform with:
 
 Install locally:
 
-- Java 17
+- Java 25
 - Node.js 18+ and npm
 - Docker and Docker Compose
 

@@ -24,8 +24,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 
-    compileOnly 'org.projectlombok:lombok:1.18.34'
-    annotationProcessor 'org.projectlombok:lombok:1.18.34'
+    compileOnly 'org.projectlombok:lombok:1.18.46'
+    annotationProcessor 'org.projectlombok:lombok:1.18.46'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     implementation 'com.github.eloyzone:jalali-calendar:1.0.0'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'

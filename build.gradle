@@ -30,7 +30,7 @@ allprojects {
 
 subprojects {
 	configurations.configureEach {
-		resolutionStrategy.force 'org.projectlombok:lombok:1.18.34'
+		resolutionStrategy.force 'org.projectlombok:lombok:1.18.46'
 	}
 
 	plugins.withId('org.springframework.boot') {

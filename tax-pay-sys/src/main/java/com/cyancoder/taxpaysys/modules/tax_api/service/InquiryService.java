@@ -1,7 +1,4 @@
 package com.cyancoder.taxpaysys.modules.tax_api.service;
-
-
-;
 import com.cyancoder.taxpaysys.modules.tax_api.client.out_api.service.InquiryClientService;
 import com.cyancoder.taxpaysys.modules.tax_api.entity.FactorTaxEntity;
 import com.cyancoder.taxpaysys.modules.tax_api.model.FactorModel;

@@ -1,14 +1,13 @@
 package com.cyancoder.taxpaysys.modules.tax_api.client.out_api.auth;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.SpringSecurityCoreVersion;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.Assert;
 
 import java.util.Collection;
 
 public class OAuth2AuthenticationToken extends AbstractAuthenticationToken {
-    private static final long serialVersionUID = SpringSecurityCoreVersion.SERIAL_VERSION_UID;
+    private static final long serialVersionUID = 1L;
     private final OAuth2User principal;
     private final String authorizedClientRegistrationId;
 

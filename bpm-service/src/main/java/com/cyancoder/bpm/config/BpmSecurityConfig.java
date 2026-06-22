@@ -50,6 +50,7 @@ public class BpmSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/public/dynamic-flows/**").permitAll()
                         .requestMatchers("/public/bpm/async-actions/callbacks/**").permitAll()
                         .requestMatchers("/error", "/actuator/health").permitAll()
                         .anyRequest().denyAll());

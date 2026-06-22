@@ -10,21 +10,21 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/internal/bpm/metadata")
-public class InternalBpmMetadataController {
+@RequestMapping("/public/dynamic-flows")
+public class PublicBpmMetadataController {
     private final DynamicFlowMetadataService metadataService;
 
-    public InternalBpmMetadataController(DynamicFlowMetadataService metadataService) {
+    public PublicBpmMetadataController(DynamicFlowMetadataService metadataService) {
         this.metadataService = metadataService;
     }
 
-    @GetMapping({"/actions", "/state-actions"})
-    public List<StateActionStructureResponse> actions() {
+    @GetMapping("/state-action-structures")
+    public List<StateActionStructureResponse> stateActionStructures() {
         return metadataService.stateActionStructures();
     }
 
-    @GetMapping("/transition-conditions")
-    public TransitionConditionStructureResponse transitionConditions() {
+    @GetMapping("/transition-condition-structures")
+    public TransitionConditionStructureResponse transitionConditionStructures() {
         return metadataService.transitionConditionStructure();
     }
 }

@@ -1,5 +1,6 @@
 package com.cyancoder.bpm.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Document("bpm_flow_definitions")
 @CompoundIndex(name = "bpm_flow_scope_key", def = "{'tenantKey':1,'siteKey':1,'flowKey':1,'version':1}", unique = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DynamicFlowDefinition {
     @Id
     private String id;
@@ -49,4 +51,3 @@ public class DynamicFlowDefinition {
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }
-

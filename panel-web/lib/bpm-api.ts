@@ -7,6 +7,14 @@ export type FlowActionDraft = {
   params: Record<string, unknown>;
 };
 
+export type MetadataFieldDescriptor = {
+  key: string;
+  type: string;
+  required: boolean;
+  description: string;
+  example?: unknown;
+};
+
 export type FlowConditionDraft = {
   field: string;
   operator: string;
@@ -65,13 +73,22 @@ export type DynamicFlowDefinition = {
 
 export type BpmActionStructure = {
   type: string;
+  aliases?: string[];
   description: string;
-  params?: string[];
+  commonFields?: MetadataFieldDescriptor[];
+  params?: MetadataFieldDescriptor[];
 };
 
 export type BpmConditionStructure = {
-  operators: string[];
+  conditionFields?: MetadataFieldDescriptor[];
+  operators: Array<{
+    key: string;
+    valueShape: string;
+    description: string;
+    example?: unknown;
+  }>;
   logicalOperators: Array<"AND" | "OR">;
+  expressionSyntaxSupported?: boolean;
   supportedFields: string[];
 };
 
@@ -167,6 +184,14 @@ export function listFlows(scope: { tenantKey?: string; siteKey?: string }): Prom
   });
 }
 
+export function getFlow(flowKey: string, scope: { tenantKey?: string; siteKey?: string }): Promise<DynamicFlowDefinition> {
+  return requestJson<DynamicFlowDefinition>(`/endpoint/bpm/flows/${encodeURIComponent(flowKey)}`, {
+    method: "GET",
+    tenantKey: scope.tenantKey,
+    siteKey: scope.siteKey
+  });
+}
+
 export function saveFlow(
   flow: DynamicFlowDefinition,
   scope: { tenantKey?: string; siteKey?: string }
@@ -210,6 +235,22 @@ export function getConditionMetadata(scope: { tenantKey?: string; siteKey?: stri
 
 export function listManagedObjects(scope: { tenantKey?: string; siteKey?: string }): Promise<ManagedObject[]> {
   return requestJson<ManagedObject[]>("/endpoint/bpm/managed-objects", {
+    method: "GET",
+    tenantKey: scope.tenantKey,
+    siteKey: scope.siteKey
+  });
+}
+
+export function listAssignedManagedObjects(scope: { tenantKey?: string; siteKey?: string }): Promise<ManagedObject[]> {
+  return requestJson<ManagedObject[]>("/endpoint/bpm/managed-objects/assigned-to-me", {
+    method: "GET",
+    tenantKey: scope.tenantKey,
+    siteKey: scope.siteKey
+  });
+}
+
+export function listVisibleManagedObjects(scope: { tenantKey?: string; siteKey?: string }): Promise<ManagedObject[]> {
+  return requestJson<ManagedObject[]>("/endpoint/bpm/managed-objects/visible-to-me", {
     method: "GET",
     tenantKey: scope.tenantKey,
     siteKey: scope.siteKey

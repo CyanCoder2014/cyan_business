@@ -10,7 +10,7 @@ Use this order:
 4. Create the namespace and platform secrets.
 5. Provide PostgreSQL, MongoDB, Kafka, and Axon Server.
 6. Clone the source.
-7. Build and push service images.
+7. Build and import local service images.
 8. Deploy Kubernetes manifests.
 9. Verify the rollout.
 10. Configure CI/CD.
@@ -145,7 +145,7 @@ Common causes are blocked outbound network access, DNS failure, package-manager 
 
 ## 4. Install Docker For Building Images
 
-k3s runs containers through containerd, but Docker is convenient for building and pushing the service images.
+k3s runs containers through containerd, not the normal Docker image store. Docker is still convenient for building the service images before importing them into k3s.
 
 On RHEL/Rocky/Alma/CentOS:
 
@@ -571,7 +571,7 @@ test -f deploy/kubernetes/apps.yaml
 test -f deploy/kubernetes/envoy-gateway.yaml
 ```
 
-## 10. Build And Push Images Manually
+## 10. Build And Import Images Manually
 
 Install Java 25 if needed.
 
@@ -589,19 +589,11 @@ apt-get install -y openjdk-25-jdk
 java -version
 ```
 
-Set your registry and image tag:
+Set the local image namespace and tag:
 
 ```bash
-export REGISTRY_HOST=<registry-host>/<registry-namespace>/cyan-business
+export REGISTRY_HOST=localhost/cyan-business
 export IMAGE_TAG=develop
-docker login <registry-host>
-```
-
-For GitHub Container Registry, an example is:
-
-```bash
-export REGISTRY_HOST=ghcr.io/<github-owner>/cyan-business
-docker login ghcr.io
 ```
 
 Build every service jar:
@@ -612,25 +604,21 @@ export SERVICES="tax-pay-sys factor-service buyer-service product-service client
 ./gradlew $(for service in $SERVICES; do printf ":%s:bootJar " "$service"; done)
 ```
 
-Build and push images:
+Build each image, export it, and import it into k3s:
 
 ```bash
 for service in $SERVICES; do
   docker build -t "$REGISTRY_HOST/$service:$IMAGE_TAG" "$service"
-  docker push "$REGISTRY_HOST/$service:$IMAGE_TAG"
+  docker save "$REGISTRY_HOST/$service:$IMAGE_TAG" -o "/tmp/$service.tar"
+  sudo k3s ctr -n k8s.io images import "/tmp/$service.tar"
+  rm -f "/tmp/$service.tar"
 done
 ```
 
-If the registry is private, create an image pull secret:
+Confirm the images exist in the k3s containerd store:
 
 ```bash
-kubectl -n cyan-staging create secret docker-registry cyan-registry \
-  --docker-server=<registry-host> \
-  --docker-username=<registry-username> \
-  --docker-password=<registry-token-or-password>
-
-kubectl -n cyan-staging patch serviceaccount default \
-  -p '{"imagePullSecrets":[{"name":"cyan-registry"}]}'
+sudo k3s ctr -n k8s.io images list | grep cyan-business
 ```
 
 ## 11. Deploy The Project
@@ -641,7 +629,7 @@ Apply the app and Envoy route manifests:
 kubectl -n cyan-staging apply -k deploy/kubernetes
 ```
 
-Set images to your real registry. The committed manifests use placeholder images, so this step is required unless you edit the manifests first.
+Set images to the imported local tags. The committed manifests use placeholder images, so this step is required unless you edit the manifests first.
 
 ```bash
 for service in $SERVICES; do
@@ -649,10 +637,26 @@ for service in $SERVICES; do
 done
 ```
 
+Force Kubernetes to use the local images without attempting an external pull:
+
+```bash
+for service in $SERVICES; do
+  kubectl -n cyan-staging patch deployment "$service" \
+    --type='json' \
+    -p='[{"op":"replace","path":"/spec/template/spec/containers/0/imagePullPolicy","value":"Never"}]'
+done
+```
+
 Watch startup:
 
 ```bash
 kubectl -n cyan-staging get pods -w
+```
+
+For a failed pod, inspect the exact scheduling or image error:
+
+```bash
+kubectl -n cyan-staging describe pod <pod-name>
 ```
 
 Roll out in a smaller order if troubleshooting:
@@ -863,12 +867,12 @@ kubectl -n envoy-gateway-system logs deployment/envoy-gateway --tail=200
 kubectl -n cyan-staging describe gateway cyan-gateway
 ```
 
-If pods cannot pull images:
+If pods fail because the local images are missing or Kubernetes is still trying to pull:
 
 ```bash
+sudo k3s ctr -n k8s.io images list | grep cyan-business
+kubectl -n cyan-staging get deployment <service-name> -o jsonpath='{.spec.template.spec.containers[0].image}{" "}{.spec.template.spec.containers[0].imagePullPolicy}{"\n"}'
 kubectl -n cyan-staging describe pod <pod-name>
-kubectl -n cyan-staging get secret cyan-registry
-kubectl -n cyan-staging get serviceaccount default -o yaml
 ```
 
 If pods cannot reach dependencies:

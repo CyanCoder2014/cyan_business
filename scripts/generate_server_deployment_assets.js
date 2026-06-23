@@ -478,6 +478,7 @@ const routeRules = [
 ];
 
 function envoyGatewayYaml() {
+  const maxRulesPerRoute = 16;
   const lines = [
     "apiVersion: gateway.networking.k8s.io/v1",
     "kind: GatewayClass",
@@ -499,27 +500,34 @@ function envoyGatewayYaml() {
     "      allowedRoutes:",
     "        namespaces:",
     "          from: Same",
-    "---",
-    "apiVersion: gateway.networking.k8s.io/v1",
-    "kind: HTTPRoute",
-    "metadata:",
-    "  name: cyan-platform-routes",
-    "spec:",
-    "  parentRefs:",
-    "    - name: cyan-gateway",
-    "  rules:",
   ];
 
-  for (const [prefixes, service, port] of routeRules) {
-    lines.push("    - matches:");
-    for (const prefix of prefixes) {
-      lines.push("        - path:");
-      lines.push("            type: PathPrefix");
-      lines.push(`            value: ${prefix}`);
+  for (let i = 0; i < routeRules.length; i += maxRulesPerRoute) {
+    const chunk = routeRules.slice(i, i + maxRulesPerRoute);
+    const routeName =
+      i === 0 ? "cyan-platform-routes" : `cyan-platform-routes-${Math.floor(i / maxRulesPerRoute) + 1}`;
+
+    lines.push("---");
+    lines.push("apiVersion: gateway.networking.k8s.io/v1");
+    lines.push("kind: HTTPRoute");
+    lines.push("metadata:");
+    lines.push(`  name: ${routeName}`);
+    lines.push("spec:");
+    lines.push("  parentRefs:");
+    lines.push("    - name: cyan-gateway");
+    lines.push("  rules:");
+
+    for (const [prefixes, service, port] of chunk) {
+      lines.push("    - matches:");
+      for (const prefix of prefixes) {
+        lines.push("        - path:");
+        lines.push("            type: PathPrefix");
+        lines.push(`            value: ${prefix}`);
+      }
+      lines.push("      backendRefs:");
+      lines.push(`        - name: ${service}`);
+      lines.push(`          port: ${port}`);
     }
-    lines.push("      backendRefs:");
-    lines.push(`        - name: ${service}`);
-    lines.push(`          port: ${port}`);
   }
 
   return lines.join("\n") + "\n";

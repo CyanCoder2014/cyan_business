@@ -604,21 +604,35 @@ export SERVICES="tax-pay-sys factor-service buyer-service product-service client
 ./gradlew $(for service in $SERVICES; do printf ":%s:bootJar " "$service"; done)
 ```
 
-Build each image, export it, and import it into k3s:
+Build each image, export it, and import it into the same containerd socket that Kubernetes uses.
+
+First detect the runtime socket. On k3s, the common socket is `/run/k3s/containerd/containerd.sock`. Do not assume the plain `ctr` default socket matches the Kubernetes runtime.
+
+```bash
+find /run -type s \( -name 'containerd.sock' -o -name '*containerd*.sock' \) 2>/dev/null
+```
+
+If `sudo k3s ctr ...` works on your host, you can use that wrapper. If the `k3s` binary is not on `PATH`, use the socket directly:
+
+```bash
+export K3S_CONTAINERD_SOCKET=/run/k3s/containerd/containerd.sock
+```
+
+Then build, export, and import:
 
 ```bash
 for service in $SERVICES; do
   docker build -t "$REGISTRY_HOST/$service:$IMAGE_TAG" "$service"
   docker save "$REGISTRY_HOST/$service:$IMAGE_TAG" -o "/tmp/$service.tar"
-  sudo k3s ctr -n k8s.io images import "/tmp/$service.tar"
+  sudo ctr --address "$K3S_CONTAINERD_SOCKET" -n k8s.io images import "/tmp/$service.tar"
   rm -f "/tmp/$service.tar"
 done
 ```
 
-Confirm the images exist in the k3s containerd store:
+Confirm the images exist in the same containerd store that the cluster uses:
 
 ```bash
-sudo k3s ctr -n k8s.io images list | grep cyan-business
+sudo ctr --address "$K3S_CONTAINERD_SOCKET" -n k8s.io images list | grep cyan-business
 ```
 
 ## 11. Deploy The Project
@@ -627,6 +641,15 @@ Apply the app and Envoy route manifests:
 
 ```bash
 kubectl -n cyan-staging apply -k deploy/kubernetes
+```
+
+If `HTTPRoute` validation fails with `spec.rules: Too many`, your server copy of `deploy/kubernetes/envoy-gateway.yaml` is outdated. The current manifest splits the platform routes across multiple `HTTPRoute` objects because some Gateway API implementations enforce a limit of 16 rules per route.
+
+In that case, update the repository checkout first, then re-apply:
+
+```bash
+kubectl apply -f deploy/kubernetes/envoy-gateway.yaml
+kubectl -n cyan-staging get gateway,httproute
 ```
 
 Set images to the imported local tags. The committed manifests use placeholder images, so this step is required unless you edit the manifests first.
@@ -644,6 +667,21 @@ for service in $SERVICES; do
   kubectl -n cyan-staging patch deployment "$service" \
     --type='json' \
     -p='[{"op":"replace","path":"/spec/template/spec/containers/0/imagePullPolicy","value":"Never"}]'
+done
+```
+
+Restart one deployment first to verify the import worked before restarting everything:
+
+```bash
+kubectl -n cyan-staging rollout restart deployment sso-auth-service
+kubectl -n cyan-staging rollout status deployment/sso-auth-service --timeout=180s
+```
+
+If that succeeds, restart the rest:
+
+```bash
+for service in $SERVICES; do
+  kubectl -n cyan-staging rollout restart deployment "$service"
 done
 ```
 
@@ -870,10 +908,13 @@ kubectl -n cyan-staging describe gateway cyan-gateway
 If pods fail because the local images are missing or Kubernetes is still trying to pull:
 
 ```bash
-sudo k3s ctr -n k8s.io images list | grep cyan-business
+find /run -type s \( -name 'containerd.sock' -o -name '*containerd*.sock' \) 2>/dev/null
+sudo ctr --address /run/k3s/containerd/containerd.sock -n k8s.io images list | grep cyan-business
 kubectl -n cyan-staging get deployment <service-name> -o jsonpath='{.spec.template.spec.containers[0].image}{" "}{.spec.template.spec.containers[0].imagePullPolicy}{"\n"}'
 kubectl -n cyan-staging describe pod <pod-name>
 ```
+
+If `ImagePullBackOff` shows a request to `https://localhost/v2/...`, Kubernetes is treating `localhost/...` as a registry name, not as a local image cache. If `ErrImageNeverPull` appears after setting `imagePullPolicy=Never`, the image is still missing from the exact containerd socket kubelet uses. Re-import it into `/run/k3s/containerd/containerd.sock` and restart the deployment.
 
 If pods cannot reach dependencies:
 

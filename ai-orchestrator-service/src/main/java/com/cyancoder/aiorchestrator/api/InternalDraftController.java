@@ -39,12 +39,12 @@ public class InternalDraftController {
     }
 
     @GetMapping("/{draftId}")
-    public ClientAppDraft get(@PathVariable String draftId) {
+    public ClientAppDraft get(@PathVariable("draftId") String draftId) {
         return appDraftService.getDraft(draftId);
     }
 
     @PatchMapping("/{draftId}")
-    public ClientAppDraft update(@PathVariable String draftId, @RequestBody UpdateDraftRequest request) {
+    public ClientAppDraft update(@PathVariable("draftId") String draftId, @RequestBody UpdateDraftRequest request) {
         return appDraftService.updateDraft(draftId, request, "internal-service");
     }
 }

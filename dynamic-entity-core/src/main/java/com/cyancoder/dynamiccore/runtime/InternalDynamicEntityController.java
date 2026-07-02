@@ -33,7 +33,7 @@ public class InternalDynamicEntityController {
     public StoredEntityDefinition getDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey
+            @PathVariable("entityKey") String entityKey
     ) {
         return runtimeService.getDefinition(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
     }
@@ -42,7 +42,7 @@ public class InternalDynamicEntityController {
     public void deleteDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey
+            @PathVariable("entityKey") String entityKey
     ) {
         runtimeService.deleteDefinition(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
     }
@@ -53,7 +53,7 @@ public class InternalDynamicEntityController {
     }
 
     @GetMapping("/templates/{templateKey}")
-    public DynamicEntityTemplate getTemplate(@PathVariable String templateKey) {
+    public DynamicEntityTemplate getTemplate(@PathVariable("templateKey") String templateKey) {
         return runtimeService.getTemplate(templateKey);
     }
 
@@ -61,7 +61,7 @@ public class InternalDynamicEntityController {
     public StoredEntityDefinition createFromTemplate(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String templateKey,
+            @PathVariable("templateKey") String templateKey,
             @RequestBody(required = false) TemplateCreateRequest request
     ) {
         return runtimeService.createFromTemplate(templateKey, request == null ? null : request.getEntityKey(), DynamicScopeResolver.fromHeaders(
@@ -74,7 +74,7 @@ public class InternalDynamicEntityController {
     public ResponseEntity<DynamicValidationResult> validate(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey,
+            @PathVariable("entityKey") String entityKey,
             @RequestBody Map<String, Object> input
     ) {
         DynamicValidationResult result = runtimeService.validate(entityKey, input, true, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
@@ -85,9 +85,9 @@ public class InternalDynamicEntityController {
     public DynamicEntityRecordDocument submitMap(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey,
+            @PathVariable("entityKey") String entityKey,
             @RequestBody Map<String, Object> input,
-            @RequestParam(required = false) String recordKey
+            @RequestParam(value = "recordKey", required = false) String recordKey
     ) {
         return runtimeService.submitMap(entityKey, recordKey, input, true, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
     }
@@ -96,7 +96,7 @@ public class InternalDynamicEntityController {
     public DynamicEntityRecordDocument submit(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey,
+            @PathVariable("entityKey") String entityKey,
             @RequestBody DynamicRecordRequest request
     ) {
         return runtimeService.submit(entityKey, request, true, DynamicScopeResolver.fromHeaders(
@@ -109,8 +109,8 @@ public class InternalDynamicEntityController {
     public DynamicEntityRecordDocument replace(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey,
-            @PathVariable String recordKey,
+            @PathVariable("entityKey") String entityKey,
+            @PathVariable("recordKey") String recordKey,
             @RequestBody DynamicRecordRequest request
     ) {
         return runtimeService.replace(entityKey, recordKey, request, true, DynamicScopeResolver.fromHeaders(
@@ -123,8 +123,8 @@ public class InternalDynamicEntityController {
     public DynamicEntityRecordDocument update(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey,
-            @PathVariable String recordKey,
+            @PathVariable("entityKey") String entityKey,
+            @PathVariable("recordKey") String recordKey,
             @RequestBody DynamicRecordRequest request
     ) {
         return runtimeService.update(entityKey, recordKey, request, true, DynamicScopeResolver.fromHeaders(
@@ -137,7 +137,7 @@ public class InternalDynamicEntityController {
     public List<DynamicEntityRecordDocument> listRecords(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey
+            @PathVariable("entityKey") String entityKey
     ) {
         return runtimeService.listRecords(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
     }
@@ -146,8 +146,8 @@ public class InternalDynamicEntityController {
     public DynamicEntityRecordDocument getRecord(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey,
-            @PathVariable String recordKey
+            @PathVariable("entityKey") String entityKey,
+            @PathVariable("recordKey") String recordKey
     ) {
         return runtimeService.getRecord(entityKey, recordKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
     }
@@ -156,8 +156,8 @@ public class InternalDynamicEntityController {
     public void deleteRecord(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable String entityKey,
-            @PathVariable String recordKey
+            @PathVariable("entityKey") String entityKey,
+            @PathVariable("recordKey") String recordKey
     ) {
         runtimeService.deleteRecord(entityKey, recordKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
     }

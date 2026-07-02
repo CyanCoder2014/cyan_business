@@ -107,6 +107,19 @@ function AuthScreen() {
     }
   }
 
+  function handleSocialLogin(provider: "google" | "github" | "linkedin") {
+    const labels = {
+      google: locale === "fa" ? "گوگل" : "Google",
+      github: "GitHub",
+      linkedin: "LinkedIn"
+    };
+    setStatus(
+      locale === "fa"
+        ? `ورود با ${labels[provider]} برای این محیط هنوز پیکربندی نشده است.`
+        : `${labels[provider]} sign-in is not configured in this environment yet.`
+    );
+  }
+
   return (
     <main className="auth-shell">
       <section className="auth-marketing">
@@ -191,6 +204,7 @@ function AuthScreen() {
         <div className="auth-card desktop-only">
           <AuthTabs locale={locale} mode={mode} setMode={setMode} />
           <AuthForm
+            onSocialLogin={handleSocialLogin}
             captcha={captcha}
             captchaAnswer={captchaAnswer}
             email={email}
@@ -229,6 +243,7 @@ function AuthScreen() {
             </p>
             <AuthTabs locale={locale} mode={mode} setMode={setMode} />
             <AuthForm
+              onSocialLogin={handleSocialLogin}
               compact
               captcha={captcha}
               captchaAnswer={captchaAnswer}
@@ -296,6 +311,7 @@ function AuthForm({
   submitLabel,
   workspace,
   onRefreshCaptcha,
+  onSocialLogin,
   onSubmit
 }: {
   captcha: CaptchaState | null;
@@ -316,6 +332,7 @@ function AuthForm({
   submitLabel: string;
   workspace: string;
   onRefreshCaptcha: () => Promise<void>;
+  onSocialLogin: (provider: "google" | "github" | "linkedin") => void;
   onSubmit: () => Promise<void>;
 }) {
   return (
@@ -327,6 +344,12 @@ function AuthForm({
         onSubmit().catch(() => null);
       }}
     >
+      <div className="auth-socials">
+        <button type="button" className="secondary-pill" onClick={() => onSocialLogin("google")} disabled={loading}>Google</button>
+        <button type="button" className="secondary-pill" onClick={() => onSocialLogin("github")} disabled={loading}>GitHub</button>
+        <button type="button" className="secondary-pill" onClick={() => onSocialLogin("linkedin")} disabled={loading}>LinkedIn</button>
+      </div>
+      <div className="auth-divider"><span>{locale === "fa" ? "یا" : "or"}</span></div>
       <label>
         <span>{locale === "fa" ? "ایمیل کاری" : "Work email"}</span>
         <input

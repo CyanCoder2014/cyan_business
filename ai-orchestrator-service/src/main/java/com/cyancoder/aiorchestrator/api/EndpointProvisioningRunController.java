@@ -24,20 +24,20 @@ public class EndpointProvisioningRunController {
 
     @PostMapping("/drafts/{draftId}/provision")
     @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
-    public ProvisioningRunDto provisionDraft(@PathVariable String draftId,
+    public ProvisioningRunDto provisionDraft(@PathVariable("draftId") String draftId,
                                              @RequestBody(required = false) ProvisionDraftRequest request) {
         return provisioningRunService.provisionDraft(draftId, request);
     }
 
     @GetMapping("/drafts/{draftId}/runs")
     @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
-    public List<ProvisioningRunDto> listRuns(@PathVariable String draftId) {
+    public List<ProvisioningRunDto> listRuns(@PathVariable("draftId") String draftId) {
         return provisioningRunService.listRuns(draftId);
     }
 
     @GetMapping("/runs/{runId}")
     @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
-    public ProvisioningRunDto getRun(@PathVariable String runId) {
+    public ProvisioningRunDto getRun(@PathVariable("runId") String runId) {
         return provisioningRunService.getRun(runId);
     }
 }

@@ -24,7 +24,7 @@ public class InternalBlueprintController {
     }
 
     @GetMapping("/{blueprintKey}")
-    public AppBlueprint get(@PathVariable String blueprintKey) {
+    public AppBlueprint get(@PathVariable("blueprintKey") String blueprintKey) {
         return blueprintCatalogService.getActiveByBlueprintKey(blueprintKey);
     }
 }

@@ -320,6 +320,55 @@ test("integrations page stays empty without backend data and reflects real mini 
   await expect(page.getByText("https://miniapp.cyan.app/telegram-main").first()).toBeVisible();
 });
 
+test("profile page renders live account data and logout returns to auth", async ({ page }) => {
+  let logoutCalls = 0;
+
+  await page.route("**/api/platform/service/sso-user-service/api/sso/users/user%40cyan.local", async (route) => {
+    await route.fulfill({
+      json: {
+        username: "user@cyan.local",
+        email: "user@cyan.local",
+        phoneNumber: "+989121234567",
+        mfaEnabled: false,
+        roles: ["builder"],
+        active: true
+      }
+    });
+  });
+  await page.route("**/api/platform/service/sso-user-service/api/sso/iam/users/user%40cyan.local/access?clientId=cyan-panel", async (route) => {
+    await route.fulfill({
+      json: {
+        username: "user@cyan.local",
+        realmRoles: ["workspace-admin"],
+        clientRoles: ["builder"],
+        permissions: ["builder:*", "panel:read"]
+      }
+    });
+  });
+  await page.route("**/api/sso/auth/logout", async (route) => {
+    logoutCalls += 1;
+    await route.fulfill({
+      json: {
+        sessionId: "session-seeded",
+        active: false
+      }
+    });
+  });
+
+  await page.goto("/iam");
+
+  await expect(page.getByRole("heading", { name: "Profile & Settings" })).toBeVisible();
+  await expect(page.getByText("user@cyan.local").first()).toBeVisible();
+  await expect(page.getByText("+989121234567")).toBeVisible();
+  await expect(page.getByText("\"builder:*\"")).toBeVisible();
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+
+  await expect(page).toHaveURL(/\/auth$/);
+  await expect.poll(() => logoutCalls).toBe(1);
+  await expect(page.getByRole("button", { name: "Sign in" }).first()).toBeVisible();
+});
+
 async function seedAuth(page: Page) {
   await page.addInitScript((keys) => {
     window.localStorage.setItem(keys.accessToken, "seeded-access");

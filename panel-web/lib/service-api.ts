@@ -263,6 +263,10 @@ export function listIamUsers() {
   return requestJson<UserSummary[]>("sso-user-service", "/api/sso/users", { method: "GET" });
 }
 
+export function getIamUser(username: string) {
+  return requestJson<UserSummary>("sso-user-service", `/api/sso/users/${encodeURIComponent(username)}`, { method: "GET" });
+}
+
 export function createIamUser(request: {
   username: string;
   password: string;

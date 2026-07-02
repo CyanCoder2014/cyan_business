@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePanel } from "@/components/panel-provider";
-import { getPlatformAuthToken, getPlatformUsername, redirectToAuth } from "@/lib/platform-auth";
+import { getPlatformAuthToken, getPlatformUsername, logoutPlatformSession, redirectToAuth } from "@/lib/platform-auth";
 
 type PanelShellProps = {
   title: string;
@@ -35,6 +35,7 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
   const { locale, theme, toggleLocale, toggleTheme, workspaceName, siteName, isRtl } = usePanel();
   const [authChecked, setAuthChecked] = useState(false);
   const [profileName, setProfileName] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     if (!getPlatformAuthToken()) {
@@ -54,6 +55,16 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
       .map((part) => part[0]?.toUpperCase())
       .join("") || "CY";
   }, [profileName, workspaceName]);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await logoutPlatformSession();
+      redirectToAuth("/");
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   if (!authChecked) {
     return (
@@ -139,6 +150,12 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
                 <span>{isRtl ? "حساب فعال" : "Signed in"}</span>
               </div>
             </div>
+            <Link href="/iam" className="secondary-pill">
+              {isRtl ? "پروفایل" : "Profile"}
+            </Link>
+            <button type="button" className="secondary-pill" onClick={() => handleLogout().catch(() => null)} disabled={loggingOut}>
+              {loggingOut ? (isRtl ? "خروج..." : "Signing out...") : isRtl ? "خروج" : "Logout"}
+            </button>
           </div>
         </header>
 

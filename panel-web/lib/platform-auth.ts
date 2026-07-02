@@ -152,6 +152,10 @@ export function getPlatformUsername() {
   return storage()?.getItem(USERNAME_STORAGE_KEY) ?? "";
 }
 
+export function getPlatformSessionId() {
+  return storage()?.getItem(SESSION_ID_STORAGE_KEY) ?? "";
+}
+
 export function setPlatformAuthToken(token: string) {
   const stored = storage();
   if (!stored) {
@@ -188,6 +192,20 @@ export function redirectToAuth(returnTo = currentReturnTo()) {
   }
   const params = new URLSearchParams({ returnTo });
   window.location.assign(`/auth?${params.toString()}`);
+}
+
+export async function logoutPlatformSession() {
+  const sessionId = getPlatformSessionId();
+  try {
+    if (sessionId) {
+      await authRequestJson("/api/sso/auth/logout", {
+        method: "POST",
+        body: JSON.stringify({ sessionId })
+      });
+    }
+  } finally {
+    clearPlatformAuthSession();
+  }
 }
 
 export async function platformFetch(input: RequestInfo | URL, init: RequestInit = {}) {

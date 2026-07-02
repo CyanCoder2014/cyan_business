@@ -51,7 +51,7 @@ public class IamController {
     }
 
     @GetMapping("/clients")
-    public List<ClientSummary> listClients(@RequestParam(required = false) String realmKey) {
+    public List<ClientSummary> listClients(@RequestParam(value = "realmKey", required = false) String realmKey) {
         return iamDirectoryService.listClients(realmKey);
     }
 
@@ -62,7 +62,7 @@ public class IamController {
     }
 
     @GetMapping("/realm-roles")
-    public List<RoleCatalogSummary> listRealmRoles(@RequestParam String realmKey) {
+    public List<RoleCatalogSummary> listRealmRoles(@RequestParam("realmKey") String realmKey) {
         return iamDirectoryService.listRealmRoles(realmKey);
     }
 
@@ -73,7 +73,7 @@ public class IamController {
     }
 
     @GetMapping("/client-roles")
-    public List<RoleCatalogSummary> listClientRoles(@RequestParam String clientId) {
+    public List<RoleCatalogSummary> listClientRoles(@RequestParam("clientId") String clientId) {
         return iamDirectoryService.listClientRoles(clientId);
     }
 
@@ -85,29 +85,29 @@ public class IamController {
 
     @GetMapping("/memberships")
     public List<UserRealmMembershipSummary> listMemberships(
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String realmKey
+            @RequestParam(value = "username", required = false) String username,
+            @RequestParam(value = "realmKey", required = false) String realmKey
     ) {
         return iamDirectoryService.listMemberships(username, realmKey);
     }
 
     @PostMapping("/realms/{realmKey}/assign-role")
-    public IamUserAccessSummary assignRealmRole(@PathVariable String realmKey, @RequestBody UserRoleAssignmentRequest request) {
+    public IamUserAccessSummary assignRealmRole(@PathVariable("realmKey") String realmKey, @RequestBody UserRoleAssignmentRequest request) {
         return iamDirectoryService.assignRealmRole(realmKey, request);
     }
 
     @PostMapping("/clients/{clientId}/assign-role")
-    public IamUserAccessSummary assignClientRole(@PathVariable String clientId, @RequestBody UserRoleAssignmentRequest request) {
+    public IamUserAccessSummary assignClientRole(@PathVariable("clientId") String clientId, @RequestBody UserRoleAssignmentRequest request) {
         return iamDirectoryService.assignClientRole(clientId, request);
     }
 
     @GetMapping("/users/{username}/access")
-    public IamUserAccessSummary resolveAccess(@PathVariable String username, @RequestParam(required = false) String clientId) {
+    public IamUserAccessSummary resolveAccess(@PathVariable("username") String username, @RequestParam(value = "clientId", required = false) String clientId) {
         return iamDirectoryService.resolveAccess(username, clientId);
     }
 
     @GetMapping("/internal/users/{username}/access")
-    public IamUserAccessSummary resolveAccessInternal(@PathVariable String username, @RequestParam(required = false) String clientId) {
+    public IamUserAccessSummary resolveAccessInternal(@PathVariable("username") String username, @RequestParam(value = "clientId", required = false) String clientId) {
         return iamDirectoryService.resolveAccessInternal(username, clientId);
     }
 
@@ -117,7 +117,7 @@ public class IamController {
     }
 
     @GetMapping("/users/{username}/client-assignments")
-    public List<UserClientRoleAssignmentSummary> listClientAssignments(@PathVariable String username) {
+    public List<UserClientRoleAssignmentSummary> listClientAssignments(@PathVariable("username") String username) {
         return iamDirectoryService.listClientAssignments(username);
     }
 }

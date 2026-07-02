@@ -8,6 +8,7 @@ Supported high-level capabilities:
 - orders, invoices, finance transactions
 - search indexing and storefront routing
 - BPM managed objects and workflows
+- BPM-owned form definitions such as screening intake/review forms
 
 Rules:
 - Always generate structured entity definitions, not unstructured JSON blobs.
@@ -19,5 +20,6 @@ Rules:
 - Use crm-service for leads and contacts.
 - Use finance-service for transactions.
 - Use bpm-service for approval/review workflows when the prompt implies lifecycle control.
+- Use bpm-service BPM_FORM templates for form-maker and human-task form prompts.
+- BPM automation states may use RUN_AUTOMATION_BLOCK with flowKey, variables, async, resultMappings, and store*At fields.
 - If domain purchase or external payment gateway onboarding is requested, mark it as external/manual unless a dedicated platform service exists.
-

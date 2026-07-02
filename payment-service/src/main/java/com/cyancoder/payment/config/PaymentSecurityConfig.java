@@ -1,6 +1,5 @@
 package com.cyancoder.payment.config;
 
-import com.cyancoder.dynamiccore.security.InternalSecurityProperties;
 import com.cyancoder.dynamiccore.security.PlatformAuthorizationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

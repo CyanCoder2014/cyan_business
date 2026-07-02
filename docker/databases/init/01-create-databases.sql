@@ -14,6 +14,7 @@ create database payment_orchestrator_service;
 create database pricing_promotion_service;
 create database search_index_service;
 create database notification_service;
+create database bpm_service;
 create database buyer_service;
 create database client_service;
 create database factor_service;

@@ -91,4 +91,50 @@ class FlowActionExecutorTest {
                 ))
         ), object, new BpmScope("tenant-demo", "site-demo"), "user-1"));
     }
+
+    @Test
+    void runAutomationBlockAcceptsGeneratedNaviyaAliases() {
+        DynamicFlowIntegrationClient integrationClient = mock(DynamicFlowIntegrationClient.class);
+        FlowActionExecutor executor = new FlowActionExecutor(integrationClient);
+
+        when(integrationClient.callActionForResponse(any(), any(), any(), any())).thenReturn(Map.of(
+                "executionId", "exec-456",
+                "status", "COMPLETED",
+                "output", Map.of("screeningRoute", "FAST_TRACK", "riskScore", 21)
+        ));
+
+        ManagedObject object = new ManagedObject();
+        object.setId("obj-3");
+        object.setState("automation-screening");
+        object.setFlowKey("ai-assisted-screening-review");
+        object.setPayload(new LinkedHashMap<>(Map.of(
+                "intake", Map.of(
+                        "fullName", "Jane Roe",
+                        "nationalId", "99887766",
+                        "requestedAmount", 15000
+                )
+        )));
+
+        executor.execute(List.of(new FlowActionConfig(ActionType.RUN_AUTOMATION_BLOCK, Map.of(
+                "actionKey", "screening",
+                "flowKey", "hybrid-screening-automation",
+                "async", false,
+                "variables", Map.of(
+                        "fullName", "{{payload.intake.fullName}}",
+                        "requestedAmount", "{{payload.intake.requestedAmount}}"
+                ),
+                "storeExecutionIdAt", "payload.automation.screening.executionId",
+                "storeStatusAt", "payload.automation.screening.status",
+                "storeVariablesAt", "payload.automation.screening.output",
+                "resultMappings", Map.of(
+                        "payload.currentFormValues.screeningRoute", "screeningRoute"
+                )
+        ))), object, new BpmScope("tenant-demo", "site-demo"), "user-1");
+
+        assertEquals("exec-456", ActionPayloadSupport.readPath(object.getPayload(), "automation.screening.executionId"));
+        assertEquals("COMPLETED", ActionPayloadSupport.readPath(object.getPayload(), "automation.screening.status"));
+        assertEquals("FAST_TRACK", ActionPayloadSupport.readPath(object.getPayload(), "automation.screening.output.screeningRoute"));
+        assertEquals("FAST_TRACK", ActionPayloadSupport.readPath(object.getPayload(), "currentFormValues.screeningRoute"));
+        assertEquals("hybrid-screening-automation", object.getAutomationBlockRegistry().get(0).getAutomationFlowKey());
+    }
 }

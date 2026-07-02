@@ -256,6 +256,7 @@ public class ObjectFlowService {
         if (block.getStoreOutputAt() != null && !block.getStoreOutputAt().isBlank()) {
             ActionPayloadSupport.setPayloadPath(object, block.getStoreOutputAt(), callbackPayload);
         }
+        applyAutomationExecutionStores(object, block, stringValue(callbackPayload.get("executionId")), callbackStatus, callbackPayload);
         rememberProcessedCallback(block, callbackFingerprint);
         block.setStatus(callbackStatus);
         block.setFinishedAt(Instant.now());
@@ -538,6 +539,11 @@ public class ObjectFlowService {
         params.put("storeFullResponseAt", block.getStoreStartResponseAt());
         params.put("callbackResponseMappings", block.getOutputMappings());
         params.put("callbackStoreFullResponseAt", block.getStoreOutputAt());
+        params.put("storeExecutionIdAt", block.getStoreExecutionIdAt());
+        params.put("storeStatusAt", block.getStoreStatusAt());
+        params.put("storeVariablesAt", block.getStoreVariablesAt());
+        params.put("storeFullExecutionAt", block.getStoreFullExecutionAt());
+        params.put("storeErrorAt", block.getStoreErrorAt());
         params.put("maxRetries", block.getMaxRetries());
         params.put("timeoutSeconds", block.getTimeoutSeconds());
         params.put("nextStateOnSuccess", block.getNextStateOnSuccess());
@@ -546,6 +552,38 @@ public class ObjectFlowService {
         params.put("correlationKey", block.getCorrelationKey());
         FlowActionConfig action = new FlowActionConfig(com.cyancoder.bpm.domain.ActionType.RUN_AUTOMATION_BLOCK, params);
         actionExecutor.execute(List.of(action), object, scope, "system-retry");
+    }
+
+    private void applyAutomationExecutionStores(ManagedObject object,
+                                                AutomationBlockExecution block,
+                                                String executionId,
+                                                String status,
+                                                Map<String, Object> payload) {
+        applyOptionalStore(object, block.getStoreExecutionIdAt(), executionId);
+        applyOptionalStore(object, block.getStoreStatusAt(), status);
+        Object output = payload == null ? null : payload.get("output");
+        applyOptionalStore(object, block.getStoreVariablesAt(), output == null ? payload : output);
+        applyOptionalStore(object, block.getStoreFullExecutionAt(), payload);
+        Object error = payload == null ? null : payload.get("error");
+        if (error == null) {
+            removeOptionalStore(object, block.getStoreErrorAt());
+        } else {
+            applyOptionalStore(object, block.getStoreErrorAt(), error);
+        }
+    }
+
+    private void applyOptionalStore(ManagedObject object, String path, Object value) {
+        if (path == null || path.isBlank()) {
+            return;
+        }
+        ActionPayloadSupport.setPayloadPath(object, path, value);
+    }
+
+    private void removeOptionalStore(ManagedObject object, String path) {
+        if (path == null || path.isBlank()) {
+            return;
+        }
+        ActionPayloadSupport.removePayloadPath(object, path);
     }
 
     private String firstNonBlank(String... values) {

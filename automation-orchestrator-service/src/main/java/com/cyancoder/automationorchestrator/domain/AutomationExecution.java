@@ -16,6 +16,8 @@ public class AutomationExecution {
     private String executionId;
     private String blockKey;
     private String automationFlowKey;
+    private String managedObjectId;
+    private String idempotencyKey;
     private AutomationExecutionMode executionMode = AutomationExecutionMode.ASYNC;
     private AutomationFailurePolicy failurePolicy = AutomationFailurePolicy.MARK_FAILED;
     private String correlationKey;
@@ -45,6 +47,10 @@ public class AutomationExecution {
     public void setBlockKey(String blockKey) { this.blockKey = blockKey; }
     public String getAutomationFlowKey() { return automationFlowKey; }
     public void setAutomationFlowKey(String automationFlowKey) { this.automationFlowKey = automationFlowKey; }
+    public String getManagedObjectId() { return managedObjectId; }
+    public void setManagedObjectId(String managedObjectId) { this.managedObjectId = managedObjectId; }
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
     public AutomationExecutionMode getExecutionMode() { return executionMode; }
     public void setExecutionMode(AutomationExecutionMode executionMode) { this.executionMode = executionMode; }
     public AutomationFailurePolicy getFailurePolicy() { return failurePolicy; }

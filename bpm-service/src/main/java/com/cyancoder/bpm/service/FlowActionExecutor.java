@@ -1,13 +1,18 @@
 package com.cyancoder.bpm.service;
 
 import com.cyancoder.bpm.api.dto.BpmScope;
+import com.cyancoder.bpm.api.dto.TransitionActorContext;
 import com.cyancoder.bpm.domain.ActionType;
 import com.cyancoder.bpm.domain.AsyncActionRegistration;
 import com.cyancoder.bpm.domain.AutomationBlockExecution;
 import com.cyancoder.bpm.domain.AutomationExecutionMode;
 import com.cyancoder.bpm.domain.AutomationFailurePolicy;
+import com.cyancoder.bpm.domain.ConditionLogicalOperator;
+import com.cyancoder.bpm.domain.ConditionOperator;
 import com.cyancoder.bpm.domain.FlowAccessRule;
 import com.cyancoder.bpm.domain.FlowActionConfig;
+import com.cyancoder.bpm.domain.FlowCondition;
+import com.cyancoder.bpm.domain.FlowTransition;
 import com.cyancoder.bpm.domain.ManagedObject;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +25,7 @@ import java.util.Set;
 @Component
 public class FlowActionExecutor {
     private final DynamicFlowIntegrationClient integrationClient;
+    private final FlowTransitionConditionEvaluator actionConditionEvaluator = new FlowTransitionConditionEvaluator();
 
     public FlowActionExecutor(DynamicFlowIntegrationClient integrationClient) {
         this.integrationClient = integrationClient;
@@ -33,8 +39,64 @@ public class FlowActionExecutor {
             if (action == null || action.type() == null) {
                 continue;
             }
-            apply(action, object, scope, actorUserId);
+            if (!shouldExecute(action, object, actorUserId)) {
+                continue;
+            }
+            try {
+                apply(action, object, scope, actorUserId);
+            } catch (RuntimeException ex) {
+                if (continueOnError(action)) {
+                    object.getAuditLog().add("action " + action.type() + " failed but continued: " + ex.getMessage());
+                    continue;
+                }
+                throw ex;
+            }
         }
+    }
+
+    private boolean shouldExecute(FlowActionConfig action, ManagedObject object, String actorUserId) {
+        Map<String, Object> params = action.params() == null ? Map.of() : action.params();
+        String expression = stringValue(params.get("whenExpression"));
+        if (expression != null && !expression.isBlank()) {
+            FlowTransition synthetic = new FlowTransition(
+                    "__action_gate",
+                    object.getState(),
+                    object.getState(),
+                    "Action gate",
+                    Set.of(),
+                    Set.of(),
+                    expression,
+                    ConditionLogicalOperator.AND,
+                    List.of()
+            );
+            if (!actionConditionEvaluator.evaluate(synthetic, object.getPayload(), Map.of(), object, new TransitionActorContext(actorUserId, Set.of(), Set.of()))) {
+                return false;
+            }
+        }
+        String whenField = stringValue(params.get("whenField"));
+        if (whenField == null || whenField.isBlank()) {
+            return true;
+        }
+        ConditionOperator operator = parseConditionOperator(params.get("whenOperator"));
+        FlowTransition synthetic = new FlowTransition(
+                "__action_gate",
+                object.getState(),
+                object.getState(),
+                "Action gate",
+                Set.of(),
+                Set.of(),
+                null,
+                ConditionLogicalOperator.AND,
+                List.of(new FlowCondition(whenField, operator, params.get("whenValue")))
+        );
+        return actionConditionEvaluator.evaluate(synthetic, object.getPayload(), Map.of(), object, new TransitionActorContext(actorUserId, Set.of(), Set.of()));
+    }
+
+    private boolean continueOnError(FlowActionConfig action) {
+        Map<String, Object> params = action.params() == null ? Map.of() : action.params();
+        Object value = params.get("continueOnError");
+        return value instanceof Boolean bool && bool
+                || value instanceof String text && Boolean.parseBoolean(text);
     }
 
     private void apply(FlowActionConfig action, ManagedObject object, BpmScope scope, String actorUserId) {
@@ -98,13 +160,26 @@ public class FlowActionExecutor {
 
     private void runAutomationBlock(FlowActionConfig action, ManagedObject object, BpmScope scope, String actorUserId) {
         Map<String, Object> params = action.params() == null ? Map.of() : action.params();
-        String blockKey = stringValue(params.getOrDefault("blockKey", params.getOrDefault("actionKey", "automation-" + Instant.now().toEpochMilli())));
+        String blockKey = firstNonBlank(
+                stringValue(params.get("blockKey")),
+                stringValue(params.get("actionKey")),
+                stringValue(params.get("flowKey")),
+                stringValue(params.get("automationFlowKey")),
+                "automation-" + Instant.now().toEpochMilli()
+        );
         String correlationKey = stringValue(CallApiActionSupport.resolveTemplate(params.getOrDefault("correlationKey", object.getId() + ":" + blockKey), object, actorUserId));
-        AutomationExecutionMode mode = parseMode(params.get("executionMode"));
+        AutomationExecutionMode mode = parseMode(params.get("executionMode"), params.get("async"));
         AutomationFailurePolicy failurePolicy = parseFailurePolicy(params.get("failurePolicy"));
+        Map<String, Object> blockInput = resolveMapTemplate(firstPresent(params, "body", "variables", "input"), object, actorUserId);
+        Map<String, Object> blockContext = new LinkedHashMap<>(resolveMapTemplate(params.get("context"), object, actorUserId));
+        blockContext.putIfAbsent("managedObjectId", object.getId());
+        blockContext.putIfAbsent("flowKey", object.getFlowKey());
+        blockContext.putIfAbsent("stateId", object.getState());
+        blockContext.putIfAbsent("blockKey", blockKey);
+
         AutomationBlockExecution block = new AutomationBlockExecution();
         block.setBlockKey(blockKey);
-        block.setAutomationFlowKey(stringValue(params.getOrDefault("automationFlowKey", blockKey)));
+        block.setAutomationFlowKey(firstNonBlank(stringValue(params.get("automationFlowKey")), stringValue(params.get("flowKey")), blockKey));
         block.setExecutionMode(mode);
         block.setFailurePolicy(failurePolicy);
         block.setStateId(object.getState());
@@ -114,12 +189,17 @@ public class FlowActionExecutor {
         block.setServiceKey(stringValue(params.getOrDefault("serviceKey", "automation-orchestrator-service")));
         block.setPath(stringValue(params.getOrDefault("path", "/internal/automation-orchestrator/executions/start")));
         block.setMethod(stringValue(params.getOrDefault("method", "POST")));
-        block.setRequestBody(resolveMapTemplate(params.get("body"), object, actorUserId));
-        block.setInlineFragment(resolveMapTemplate(params.get("inlineFragment"), object, actorUserId));
-        block.setStartResponseMappings(asStringObjectMap(params.get("responseMappings")));
-        block.setStoreStartResponseAt(stringValue(params.get("storeFullResponseAt")));
-        block.setOutputMappings(asStringObjectMap(params.getOrDefault("callbackResponseMappings", params.get("outputMappings"))));
-        block.setStoreOutputAt(stringValue(params.getOrDefault("callbackStoreFullResponseAt", params.get("storeOutputAt"))));
+        block.setRequestBody(blockInput);
+        block.setInlineFragment(resolveMapTemplate(firstPresent(params, "inlineFragment", "inlineFlow"), object, actorUserId));
+        block.setStartResponseMappings(asStringObjectMap(firstPresent(params, "responseMappings", "startResponseMappings")));
+        block.setStoreStartResponseAt(firstNonBlank(stringValue(params.get("storeFullResponseAt")), stringValue(params.get("storeStartResponseAt"))));
+        block.setOutputMappings(asStringObjectMap(firstPresent(params, "callbackResponseMappings", "outputMappings", "resultMappings")));
+        block.setStoreOutputAt(firstNonBlank(stringValue(params.get("callbackStoreFullResponseAt")), stringValue(params.get("storeOutputAt"))));
+        block.setStoreExecutionIdAt(stringValue(params.get("storeExecutionIdAt")));
+        block.setStoreStatusAt(stringValue(params.get("storeStatusAt")));
+        block.setStoreVariablesAt(stringValue(params.get("storeVariablesAt")));
+        block.setStoreFullExecutionAt(stringValue(params.get("storeFullExecutionAt")));
+        block.setStoreErrorAt(stringValue(params.get("storeErrorAt")));
         block.setNextStateOnSuccess(stringValue(params.get("nextStateOnSuccess")));
         block.setNextStateOnFailure(stringValue(params.get("nextStateOnFailure")));
         block.setMaxRetries(intValue(params.get("maxRetries"), 0));
@@ -134,6 +214,9 @@ public class FlowActionExecutor {
         Map<String, Object> requestBody = new LinkedHashMap<>();
         requestBody.put("blockKey", blockKey);
         requestBody.put("automationFlowKey", block.getAutomationFlowKey());
+        requestBody.put("flowKey", block.getAutomationFlowKey());
+        requestBody.put("managedObjectId", object.getId());
+        requestBody.put("idempotencyKey", stringValue(CallApiActionSupport.resolveTemplate(params.get("idempotencyKey"), object, actorUserId)));
         requestBody.put("executionMode", block.getExecutionMode().name());
         requestBody.put("failurePolicy", block.getFailurePolicy().name());
         requestBody.put("correlationKey", correlationKey);
@@ -141,13 +224,10 @@ public class FlowActionExecutor {
         requestBody.put("tenantKey", scope.tenantKey());
         requestBody.put("siteKey", scope.siteKey());
         requestBody.put("input", block.getRequestBody());
-        requestBody.put("context", Map.of(
-                "managedObjectId", object.getId(),
-                "flowKey", object.getFlowKey(),
-                "stateId", object.getState(),
-                "blockKey", blockKey
-        ));
+        requestBody.put("variables", block.getRequestBody());
+        requestBody.put("context", blockContext);
         requestBody.put("inlineFragment", block.getInlineFragment().isEmpty() ? null : block.getInlineFragment());
+        requestBody.put("inlineFlow", block.getInlineFragment().isEmpty() ? null : block.getInlineFragment());
         requestBody.put("maxRetries", block.getMaxRetries());
         requestBody.put("timeoutSeconds", block.getTimeoutSeconds());
         requestBody.put("delayMillis", longValue(params.get("delayMillis")));
@@ -171,6 +251,7 @@ public class FlowActionExecutor {
         if (block.getStoreStartResponseAt() != null && !block.getStoreStartResponseAt().isBlank()) {
             ActionPayloadSupport.setPayloadPath(object, block.getStoreStartResponseAt(), response);
         }
+        applyExecutionStores(object, block, response);
         block.setUpdatedAt(Instant.now());
         Object snapshot = response.get("snapshot");
         if (snapshot instanceof Map<?, ?> map) {
@@ -196,14 +277,47 @@ public class FlowActionExecutor {
         block.setFinishedAt(Instant.now());
         block.setUpdatedAt(Instant.now());
         CallApiActionSupport.applyResponseMappings(object, response, block.getOutputMappings());
+        Object output = response.get("output");
+        if (output instanceof Map<?, ?> outputMap) {
+            CallApiActionSupport.applyResponseMappings(object, new LinkedHashMap<>((Map<String, Object>) outputMap), block.getOutputMappings());
+        }
         if (block.getStoreOutputAt() != null && !block.getStoreOutputAt().isBlank()) {
             ActionPayloadSupport.setPayloadPath(object, block.getStoreOutputAt(), response);
         }
+        applyExecutionStores(object, block, response);
         if ("FAILED".equalsIgnoreCase(status) || "TIMED_OUT".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status)) {
             if (block.getFailurePolicy() == AutomationFailurePolicy.FAIL_FAST) {
                 throw new IllegalStateException("automation block failed: " + block.getBlockKey());
             }
         }
+    }
+
+    private void applyExecutionStores(ManagedObject object, AutomationBlockExecution block, Map<String, Object> response) {
+        applyOptionalStore(object, block.getStoreExecutionIdAt(), firstNonBlank(stringValue(response.get("executionId")), stringValue(response.get("id"))));
+        applyOptionalStore(object, block.getStoreStatusAt(), response.get("status"));
+        Object output = response.get("output");
+        applyOptionalStore(object, block.getStoreVariablesAt(), output instanceof Map<?, ?> ? output : response.get("variables"));
+        applyOptionalStore(object, block.getStoreFullExecutionAt(), response);
+        Object error = response.get("error");
+        if (error != null) {
+            applyOptionalStore(object, block.getStoreErrorAt(), error);
+        } else {
+            removeOptionalStore(object, block.getStoreErrorAt());
+        }
+    }
+
+    private void applyOptionalStore(ManagedObject object, String path, Object value) {
+        if (path == null || path.isBlank()) {
+            return;
+        }
+        ActionPayloadSupport.setPayloadPath(object, path, value);
+    }
+
+    private void removeOptionalStore(ManagedObject object, String path) {
+        if (path == null || path.isBlank()) {
+            return;
+        }
+        ActionPayloadSupport.removePayloadPath(object, path);
     }
 
     @SuppressWarnings("unchecked")
@@ -217,12 +331,23 @@ public class FlowActionExecutor {
         return value instanceof Map<?, ?> map ? new LinkedHashMap<>((Map<String, Object>) map) : new LinkedHashMap<>();
     }
 
-    private AutomationExecutionMode parseMode(Object value) {
+    private AutomationExecutionMode parseMode(Object value, Object asyncValue) {
+        if (asyncValue != null && (value == null || stringValue(value).isBlank())) {
+            return Boolean.parseBoolean(String.valueOf(asyncValue)) ? AutomationExecutionMode.ASYNC : AutomationExecutionMode.SYNC;
+        }
         String resolved = stringValue(value);
         if (resolved == null || resolved.isBlank()) {
             return AutomationExecutionMode.ASYNC;
         }
         return AutomationExecutionMode.valueOf(resolved.trim().toUpperCase());
+    }
+
+    private ConditionOperator parseConditionOperator(Object value) {
+        String resolved = stringValue(value);
+        if (resolved == null || resolved.isBlank()) {
+            return ConditionOperator.EQ;
+        }
+        return ConditionOperator.valueOf(resolved.trim().toUpperCase());
     }
 
     private AutomationFailurePolicy parseFailurePolicy(Object value) {
@@ -294,5 +419,23 @@ public class FlowActionExecutor {
 
     private String stringValue(Object value) {
         return value == null ? null : String.valueOf(value);
+    }
+
+    private Object firstPresent(Map<String, Object> params, String... keys) {
+        for (String key : keys) {
+            if (params.containsKey(key) && params.get(key) != null) {
+                return params.get(key);
+            }
+        }
+        return null;
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
     }
 }

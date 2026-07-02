@@ -24,6 +24,11 @@ public class AutomationBlockExecution {
     private String storeStartResponseAt;
     private Map<String, Object> outputMappings = new LinkedHashMap<>();
     private String storeOutputAt;
+    private String storeExecutionIdAt;
+    private String storeStatusAt;
+    private String storeVariablesAt;
+    private String storeFullExecutionAt;
+    private String storeErrorAt;
     private String nextStateOnSuccess;
     private String nextStateOnFailure;
     private Integer maxRetries = 0;
@@ -74,6 +79,16 @@ public class AutomationBlockExecution {
     public void setOutputMappings(Map<String, Object> outputMappings) { this.outputMappings = outputMappings; }
     public String getStoreOutputAt() { return storeOutputAt; }
     public void setStoreOutputAt(String storeOutputAt) { this.storeOutputAt = storeOutputAt; }
+    public String getStoreExecutionIdAt() { return storeExecutionIdAt; }
+    public void setStoreExecutionIdAt(String storeExecutionIdAt) { this.storeExecutionIdAt = storeExecutionIdAt; }
+    public String getStoreStatusAt() { return storeStatusAt; }
+    public void setStoreStatusAt(String storeStatusAt) { this.storeStatusAt = storeStatusAt; }
+    public String getStoreVariablesAt() { return storeVariablesAt; }
+    public void setStoreVariablesAt(String storeVariablesAt) { this.storeVariablesAt = storeVariablesAt; }
+    public String getStoreFullExecutionAt() { return storeFullExecutionAt; }
+    public void setStoreFullExecutionAt(String storeFullExecutionAt) { this.storeFullExecutionAt = storeFullExecutionAt; }
+    public String getStoreErrorAt() { return storeErrorAt; }
+    public void setStoreErrorAt(String storeErrorAt) { this.storeErrorAt = storeErrorAt; }
     public String getNextStateOnSuccess() { return nextStateOnSuccess; }
     public void setNextStateOnSuccess(String nextStateOnSuccess) { this.nextStateOnSuccess = nextStateOnSuccess; }
     public String getNextStateOnFailure() { return nextStateOnFailure; }

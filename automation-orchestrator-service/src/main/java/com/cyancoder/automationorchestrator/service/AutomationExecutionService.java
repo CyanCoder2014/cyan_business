@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -41,18 +42,31 @@ public class AutomationExecutionService {
     }
 
     public AutomationStartResponse start(AutomationStartRequest request) {
+        String tenantKey = request.tenantKey();
+        String siteKey = request.siteKey();
+        String idempotencyKey = normalize(request.idempotencyKey());
+        if (idempotencyKey != null) {
+            Optional<AutomationExecution> existing = repository
+                    .findFirstByTenantKeyAndSiteKeyAndIdempotencyKeyOrderByCreatedAtDesc(tenantKey, siteKey, idempotencyKey);
+            if (existing != null && existing.isPresent() && !isTerminalFailure(existing.get().getStatus())) {
+                return toResponse(existing.get());
+            }
+        }
+
         AutomationExecution execution = new AutomationExecution();
         execution.setExecutionId("exec-" + UUID.randomUUID());
-        execution.setBlockKey(firstNonBlank(request.blockKey(), "block-" + UUID.randomUUID().toString().substring(0, 8)));
-        execution.setAutomationFlowKey(firstNonBlank(request.automationFlowKey(), "hybrid-screening-automation"));
+        execution.setBlockKey(firstNonBlank(request.blockKey(), request.flowKey(), request.automationFlowKey(), "block-" + UUID.randomUUID().toString().substring(0, 8)));
+        execution.setAutomationFlowKey(firstNonBlank(request.automationFlowKey(), request.flowKey(), "hybrid-screening-automation"));
+        execution.setManagedObjectId(request.managedObjectId());
+        execution.setIdempotencyKey(idempotencyKey);
         execution.setExecutionMode(request.executionMode() == null ? AutomationExecutionMode.ASYNC : request.executionMode());
         execution.setFailurePolicy(request.failurePolicy() == null ? AutomationFailurePolicy.MARK_FAILED : request.failurePolicy());
         execution.setCorrelationKey(request.correlationKey());
-        execution.setTenantKey(request.tenantKey());
-        execution.setSiteKey(request.siteKey());
+        execution.setTenantKey(tenantKey);
+        execution.setSiteKey(siteKey);
         execution.setStatus("RUNNING");
-        execution.setInput(new LinkedHashMap<>(request.input() == null ? Map.of() : request.input()));
-        execution.setInlineFragment(new LinkedHashMap<>(request.inlineFragment() == null ? Map.of() : request.inlineFragment()));
+        execution.setInput(new LinkedHashMap<>(firstMap(request.input(), request.variables())));
+        execution.setInlineFragment(new LinkedHashMap<>(firstMap(request.inlineFragment(), request.inlineFlow())));
         execution.setMaxRetries(request.maxRetries() == null ? 0 : Math.max(0, request.maxRetries()));
         execution.setTimeoutSeconds(request.timeoutSeconds());
         execution.setTimeoutAt(request.timeoutSeconds() == null ? null : Instant.now().plusSeconds(request.timeoutSeconds()));
@@ -228,6 +242,8 @@ public class AutomationExecutionService {
         snapshot.put("executionId", execution.getExecutionId());
         snapshot.put("blockKey", execution.getBlockKey());
         snapshot.put("automationFlowKey", execution.getAutomationFlowKey());
+        snapshot.put("managedObjectId", execution.getManagedObjectId());
+        snapshot.put("idempotencyKey", execution.getIdempotencyKey());
         snapshot.put("executionMode", execution.getExecutionMode().name());
         snapshot.put("failurePolicy", execution.getFailurePolicy().name());
         snapshot.put("status", status);
@@ -244,6 +260,8 @@ public class AutomationExecutionService {
                 execution.getExecutionId(),
                 execution.getBlockKey(),
                 execution.getAutomationFlowKey(),
+                execution.getManagedObjectId(),
+                execution.getIdempotencyKey(),
                 execution.getCorrelationKey(),
                 execution.getStatus(),
                 execution.getSnapshot(),
@@ -280,6 +298,21 @@ public class AutomationExecutionService {
             }
         }
         return null;
+    }
+
+    private Map<String, Object> firstMap(Map<String, Object> primary, Map<String, Object> fallback) {
+        if (primary != null && !primary.isEmpty()) {
+            return primary;
+        }
+        return fallback == null ? Map.of() : fallback;
+    }
+
+    private String normalize(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private boolean isTerminalFailure(String status) {
+        return "FAILED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status) || "TIMED_OUT".equalsIgnoreCase(status);
     }
 
     private Instant firstInstant(Instant left, Instant right) {

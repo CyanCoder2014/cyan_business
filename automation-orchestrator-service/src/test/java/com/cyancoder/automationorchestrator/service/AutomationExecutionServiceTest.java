@@ -50,13 +50,57 @@ class AutomationExecutionServiceTest {
                 Map.of(),
                 0,
                 60L,
-                0L
+                0L,
+                null,
+                "obj-1",
+                "obj-1:screening",
+                null,
+                null
         ));
 
         assertEquals("COMPLETED", response.status());
         assertEquals("screening", response.blockKey());
         assertEquals("hybrid-screening-automation", response.automationFlowKey());
         verify(httpSupport).exchange(eq("bpm-service"), eq("/public/bpm/async-actions/callbacks/obj-1:screening"), eq(HttpMethod.POST), any(), any(HttpHeaders.class), eq(Map.class));
+    }
+
+    @Test
+    void startAcceptsWorkflowGenerationAliases() {
+        AutomationExecutionRepository repository = mock(AutomationExecutionRepository.class);
+        InternalServiceHttpSupport httpSupport = mock(InternalServiceHttpSupport.class);
+        AutomationCallbackProperties properties = new AutomationCallbackProperties();
+        properties.setSecret("localdemo-secret");
+        AutomationExecutionService service = new AutomationExecutionService(repository, httpSupport, properties, new ObjectMapper());
+
+        doAnswer(invocation -> invocation.getArgument(0)).when(repository).save(any(AutomationExecution.class));
+
+        AutomationStartResponse response = service.start(new AutomationStartRequest(
+                null,
+                null,
+                AutomationExecutionMode.SYNC,
+                AutomationFailurePolicy.CONTINUE,
+                null,
+                null,
+                "tenant-demo",
+                "site-demo",
+                null,
+                Map.of("source", "panel"),
+                null,
+                0,
+                60L,
+                0L,
+                "form-enrichment-flow",
+                "managed-1",
+                "managed-1:form-enrichment",
+                Map.of("fullName", "Jane Roe"),
+                Map.of("type", "MAP_OUTPUT", "output", Map.of("accepted", true))
+        ));
+
+        assertEquals("COMPLETED", response.status());
+        assertEquals("form-enrichment-flow", response.automationFlowKey());
+        assertEquals("managed-1", response.managedObjectId());
+        assertEquals("managed-1:form-enrichment", response.idempotencyKey());
+        assertEquals(true, response.output().get("accepted"));
     }
 
     @Test

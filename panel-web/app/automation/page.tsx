@@ -8,9 +8,13 @@ import type { AutomationExecution } from "@/lib/types";
 export default function AutomationPage() {
   const [automationFlowKey, setAutomationFlowKey] = useState("welcome-sequence");
   const [blockKey, setBlockKey] = useState("notify-and-tag");
+  const [executionMode, setExecutionMode] = useState<"SYNC" | "ASYNC">("SYNC");
+  const [managedObjectId, setManagedObjectId] = useState("panel-managed-object");
+  const [idempotencyKey, setIdempotencyKey] = useState(`panel-${Date.now().toString(36)}`);
   const [tenantKey, setTenantKey] = useState("tenant-demo");
   const [siteKey, setSiteKey] = useState("site-commerce");
   const [inputJson, setInputJson] = useState('{\n  "customerKey": "guest-demo"\n}');
+  const [inlineFlowJson, setInlineFlowJson] = useState('{\n  "type": "MAP_OUTPUT",\n  "output": {\n    "accepted": true,\n    "screeningRoute": "FAST_TRACK"\n  }\n}');
   const [execution, setExecution] = useState<AutomationExecution | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,14 +26,21 @@ export default function AutomationPage() {
       const result = await startAutomationExecution({
         blockKey,
         automationFlowKey,
-        executionMode: "SYNC",
-        failurePolicy: "FAIL_FAST",
-        correlationKey: `panel-${Date.now().toString(36)}`,
+        flowKey: automationFlowKey,
+        executionMode,
+        failurePolicy: "CONTINUE",
+        correlationKey: `${managedObjectId}:${blockKey}`,
+        managedObjectId,
+        idempotencyKey,
         tenantKey,
         siteKey,
         input: inputJson.trim() ? JSON.parse(inputJson) : {},
+        variables: inputJson.trim() ? JSON.parse(inputJson) : {},
+        inlineFragment: inlineFlowJson.trim() ? JSON.parse(inlineFlowJson) : {},
+        inlineFlow: inlineFlowJson.trim() ? JSON.parse(inlineFlowJson) : {},
         context: {
-          source: "panel-automation-builder"
+          source: "panel-automation-builder",
+          managedObjectId
         }
       });
       setExecution(result);
@@ -88,6 +99,19 @@ export default function AutomationPage() {
             </div>
             <div className="field-grid">
               <div className="field">
+                <label>Execution mode</label>
+                <select value={executionMode} onChange={(event) => setExecutionMode(event.target.value as "SYNC" | "ASYNC")}>
+                  <option value="SYNC">SYNC</option>
+                  <option value="ASYNC">ASYNC</option>
+                </select>
+              </div>
+              <div className="field">
+                <label>Managed object id</label>
+                <input value={managedObjectId} onChange={(event) => setManagedObjectId(event.target.value)} />
+              </div>
+            </div>
+            <div className="field-grid">
+              <div className="field">
                 <label>Tenant key</label>
                 <input value={tenantKey} onChange={(event) => setTenantKey(event.target.value)} />
               </div>
@@ -97,8 +121,16 @@ export default function AutomationPage() {
               </div>
             </div>
             <div className="field">
-              <label>Input JSON</label>
+              <label>Idempotency key</label>
+              <input value={idempotencyKey} onChange={(event) => setIdempotencyKey(event.target.value)} />
+            </div>
+            <div className="field">
+              <label>Input / variables JSON</label>
               <textarea value={inputJson} onChange={(event) => setInputJson(event.target.value)} />
+            </div>
+            <div className="field">
+              <label>Inline flow JSON</label>
+              <textarea value={inlineFlowJson} onChange={(event) => setInlineFlowJson(event.target.value)} />
             </div>
             <div className="hero-actions">
               <button type="button" className="btn" onClick={start} disabled={loading}>Start execution</button>

@@ -612,6 +612,13 @@ select:focus {
   padding: 18px;
 }
 
+.ai-banner {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(37, 141, 247, 0.08), rgba(126, 73, 255, 0.08));
+  padding: 16px;
+}
+
 :root[data-theme="dark"] .stat-card,
 :root[data-theme="dark"] .capability-card,
 :root[data-theme="dark"] .mini-card,
@@ -621,6 +628,10 @@ select:focus {
 :root[data-theme="dark"] .auth-mini-card,
 :root[data-theme="dark"] .auth-trust-card {
   background: rgba(12, 20, 38, 0.92);
+}
+
+:root[data-theme="dark"] .ai-banner {
+  background: linear-gradient(135deg, rgba(37, 141, 247, 0.13), rgba(126, 73, 255, 0.12));
 }
 
 .app-tile {

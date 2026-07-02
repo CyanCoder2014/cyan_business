@@ -351,9 +351,17 @@ export type SearchSuggestionResponse = {
 export type AutomationExecution = {
   executionId?: string;
   automationKey?: string;
+  blockKey?: string;
+  automationFlowKey?: string;
+  managedObjectId?: string;
+  idempotencyKey?: string;
+  correlationKey?: string;
   status?: string;
   startedAt?: string;
   finishedAt?: string;
+  snapshot?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  error?: Record<string, unknown>;
   [key: string]: unknown;
 };
 

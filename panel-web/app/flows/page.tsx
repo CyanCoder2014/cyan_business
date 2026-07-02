@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
+import { generatePlatformApp } from "@/lib/platform-api";
 import {
   activateFlow,
   createManagedObject,
@@ -19,6 +20,7 @@ import {
   type ManagedObject,
   type TransitionOptionResponse
 } from "@/lib/bpm-api";
+import type { GeneratePlatformAppResponse } from "@/lib/types";
 
 const scope = { tenantKey: "tenant-demo", siteKey: "site-commerce" };
 
@@ -32,7 +34,10 @@ export default function FlowsPage() {
   const [transitionOptions, setTransitionOptions] = useState<TransitionOptionResponse[]>([]);
   const [selectedFlowKey, setSelectedFlowKey] = useState<string | null>(null);
   const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
+  const [aiPrompt, setAiPrompt] = useState("Create a BPM workflow with intake form, automation screening, manual review, approve, and reject states.");
+  const [aiDraft, setAiDraft] = useState<GeneratePlatformAppResponse | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const [reloadToken, setReloadToken] = useState(0);
 
   useEffect(() => {
@@ -145,6 +150,35 @@ export default function FlowsPage() {
     }
   }
 
+  async function generateFlowDraft() {
+    setAiLoading(true);
+    setStatus(null);
+    try {
+      const generated = await generatePlatformApp({
+        prompt: aiPrompt,
+        tenantKey: scope.tenantKey,
+        siteKey: scope.siteKey,
+        execute: false,
+        answers: {
+          appType: "BPM_PORTAL",
+          target: "bpm-service",
+          locale
+        }
+      });
+      setAiDraft(generated);
+      const generatedFlow = firstGeneratedFlow(generated);
+      if (generatedFlow) {
+        setFlows((current) => [generatedFlow, ...current.filter((item) => item.flowKey !== generatedFlow.flowKey)]);
+        setSelectedFlowKey(generatedFlow.flowKey);
+      }
+      setStatus(generatedFlow ? (locale === "fa" ? "پیش‌نویس فلو با AI تولید شد." : "AI flow draft generated.") : locale === "fa" ? "AI فلویی تولید نکرد." : "AI did not return a flow.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "تولید فلو ناموفق بود." : "Flow generation failed.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   return (
     <PanelShell
       activeKey="flows"
@@ -216,6 +250,25 @@ export default function FlowsPage() {
             </div>
           </div>
           {status ? <div className="status-pill info" style={{ marginTop: 12 }}>{status}</div> : null}
+          <div className="ai-banner" style={{ marginTop: 14 }}>
+            <div className="toolbar-row">
+              <div>
+                <strong>{locale === "fa" ? "تولید BPM با AI" : "AI BPM generation"}</strong>
+                <span className="muted-block">{locale === "fa" ? "فلو، فرم‌های BPM و اکشن‌های اتوماسیون را از یک درخواست بسازید." : "Generate BPM flows, BPM forms, and automation actions from a prompt."}</span>
+              </div>
+              <div className="pill-row">
+                <button type="button" className="secondary-pill" onClick={generateFlowDraft} disabled={aiLoading}>
+                  {aiLoading ? (locale === "fa" ? "در حال تولید..." : "Generating...") : locale === "fa" ? "تولید فلو" : "Generate flow"}
+                </button>
+                <span className="pill">{aiDraft?.dsl.flows.length ?? 0} {locale === "fa" ? "فلو" : "flows"}</span>
+              </div>
+            </div>
+            <textarea
+              value={aiPrompt}
+              onChange={(event) => setAiPrompt(event.target.value)}
+              style={{ marginTop: 12, minHeight: 84 }}
+            />
+          </div>
 
           <div className="flow-canvas flow-canvas-wide" style={{ marginTop: 18 }}>
             {flow?.states.map((state) => (
@@ -396,4 +449,62 @@ function createStarterFlow(): DynamicFlowDefinition {
       { id: "complete", fromState: "Approved", toState: "Completed", label: "Auto-complete" }
     ]
   };
+}
+
+function firstGeneratedFlow(generated: GeneratePlatformAppResponse): DynamicFlowDefinition | null {
+  const flowBlueprint = generated.dsl.flows.find((item) => item && typeof item === "object");
+  const rawDefinition = flowBlueprint?.flowDefinition;
+  if (!rawDefinition || typeof rawDefinition !== "object" || Array.isArray(rawDefinition)) {
+    return null;
+  }
+  const definition = rawDefinition as Record<string, unknown>;
+  const states = Array.isArray(definition.states) ? definition.states : [];
+  const transitions = Array.isArray(definition.transitions) ? definition.transitions : [];
+  return {
+    flowKey: String(definition.flowKey ?? flowBlueprint.flowKey ?? "ai-generated-flow"),
+    version: typeof definition.version === "number" ? definition.version : 1,
+    name: String(definition.name ?? flowBlueprint.flowKey ?? "AI Generated Flow"),
+    description: typeof definition.description === "string" ? definition.description : undefined,
+    startState: String(definition.startState ?? (states[0] as Record<string, unknown> | undefined)?.id ?? "start"),
+    active: Boolean(definition.active),
+    states: states.map((state) => normalizeState(state)),
+    transitions: transitions.map((transition) => normalizeTransition(transition))
+  };
+}
+
+function normalizeState(value: unknown): DynamicFlowDefinition["states"][number] {
+  const state = value && typeof value === "object" ? value as Record<string, unknown> : {};
+  return {
+    id: String(state.id ?? "state"),
+    displayName: String(state.displayName ?? state.id ?? "State"),
+    terminal: Boolean(state.terminal),
+    formKey: stringOrUndefined(state.formKey),
+    processorKey: stringOrUndefined(state.processorKey),
+    candidateGroups: Array.isArray(state.candidateGroups) ? state.candidateGroups.map(String) : undefined,
+    onEnterActions: Array.isArray(state.onEnterActions) ? state.onEnterActions as DynamicFlowDefinition["states"][number]["onEnterActions"] : undefined,
+    entityService: stringOrUndefined(state.entityService),
+    entityKey: stringOrUndefined(state.entityKey),
+    rendererService: stringOrUndefined(state.rendererService),
+    rendererKey: stringOrUndefined(state.rendererKey),
+    submitMode: state.submitMode === "STATIC" ? "STATIC" : "DYNAMIC",
+    submitUrl: stringOrUndefined(state.submitUrl),
+    waitForAutomation: Boolean(state.waitForAutomation)
+  };
+}
+
+function normalizeTransition(value: unknown): DynamicFlowDefinition["transitions"][number] {
+  const transition = value && typeof value === "object" ? value as Record<string, unknown> : {};
+  return {
+    id: String(transition.id ?? `${String(transition.fromState ?? "from")}-${String(transition.toState ?? "to")}`),
+    fromState: String(transition.fromState ?? "from"),
+    toState: String(transition.toState ?? "to"),
+    label: String(transition.label ?? transition.id ?? "Transition"),
+    allowedGroups: Array.isArray(transition.allowedGroups) ? transition.allowedGroups.map(String) : undefined,
+    allowedRoles: Array.isArray(transition.allowedRoles) ? transition.allowedRoles.map(String) : undefined,
+    conditionExpression: stringOrUndefined(transition.conditionExpression)
+  };
+}
+
+function stringOrUndefined(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
 }

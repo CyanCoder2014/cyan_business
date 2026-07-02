@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
-import { createDefinitionFromTemplate, listDefinitions, listTemplates, saveDefinition } from "@/lib/dynamic-api";
-import type { DynamicEntityDefinition, DynamicEntityTemplate } from "@/lib/types";
+import { createDefinitionFromTemplate, dynamicServices, listDefinitions, listTemplates, saveDefinition } from "@/lib/dynamic-api";
+import { generatePlatformApp } from "@/lib/platform-api";
+import type { DynamicEntityDefinition, DynamicEntityTemplate, DynamicServiceKey, GeneratePlatformAppResponse } from "@/lib/types";
 
 type FieldSummary = {
   name: string;
@@ -18,14 +19,21 @@ export default function MakerPage() {
   const [definitions, setDefinitions] = useState<DynamicEntityDefinition[]>([]);
   const [templates, setTemplates] = useState<DynamicEntityTemplate[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [selectedTemplateKey, setSelectedTemplateKey] = useState("catalog-product");
+  const [selectedServiceKey, setSelectedServiceKey] = useState<DynamicServiceKey>("bpm-service");
+  const [selectedTemplateKey, setSelectedTemplateKey] = useState("screening-intake-form");
   const [definitionDraft, setDefinitionDraft] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("Create an intake and review form workflow for applicant screening with automation.");
+  const [aiDraft, setAiDraft] = useState<GeneratePlatformAppResponse | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
+    setDefinitions([]);
+    setTemplates([]);
+    setSelectedIndex(0);
     Promise.allSettled([
-      listDefinitions("catalog-service", { tenantKey: "tenant-demo", siteKey: "site-commerce" }),
-      listTemplates("catalog-service")
+      listDefinitions(selectedServiceKey, { tenantKey: "tenant-demo", siteKey: "site-commerce" }),
+      listTemplates(selectedServiceKey)
     ]).then(([definitionsResult, templatesResult]) => {
       if (definitionsResult.status === "fulfilled") {
         setDefinitions(definitionsResult.value);
@@ -34,10 +42,10 @@ export default function MakerPage() {
       }
       if (templatesResult.status === "fulfilled") {
         setTemplates(templatesResult.value);
-        setSelectedTemplateKey(templatesResult.value[0]?.templateKey ?? "catalog-product");
+        setSelectedTemplateKey(templatesResult.value[0]?.templateKey ?? (selectedServiceKey === "bpm-service" ? "screening-intake-form" : "catalog-product"));
       }
     });
-  }, [locale]);
+  }, [locale, selectedServiceKey]);
 
   const entities = definitions;
   const selected = entities[selectedIndex] ?? null;
@@ -54,7 +62,7 @@ export default function MakerPage() {
       return;
     }
     try {
-      const saved = await saveDefinition("catalog-service", selected.entityKey, definitionDraft, {
+      const saved = await saveDefinition(selected.serviceKey as DynamicServiceKey, selected.entityKey, definitionDraft, {
         tenantKey: selected.tenantKey ?? "tenant-demo",
         siteKey: selected.siteKey ?? "site-commerce"
       });
@@ -69,7 +77,7 @@ export default function MakerPage() {
   async function createDefinition() {
     setStatus(locale === "fa" ? "در حال ساخت تعریف..." : "Creating definition...");
     try {
-      const created = await createDefinitionFromTemplate("catalog-service", selectedTemplateKey, selectedTemplateKey, {
+      const created = await createDefinitionFromTemplate(selectedServiceKey, selectedTemplateKey, selectedTemplateKey, {
         tenantKey: "tenant-demo",
         siteKey: "site-commerce"
       });
@@ -82,6 +90,62 @@ export default function MakerPage() {
       setStatus(locale === "fa" ? "تعریف ایجاد شد." : "Definition created.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : locale === "fa" ? "ایجاد تعریف ناموفق بود." : "Definition creation failed.");
+    }
+  }
+
+  async function generateFormDraft() {
+    setAiLoading(true);
+    setStatus(null);
+    try {
+      const generated = await generatePlatformApp({
+        prompt: aiPrompt,
+        tenantKey: "tenant-demo",
+        siteKey: "site-commerce",
+        execute: false,
+        answers: {
+          appType: "FORM_FLOW",
+          target: "bpm-service",
+          locale
+        }
+      });
+      setAiDraft(generated);
+      const firstEntity = generated.dsl.entities.find((entity) => typeof entity.serviceKey === "string" && typeof entity.templateKey === "string");
+      if (firstEntity?.serviceKey && dynamicServices.includes(firstEntity.serviceKey as DynamicServiceKey)) {
+        setSelectedServiceKey(firstEntity.serviceKey as DynamicServiceKey);
+        setSelectedTemplateKey(String(firstEntity.templateKey));
+      }
+      setStatus(locale === "fa" ? "پیش‌نویس فرم با AI تولید شد." : "AI form draft generated.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "تولید فرم ناموفق بود." : "Form generation failed.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  async function createFirstAiDefinition() {
+    const firstEntity = aiDraft?.dsl.entities.find((entity) => typeof entity.serviceKey === "string" && typeof entity.templateKey === "string" && typeof entity.entityKey === "string");
+    if (!firstEntity) {
+      setStatus(locale === "fa" ? "پیش‌نویس AI تعریف قابل ساخت ندارد." : "AI draft has no creatable definition.");
+      return;
+    }
+    const serviceKey = String(firstEntity.serviceKey) as DynamicServiceKey;
+    if (!dynamicServices.includes(serviceKey)) {
+      setStatus(locale === "fa" ? "سرویس تولیدشده در Runtime موجود نیست." : "Generated service is not available in the dynamic runtime.");
+      return;
+    }
+    setStatus(locale === "fa" ? "در حال ساخت اولین فرم AI..." : "Creating first AI form...");
+    try {
+      const created = await createDefinitionFromTemplate(serviceKey, String(firstEntity.templateKey), String(firstEntity.entityKey), {
+        tenantKey: "tenant-demo",
+        siteKey: "site-commerce"
+      });
+      setSelectedServiceKey(serviceKey);
+      setDefinitions((current) => [created, ...current.filter((item) => item.entityKey !== created.entityKey)]);
+      setSelectedIndex(0);
+      setDefinitionDraft(created.definitionJson);
+      setStatus(locale === "fa" ? "تعریف فرم AI ساخته شد." : "AI form definition created.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : locale === "fa" ? "ساخت فرم AI ناموفق بود." : "AI form creation failed.");
     }
   }
 
@@ -109,6 +173,14 @@ export default function MakerPage() {
           {status ? <div className="status-pill info" style={{ marginTop: 14 }}>{status}</div> : null}
           <div className="toolbar-row" style={{ marginTop: 14, gap: 12, flexWrap: "wrap" }}>
             <label style={{ display: "grid", gap: 6, minWidth: 240 }}>
+              <span className="muted-block">{locale === "fa" ? "سرویس" : "Service"}</span>
+              <select value={selectedServiceKey} onChange={(event) => setSelectedServiceKey(event.target.value as DynamicServiceKey)}>
+                {dynamicServices.map((serviceKey) => (
+                  <option key={serviceKey} value={serviceKey}>{serviceKey}</option>
+                ))}
+              </select>
+            </label>
+            <label style={{ display: "grid", gap: 6, minWidth: 240 }}>
               <span className="muted-block">{locale === "fa" ? "قالب" : "Template"}</span>
               <select value={selectedTemplateKey} onChange={(event) => setSelectedTemplateKey(event.target.value)}>
                 {templates.map((template) => (
@@ -118,6 +190,27 @@ export default function MakerPage() {
                 ))}
               </select>
             </label>
+          </div>
+          <div className="ai-banner" style={{ marginTop: 14 }}>
+            <div className="toolbar-row">
+              <div>
+                <strong>{locale === "fa" ? "تولید فرم با AI" : "AI form generation"}</strong>
+                <span className="muted-block">{locale === "fa" ? "فرم‌های BPM و تعریف‌های Runtime را از درخواست بسازید." : "Generate BPM form definitions and runtime drafts from a prompt."}</span>
+              </div>
+              <div className="pill-row">
+                <button type="button" className="secondary-pill" onClick={generateFormDraft} disabled={aiLoading}>
+                  {aiLoading ? (locale === "fa" ? "در حال تولید..." : "Generating...") : locale === "fa" ? "تولید فرم" : "Generate form"}
+                </button>
+                <button type="button" className="secondary-pill" onClick={createFirstAiDefinition} disabled={!aiDraft}>
+                  {locale === "fa" ? "ساخت اولین تعریف" : "Create first definition"}
+                </button>
+              </div>
+            </div>
+            <textarea
+              value={aiPrompt}
+              onChange={(event) => setAiPrompt(event.target.value)}
+              style={{ marginTop: 12, minHeight: 84 }}
+            />
           </div>
 
           <div className="two-column-grid maker-layout" style={{ marginTop: 18 }}>
@@ -233,6 +326,24 @@ export default function MakerPage() {
             <div className="mini-card"><strong>{selected?.title ?? "—"}</strong><span className="muted-block">{fields.length} {locale === "fa" ? "فیلد" : "fields"}</span></div>
             <div className="mini-card"><strong>{entities.length}</strong><span className="muted-block">{locale === "fa" ? "تعریف" : "definitions"}</span></div>
           </div>
+          {aiDraft ? (
+            <>
+              <div className="card-title-row" style={{ marginTop: 20 }}>
+                <h3>{locale === "fa" ? "خروجی AI" : "AI draft"}</h3>
+                <span className="status-pill info">{aiDraft.dsl.app.type ?? "FORM_FLOW"}</span>
+              </div>
+              <div className="detail-list" style={{ marginTop: 12 }}>
+                <div className="detail-item">
+                  <strong>{locale === "fa" ? "تعریف‌ها" : "Definitions"}</strong>
+                  <span className="muted-block">{aiDraft.dsl.entities.map((entity) => `${String(entity.serviceKey ?? "")}:${String(entity.templateKey ?? "")}`).join(", ") || "—"}</span>
+                </div>
+                <div className="detail-item">
+                  <strong>{locale === "fa" ? "فلوها" : "Flows"}</strong>
+                  <span className="muted-block">{aiDraft.dsl.flows.map((flow) => String(flow.flowKey ?? "flow")).join(", ") || "—"}</span>
+                </div>
+              </div>
+            </>
+          ) : null}
         </aside>
       </div>
 
@@ -292,13 +403,15 @@ function toFieldSummaries(definition: DynamicEntityDefinition | null): FieldSumm
     return [];
   }
   try {
-    const parsed = JSON.parse(definition.definitionJson) as { fields?: Array<Record<string, unknown>> };
-    const fields = parsed.fields ?? [];
+    const parsed = JSON.parse(definition.definitionJson) as { fields?: Array<Record<string, unknown>> | Record<string, Record<string, unknown>> };
+    const fields: Array<Record<string, unknown>> = Array.isArray(parsed.fields)
+      ? parsed.fields
+      : Object.entries(parsed.fields ?? {}).map(([key, value]) => ({ key, ...value }));
     if (fields.length) {
       return fields.map((field) => ({
-        name: String(field.key ?? field.name ?? "field"),
+        name: String(field.key ?? field.name ?? field.id ?? "field"),
         type: String(field.type ?? "String"),
-        required: Boolean(field.required),
+        required: Boolean(field.required) || Array.isArray(field.validations) && field.validations.some((rule) => typeof rule === "object" && rule !== null && "validation" in rule && rule.validation === "REQUIRED"),
         description: typeof field.label === "string" ? field.label : undefined
       }));
     }

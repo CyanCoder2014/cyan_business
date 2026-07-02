@@ -105,9 +105,9 @@ test("registers a user, logs in, and returns to the requested page", async ({ pa
   await form.getByLabel("Work email").fill("new-user@example.com");
   await form.getByLabel("Password").fill("StrongPass123!");
   await form.getByLabel("Workspace name").fill("Example Workspace");
-  await form.getByLabel("Phone number (optional)").fill("+15551234567");
+  await form.getByLabel("Phone (optional)").fill("+15551234567");
   await form.getByLabel("Security answer").fill("5");
-  await form.getByRole("button", { name: "Create account" }).click();
+  await form.getByRole("button", { name: "Continue with email" }).click();
 
   await expect(page).toHaveURL(/\/maker\?section=schema$/);
   await expect(page.getByText("Products").first()).toBeVisible();

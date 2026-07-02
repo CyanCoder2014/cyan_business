@@ -11,6 +11,8 @@ type PanelShellProps = {
   titleFa: string;
   subtitle: string;
   subtitleFa: string;
+  kicker?: string;
+  kickerFa?: string;
   activeKey: string;
   children: ReactNode;
 };
@@ -30,7 +32,7 @@ const navigation = [
   { href: "/iam", key: "iam", icon: "⚙", en: "Settings", fa: "تنظیمات" }
 ];
 
-export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, children }: PanelShellProps) {
+export function PanelShell({ title, titleFa, subtitle, subtitleFa, kicker, kickerFa, activeKey, children }: PanelShellProps) {
   const pathname = usePathname();
   const { locale, theme, toggleLocale, toggleTheme, workspaceName, siteName, isRtl } = usePanel();
   const [authChecked, setAuthChecked] = useState(false);
@@ -162,7 +164,7 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
         <main className="workspace-content">
           <section className="page-intro">
             <div>
-              <p className="page-kicker">{locale === "fa" ? "پلتفرم کسب‌وکار هوشمند" : "AI-native business platform"}</p>
+              <p className="page-kicker">{locale === "fa" ? kickerFa ?? "پلتفرم کسب‌وکار هوشمند" : kicker ?? "AI-native business platform"}</p>
               <h1>{locale === "fa" ? titleFa : title}</h1>
               <p>{locale === "fa" ? subtitleFa : subtitle}</p>
             </div>

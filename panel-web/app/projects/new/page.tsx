@@ -1,10 +1,30 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { SparkleIcon } from "@/components/auth-icons";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
 import { generatePlatformApp, listBlueprints, listClientDrafts } from "@/lib/platform-api";
 import type { AppBlueprint, ClientAppDraft, GeneratePlatformAppResponse } from "@/lib/types";
+
+const QUICK_PROMPTS = [
+  { key: "shop", en: "Create a shop", fa: "ساخت فروشگاه" },
+  { key: "crm", en: "Build a CRM", fa: "ساخت CRM" },
+  { key: "bpm", en: "Make a BPM form", fa: "فرم BPM" },
+  { key: "bot", en: "Telegram bot", fa: "ربات تلگرام" },
+  { key: "landing", en: "Landing page", fa: "صفحه فرود" },
+  { key: "pwa", en: "PWA app", fa: "اپ PWA" }
+] as const;
+
+const MODULE_TILES = [
+  { key: "website", en: "Website", fa: "وب‌سایت", countKey: "routes" as const, suffixEn: "pages", suffixFa: "صفحه" },
+  { key: "shop", en: "Shop", fa: "فروشگاه", countKey: "modules" as const, suffixEn: "modules", suffixFa: "ماژول" },
+  { key: "crm", en: "CRM", fa: "CRM", countKey: "modules" as const, suffixEn: "module", suffixFa: "ماژول" },
+  { key: "forms", en: "Forms", fa: "فرم‌ها", countKey: "modules" as const, suffixEn: "forms", suffixFa: "فرم" },
+  { key: "flow", en: "Flow", fa: "فلو", countKey: "services" as const, suffixEn: "flows", suffixFa: "فلو" },
+  { key: "bot", en: "Bot", fa: "بات", countKey: "services" as const, suffixEn: "bot", suffixFa: "بات" }
+] as const;
 
 export default function AiStudioPage() {
   const { locale } = usePanel();
@@ -41,15 +61,24 @@ export default function AiStudioPage() {
         title: locale === "fa" ? "پیش‌نویسی وجود ندارد" : "No draft available",
         routes: 0,
         services: 0,
-        modules: 0
+        modules: 0,
+        readiness: 0,
+        previewPath: "—"
       };
     }
 
+    const routes = dsl.routes.length;
+    const services = dsl.delivery.publicApis.length + dsl.delivery.botApis.length;
+    const modules = dsl.entities.length;
+    const readiness = Math.min(100, Math.round(((routes + services + modules) / 24) * 100));
+
     return {
       title: dsl.app.title ?? (locale === "fa" ? "اپ تولیدشده" : "Generated app"),
-      routes: dsl.routes.length,
-      services: dsl.delivery.publicApis.length + dsl.delivery.botApis.length,
-      modules: dsl.entities.length
+      routes,
+      services,
+      modules,
+      readiness,
+      previewPath: drafts[0]?.siteKey ? `/${drafts[0].siteKey}` : "—"
     };
   }, [drafts, locale, response]);
 
@@ -77,57 +106,89 @@ export default function AiStudioPage() {
     }
   }
 
+  function applyPrompt(nextPrompt: string) {
+    setPrompt(nextPrompt);
+  }
+
   return (
     <PanelShell
       activeKey="studio"
+      kicker="AI Studio"
+      kickerFa="استودیوی هوش مصنوعی"
       title="Build your business app with AI"
       titleFa="کسب‌وکار خود را با هوش مصنوعی بسازید"
       subtitle="Create websites, PWAs, shops, CRM, BPM forms, automations, and Telegram/Bale bots with one structured prompt."
       subtitleFa="وب‌سایت، PWA، فروشگاه، CRM، فرم‌های BPM، اتوماسیون و ربات‌های تلگرام/بله را با یک درخواست ساختارمند تولید کنید."
     >
-      <div className="desktop-only page-grid">
+      <div className="desktop-only page-grid studio-page-grid">
         <section>
           <article className="hero-banner studio-panel">
-            <div className="chat-shell">
-              <div className="chat-message">
-                <strong>{locale === "fa" ? "سلام، من Cyan AI هستم." : "Hi! I'm Cyan AI."}</strong>
-                <div className="muted-block">
-                  {locale === "fa" ? "چه چیزی برای شما بسازم؟" : "What would you like to build today?"}
+            <div className="studio-chat-shell">
+              <div className="studio-chat-message">
+                <div className="studio-chat-avatar ai">AI</div>
+                <div>
+                  <strong>{locale === "fa" ? "سلام، من Cyan AI هستم." : "Hi! I'm Cyan AI."}</strong>
+                  <p className="muted-block">{locale === "fa" ? "امروز چه چیزی می‌خواهید بسازید؟" : "What would you like to build today?"}</p>
                 </div>
               </div>
-              <div className="chat-message outbound">
-                <strong>{locale === "fa" ? "می‌خواهم یک فروشگاه کامل بسازم." : "I want a shop with product catalog, cart, checkout, payments and order tracking."}</strong>
-                <div className="muted-block">{locale === "fa" ? "۱۰:۲۴" : "10:24 AM"}</div>
+              <div className="studio-chat-message outbound">
+                <div>
+                  <strong>
+                    {locale === "fa"
+                      ? "می‌خواهم یک فروشگاه با کاتالوگ، سبد خرید، پرداخت و پیگیری سفارش بسازم."
+                      : "I want a shop with product catalog, cart, checkout, payments and order tracking."}
+                  </strong>
+                  <div className="studio-chat-meta">
+                    <span>{locale === "fa" ? "۱۰:۲۴" : "10:24 AM"}</span>
+                    <span className="studio-read-receipt" aria-hidden="true">
+                      ✓✓
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="chat-message">
-                <strong>{locale === "fa" ? "عالی، پیش‌نویس را آماده می‌کنم." : "Great! I'll generate a shop app draft for you."}</strong>
-                <div className="muted-block">
-                  {locale === "fa"
-                    ? "وب‌سایت، فروشگاه، CRM، فرم‌ها و ربات‌ها در خروجی قرار می‌گیرند."
-                    : "Catalog, secure checkout, CRM, forms, and bot channels are included in the output."}
+              <div className="studio-chat-message">
+                <div className="studio-chat-avatar ai">AI</div>
+                <div>
+                  <strong>{locale === "fa" ? "عالی، پیش‌نویس فروشگاه را آماده می‌کنم." : "Great! I'll generate a shop app draft for you."}</strong>
+                  <p className="muted-block">
+                    {locale === "fa"
+                      ? "وب‌سایت، فروشگاه، CRM، فرم‌ها و ربات‌ها در خروجی قرار می‌گیرند."
+                      : "Catalog, secure checkout, CRM, forms, and bot channels are included in the output."}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="pill-row" style={{ marginTop: 18 }}>
-              <span className="pill studio-suggestion">{locale === "fa" ? "ساخت فروشگاه" : "Create a shop"}</span>
-              <span className="pill studio-suggestion">{locale === "fa" ? "ساخت CRM" : "Build a CRM"}</span>
-              <span className="pill studio-suggestion">{locale === "fa" ? "فرم BPM" : "Make a BPM form"}</span>
-              <span className="pill studio-suggestion">{locale === "fa" ? "ربات تلگرام" : "Telegram bot"}</span>
-              <span className="pill studio-suggestion">PWA</span>
+            <div className="studio-chip-row">
+              {QUICK_PROMPTS.map((item) => (
+                <button key={item.key} type="button" className="studio-chip" onClick={() => applyPrompt(item.en)}>
+                  <SparkleIcon size={14} />
+                  <span>{locale === "fa" ? item.fa : item.en}</span>
+                </button>
+              ))}
             </div>
 
-            <div className="chat-composer" style={{ marginTop: 16 }}>
-              <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder={locale === "fa" ? "اپ یا سناریوی خود را توضیح دهید..." : "Describe your app or ask anything..."} />
-              <div className="toolbar-row">
-                <div className="pill-row">
-                  <button type="button" className="secondary-pill">
-                    {locale === "fa" ? "بهبود درخواست" : "Enhance prompt"}
+            <div className="studio-composer">
+              <textarea
+                value={prompt}
+                onChange={(event) => setPrompt(event.target.value)}
+                placeholder={locale === "fa" ? "اپ یا سناریوی خود را توضیح دهید..." : "Describe your app or ask anything..."}
+              />
+              <div className="studio-composer-toolbar">
+                <div className="studio-composer-actions">
+                  <button type="button" className="studio-icon-btn" aria-label={locale === "fa" ? "پیوست" : "Attach file"}>
+                    📎
                   </button>
-                  <span className="pill">{locale === "fa" ? "هوشمند" : "Smart"}</span>
+                  <button type="button" className="secondary-pill studio-enhance-btn">
+                    <SparkleIcon size={14} />
+                    <span>{locale === "fa" ? "بهبود درخواست" : "Enhance prompt"}</span>
+                  </button>
+                  <button type="button" className="studio-smart-select">
+                    {locale === "fa" ? "هوشمند" : "Smart"} ▾
+                  </button>
                 </div>
-                <button type="button" className="primary-pill" onClick={handleGenerate} disabled={loading}>
-                  {loading ? (locale === "fa" ? "در حال تولید..." : "Generating...") : locale === "fa" ? "تولید پیش‌نویس" : "Generate draft"}
+                <button type="button" className="studio-send-btn" onClick={handleGenerate} disabled={loading} aria-label={locale === "fa" ? "ارسال" : "Send"}>
+                  →
                 </button>
               </div>
               <div className="muted-block studio-disclaimer">
@@ -137,137 +198,149 @@ export default function AiStudioPage() {
             </div>
           </article>
 
-          <section className="studio-summary-grid" style={{ marginTop: 18 }}>
-            <article className="summary-card">
-              <span className="muted">{locale === "fa" ? "پیش‌نویس DSL" : "Draft DSL"}</span>
+          <section className="studio-summary-grid">
+            <article className="studio-status-card">
+              <div className="studio-status-head">
+                <span className="muted">{locale === "fa" ? "پیش‌نویس DSL" : "Draft DSL"}</span>
+                <span className="studio-status-dot success">{locale === "fa" ? "تولید شد" : "Generated"}</span>
+              </div>
               <strong>{response?.dsl.app.appKey ?? drafts[0]?.draftId ?? "—"}</strong>
-              <span className="muted-block">{locale === "fa" ? "خروجی زنده از orchestrator" : "Live output from orchestrator"}</span>
+              <button type="button" className="text-link">{locale === "fa" ? "مشاهده فایل" : "View file"}</button>
             </article>
-            <article className="summary-card">
-              <span className="muted">{locale === "fa" ? "سرویس‌ها" : "Services"}</span>
+            <article className="studio-status-card">
+              <div className="studio-status-head">
+                <span className="muted">{locale === "fa" ? "سرویس‌ها" : "Services"}</span>
+                <span className="studio-status-dot success">{locale === "fa" ? "آماده" : "Ready"}</span>
+              </div>
               <strong>{summary.services}</strong>
-              <span className="muted-block">{locale === "fa" ? "بر پایه DSL و delivery APIها" : "Based on DSL and delivery APIs"}</span>
+              <span className="muted-block">{locale === "fa" ? `${summary.services} سرویس پیکربندی شده` : `${summary.services} services configured`}</span>
+              <button type="button" className="text-link">{locale === "fa" ? "مدیریت سرویس‌ها" : "Manage services"}</button>
             </article>
-            <article className="summary-card">
-              <span className="muted">{locale === "fa" ? "آمادگی انتشار" : "Publish readiness"}</span>
-              <strong>{locale === "fa" ? `${summary.routes} مسیر` : `${summary.routes} routes`}</strong>
-              <span className="muted-block">{locale === "fa" ? "بر پایه DSL فعلی" : "Based on the current DSL"}</span>
+            <article className="studio-status-card">
+              <div className="studio-status-head">
+                <span className="muted">{locale === "fa" ? "آمادگی انتشار" : "Publish readiness"}</span>
+              </div>
+              <strong>{summary.readiness}%</strong>
+              <span className="muted-block">{locale === "fa" ? `${summary.readiness}% آماده انتشار` : `${summary.readiness}% ready to publish`}</span>
+              <div className="studio-progress">
+                <span style={{ width: `${summary.readiness}%` }} />
+              </div>
             </article>
-            <article className="summary-card">
-              <span className="muted">{locale === "fa" ? "لینک پیش‌نمایش" : "Preview link"}</span>
-              <strong style={{ fontSize: "1rem" }}>{drafts[0]?.siteKey ? `/${drafts[0].siteKey}` : "—"}</strong>
-              <span className="muted-block">{locale === "fa" ? "پس از provision قابل استفاده است" : "Available after provisioning"}</span>
+            <article className="studio-status-card">
+              <div className="studio-status-head">
+                <span className="muted">{locale === "fa" ? "لینک پیش‌نمایش" : "Preview link"}</span>
+              </div>
+              <strong className="studio-preview-link">{summary.previewPath}</strong>
+              <div className="studio-preview-actions">
+                <button type="button" className="text-link">{locale === "fa" ? "باز کردن پیش‌نمایش" : "Open preview"}</button>
+                <button type="button" className="studio-icon-btn" aria-label={locale === "fa" ? "کپی" : "Copy link"}>
+                  ⧉
+                </button>
+              </div>
             </article>
           </section>
         </section>
 
-        <aside className="panel-card">
+        <aside className="panel-card studio-sidebar">
           <div className="card-title-row">
             <h3>{locale === "fa" ? "خلاصه پیش‌نویس تولیدشده" : "Generated draft summary"}</h3>
             <span className="status-pill info">{locale === "fa" ? "پیش‌نویس" : "Draft"}</span>
           </div>
-          <strong style={{ display: "block", marginTop: 18, fontSize: "1.25rem" }}>{summary.title}</strong>
-          <p className="muted">
+          <strong className="studio-sidebar-title">{summary.title}</strong>
+          <p className="muted studio-sidebar-copy">
             {locale === "fa"
               ? "اپ کامل با کاتالوگ، سبد خرید، پرداخت، پیگیری سفارش و مسیرهای CRM."
               : "Complete app with catalog, cart, checkout, payments, order tracking, and CRM flows."}
           </p>
-          <div className="studio-module-grid" style={{ marginTop: 16 }}>
-            <div className="mini-card">
-              <span className="muted">{locale === "fa" ? "صفحات / مسیرها" : "Routes"}</span>
-              <strong>{summary.routes}</strong>
-            </div>
-            <div className="mini-card">
-              <span className="muted">{locale === "fa" ? "سرویس‌ها" : "Services"}</span>
-              <strong>{summary.services}</strong>
-            </div>
-            <div className="mini-card">
-              <span className="muted">{locale === "fa" ? "ماژول‌ها" : "Modules"}</span>
-              <strong>{summary.modules}</strong>
-            </div>
-            <div className="mini-card">
-              <span className="muted">{locale === "fa" ? "قالب‌های فعال" : "Blueprints"}</span>
-              <strong>{blueprints.length}</strong>
-            </div>
+
+          <div className="studio-module-tiles">
+            {MODULE_TILES.map((tile, index) => {
+              const count = summary[tile.countKey];
+              const displayCount = index === 0 ? summary.routes || count : Math.max(1, Math.ceil(count / (index + 1)));
+              return (
+                <div key={tile.key} className="studio-module-tile">
+                  <div className="studio-module-head">
+                    <span className="studio-module-icon">{tile.key.slice(0, 1).toUpperCase()}</span>
+                    <span className="studio-module-check" aria-hidden="true">
+                      ✓
+                    </span>
+                  </div>
+                  <strong>{locale === "fa" ? tile.fa : tile.en}</strong>
+                  <span className="muted-block">
+                    {displayCount} {locale === "fa" ? tile.suffixFa : tile.suffixEn}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="card-title-row" style={{ marginTop: 18 }}>
-            <h3>{locale === "fa" ? "آخرین تولیدها" : "Recent generations"}</h3>
-            <span className="muted">{locale === "fa" ? "خروجی زنده orchestrator" : "Live orchestrator output"}</span>
+          <div className="studio-sidebar-actions">
+            <Link href="/maker" className="secondary-pill wide-pill">
+              {locale === "fa" ? "باز کردن در Maker" : "Open in Maker"}
+            </Link>
+            <Link href={drafts[0] ? `/projects/${drafts[0].draftId}` : "/maker"} className="primary-pill wide-pill">
+              {locale === "fa" ? "ادامه ساخت ←" : "Continue building →"}
+            </Link>
           </div>
-          <div className="activity-list studio-generation-list" style={{ marginTop: 16 }}>
-            {drafts.slice(0, 5).map((draft) => (
-              <div key={draft.title} className="activity-item">
-                <strong>{draft.title}</strong>
-                <span className="muted-block">{draft.updatedAt ?? (locale === "fa" ? "به تازگی" : "Recently")}</span>
+
+          <div className="card-title-row studio-recent-head">
+            <h3>{locale === "fa" ? "آخرین تولیدها" : "Recent generations"}</h3>
+            <button type="button" className="text-link">
+              {locale === "fa" ? "مشاهده همه" : "View all"}
+            </button>
+          </div>
+          <div className="studio-recent-list">
+            {drafts.slice(0, 5).map((draft, index) => (
+              <div key={`${draft.title}-${index}`} className="studio-recent-item">
+                <div>
+                  <strong>{draft.title}</strong>
+                  <span className="muted-block">{draft.updatedAt ?? (locale === "fa" ? "همین الان" : "Just now")}</span>
+                </div>
+                <span className={`studio-status-dot ${index === 0 ? "success" : "warning"}`} aria-hidden="true" />
               </div>
             ))}
             {!drafts.length ? (
-              <div className="activity-item">
-                <strong>{locale === "fa" ? "پیش‌نویسی از backend برنگشته است" : "No drafts returned by backend"}</strong>
-                <span className="muted-block">{locale === "fa" ? "اولین خروجی پس از Generate اینجا نمایش داده می‌شود." : "The first generated draft will appear here."}</span>
+              <div className="studio-recent-item">
+                <div>
+                  <strong>{locale === "fa" ? "پیش‌نویسی از backend برنگشته است" : "No drafts returned by backend"}</strong>
+                  <span className="muted-block">{locale === "fa" ? "اولین خروجی پس از Generate اینجا نمایش داده می‌شود." : "The first generated draft will appear here."}</span>
+                </div>
               </div>
             ) : null}
-          </div>
-
-          <div className="summary-grid dashboard-summary-grid" style={{ marginTop: 20 }}>
-            {[
-              ["Routes", `${summary.routes}`],
-              ["Services", `${summary.services}`],
-              ["Modules", `${summary.modules}`],
-              ["Blueprints", `${blueprints.length}`]
-            ].map(([title, meta]) => (
-              <div key={title} className="mini-card">
-                <strong>{title}</strong>
-                <span className="muted-block">{meta}</span>
-              </div>
-            ))}
           </div>
         </aside>
       </div>
 
       <div className="mobile-only mobile-screen">
         <div className="mobile-screen-header">
-          <button type="button" className="icon-pill">←</button>
+          <button type="button" className="icon-pill">
+            ←
+          </button>
           <strong style={{ fontSize: "2rem" }}>{locale === "fa" ? "استودیوی هوش مصنوعی" : "AI Studio"}</strong>
           <span className="pill">{locale === "fa" ? "پیش‌نویس" : "Draft"}</span>
         </div>
         <div className="mobile-chat-thread">
           <div className="mobile-list-item">
             <strong>{locale === "fa" ? "Cyan AI" : "Cyan AI"}</strong>
-            <span className="muted-block">{locale === "fa" ? "چه چیزی برای شما بسازم؟" : "What would you like to build today?"}</span>
+            <span className="muted-block">{locale === "fa" ? "امروز چه چیزی می‌خواهید بسازید؟" : "What would you like to build today?"}</span>
           </div>
-          <div className="mobile-list-item" style={{ justifySelf: "end", background: "linear-gradient(135deg, rgba(37,141,247,0.12), rgba(126,73,255,0.1))" }}>
+          <div className="mobile-list-item outbound-mobile-chat">
             <strong>{locale === "fa" ? "می‌خواهم یک اپ فروشگاهی بسازم" : "I want to build a shop app"}</strong>
             <span className="muted-block">{prompt}</span>
           </div>
           <div className="mobile-list-item">
-            <strong>{locale === "fa" ? "در حال تولید اپ شما..." : "Generating your app..."}</strong>
-            <span className="muted-block">{locale === "fa" ? "وب‌سایت، فروشگاه، CRM و فرم‌ها در حال آماده‌سازی هستند." : "Website, shop, CRM, and forms are being prepared."}</span>
+            <strong>{loading ? (locale === "fa" ? "در حال تولید..." : "Generating...") : locale === "fa" ? "پیش‌نویس آماده است" : "Draft is ready"}</strong>
+            <span className="muted-block">{locale === "fa" ? "وب‌سایت، فروشگاه، CRM و فرم‌ها در خروجی قرار می‌گیرند." : "Website, shop, CRM, and forms are included in the output."}</span>
           </div>
           <div className="mobile-tab-strip">
-            <span className="pill">{locale === "fa" ? "فروشگاه" : "Create a shop"}</span>
-            <span className="pill">CRM</span>
-            <span className="pill">Telegram</span>
-          </div>
-          <div className="mobile-card">
-            <strong>{locale === "fa" ? "در حال ساخت" : "Generating your app..."}</strong>
-            <div className="mobile-list" style={{ marginTop: 14 }}>
-              {[
-                [locale === "fa" ? "وب‌سایت" : "Website", locale === "fa" ? "آماده" : "Ready"],
-                [locale === "fa" ? "فروشگاه" : "Shop", locale === "fa" ? "آماده" : "Ready"],
-                ["CRM", locale === "fa" ? "در حال انجام" : "In progress"],
-                [locale === "fa" ? "فرم‌ها" : "Forms", locale === "fa" ? "در انتظار" : "Pending"]
-              ].map(([a, b]) => (
-                <div key={String(a)} className="mobile-list-item">
-                  <strong>{a}</strong>
-                  <span className="muted-block">{b}</span>
-                </div>
-              ))}
-            </div>
+            {QUICK_PROMPTS.slice(0, 3).map((item) => (
+              <span key={item.key} className="pill">
+                {locale === "fa" ? item.fa : item.en}
+              </span>
+            ))}
           </div>
           <div className="chat-composer">
-            <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} />
+            <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder={locale === "fa" ? "اپ یا سناریوی خود را توضیح دهید..." : "Describe your app or ask anything..."} />
             <button type="button" className="primary-pill" onClick={handleGenerate} disabled={loading}>
               {loading ? (locale === "fa" ? "در حال تولید..." : "Generating...") : locale === "fa" ? "ارسال" : "Send"}
             </button>

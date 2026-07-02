@@ -31,8 +31,8 @@ const PanelContext = createContext<PanelContextValue | null>(null);
 export function PanelProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<PanelLocale>("en");
   const [theme, setThemeState] = useState<PanelTheme>("light");
-  const [workspaceName, setWorkspaceNameState] = useState("Acme Corp");
-  const [siteName, setSiteNameState] = useState("acme.cyan.app");
+  const [workspaceName, setWorkspaceNameState] = useState("tenant-demo");
+  const [siteName, setSiteNameState] = useState("site-commerce");
 
   useEffect(() => {
     if (typeof window === "undefined") {

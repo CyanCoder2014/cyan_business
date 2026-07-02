@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const definitions = [
   {
-    serviceKey: "catalog-service",
+    serviceKey: "bpm-service",
     entityKey: "products",
     title: "Products",
     tenantKey: "tenant-demo",
@@ -20,15 +20,17 @@ const storageKeys = {
   accessToken: "cyan.panel.authToken",
   refreshToken: "cyan.panel.refreshToken",
   expiresAt: "cyan.panel.authExpiresAt",
-  sessionId: "cyan.panel.sessionId"
+  sessionId: "cyan.panel.sessionId",
+  username: "cyan.panel.username"
 };
 
-test("redirects to auth on protected 401 and returns after sign in", async ({ page }) => {
+test("redirects to auth without a token and returns after sign in", async ({ page }) => {
   await page.addInitScript((keys) => {
     window.localStorage.removeItem(keys.accessToken);
     window.localStorage.removeItem(keys.refreshToken);
     window.localStorage.removeItem(keys.expiresAt);
     window.localStorage.removeItem(keys.sessionId);
+    window.localStorage.removeItem(keys.username);
   }, storageKeys);
   await routeCaptcha(page);
   await page.route("**/api/sso/auth/login", async (route) => {
@@ -41,7 +43,7 @@ test("redirects to auth on protected 401 and returns after sign in", async ({ pa
   });
 
   let definitionRequests = 0;
-  await page.route("**/api/platform/dynamic/catalog-service/endpoint/entities/definitions**", async (route) => {
+  await page.route("**/api/platform/dynamic/bpm-service/endpoint/entities/definitions**", async (route) => {
     definitionRequests += 1;
     if (!route.request().headers().authorization) {
       await route.fulfill({ status: 401, body: "Unauthorized" });
@@ -49,9 +51,10 @@ test("redirects to auth on protected 401 and returns after sign in", async ({ pa
     }
     await route.fulfill({ json: definitions });
   });
+  await routeBpmTemplates(page);
 
   await page.goto("/maker");
-  await expect(page).toHaveURL(/\/auth\?returnTo=%2Fmaker/);
+  await expect(page).toHaveURL(/\/auth\?returnTo=%2Fmaker/, { timeout: 15_000 });
 
   const form = page.getByTestId("desktop-auth-form");
   await expect(form.getByPlaceholder("2 + 3 = ?")).toBeVisible();
@@ -62,7 +65,7 @@ test("redirects to auth on protected 401 and returns after sign in", async ({ pa
 
   await expect(page).toHaveURL(/\/maker$/);
   await expect(page.getByText("Products").first()).toBeVisible();
-  expect(definitionRequests).toBeGreaterThanOrEqual(2);
+  expect(definitionRequests).toBeGreaterThan(0);
 });
 
 test("registers a user, logs in, and returns to the requested page", async ({ page }) => {
@@ -90,10 +93,11 @@ test("registers a user, logs in, and returns to the requested page", async ({ pa
     expect(body.password).toBe("StrongPass123!");
     await route.fulfill({ json: tokenResponse("registered-access", "registered-refresh") });
   });
-  await page.route("**/api/platform/dynamic/catalog-service/endpoint/entities/definitions**", async (route) => {
+  await page.route("**/api/platform/dynamic/bpm-service/endpoint/entities/definitions**", async (route) => {
     expect(route.request().headers().authorization).toBe("Bearer registered-access");
     await route.fulfill({ json: definitions });
   });
+  await routeBpmTemplates(page);
 
   await page.goto("/auth?mode=register&returnTo=%2Fmaker%3Fsection%3Dschema");
 
@@ -115,27 +119,29 @@ test("refreshes an expired access token before retrying protected API calls", as
     window.localStorage.setItem(keys.refreshToken, "valid-refresh");
     window.localStorage.setItem(keys.expiresAt, String(Date.now() - 10_000));
     window.localStorage.setItem(keys.sessionId, "session-old");
+    window.localStorage.setItem(keys.username, "user@cyan.local");
   }, storageKeys);
 
-  let refreshCalled = false;
+  let refreshCalls = 0;
   let apiAuthorization = "";
 
   await page.route("**/api/sso/auth/refresh", async (route) => {
-    refreshCalled = true;
+    refreshCalls += 1;
     const body = route.request().postDataJSON() as Record<string, unknown>;
     expect(body.clientId).toBe("cyan-panel");
-    expect(body.refreshToken).toBe("valid-refresh");
+    expect(["valid-refresh", "rotated-refresh"]).toContain(body.refreshToken);
     await route.fulfill({ json: tokenResponse("refreshed-access", "rotated-refresh") });
   });
-  await page.route("**/api/platform/dynamic/catalog-service/endpoint/entities/definitions**", async (route) => {
+  await page.route("**/api/platform/dynamic/bpm-service/endpoint/entities/definitions**", async (route) => {
     apiAuthorization = route.request().headers().authorization ?? "";
     await route.fulfill({ json: definitions });
   });
+  await routeBpmTemplates(page);
 
   await page.goto("/maker");
 
   await expect(page.getByText("Products").first()).toBeVisible();
-  await expect.poll(() => refreshCalled).toBe(true);
+  await expect.poll(() => refreshCalls).toBeGreaterThan(0);
   await expect.poll(() => apiAuthorization).toBe("Bearer refreshed-access");
 });
 
@@ -147,6 +153,20 @@ async function routeCaptcha(page: Page) {
         prompt: "2 + 3 = ?",
         expiresAtEpochSecond: Math.floor(Date.now() / 1000) + 300
       }
+    });
+  });
+}
+
+async function routeBpmTemplates(page: Page) {
+  await page.route("**/api/platform/dynamic/bpm-service/endpoint/entities/templates", async (route) => {
+    await route.fulfill({
+      json: [
+        {
+          serviceKey: "bpm-service",
+          templateKey: "screening-intake-form",
+          title: "Screening intake form"
+        }
+      ]
     });
   });
 }

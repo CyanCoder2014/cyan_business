@@ -45,7 +45,7 @@
   --green: #2bbf67;
   --amber: #ff9f37;
   --shadow: 0 18px 50px rgba(60, 75, 125, 0.08);
-  --font-sans: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif;
+  --font-sans: "Roboto", "Segoe UI", Arial, sans-serif;
   --font-fa: "Vazir", "Tahoma", sans-serif;
   --font-mono: "SFMono-Regular", "Menlo", monospace;
   color-scheme: light;
@@ -265,6 +265,16 @@ select:focus {
   padding: 14px 16px;
 }
 
+.sidebar-workspace-badge strong,
+.sidebar-workspace-badge span {
+  display: block;
+}
+
+.sidebar-workspace-badge span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .avatar-chip,
 .header-avatar {
   display: grid;
@@ -394,6 +404,14 @@ select:focus {
   padding: 20px 28px 28px;
 }
 
+.auth-check-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  background: var(--bg);
+}
+
 .page-intro {
   margin-bottom: 18px;
 }
@@ -404,13 +422,13 @@ select:focus {
   color: var(--blue);
   font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .page-intro h1 {
   margin: 0;
-  font-size: clamp(2rem, 3vw, 3.5rem);
+  font-size: 2.45rem;
   line-height: 1.08;
 }
 
@@ -922,6 +940,10 @@ select:focus {
   display: none;
 }
 
+.mobile-only.mobile-screen {
+  display: none;
+}
+
 .mobile-screen {
   display: grid;
   gap: 16px;
@@ -1050,7 +1072,7 @@ select:focus {
 
 .auth-marketing h1 {
   margin: 18px 0 12px;
-  font-size: clamp(2.9rem, 5vw, 4.8rem);
+  font-size: 3.4rem;
   line-height: 1.02;
 }
 
@@ -1290,7 +1312,7 @@ select:focus {
   }
 
   .page-intro h1 {
-    font-size: clamp(1.9rem, 9vw, 2.6rem);
+    font-size: 2rem;
   }
 
   .feature-grid,
@@ -1362,6 +1384,10 @@ select:focus {
 
   .mobile-only {
     display: block;
+  }
+
+  .mobile-only.mobile-screen {
+    display: grid;
   }
 
   .page-intro {

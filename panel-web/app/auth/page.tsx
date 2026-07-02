@@ -26,7 +26,7 @@ function AuthScreen() {
   const { locale, setWorkspaceName } = usePanel();
   const returnTo = safeReturnTo(searchParams.get("returnTo"));
   const requestedMode = searchParams.get("mode");
-  const [mode, setMode] = useState<AuthMode>(requestedMode === "register" || requestedMode === "signup" ? "signup" : returnTo === "/" ? "signup" : "signin");
+  const [mode, setMode] = useState<AuthMode>(requestedMode === "register" || requestedMode === "signup" ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [workspace, setWorkspace] = useState("");
@@ -354,7 +354,7 @@ function AuthForm({
             <span>{locale === "fa" ? "نام فضای کاری" : "Workspace name"}</span>
             <input
               autoComplete="organization"
-              placeholder={locale === "fa" ? "شرکت آکمان" : "Acme Corp"}
+              placeholder={locale === "fa" ? "نام کسب‌وکار شما" : "Your workspace"}
               value={workspace}
               onChange={(event) => setWorkspace(event.target.value)}
             />

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePanel } from "@/components/panel-provider";
+import { getPlatformAuthToken, getPlatformUsername, redirectToAuth } from "@/lib/platform-auth";
 
 type PanelShellProps = {
   title: string;
@@ -32,6 +33,35 @@ const navigation = [
 export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, children }: PanelShellProps) {
   const pathname = usePathname();
   const { locale, theme, toggleLocale, toggleTheme, workspaceName, siteName, isRtl } = usePanel();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [profileName, setProfileName] = useState("");
+
+  useEffect(() => {
+    if (!getPlatformAuthToken()) {
+      redirectToAuth(pathname || "/");
+      return;
+    }
+    setProfileName(getPlatformUsername());
+    setAuthChecked(true);
+  }, [pathname]);
+
+  const avatarLabel = useMemo(() => {
+    const source = profileName || workspaceName || "Cyan";
+    return source
+      .split(/[\s@._-]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "CY";
+  }, [profileName, workspaceName]);
+
+  if (!authChecked) {
+    return (
+      <main className="auth-check-shell">
+        <div className="brand-badge">C</div>
+      </main>
+    );
+  }
 
   return (
     <div className="panel-app-shell">
@@ -71,7 +101,7 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
         </div>
 
         <div className="sidebar-workspace-badge">
-          <div className="avatar-chip">AC</div>
+          <div className="avatar-chip">{avatarLabel}</div>
           <div>
             <strong>{workspaceName}</strong>
             <span>{locale === "fa" ? "فضای کاری" : "Workspace"}</span>
@@ -103,10 +133,10 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
               ⍰
             </span>
             <div className="header-profile">
-              <div className="header-avatar">AM</div>
+              <div className="header-avatar">{avatarLabel}</div>
               <div>
-                <strong>{isRtl ? "علی محمدی" : "Ali Mohammadi"}</strong>
-                <span>{isRtl ? "مدیر ارشد" : "Admin"}</span>
+                <strong>{profileName || (isRtl ? "کاربر پنل" : "Panel user")}</strong>
+                <span>{isRtl ? "حساب فعال" : "Signed in"}</span>
               </div>
             </div>
           </div>

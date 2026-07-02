@@ -8,7 +8,7 @@ import { createClientDraft, listBlueprints, listClientDrafts, provisionClientDra
 import type { AppBlueprint, ClientAppDraft } from "@/lib/types";
 
 export default function BlueprintsPage() {
-  const { locale } = usePanel();
+  const { locale, workspaceName, siteName } = usePanel();
   const [blueprints, setBlueprints] = useState<AppBlueprint[]>([]);
   const [drafts, setDrafts] = useState<ClientAppDraft[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -203,11 +203,11 @@ ${(selected.capabilities ?? ["website", "shop", "crm"]).map((item) => `- ${item}
           <div className="detail-list" style={{ marginTop: 16 }}>
             <div className="detail-item">
               <strong>{locale === "fa" ? "فضای کاری" : "Workspace"}</strong>
-              <span className="muted-block">Acme Corp</span>
+              <span className="muted-block">{workspaceName}</span>
             </div>
             <div className="detail-item">
               <strong>{locale === "fa" ? "سایت" : "Site"}</strong>
-              <span className="muted-block">acme.cyan.app</span>
+              <span className="muted-block">{siteName}</span>
             </div>
           </div>
           <div className="toolbar-row" style={{ marginTop: 16 }}>

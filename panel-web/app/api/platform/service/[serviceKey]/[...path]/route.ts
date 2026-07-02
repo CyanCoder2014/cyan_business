@@ -6,10 +6,10 @@ const serviceBaseUrls: Record<string, string> = {
   "ai-orchestrator-service": process.env.AI_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9121",
   "storefront-service": process.env.STOREFRONT_SERVICE_BASE_URL ?? "http://localhost:9115",
   "notification-service": process.env.NOTIFICATION_SERVICE_BASE_URL ?? "http://localhost:9122",
-  "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9123",
-  "automation-orchestrator-service": process.env.AUTOMATION_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9132",
+  "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9125",
+  "automation-orchestrator-service": process.env.AUTOMATION_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9120",
   "payment-service": process.env.PAYMENT_SERVICE_BASE_URL ?? "http://localhost:9114",
-  "payment-orchestrator-service": process.env.PAYMENT_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9125"
+  "payment-orchestrator-service": process.env.PAYMENT_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9123"
 };
 
 type RouteContext = {

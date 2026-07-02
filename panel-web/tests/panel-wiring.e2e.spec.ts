@@ -4,7 +4,8 @@ const storageKeys = {
   accessToken: "cyan.panel.authToken",
   refreshToken: "cyan.panel.refreshToken",
   expiresAt: "cyan.panel.authExpiresAt",
-  sessionId: "cyan.panel.sessionId"
+  sessionId: "cyan.panel.sessionId",
+  username: "cyan.panel.username"
 };
 
 test.beforeEach(async ({ page }) => {
@@ -123,13 +124,13 @@ test("data and flows pages show backend-empty states instead of fixture data", a
   await page.route("**/api/platform/dynamic/**/endpoint/entities/records/**", async (route) => {
     await route.fulfill({ json: [] });
   });
-  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):8001\/endpoint\/bpm\/flows.*/, async (route) => {
+  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/endpoint\/bpm\/flows.*/, async (route) => {
     await route.fulfill({ json: [] });
   });
-  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):8001\/endpoint\/bpm\/metadata\/state-actions.*/, async (route) => {
+  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/endpoint\/bpm\/metadata\/state-actions.*/, async (route) => {
     await route.fulfill({ json: [] });
   });
-  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):8001\/endpoint\/bpm\/metadata\/transition-conditions.*/, async (route) => {
+  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/endpoint\/bpm\/metadata\/transition-conditions.*/, async (route) => {
     await route.fulfill({
       json: {
         operators: ["EQ"],
@@ -167,7 +168,7 @@ test("site builder loads backend routes and publishes a route without static pag
     }
   ];
 
-  await page.route("**/api/platform/dynamic/storefront-service/endpoint/entities/records/site-route", async (route, request) => {
+  await page.route("**/api/platform/dynamic/storefront-service/endpoint/entities/records/site-route**", async (route, request) => {
     if (request.method() === "GET") {
       await route.fulfill({ json: routes });
       return;
@@ -202,7 +203,7 @@ test("site builder loads backend routes and publishes a route without static pag
       }
     });
   });
-  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):8001\/public\/storefront\/resolve\?path=.*/, async (route) => {
+  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/public\/storefront\/resolve\?path=.*/, async (route) => {
     const url = new URL(route.request().url());
     const path = url.searchParams.get("path") ?? "/";
     const record = routes.find((item) => item.data.path === path);
@@ -217,7 +218,7 @@ test("site builder loads backend routes and publishes a route without static pag
       }
     });
   });
-  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):8001\/public\/storefront\/render\?path=.*/, async (route) => {
+  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/public\/storefront\/render\?path=.*/, async (route) => {
     const url = new URL(route.request().url());
     const path = url.searchParams.get("path") ?? "/";
     await route.fulfill({
@@ -325,5 +326,6 @@ async function seedAuth(page: Page) {
     window.localStorage.setItem(keys.refreshToken, "seeded-refresh");
     window.localStorage.setItem(keys.expiresAt, String(Date.now() + 3_600_000));
     window.localStorage.setItem(keys.sessionId, "session-seeded");
+    window.localStorage.setItem(keys.username, "user@cyan.local");
   }, storageKeys);
 }

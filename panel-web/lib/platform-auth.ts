@@ -148,6 +148,10 @@ export function getPlatformAuthToken() {
   return storage()?.getItem(ACCESS_TOKEN_STORAGE_KEY) ?? "";
 }
 
+export function getPlatformUsername() {
+  return storage()?.getItem(USERNAME_STORAGE_KEY) ?? "";
+}
+
 export function setPlatformAuthToken(token: string) {
   const stored = storage();
   if (!stored) {

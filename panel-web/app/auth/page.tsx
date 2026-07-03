@@ -484,6 +484,8 @@ function AuthForm({
   onSocialLogin: (provider: "google" | "github") => void;
   onSubmit: () => Promise<void>;
 }) {
+  const passwordInputId = compact ? "mobile-auth-password" : "desktop-auth-password";
+
   return (
     <form
       className="auth-form"
@@ -508,11 +510,14 @@ function AuthForm({
         </div>
       </label>
 
-      <label className="auth-field">
-        <span>{locale === "fa" ? "رمز عبور" : "Password"}</span>
+      <div className="auth-field">
+        <span>
+          <label htmlFor={passwordInputId}>{locale === "fa" ? "رمز عبور" : "Password"}</label>
+        </span>
         <div className="auth-input-shell">
           <LockIcon className="auth-input-icon" />
           <input
+            id={passwordInputId}
             autoComplete={mode === "signin" ? "current-password" : "new-password"}
             placeholder={
               mode === "signin"
@@ -536,7 +541,7 @@ function AuthForm({
             {showPassword ? <EyeOffIcon /> : <EyeIcon />}
           </button>
         </div>
-      </label>
+      </div>
 
       {mode === "signup" ? (
         <>

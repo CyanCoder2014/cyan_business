@@ -1,15 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { Roboto } from "next/font/google";
 import { PanelProvider } from "@/components/panel-provider";
 import "./globals.css";
-
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
-  variable: "--font-roboto",
-  display: "swap"
-});
 
 export const metadata: Metadata = {
   title: "Cyan Panel",
@@ -35,7 +27,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en" className={roboto.variable}>
+    <html lang="en">
       <body>
         <PanelProvider>{children}</PanelProvider>
       </body>

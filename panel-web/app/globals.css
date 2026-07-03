@@ -45,7 +45,7 @@
   --green: #2bbf67;
   --amber: #ff9f37;
   --shadow: 0 18px 50px rgba(60, 75, 125, 0.08);
-  --font-sans: var(--font-roboto), "Roboto", "Segoe UI", Arial, sans-serif;
+  --font-sans: "Roboto", "Segoe UI", Arial, sans-serif;
   --font-fa: "Vazir", "Tahoma", sans-serif;
   --font-mono: "SFMono-Regular", "Menlo", monospace;
   color-scheme: light;

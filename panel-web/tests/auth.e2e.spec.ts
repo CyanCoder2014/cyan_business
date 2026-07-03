@@ -59,7 +59,7 @@ test("redirects to auth without a token and returns after sign in", async ({ pag
   const form = page.getByTestId("desktop-auth-form");
   await expect(form.getByPlaceholder("2 + 3 = ?")).toBeVisible();
   await form.getByLabel("Work email").fill("user@cyan.local");
-  await form.getByLabel("Password").fill("user123");
+  await form.getByLabel("Password", { exact: true }).fill("user123");
   await form.getByLabel("Security answer").fill("5");
   await form.getByRole("button", { name: "Sign in" }).click();
 
@@ -103,7 +103,7 @@ test("registers a user, logs in, and returns to the requested page", async ({ pa
 
   const form = page.getByTestId("desktop-auth-form");
   await form.getByLabel("Work email").fill("new-user@example.com");
-  await form.getByLabel("Password").fill("StrongPass123!");
+  await form.getByLabel("Password", { exact: true }).fill("StrongPass123!");
   await form.getByLabel("Workspace name").fill("Example Workspace");
   await form.getByLabel("Phone (optional)").fill("+15551234567");
   await form.getByLabel("Security answer").fill("5");

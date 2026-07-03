@@ -54,7 +54,14 @@ export class AuthenticationRequiredError extends Error {
 let refreshPromise: Promise<string> | null = null;
 
 function platformBaseUrl() {
-  return process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
+  return process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:18001";
+}
+
+function authBaseUrl(path: string) {
+  if (path.startsWith("/api/sso/")) {
+    return "";
+  }
+  return platformBaseUrl();
 }
 
 function storage() {
@@ -105,7 +112,7 @@ function setTokenResponse(response: TokenResponse, username?: string) {
 }
 
 async function authRequestJson<T>(path: string, init: RequestInit): Promise<T> {
-  const response = await fetch(`${platformBaseUrl()}${path}`, {
+  const response = await fetch(`${authBaseUrl(path)}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",

@@ -28,6 +28,42 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
                 - delivery
                 - manualActions[]
 
+                Required JSON contract:
+                {
+                  "app": {
+                    "appKey": "kebab-case-key",
+                    "title": "Human title",
+                    "type": "MIXED_BUSINESS_APP",
+                    "tenantKey": "%s",
+                    "siteKey": "%s",
+                    "desiredDomain": null,
+                    "capabilities": ["website", "bpm"]
+                  },
+                  "entities": [
+                    {
+                      "serviceKey": "bpm-service",
+                      "templateKey": "screening-intake-form",
+                      "entityKey": "request-intake",
+                      "recordKey": "request-intake",
+                      "createDefinition": true,
+                      "createRecord": false,
+                      "recordData": {}
+                    }
+                  ],
+                  "routes": [],
+                  "flows": [
+                    {
+                      "flowKey": "request-review",
+                      "flowDefinition": {}
+                    }
+                  ],
+                  "delivery": {
+                    "publicApis": [],
+                    "botApis": []
+                  },
+                  "manualActions": []
+                }
+
                 Rules:
                 1. Always use structured platform entities and routes.
                 2. Prefer existing service templates from metadata below.
@@ -39,6 +75,11 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
                 8. delivery.publicApis must list useful public APIs for web/UI; delivery.botApis must list useful APIs for bot/telegram integration.
                 9. Keep generated records minimal and valid against expected templates.
                 10. Output JSON only.
+                11. app.appKey is mandatory and must be kebab-case.
+                12. app.type must be one of PERSONAL_SITE, COMPANY_SITE, WEBSITE, BLOG, SHOP, ECOMMERCE, CRM, ERP, INVOICE_MANAGEMENT, AUTOMATION, FORM_FLOW, BPM, BPM_PORTAL, MIXED_BUSINESS_APP.
+                13. Entity objects must use serviceKey/templateKey/entityKey/recordKey; never use service, entityType, or templateName.
+                14. Flow objects must use flowKey and flowDefinition.
+                15. Do not include clientKey inside app; keep tenantKey and siteKey only.
 
                 TenantKey: %s
                 SiteKey: %s
@@ -51,6 +92,6 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
 
                 User prompt:
                 %s
-                """.formatted(tenantKey, siteKey, platformMetadata, contextSection, userPrompt);
+                """.formatted(tenantKey, siteKey, tenantKey, siteKey, platformMetadata, contextSection, userPrompt);
     }
 }

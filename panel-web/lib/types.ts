@@ -2,6 +2,7 @@ export type PlatformAppType = "WEBSITE" | "BLOG" | "SHOP" | "CRM" | "FORM_FLOW" 
 
 export type GeneratePlatformAppRequest = {
   prompt: string;
+  appType?: PlatformAppType | string;
   tenantKey?: string;
   siteKey?: string;
   clientKey?: string;
@@ -44,7 +45,16 @@ export type GeneratePlatformAppResponse = {
   sessionId?: string | null;
   dsl: PlatformAppDslDefinition;
   nextQuestions: string[];
+  followUpQuestions?: FollowUpQuestion[];
   provisioningResult: ProvisioningResult | null;
+};
+
+export type FollowUpQuestion = {
+  key: string;
+  prompt: string;
+  required: boolean;
+  reason?: string | null;
+  suggestedAnswers?: string[];
 };
 
 export type AppBlueprint = {

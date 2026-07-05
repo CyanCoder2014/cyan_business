@@ -9,7 +9,7 @@ import type {
   GeneratePlatformAppResponse,
   ProvisioningRun
 } from "@/lib/types";
-import { platformFetch } from "@/lib/platform-auth";
+import { getPlatformAuthToken, platformFetch } from "@/lib/platform-auth";
 
 type PlatformServiceKey = "ai-orchestrator-service" | "bot-adapter-service";
 
@@ -35,6 +35,63 @@ export async function generatePlatformApp(request: GeneratePlatformAppRequest): 
   return requestJson<GeneratePlatformAppResponse>("ai-orchestrator-service", "/endpoint/ai-orchestrator/generate/app", {
     method: "POST",
     body: JSON.stringify(request)
+  });
+}
+
+export function hasAiStudioWebSocket() {
+  return Boolean(process.env.NEXT_PUBLIC_AI_STUDIO_WS_URL?.trim());
+}
+
+export function generatePlatformAppOverWebSocket(request: GeneratePlatformAppRequest): Promise<GeneratePlatformAppResponse> {
+  const configuredUrl = process.env.NEXT_PUBLIC_AI_STUDIO_WS_URL?.trim();
+  if (!configuredUrl || typeof WebSocket === "undefined") {
+    return Promise.reject(new Error("AI Studio WebSocket URL is not configured."));
+  }
+
+  return new Promise((resolve, reject) => {
+    const url = new URL(configuredUrl);
+    const token = getPlatformAuthToken();
+    if (token) {
+      url.searchParams.set("access_token", token);
+    }
+
+    const socket = new WebSocket(url.toString());
+    const timeout = window.setTimeout(() => {
+      socket.close();
+      reject(new Error("AI Studio WebSocket timed out."));
+    }, 30000);
+
+    socket.onopen = () => {
+      socket.send(JSON.stringify({ type: "generatePlatformApp", payload: request }));
+    };
+
+    socket.onerror = () => {
+      window.clearTimeout(timeout);
+      reject(new Error("AI Studio WebSocket connection failed."));
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(String(event.data));
+        if (message.type === "error") {
+          throw new Error(message.message || "AI Studio WebSocket returned an error.");
+        }
+        const payload = message.payload ?? message;
+        if (payload?.dsl) {
+          window.clearTimeout(timeout);
+          socket.close();
+          resolve(payload as GeneratePlatformAppResponse);
+        }
+      } catch (error) {
+        window.clearTimeout(timeout);
+        socket.close();
+        reject(error instanceof Error ? error : new Error("AI Studio WebSocket returned an invalid response."));
+      }
+    };
+
+    socket.onclose = () => {
+      window.clearTimeout(timeout);
+    };
   });
 }
 

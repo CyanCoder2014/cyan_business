@@ -120,6 +120,73 @@ test("bot session detail page renders ai orchestrator conversation state", async
   await expect(page.getByText("\"businessName\": \"Retail Hub\"")).toBeVisible();
 });
 
+test("ai studio renders generate response follow-up questions and submits suggested answers", async ({ page }) => {
+  let latestGenerateBody: Record<string, unknown> | null = null;
+
+  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/blueprints**", async (route) => {
+    await route.fulfill({ json: [] });
+  });
+  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/drafts**", async (route) => {
+    await route.fulfill({ json: [] });
+  });
+  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/generate/app", async (route, request) => {
+    latestGenerateBody = JSON.parse(request.postData() ?? "{}");
+    const answers = latestGenerateBody.answers as Record<string, unknown> | undefined;
+    const answered = answers?.subdomainPrefix === "brand-demo";
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        draftId: "draft-shop-v01",
+        sessionId: "session-shop-v01",
+        dsl: {
+          app: {
+            appKey: "shop-app-v0-1",
+            title: "Shop App (v0.1)",
+            type: "SHOP",
+            tenantKey: "tenant-demo",
+            siteKey: "site-commerce",
+            capabilities: ["website", "shop", "crm"]
+          },
+          entities: [{ entityKey: "product" }, { entityKey: "order" }, { entityKey: "customer" }],
+          routes: [{ path: "/" }, { path: "/shop" }],
+          flows: [{ flowKey: "order-review" }],
+          delivery: {
+            publicApis: ["/public/storefront/render?path=/"],
+            botApis: ["/endpoint/bot-adapter/messages"]
+          },
+          manualActions: ["Review domain routing"]
+        },
+        nextQuestions: answered ? [] : ["Which subdomain prefix should be used before a custom domain is connected?"],
+        followUpQuestions: answered
+          ? []
+          : [
+              {
+                key: "subdomainPrefix",
+                prompt: "Which subdomain prefix should be used before a custom domain is connected?",
+                reason: "Storefront provisioning needs a host decision before routes can be published cleanly.",
+                required: true,
+                suggestedAnswers: ["brand-demo"]
+              }
+            ],
+        provisioningResult: null
+      })
+    });
+  });
+
+  await page.goto("/projects/new");
+  await page.getByRole("button", { name: "Send" }).click();
+
+  await expect(page.getByText("followUpQuestions").first()).toBeVisible();
+  await expect(page.getByText("Which subdomain prefix should be used before a custom domain is connected?").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "brand-demo" }).first()).toBeVisible();
+
+  await page.getByRole("button", { name: "brand-demo" }).first().click();
+
+  await expect.poll(() => (latestGenerateBody?.answers as Record<string, unknown> | undefined)?.subdomainPrefix).toBe("brand-demo");
+  await expect(page.getByText("The draft is ready. You can continue building from here.").first()).toBeVisible();
+});
+
 test("data and flows pages show backend-empty states instead of fixture data", async ({ page }) => {
   await page.route("**/api/platform/dynamic/**/endpoint/entities/records/**", async (route) => {
     await route.fulfill({ json: [] });
@@ -358,7 +425,7 @@ test("profile page renders live account data and logout returns to auth", async 
   await page.goto("/iam");
 
   await expect(page.getByRole("heading", { name: "Profile & Settings" })).toBeVisible();
-  await expect(page.getByText("user@cyan.local").first()).toBeVisible();
+  await expect(page.locator(".workspace-content").getByText("user@cyan.local")).toBeVisible();
   await expect(page.getByText("+989121234567")).toBeVisible();
   await expect(page.getByText("\"builder:*\"")).toBeVisible();
 

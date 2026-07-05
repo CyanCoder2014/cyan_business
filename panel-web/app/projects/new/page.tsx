@@ -465,7 +465,9 @@ export default function AiStudioPage() {
               <div className="studio-card-icon code-icon">{"</>"}</div>
               <div>
                 <strong>{locale === "fa" ? "پیش‌نویس DSL" : "Draft DSL"}</strong>
-                <span className="muted-block">{summary.fileName}</span>
+                <span className="muted-block studio-card-value" title={summary.fileName}>
+                  {summary.fileName}
+                </span>
               </div>
               <button type="button" className="text-link" onClick={() => setInspector("dsl")}>
                 {locale === "fa" ? "مشاهده فایل" : "View file"}
@@ -510,7 +512,9 @@ export default function AiStudioPage() {
               </div>
               <div>
                 <strong>{locale === "fa" ? "لینک پیش‌نمایش" : "Preview link"}</strong>
-                <span className="muted-block studio-preview-link">{summary.previewLabel}</span>
+                <span className="muted-block studio-card-value studio-preview-link" title={summary.previewUrl}>
+                  {summary.previewLabel}
+                </span>
               </div>
               <button type="button" className="text-link" onClick={openPreview}>
                 {locale === "fa" ? "باز کردن" : "Open preview"}
@@ -532,7 +536,7 @@ export default function AiStudioPage() {
               <span className="status-pill info">{locale === "fa" ? "پیش‌نویس" : "Draft"}</span>
             </div>
             <strong className="studio-sidebar-title">{summary.title}</strong>
-            <p className="muted studio-sidebar-copy">
+            <p className="muted studio-sidebar-copy" title={summary.description || ""}>
               {summary.description ||
                 (locale === "fa"
                   ? "اپ کامل با کاتالوگ، سبد خرید، پرداخت و پیگیری سفارش."
@@ -853,7 +857,7 @@ function buildSummary(response: GeneratePlatformAppResponse | null, drafts: Clie
     readiness,
     fileName: `${appKey}.dsl`,
     previewUrl,
-    previewLabel: previewUrl || "—"
+    previewLabel: previewUrl ? `preview.cyan.app/${appKey}` : "—"
   };
 }
 

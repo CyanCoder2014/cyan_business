@@ -1151,6 +1151,7 @@ select:focus {
   position: relative;
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
+  align-content: start;
   gap: 10px 12px;
   min-height: 158px;
   padding: 17px 18px;
@@ -1163,6 +1164,15 @@ select:focus {
 .studio-status-card strong {
   display: block;
   font-size: 0.95rem;
+}
+
+.studio-card-value {
+  display: block;
+  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  word-break: normal;
 }
 
 .studio-status-card .text-link {
@@ -1233,7 +1243,8 @@ select:focus {
 }
 
 .studio-preview-link {
-  word-break: break-word;
+  font-size: 0.76rem;
+  line-height: 1.35;
 }
 
 .studio-sidebar {
@@ -1267,6 +1278,10 @@ select:focus {
   color: #252b49;
   font-size: 0.88rem;
   line-height: 1.65;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .studio-module-tiles {

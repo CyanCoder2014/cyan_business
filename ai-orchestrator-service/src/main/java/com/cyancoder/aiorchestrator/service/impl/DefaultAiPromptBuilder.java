@@ -58,8 +58,8 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
                     }
                   ],
                   "delivery": {
-                    "publicApis": [],
-                    "botApis": []
+                    "publicApis": ["/public/storefront/render?path=/"],
+                    "botApis": ["/endpoint/ai-orchestrator/drafts"]
                   },
                   "manualActions": []
                 }
@@ -72,7 +72,7 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
                 5. When the prompt suggests approvals or lifecycle review, create a BPM flow in flows[].
                 6. When the prompt asks for BPM forms or form maker output, use bpm-service templates such as screening-intake-form and screening-review-form before inventing new structures.
                 7. BPM automation states may use RUN_AUTOMATION_BLOCK with flowKey, variables, async, resultMappings, and store*At fields.
-                8. delivery.publicApis must list useful public APIs for web/UI; delivery.botApis must list useful APIs for bot/telegram integration.
+                8. delivery.publicApis and delivery.botApis must be arrays of URL/path strings only, never objects.
                 9. Keep generated records minimal and valid against expected templates.
                 10. Output JSON only.
                 11. app.appKey is mandatory and must be kebab-case.

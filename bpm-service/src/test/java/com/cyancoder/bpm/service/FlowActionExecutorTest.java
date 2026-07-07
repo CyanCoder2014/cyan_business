@@ -93,7 +93,7 @@ class FlowActionExecutorTest {
     }
 
     @Test
-    void runAutomationBlockAcceptsGeneratedNaviyaAliases() {
+    void runAutomationBlockAcceptsGeneratedCyanAliases() {
         DynamicFlowIntegrationClient integrationClient = mock(DynamicFlowIntegrationClient.class);
         FlowActionExecutor executor = new FlowActionExecutor(integrationClient);
 

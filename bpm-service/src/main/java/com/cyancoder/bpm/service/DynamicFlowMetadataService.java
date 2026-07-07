@@ -58,7 +58,7 @@ public class DynamicFlowMetadataService {
                 new StateActionStructureResponse("RUN_AUTOMATION_BLOCK", List.of(), "Runs automation from BPM, synchronously or as a waiting async block.", commonFields, List.of(
                         new MetadataFieldDescriptor("blockKey", "string", false, "Stable block key for the managed object registry.", "screening"),
                         new MetadataFieldDescriptor("automationFlowKey", "string", false, "Active automation flow key to run.", "hybrid-screening-automation"),
-                        new MetadataFieldDescriptor("flowKey", "string", false, "Alias for automationFlowKey used by generated naviya-bpm automation blocks.", "hybrid-screening-automation"),
+                        new MetadataFieldDescriptor("flowKey", "string", false, "Alias for automationFlowKey used by generated cyanbpm automation blocks.", "hybrid-screening-automation"),
                         new MetadataFieldDescriptor("executionMode", "string", false, "SYNC or ASYNC.", "ASYNC"),
                         new MetadataFieldDescriptor("async", "boolean", false, "Alias for executionMode; true starts an async block and false runs synchronously.", true),
                         new MetadataFieldDescriptor("failurePolicy", "string", false, "FAIL_FAST, MARK_FAILED, or RETRY.", "RETRY"),

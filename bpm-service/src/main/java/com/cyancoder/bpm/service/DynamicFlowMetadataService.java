@@ -48,7 +48,10 @@ public class DynamicFlowMetadataService {
                         new MetadataFieldDescriptor("fields", "array<string>", false, "List of field paths to remove.", List.of("payload.temp", "payload.operatorResults.rawResponse"))
                 )),
                 new StateActionStructureResponse("SET_ASSIGNEE", List.of(), "Changes the object assignee.", commonFields, List.of(
-                        new MetadataFieldDescriptor("assignee", "string", false, "Direct assignee user id.", "admin-user-1")
+                        new MetadataFieldDescriptor("assignee", "string", false, "User id, role, or group assignment value.", "ROLE_MANAGER"),
+                        new MetadataFieldDescriptor("assigneeType", "string", false, "USER, ROLE, or GROUP. Defaults to USER.", "ROLE"),
+                        new MetadataFieldDescriptor("roleAssignee", "string", false, "Alias that assigns a role.", "ROLE_MANAGER"),
+                        new MetadataFieldDescriptor("groupAssignee", "string", false, "Alias that assigns a group.", "reviewers")
                 )),
                 new StateActionStructureResponse("SET_ACCESS_RULE", List.of(), "Applies a new access rule to the current object.", commonFields, List.of(
                         new MetadataFieldDescriptor("canRead", "array<string>", false, "Groups/roles allowed to read.", List.of("creator", "admin")),
@@ -65,8 +68,8 @@ public class DynamicFlowMetadataService {
                         new MetadataFieldDescriptor("body", "object|array|string", false, "Templated block input.", Map.of("customerId", "{{payload.currentFormValues.customerId}}")),
                         new MetadataFieldDescriptor("variables", "object", false, "Alias for body used by generated workflow blocks.", Map.of("customerId", "{{payload.currentFormValues.customerId}}")),
                         new MetadataFieldDescriptor("context", "object", false, "Extra execution context sent to automation-orchestrator.", Map.of("source", "bpm")),
-                        new MetadataFieldDescriptor("inlineFragment", "object", false, "Optional inline automation fragment snapshot.", Map.of("entryNodeId", "trigger")),
-                        new MetadataFieldDescriptor("inlineFlow", "object", false, "Alias for inlineFragment used by generated workflow blocks.", Map.of("type", "MAP_OUTPUT")),
+                        new MetadataFieldDescriptor("inlineFragment", "object", false, "Optional inline automation. PIPELINE supports MAP_FIELDS, FOR_EACH, SCRIPT/CODE, CALL_API, and SAVE steps.", Map.of("type", "PIPELINE", "steps", List.of())),
+                        new MetadataFieldDescriptor("inlineFlow", "object", false, "Alias for inlineFragment used by generated workflow blocks.", Map.of("type", "PIPELINE", "steps", List.of())),
                         new MetadataFieldDescriptor("idempotencyKey", "string", false, "Optional key used by automation-orchestrator to dedupe retries.", "{{objectId}}:screening"),
                         new MetadataFieldDescriptor("responseMappings", "object", false, "Map of payload path -> response path for the start response.", Map.of("payload.automation.screening.executionId", "executionId")),
                         new MetadataFieldDescriptor("storeFullResponseAt", "string", false, "Payload path to store the full start response.", "payload.automation.screening.startResponse"),

@@ -30,6 +30,7 @@ public class AutomationExecutionService {
     private final InternalServiceHttpSupport httpSupport;
     private final AutomationCallbackProperties callbackProperties;
     private final ObjectMapper objectMapper;
+    private final PipelineAutomationRuntime pipelineRuntime;
 
     public AutomationExecutionService(AutomationExecutionRepository repository,
                                       InternalServiceHttpSupport httpSupport,
@@ -39,6 +40,7 @@ public class AutomationExecutionService {
         this.httpSupport = httpSupport;
         this.callbackProperties = callbackProperties;
         this.objectMapper = objectMapper;
+        this.pipelineRuntime = new PipelineAutomationRuntime(httpSupport);
     }
 
     public AutomationStartResponse start(AutomationStartRequest request) {
@@ -191,13 +193,14 @@ public class AutomationExecutionService {
 
     private Map<String, Object> evaluateExecution(AutomationExecution execution) {
         if (execution.getInlineFragment() != null && !execution.getInlineFragment().isEmpty()) {
-            return evaluateInlineFragment(execution.getInlineFragment(), execution.getInput());
+            return evaluateInlineFragment(execution.getInlineFragment(), execution.getInput(), execution.getTenantKey(), execution.getSiteKey());
         }
         return evaluateHybridScreening(execution.getInput());
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> evaluateInlineFragment(Map<String, Object> inlineFragment, Map<String, Object> input) {
+    private Map<String, Object> evaluateInlineFragment(Map<String, Object> inlineFragment, Map<String, Object> input,
+                                                       String tenantKey, String siteKey) {
         String type = string(inlineFragment.get("type"));
         if ("FAIL".equalsIgnoreCase(type)) {
             throw new IllegalStateException(firstNonBlank(string(inlineFragment.get("message")), "inline fragment failed"));
@@ -205,6 +208,9 @@ public class AutomationExecutionService {
         if ("MAP_OUTPUT".equalsIgnoreCase(type)) {
             Object output = inlineFragment.get("output");
             return output instanceof Map<?, ?> map ? new LinkedHashMap<>((Map<String, Object>) map) : Map.of();
+        }
+        if ("PIPELINE".equalsIgnoreCase(type)) {
+            return pipelineRuntime.execute(inlineFragment, input, tenantKey, siteKey);
         }
         if ("HYBRID_SCREENING".equalsIgnoreCase(type) || type == null || type.isBlank()) {
             return evaluateHybridScreening(input);

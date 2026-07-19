@@ -106,7 +106,7 @@ POST /endpoint/entities/definitions
 POST /api/bpm-service/endpoint/entities/definitions
 ```
 
-The first path preserves direct-service compatibility. The second matches the existing `/api/{service-key}/**` gateway routes used by dynamic business services. The service key is resolved from the host service's fixed `dynamic.runtime.service-key`; it is not an unrestricted path variable.
+The first path preserves direct-service compatibility. The second matches the existing `/api/{service-key}/**` gateway routes used by dynamic business services. Both paths use bearer authentication and the same method-level permissions. The service key is resolved from the host service's fixed `dynamic.runtime.service-key`; it is not an unrestricted path variable.
 
 And matching internal surfaces:
 

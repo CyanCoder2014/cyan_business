@@ -2,6 +2,7 @@ package com.cyancoder.bpm.service;
 
 import com.cyancoder.bpm.api.dto.BpmScope;
 import com.cyancoder.bpm.domain.ActionType;
+import com.cyancoder.bpm.domain.AssigneeType;
 import com.cyancoder.bpm.domain.FlowActionConfig;
 import com.cyancoder.bpm.domain.ManagedObject;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,27 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class FlowActionExecutorTest {
+
+    @Test
+    void setAssigneeSupportsRolesAndGroups() {
+        FlowActionExecutor executor = new FlowActionExecutor(mock(DynamicFlowIntegrationClient.class));
+        ManagedObject object = new ManagedObject();
+
+        executor.execute(List.of(new FlowActionConfig(ActionType.SET_ASSIGNEE, Map.of(
+                "assignee", "ROLE_MANAGER",
+                "assigneeType", "ROLE"
+        ))), object, new BpmScope("tenant", "site"), "actor");
+
+        assertEquals("ROLE_MANAGER", object.getAssignee());
+        assertEquals(AssigneeType.ROLE, object.getAssigneeType());
+
+        executor.execute(List.of(new FlowActionConfig(ActionType.SET_ASSIGNEE, Map.of(
+                "groupAssignee", "reviewers"
+        ))), object, new BpmScope("tenant", "site"), "actor");
+
+        assertEquals("reviewers", object.getAssignee());
+        assertEquals(AssigneeType.GROUP, object.getAssigneeType());
+    }
 
     @Test
     void runAutomationBlockStoresFirstClassBlockAndInitialResponse() {

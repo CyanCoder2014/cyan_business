@@ -152,6 +152,10 @@ public class ObjectFlowService {
         ManagedObject object = findById(scope, objectId);
         DynamicFlowDefinition definition = flowDefinitionService.getActiveByFlowKey(scope, object.getFlowKey());
         FlowState state = findState(definition, object.getState());
+        assertCanEdit(object, state, actorContext);
+        if (request.nextState() != null && !request.nextState().isBlank()) {
+            assertTransitionPermission(definition, object, request.nextState(), actorContext);
+        }
 
         FormSubmissionSyncResponse submission = integrationClient.submitForm(state, new FormSubmissionSyncRequest(
                 object.getId(),
@@ -192,22 +196,18 @@ public class ObjectFlowService {
         return managedObjectRepository.findByTenantKeyAndSiteKeyAndAssigneeOrderByUpdatedAtDesc(scope.tenantKey(), scope.siteKey(), assignee);
     }
 
+    public List<ManagedObject> findAllAssignedToActor(BpmScope scope, TransitionActorContext actorContext) {
+        return findAll(scope).stream().filter(object -> assignedTo(object, actorContext)).toList();
+    }
+
     public List<ManagedObject> findAllVisibleToActor(BpmScope scope, TransitionActorContext actorContext) {
-        Set<String> roles = actorContext == null || actorContext.roles() == null ? Set.of() : actorContext.roles();
-        List<ManagedObject> visible = new ArrayList<>();
-        for (ManagedObject object : findAll(scope)) {
-            if (object.getAccessRule() == null || object.getAccessRule().canRead() == null || object.getAccessRule().canRead().isEmpty()) {
-                visible.add(object);
-                continue;
-            }
-            for (String candidate : object.getAccessRule().canRead()) {
-                if (roles.contains(candidate) || candidate.equals(actor(actorContext))) {
-                    visible.add(object);
-                    break;
-                }
-            }
+        return findAll(scope).stream().filter(object -> canRead(object, actorContext)).toList();
+    }
+
+    public void assertCanRead(ManagedObject object, TransitionActorContext actorContext) {
+        if (!canRead(object, actorContext)) {
+            throw new IllegalArgumentException("actor cannot read managed object");
         }
-        return visible;
     }
 
     public List<TransitionOptionResponse> availableTransitions(BpmScope scope, String objectId, TransitionActorContext actorContext, Map<String, Object> context) {
@@ -339,6 +339,56 @@ public class ObjectFlowService {
         boolean rolesOk = transition.allowedRoles() == null || transition.allowedRoles().isEmpty()
                 || actorContext.roles() != null && actorContext.roles().stream().anyMatch(transition.allowedRoles()::contains);
         return groupsOk && rolesOk;
+    }
+
+    private void assertTransitionPermission(DynamicFlowDefinition definition, ManagedObject object, String nextState,
+                                            TransitionActorContext actorContext) {
+        boolean permitted = definition.getTransitions().stream()
+                .filter(transition -> object.getState().equals(transition.fromState()))
+                .filter(transition -> nextState.equals(transition.toState()))
+                .anyMatch(transition -> allowed(transition, actorContext));
+        if (!permitted) {
+            throw new IllegalArgumentException("actor cannot use requested transition");
+        }
+    }
+
+    private void assertCanEdit(ManagedObject object, FlowState state, TransitionActorContext actorContext) {
+        if (actorContext == null) {
+            return;
+        }
+        if (object.getAssignee() != null && !object.getAssignee().isBlank() && !assignedTo(object, actorContext)) {
+            throw new IllegalArgumentException("managed object is assigned to another actor");
+        }
+        Set<String> canEdit = state.accessRule() == null ? Set.of() : state.accessRule().canEdit();
+        if (canEdit != null && !canEdit.isEmpty()
+                && !canEdit.contains(actorContext.userId())
+                && actorContext.rolesOrEmpty().stream().noneMatch(canEdit::contains)
+                && actorContext.groupsOrEmpty().stream().noneMatch(canEdit::contains)) {
+            throw new IllegalArgumentException("actor cannot edit active state");
+        }
+    }
+
+    private boolean assignedTo(ManagedObject object, TransitionActorContext actorContext) {
+        if (object == null || actorContext == null || object.getAssignee() == null || object.getAssignee().isBlank()) {
+            return false;
+        }
+        return switch (object.getAssigneeType()) {
+            case USER -> object.getAssignee().equals(actorContext.userId());
+            case ROLE -> actorContext.rolesOrEmpty().contains(object.getAssignee());
+            case GROUP -> actorContext.groupsOrEmpty().contains(object.getAssignee());
+        };
+    }
+
+    private boolean canRead(ManagedObject object, TransitionActorContext actorContext) {
+        if (actorContext == null) {
+            return true;
+        }
+        Set<String> canRead = object.getAccessRule() == null ? Set.of() : object.getAccessRule().canRead();
+        return canRead == null || canRead.isEmpty()
+                || canRead.contains(actorContext.userId())
+                || actorContext.rolesOrEmpty().stream().anyMatch(canRead::contains)
+                || actorContext.groupsOrEmpty().stream().anyMatch(canRead::contains)
+                || assignedTo(object, actorContext);
     }
 
     private FlowState findState(DynamicFlowDefinition definition, String stateId) {

@@ -3,12 +3,17 @@ package com.cyancoder.bpm.api;
 import com.cyancoder.bpm.api.dto.CreateManagedObjectRequest;
 import com.cyancoder.bpm.api.dto.FlowScopeResolver;
 import com.cyancoder.bpm.api.dto.ManagedObjectActiveFormResponse;
+import com.cyancoder.bpm.api.dto.ManagedObjectAttachmentRequest;
+import com.cyancoder.bpm.api.dto.ManagedObjectCommentRequest;
 import com.cyancoder.bpm.api.dto.ManagedObjectFormSubmissionResponse;
 import com.cyancoder.bpm.api.dto.SubmitManagedObjectFormRequest;
 import com.cyancoder.bpm.api.dto.TransitionRequest;
 import com.cyancoder.bpm.api.dto.TransitionOptionResponse;
 import com.cyancoder.bpm.domain.ManagedObject;
+import com.cyancoder.bpm.domain.ManagedObjectAttachment;
+import com.cyancoder.bpm.domain.ManagedObjectComment;
 import com.cyancoder.bpm.service.ActorContextResolver;
+import com.cyancoder.bpm.service.ManagedObjectCollaborationService;
 import com.cyancoder.bpm.service.ObjectFlowService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,10 +32,13 @@ import java.util.List;
 public class EndpointManagedObjectFlowController {
     private final ObjectFlowService objectFlowService;
     private final ActorContextResolver actorContextResolver;
+    private final ManagedObjectCollaborationService collaborationService;
 
-    public EndpointManagedObjectFlowController(ObjectFlowService objectFlowService, ActorContextResolver actorContextResolver) {
+    public EndpointManagedObjectFlowController(ObjectFlowService objectFlowService, ActorContextResolver actorContextResolver,
+                                               ManagedObjectCollaborationService collaborationService) {
         this.objectFlowService = objectFlowService;
         this.actorContextResolver = actorContextResolver;
+        this.collaborationService = collaborationService;
     }
 
     @GetMapping
@@ -50,7 +58,7 @@ public class EndpointManagedObjectFlowController {
             Authentication authentication
     ) {
         var actor = actorContextResolver.fromAuthentication(authentication);
-        return objectFlowService.findAllByAssignee(FlowScopeResolver.fromHeaders(tenantKey, siteKey), actor.userId());
+        return objectFlowService.findAllAssignedToActor(FlowScopeResolver.fromHeaders(tenantKey, siteKey), actor);
     }
 
     @GetMapping("/visible-to-me")
@@ -122,6 +130,56 @@ public class EndpointManagedObjectFlowController {
             Authentication authentication
     ) {
         return objectFlowService.submitActiveForm(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId, request, actorContextResolver.fromAuthentication(authentication));
+    }
+
+    @PostMapping("/{objectId}/comments")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public ManagedObjectComment addComment(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable String objectId,
+            @RequestBody ManagedObjectCommentRequest request,
+            Authentication authentication
+    ) {
+        return collaborationService.addComment(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId, request,
+                actorContextResolver.fromAuthentication(authentication));
+    }
+
+    @GetMapping("/{objectId}/comments")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public List<ManagedObjectComment> comments(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable String objectId,
+            Authentication authentication
+    ) {
+        return collaborationService.comments(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId,
+                actorContextResolver.fromAuthentication(authentication));
+    }
+
+    @PostMapping("/{objectId}/attachments")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public ManagedObjectAttachment addAttachment(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable String objectId,
+            @RequestBody ManagedObjectAttachmentRequest request,
+            Authentication authentication
+    ) {
+        return collaborationService.addAttachment(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId, request,
+                actorContextResolver.fromAuthentication(authentication));
+    }
+
+    @GetMapping("/{objectId}/attachments")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public List<ManagedObjectAttachment> attachments(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable String objectId,
+            Authentication authentication
+    ) {
+        return collaborationService.attachments(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId,
+                actorContextResolver.fromAuthentication(authentication));
     }
 
     @GetMapping("/{objectId}")

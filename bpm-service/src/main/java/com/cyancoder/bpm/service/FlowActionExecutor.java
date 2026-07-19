@@ -3,6 +3,7 @@ package com.cyancoder.bpm.service;
 import com.cyancoder.bpm.api.dto.BpmScope;
 import com.cyancoder.bpm.api.dto.TransitionActorContext;
 import com.cyancoder.bpm.domain.ActionType;
+import com.cyancoder.bpm.domain.AssigneeType;
 import com.cyancoder.bpm.domain.AsyncActionRegistration;
 import com.cyancoder.bpm.domain.AutomationBlockExecution;
 import com.cyancoder.bpm.domain.AutomationExecutionMode;
@@ -104,7 +105,7 @@ public class FlowActionExecutor {
         switch (action.type()) {
             case NONE -> { }
             case ADD_AUDIT_ENTRY -> object.getAuditLog().add(String.valueOf(params.getOrDefault("message", "audit")) + " by=" + actorUserId + " at=" + Instant.now());
-            case SET_ASSIGNEE -> object.setAssignee(stringValue(params.get("assignee")));
+            case SET_ASSIGNEE -> setAssignee(object, params);
             case SET_ACCESS_RULE -> object.setAccessRule(new FlowAccessRule(stringSet(params.get("canRead")), stringSet(params.get("canEdit")), stringSet(params.get("canApprove"))));
             case LOCK_OBJECT -> object.setLocked(true);
             case UNLOCK_OBJECT -> object.setLocked(false);
@@ -116,6 +117,31 @@ public class FlowActionExecutor {
             case RUN_AUTOMATION_BLOCK -> runAutomationBlock(action, object, scope, actorUserId);
             case NOTIFY_OWNER -> integrationClient.callAction(action, object, scope);
         }
+    }
+
+    private void setAssignee(ManagedObject object, Map<String, Object> params) {
+        Object assignee = firstPresent(params, "assignee", "userId");
+        AssigneeType assigneeType = AssigneeType.USER;
+        if (assignee == null) {
+            assignee = firstPresent(params, "roleAssignee", "role");
+            if (assignee != null) {
+                assigneeType = AssigneeType.ROLE;
+            }
+        }
+        if (assignee == null) {
+            assignee = firstPresent(params, "groupAssignee", "group");
+            if (assignee != null) {
+                assigneeType = AssigneeType.GROUP;
+            }
+        }
+        if (assignee == null && params.get("fromPayloadKey") != null) {
+            assignee = ActionPayloadSupport.readPath(object.getPayload(), params.get("fromPayloadKey").toString());
+        }
+        if (params.get("assigneeType") != null) {
+            assigneeType = AssigneeType.from(params.get("assigneeType"));
+        }
+        object.setAssignee(assignee == null ? null : assignee.toString());
+        object.setAssigneeType(assigneeType);
     }
 
     private void syncCall(FlowActionConfig action, ManagedObject object, BpmScope scope, String actorUserId) {

@@ -89,6 +89,7 @@ export function saveDefinition(
   definitionJson: string,
   scope: ScopedRequest
 ): Promise<DynamicEntityDefinition> {
+  const definition = JSON.parse(definitionJson) as Record<string, unknown>;
   return requestJson<DynamicEntityDefinition>(serviceKey, `/endpoint/entities/definitions/${entityKey}`, {
     method: "PUT",
     tenantKey: scope.tenantKey,
@@ -97,7 +98,7 @@ export function saveDefinition(
       entityKey,
       tenantKey: scope.tenantKey,
       siteKey: scope.siteKey,
-      definitionJson
+      definition
     })
   });
 }

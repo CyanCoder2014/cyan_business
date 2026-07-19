@@ -107,6 +107,21 @@ And matching internal surfaces:
 
 `POST .../templates/{templateKey}/definitions` lets the AI orchestrator instantiate a controlled entity definition from a service-owned blueprint instead of inventing a schema from scratch.
 
+Definition create and update requests should send the definition as a structured JSON object:
+
+```json
+{
+  "entityKey": "leave-request-form",
+  "definition": {
+    "entityType": "BPM_FORM",
+    "title": "Leave Request",
+    "fields": {}
+  }
+}
+```
+
+The runtime assigns the owning `serviceKey` and outer `entityKey`, then serializes `definition` internally for the existing `definitionJson` persistence column. The legacy request field `definitionJson` remains accepted during migration. If both fields are supplied, the structured `definition` field takes precedence. Stored definition responses continue to expose `definitionJson` for compatibility with existing consumers.
+
 ## Validation Behavior
 
 Recursive validation behavior is modeled after `DynamicValidationServiceImp` from `Cyan-core`.

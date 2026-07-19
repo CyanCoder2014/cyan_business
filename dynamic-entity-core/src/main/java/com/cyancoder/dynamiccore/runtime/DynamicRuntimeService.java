@@ -48,7 +48,8 @@ public class DynamicRuntimeService {
     }
 
     public StoredEntityDefinition saveDefinition(DynamicEntityDefinitionRequest request) {
-        EntityDefinitionModel model = definitionParser.parse(request.getDefinitionJson());
+        ResolvedDefinition resolvedDefinition = resolveDefinition(request);
+        EntityDefinitionModel model = resolvedDefinition.model();
         DynamicScope scope = DynamicScopeResolver.fromRequest(request.getTenantKey(), request.getSiteKey());
         StoredEntityDefinition definition = definitionRepository
                 .findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), request.getEntityKey())
@@ -59,9 +60,22 @@ public class DynamicRuntimeService {
         definition.setEntityKey(request.getEntityKey());
         definition.setEntityType(model.getEntityType());
         definition.setTitle(model.getTitle());
-        definition.setDefinitionJson(request.getDefinitionJson());
+        definition.setDefinitionJson(resolvedDefinition.json());
         definition.setActive(true);
         return definitionRepository.save(definition);
+    }
+
+    private ResolvedDefinition resolveDefinition(DynamicEntityDefinitionRequest request) {
+        if (request.getDefinition() != null) {
+            EntityDefinitionModel model = request.getDefinition();
+            model.setServiceKey(properties.getServiceKey());
+            model.setEntityKey(request.getEntityKey());
+            return new ResolvedDefinition(model, definitionParser.write(model));
+        }
+        if (request.getDefinitionJson() == null || request.getDefinitionJson().isBlank()) {
+            throw new IllegalArgumentException("definition or definitionJson is required");
+        }
+        return new ResolvedDefinition(definitionParser.parse(request.getDefinitionJson()), request.getDefinitionJson());
     }
 
     public List<StoredEntityDefinition> listDefinitions() {
@@ -265,5 +279,8 @@ public class DynamicRuntimeService {
             }
         }
         return resolved;
+    }
+
+    private record ResolvedDefinition(EntityDefinitionModel model, String json) {
     }
 }

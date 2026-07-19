@@ -1,5 +1,6 @@
 package com.cyancoder.bpm.config;
 
+import com.cyancoder.dynamiccore.config.DynamicRuntimeProperties;
 import com.cyancoder.dynamiccore.security.InternalSecurityProperties;
 import com.cyancoder.dynamiccore.security.PlatformAuthorizationService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -35,8 +36,14 @@ public class BpmSecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain endpointSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.securityMatcher("/endpoint/**")
+    public SecurityFilterChain endpointSecurityFilterChain(
+            HttpSecurity http,
+            DynamicRuntimeProperties runtimeProperties
+    ) throws Exception {
+        http.securityMatcher(
+                        "/endpoint/**",
+                        "/api/" + runtimeProperties.getServiceKey() + "/endpoint/**"
+                )
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())

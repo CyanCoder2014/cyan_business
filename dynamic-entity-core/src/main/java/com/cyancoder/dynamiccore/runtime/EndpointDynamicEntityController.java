@@ -2,9 +2,7 @@ package com.cyancoder.dynamiccore.runtime;
 
 import com.cyancoder.dynamiccore.model.DynamicValidationResult;
 import com.cyancoder.dynamiccore.config.DynamicRuntimeProperties;
-import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinition;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
-import com.cyancoder.dynamiccore.template.DynamicEntityTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,27 +20,33 @@ public class EndpointDynamicEntityController {
 
     private final DynamicRuntimeService runtimeService;
     private final DynamicRuntimeProperties properties;
+    private final DynamicEntityResponseMapper responseMapper;
 
-    public EndpointDynamicEntityController(DynamicRuntimeService runtimeService, DynamicRuntimeProperties properties) {
+    public EndpointDynamicEntityController(
+            DynamicRuntimeService runtimeService,
+            DynamicRuntimeProperties properties,
+            DynamicEntityResponseMapper responseMapper
+    ) {
         this.runtimeService = runtimeService;
         this.properties = properties;
+        this.responseMapper = responseMapper;
     }
 
     @PostMapping("/definitions")
     @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
-    public StoredEntityDefinition createDefinition(
+    public DynamicEntityDefinitionResponse createDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
             @RequestBody DynamicEntityDefinitionRequest request
     ) {
         request.setTenantKey(tenantKey);
         request.setSiteKey(siteKey);
-        return runtimeService.saveDefinition(request);
+        return responseMapper.toDefinitionResponse(runtimeService.saveDefinition(request));
     }
 
     @PutMapping("/definitions/{entityKey}")
     @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
-    public StoredEntityDefinition updateDefinition(
+    public DynamicEntityDefinitionResponse updateDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
             @PathVariable("entityKey") String entityKey,
@@ -51,26 +55,28 @@ public class EndpointDynamicEntityController {
         request.setEntityKey(entityKey);
         request.setTenantKey(tenantKey);
         request.setSiteKey(siteKey);
-        return runtimeService.saveDefinition(request);
+        return responseMapper.toDefinitionResponse(runtimeService.saveDefinition(request));
     }
 
     @GetMapping("/definitions")
     @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
-    public List<StoredEntityDefinition> listDefinitions(
+    public List<DynamicEntityDefinitionResponse> listDefinitions(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey
     ) {
-        return runtimeService.listDefinitions(DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+        return runtimeService.listDefinitions(DynamicScopeResolver.fromHeaders(tenantKey, siteKey)).stream()
+                .map(responseMapper::toDefinitionResponse)
+                .toList();
     }
 
     @GetMapping("/definitions/{entityKey}")
     @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
-    public StoredEntityDefinition getDefinition(
+    public DynamicEntityDefinitionResponse getDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
             @PathVariable("entityKey") String entityKey
     ) {
-        return runtimeService.getDefinition(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+        return responseMapper.toDefinitionResponse(runtimeService.getDefinition(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey)));
     }
 
     @DeleteMapping("/definitions/{entityKey}")
@@ -85,28 +91,30 @@ public class EndpointDynamicEntityController {
 
     @GetMapping("/templates")
     @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
-    public List<DynamicEntityTemplate> listTemplates() {
-        return runtimeService.listTemplates();
+    public List<DynamicEntityTemplateResponse> listTemplates() {
+        return runtimeService.listTemplates().stream()
+                .map(responseMapper::toTemplateResponse)
+                .toList();
     }
 
     @GetMapping("/templates/{templateKey}")
     @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
-    public DynamicEntityTemplate getTemplate(@PathVariable("templateKey") String templateKey) {
-        return runtimeService.getTemplate(templateKey);
+    public DynamicEntityTemplateResponse getTemplate(@PathVariable("templateKey") String templateKey) {
+        return responseMapper.toTemplateResponse(runtimeService.getTemplate(templateKey));
     }
 
     @PostMapping("/templates/{templateKey}/definitions")
     @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
-    public StoredEntityDefinition createFromTemplate(
+    public DynamicEntityDefinitionResponse createFromTemplate(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
             @PathVariable("templateKey") String templateKey,
             @RequestBody(required = false) TemplateCreateRequest request
     ) {
-        return runtimeService.createFromTemplate(templateKey, request == null ? null : request.getEntityKey(), DynamicScopeResolver.fromHeaders(
+        return responseMapper.toDefinitionResponse(runtimeService.createFromTemplate(templateKey, request == null ? null : request.getEntityKey(), DynamicScopeResolver.fromHeaders(
                 request != null && request.getTenantKey() != null ? request.getTenantKey() : tenantKey,
                 request != null && request.getSiteKey() != null ? request.getSiteKey() : siteKey
-        ));
+        )));
     }
 
     @PostMapping("/records/{entityKey}/validate")

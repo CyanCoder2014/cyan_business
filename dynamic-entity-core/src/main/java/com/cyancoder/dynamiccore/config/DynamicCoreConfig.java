@@ -6,6 +6,7 @@ import com.cyancoder.dynamiccore.operator.operators.SetFieldOperator;
 import com.cyancoder.dynamiccore.operator.operators.SumFieldsOperator;
 import com.cyancoder.dynamiccore.runtime.EndpointDynamicEntityController;
 import com.cyancoder.dynamiccore.runtime.InternalDynamicEntityController;
+import com.cyancoder.dynamiccore.runtime.DynamicEntityResponseMapper;
 import com.cyancoder.dynamiccore.runtime.DynamicRuntimeService;
 import com.cyancoder.dynamiccore.service.DynamicDefinitionParser;
 import com.cyancoder.dynamiccore.service.DynamicOperatorEngine;
@@ -56,6 +57,11 @@ public class DynamicCoreConfig {
     }
 
     @Bean
+    public DynamicEntityResponseMapper dynamicEntityResponseMapper(DynamicDefinitionParser definitionParser) {
+        return new DynamicEntityResponseMapper(definitionParser);
+    }
+
+    @Bean
     public DynamicValidationEngine dynamicValidationEngine(ValidatorRegistry validatorRegistry, DynamicRuntimeProperties properties) {
         return new DynamicValidationEngine(validatorRegistry, properties.isCheckMissingFields(), properties.isCheckExtraFields());
     }
@@ -84,12 +90,19 @@ public class DynamicCoreConfig {
     }
 
     @Bean
-    public EndpointDynamicEntityController endpointDynamicEntityController(DynamicRuntimeService runtimeService, DynamicRuntimeProperties properties) {
-        return new EndpointDynamicEntityController(runtimeService, properties);
+    public EndpointDynamicEntityController endpointDynamicEntityController(
+            DynamicRuntimeService runtimeService,
+            DynamicRuntimeProperties properties,
+            DynamicEntityResponseMapper responseMapper
+    ) {
+        return new EndpointDynamicEntityController(runtimeService, properties, responseMapper);
     }
 
     @Bean
-    public InternalDynamicEntityController internalDynamicEntityController(DynamicRuntimeService runtimeService) {
-        return new InternalDynamicEntityController(runtimeService);
+    public InternalDynamicEntityController internalDynamicEntityController(
+            DynamicRuntimeService runtimeService,
+            DynamicEntityResponseMapper responseMapper
+    ) {
+        return new InternalDynamicEntityController(runtimeService, responseMapper);
     }
 }

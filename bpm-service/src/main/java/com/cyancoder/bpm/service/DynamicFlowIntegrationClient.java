@@ -8,7 +8,7 @@ import com.cyancoder.bpm.domain.FlowState;
 import com.cyancoder.bpm.domain.ManagedObject;
 import com.cyancoder.bpm.domain.SubmitMode;
 import com.cyancoder.dynamiccore.runtime.DynamicRecordRequest;
-import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinition;
+import com.cyancoder.dynamiccore.runtime.DynamicEntityDefinitionResponse;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -30,19 +30,19 @@ public class DynamicFlowIntegrationClient {
         if (serviceKey == null || entityKey == null) {
             return null;
         }
-        StoredEntityDefinition definition = httpSupport.get(
+        DynamicEntityDefinitionResponse definition = httpSupport.get(
                 serviceKey,
                 "/internal/entities/definitions/" + entityKey,
                 scope.tenantKey(),
                 scope.siteKey(),
-                StoredEntityDefinition.class
+                DynamicEntityDefinitionResponse.class
         );
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("serviceKey", definition.getServiceKey());
-        result.put("entityKey", definition.getEntityKey());
-        result.put("entityType", definition.getEntityType());
-        result.put("title", definition.getTitle());
-        result.put("definitionJson", definition.getDefinitionJson());
+        result.put("serviceKey", definition.serviceKey());
+        result.put("entityKey", definition.entityKey());
+        result.put("entityType", definition.entityType());
+        result.put("title", definition.title());
+        result.put("definition", definition.definition());
         return result;
     }
 

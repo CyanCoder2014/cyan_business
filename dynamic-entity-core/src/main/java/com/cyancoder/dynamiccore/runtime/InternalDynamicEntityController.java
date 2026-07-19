@@ -1,9 +1,7 @@
 package com.cyancoder.dynamiccore.runtime;
 
 import com.cyancoder.dynamiccore.model.DynamicValidationResult;
-import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinition;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
-import com.cyancoder.dynamiccore.template.DynamicEntityTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,26 +14,33 @@ import java.util.Map;
 public class InternalDynamicEntityController {
 
     private final DynamicRuntimeService runtimeService;
+    private final DynamicEntityResponseMapper responseMapper;
 
-    public InternalDynamicEntityController(DynamicRuntimeService runtimeService) {
+    public InternalDynamicEntityController(
+            DynamicRuntimeService runtimeService,
+            DynamicEntityResponseMapper responseMapper
+    ) {
         this.runtimeService = runtimeService;
+        this.responseMapper = responseMapper;
     }
 
     @GetMapping("/definitions")
-    public List<StoredEntityDefinition> listDefinitions(
+    public List<DynamicEntityDefinitionResponse> listDefinitions(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey
     ) {
-        return runtimeService.listDefinitions(DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+        return runtimeService.listDefinitions(DynamicScopeResolver.fromHeaders(tenantKey, siteKey)).stream()
+                .map(responseMapper::toDefinitionResponse)
+                .toList();
     }
 
     @GetMapping("/definitions/{entityKey}")
-    public StoredEntityDefinition getDefinition(
+    public DynamicEntityDefinitionResponse getDefinition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
             @PathVariable("entityKey") String entityKey
     ) {
-        return runtimeService.getDefinition(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+        return responseMapper.toDefinitionResponse(runtimeService.getDefinition(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey)));
     }
 
     @DeleteMapping("/definitions/{entityKey}")
@@ -48,26 +53,28 @@ public class InternalDynamicEntityController {
     }
 
     @GetMapping("/templates")
-    public List<DynamicEntityTemplate> listTemplates() {
-        return runtimeService.listTemplates();
+    public List<DynamicEntityTemplateResponse> listTemplates() {
+        return runtimeService.listTemplates().stream()
+                .map(responseMapper::toTemplateResponse)
+                .toList();
     }
 
     @GetMapping("/templates/{templateKey}")
-    public DynamicEntityTemplate getTemplate(@PathVariable("templateKey") String templateKey) {
-        return runtimeService.getTemplate(templateKey);
+    public DynamicEntityTemplateResponse getTemplate(@PathVariable("templateKey") String templateKey) {
+        return responseMapper.toTemplateResponse(runtimeService.getTemplate(templateKey));
     }
 
     @PostMapping("/templates/{templateKey}/definitions")
-    public StoredEntityDefinition createFromTemplate(
+    public DynamicEntityDefinitionResponse createFromTemplate(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
             @PathVariable("templateKey") String templateKey,
             @RequestBody(required = false) TemplateCreateRequest request
     ) {
-        return runtimeService.createFromTemplate(templateKey, request == null ? null : request.getEntityKey(), DynamicScopeResolver.fromHeaders(
+        return responseMapper.toDefinitionResponse(runtimeService.createFromTemplate(templateKey, request == null ? null : request.getEntityKey(), DynamicScopeResolver.fromHeaders(
                 request != null && request.getTenantKey() != null ? request.getTenantKey() : tenantKey,
                 request != null && request.getSiteKey() != null ? request.getSiteKey() : siteKey
-        ));
+        )));
     }
 
     @PostMapping("/records/{entityKey}/validate")

@@ -9,6 +9,7 @@ import com.cyancoder.automationorchestrator.model.AutomationStartResponse;
 import com.cyancoder.automationorchestrator.repo.AutomationExecutionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
@@ -20,8 +21,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AutomationExecutionServiceTest {
 
@@ -101,6 +102,31 @@ class AutomationExecutionServiceTest {
         assertEquals("managed-1", response.managedObjectId());
         assertEquals("managed-1:form-enrichment", response.idempotencyKey());
         assertEquals(true, response.output().get("accepted"));
+    }
+
+    @Test
+    void startEscapesDottedPipelineMappingKeysForMongoAndRestoresThemForExecution() {
+        AutomationExecutionRepository repository = mock(AutomationExecutionRepository.class);
+        InternalServiceHttpSupport httpSupport = mock(InternalServiceHttpSupport.class);
+        AutomationCallbackProperties properties = new AutomationCallbackProperties();
+        AutomationExecutionService service = new AutomationExecutionService(repository, httpSupport, properties, new ObjectMapper());
+        doAnswer(invocation -> invocation.getArgument(0)).when(repository).save(any(AutomationExecution.class));
+
+        AutomationStartResponse response = service.start(new AutomationStartRequest(
+                "pipeline", null, AutomationExecutionMode.SYNC, AutomationFailurePolicy.MARK_FAILED,
+                null, null, "tenant-demo", "site-demo", Map.of("name", "Farid"), Map.of(),
+                Map.of("type", "PIPELINE", "outputPath", "result", "steps", java.util.List.of(
+                        Map.of("type", "MAP_FIELDS", "mappings", Map.of("result.greeting", "Hello {{name}}"))
+                )), 0, 60L, 0L, null, null, null, null, null
+        ));
+
+        assertEquals("COMPLETED", response.status());
+        assertEquals("Hello Farid", response.output().get("greeting"));
+        ArgumentCaptor<AutomationExecution> captor = ArgumentCaptor.forClass(AutomationExecution.class);
+        verify(repository, org.mockito.Mockito.atLeastOnce()).save(captor.capture());
+        Map<?, ?> storedMappings = (Map<?, ?>) ((Map<?, ?>) ((java.util.List<?>) captor.getAllValues().get(0)
+                .getInlineFragment().get("steps")).get(0)).get("mappings");
+        assertTrue(storedMappings.containsKey("result\uFF0Egreeting"));
     }
 
     @Test

@@ -17,8 +17,10 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,6 +28,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 public class AutomationExecutionService {
+    private static final String MONGO_DOT_ESCAPE = "\uFF0E";
     private final AutomationExecutionRepository repository;
     private final InternalServiceHttpSupport httpSupport;
     private final AutomationCallbackProperties callbackProperties;
@@ -68,7 +71,7 @@ public class AutomationExecutionService {
         execution.setSiteKey(siteKey);
         execution.setStatus("RUNNING");
         execution.setInput(new LinkedHashMap<>(firstMap(request.input(), request.variables())));
-        execution.setInlineFragment(new LinkedHashMap<>(firstMap(request.inlineFragment(), request.inlineFlow())));
+        execution.setInlineFragment(mongoSafeMap(firstMap(request.inlineFragment(), request.inlineFlow())));
         execution.setMaxRetries(request.maxRetries() == null ? 0 : Math.max(0, request.maxRetries()));
         execution.setTimeoutSeconds(request.timeoutSeconds());
         execution.setTimeoutAt(request.timeoutSeconds() == null ? null : Instant.now().plusSeconds(request.timeoutSeconds()));
@@ -193,7 +196,7 @@ public class AutomationExecutionService {
 
     private Map<String, Object> evaluateExecution(AutomationExecution execution) {
         if (execution.getInlineFragment() != null && !execution.getInlineFragment().isEmpty()) {
-            return evaluateInlineFragment(execution.getInlineFragment(), execution.getInput(), execution.getTenantKey(), execution.getSiteKey());
+            return evaluateInlineFragment(restoreMongoMap(execution.getInlineFragment()), execution.getInput(), execution.getTenantKey(), execution.getSiteKey());
         }
         return evaluateHybridScreening(execution.getInput());
     }
@@ -311,6 +314,36 @@ public class AutomationExecutionService {
             return primary;
         }
         return fallback == null ? Map.of() : fallback;
+    }
+
+    private Map<String, Object> mongoSafeMap(Map<?, ?> source) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        source.forEach((key, value) -> result.put(
+                String.valueOf(key).replace(".", MONGO_DOT_ESCAPE),
+                transformMapValue(value, true)
+        ));
+        return result;
+    }
+
+    private Map<String, Object> restoreMongoMap(Map<?, ?> source) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        source.forEach((key, value) -> result.put(
+                String.valueOf(key).replace(MONGO_DOT_ESCAPE, "."),
+                transformMapValue(value, false)
+        ));
+        return result;
+    }
+
+    private Object transformMapValue(Object value, boolean mongoSafe) {
+        if (value instanceof Map<?, ?> map) {
+            return mongoSafe ? mongoSafeMap(map) : restoreMongoMap(map);
+        }
+        if (value instanceof Iterable<?> iterable) {
+            List<Object> result = new ArrayList<>();
+            iterable.forEach(item -> result.add(transformMapValue(item, mongoSafe)));
+            return result;
+        }
+        return value;
     }
 
     private String normalize(String value) {

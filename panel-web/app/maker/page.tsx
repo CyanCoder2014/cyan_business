@@ -105,7 +105,7 @@ export default function MakerPage() {
   const selectedDefinitionTitle = selected?.title ?? selected?.entityKey ?? (locale === "fa" ? "بدون انتخاب" : "No selection");
 
   useEffect(() => {
-    setDefinitionDraft(selected?.definitionJson ?? "");
+    setDefinitionDraft(selected ? formatDefinition(selected.definition) : "");
   }, [selected]);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ export default function MakerPage() {
         siteKey: selected.siteKey ?? scope.siteKey
       });
       setDefinitions((current) => current.map((item) => (item.entityKey === saved.entityKey ? saved : item)));
-      setDefinitionDraft(saved.definitionJson);
+      setDefinitionDraft(formatDefinition(saved.definition));
       setStatus(locale === "fa" ? "شِما منتشر شد." : "Schema published.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : locale === "fa" ? "انتشار ناموفق بود." : "Publish failed.");
@@ -161,7 +161,7 @@ export default function MakerPage() {
         setSelectedIndex(0);
         return next;
       });
-      setDefinitionDraft(created.definitionJson);
+      setDefinitionDraft(formatDefinition(created.definition));
       setStatus(locale === "fa" ? "تعریف ایجاد شد." : "Definition created.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : locale === "fa" ? "ایجاد تعریف ناموفق بود." : "Definition creation failed.");
@@ -220,7 +220,7 @@ export default function MakerPage() {
       setSelectedServiceKey(serviceKey);
       setDefinitions((current) => [created, ...current.filter((item) => item.entityKey !== created.entityKey)]);
       setSelectedIndex(0);
-      setDefinitionDraft(created.definitionJson);
+      setDefinitionDraft(formatDefinition(created.definition));
       setStatus(locale === "fa" ? "تعریف فرم AI ساخته شد." : "AI form definition created.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : locale === "fa" ? "ساخت فرم AI ناموفق بود." : "AI form creation failed.");
@@ -741,7 +741,7 @@ function toFieldSummaries(definition: DynamicEntityDefinition | null): FieldSumm
     return [];
   }
   try {
-    const parsed = JSON.parse(definition.definitionJson) as {
+    const parsed = definition.definition as {
       fields?: Array<Record<string, unknown>> | Record<string, Record<string, unknown>>;
     };
     const fields: Array<Record<string, unknown>> = Array.isArray(parsed.fields)
@@ -759,6 +759,10 @@ function toFieldSummaries(definition: DynamicEntityDefinition | null): FieldSumm
     return [];
   }
   return [];
+}
+
+function formatDefinition(definition: Record<string, unknown>): string {
+  return JSON.stringify(definition, null, 2);
 }
 
 function firstGeneratedFlow(generated: GeneratePlatformAppResponse): DynamicFlowDefinition | null {

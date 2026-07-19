@@ -266,7 +266,7 @@ test("site builder loads backend routes and publishes a route without static pag
       json: {
         serviceKey: "storefront-service",
         entityKey: "site-route",
-        definitionJson: "{\"fields\":[]}"
+        definition: { fields: [] }
       }
     });
   });

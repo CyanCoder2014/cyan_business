@@ -158,7 +158,7 @@ export type DynamicEntityTemplate = {
   entityType?: string;
   title?: string;
   description?: string;
-  definitionJson?: string;
+  definition?: Record<string, unknown>;
 };
 
 export type DynamicEntityDefinition = {
@@ -169,7 +169,7 @@ export type DynamicEntityDefinition = {
   siteKey?: string | null;
   entityType?: string;
   title?: string;
-  definitionJson: string;
+  definition: Record<string, unknown>;
   active?: boolean;
 };
 

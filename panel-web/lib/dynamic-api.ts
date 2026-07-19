@@ -86,10 +86,10 @@ export function createDefinitionFromTemplate(
 export function saveDefinition(
   serviceKey: DynamicServiceKey,
   entityKey: string,
-  definitionJson: string,
+  definitionText: string,
   scope: ScopedRequest
 ): Promise<DynamicEntityDefinition> {
-  const definition = JSON.parse(definitionJson) as Record<string, unknown>;
+  const definition = JSON.parse(definitionText) as Record<string, unknown>;
   return requestJson<DynamicEntityDefinition>(serviceKey, `/endpoint/entities/definitions/${entityKey}`, {
     method: "PUT",
     tenantKey: scope.tenantKey,

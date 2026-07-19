@@ -7,12 +7,12 @@ const definitions = [
     title: "Products",
     tenantKey: "tenant-demo",
     siteKey: "site-commerce",
-    definitionJson: JSON.stringify({
+    definition: {
       fields: [
         { key: "title", type: "String", required: true, label: "Product title" },
         { key: "price", type: "Decimal", required: true, label: "Price" }
       ]
-    })
+    }
   }
 ];
 

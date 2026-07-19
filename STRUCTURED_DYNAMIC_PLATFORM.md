@@ -93,6 +93,49 @@ Shared controllers are exposed by `dynamic-entity-core`:
 - `GET /endpoint/entities/records/{entityKey}`
 - `GET /endpoint/entities/records/{entityKey}/{recordKey}`
 
+The paths above remain available when calling a service directly. External callers should use the gateway's service-qualified equivalent:
+
+```text
+/endpoint/{service-alias}/entities/**
+```
+
+The gateway removes `/{service-alias}` before forwarding the request. For example:
+
+```text
+POST /endpoint/bpm/entities/definitions
+  -> bpm-service /endpoint/entities/definitions
+```
+
+Configured aliases are:
+
+| Alias | Service |
+| --- | --- |
+| `ai-orchestrator` | `ai-orchestrator-service` |
+| `automation-orchestrator` | `automation-orchestrator-service` |
+| `bot-adapter` | `bot-adapter-service` |
+| `bpm` | `bpm-service` |
+| `buyer` | `buyer-service` |
+| `cart` | `cart-service` |
+| `catalog` | `catalog-service` |
+| `checkout` | `checkout-service` |
+| `client` | `client-service` |
+| `commerce` | `commerce-service` |
+| `content` | `content-service` |
+| `crm` | `crm-service` |
+| `factor` | `factor-service` |
+| `finance` | `finance-service` |
+| `inventory` | `inventory-service` |
+| `media` | `media-service` |
+| `notification` | `notification-service` |
+| `payment` | `payment-service` |
+| `payment-orchestrator` | `payment-orchestrator-service` |
+| `pricing-promotion` | `pricing-promotion-service` |
+| `product` | `product-service` |
+| `report` | `report-service` |
+| `search-index` | `search-index-service` |
+| `storefront` | `storefront-service` |
+| `tax-pay` | `tax-pay-sys` |
+
 And matching internal surfaces:
 
 - `GET /internal/entities/definitions`

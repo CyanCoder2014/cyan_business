@@ -3957,7 +3957,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"entityKey\": \"catalog-item\",\n  \"tenantKey\": \"demo-tenant\",\n  \"siteKey\": \"main-site\",\n  \"definitionJson\": \"{\\\"entityKey\\\": \\\"catalog-item\\\", \\\"title\\\": \\\"Catalog Item\\\", \\\"fields\\\": [{\\\"key\\\": \\\"title\\\", \\\"type\\\": \\\"text\\\", \\\"required\\\": true}, {\\\"key\\\": \\\"price\\\", \\\"type\\\": \\\"number\\\", \\\"required\\\": true}, {\\\"key\\\": \\\"status\\\", \\\"type\\\": \\\"select\\\", \\\"options\\\": [\\\"DRAFT\\\", \\\"PUBLISHED\\\"]}]}\"\n}",
+              "raw": "{\n  \"entityKey\": \"catalog-item\",\n  \"tenantKey\": \"demo-tenant\",\n  \"siteKey\": \"main-site\",\n  \"definition\": {\n    \"entityKey\": \"catalog-item\",\n    \"title\": \"Catalog Item\",\n    \"fields\": [\n      {\n        \"key\": \"title\",\n        \"type\": \"text\",\n        \"required\": true\n      },\n      {\n        \"key\": \"price\",\n        \"type\": \"number\",\n        \"required\": true\n      },\n      {\n        \"key\": \"status\",\n        \"type\": \"select\",\n        \"options\": [\n          \"DRAFT\",\n          \"PUBLISHED\"\n        ]\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4007,7 +4007,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"entityKey\": \"catalog-item\",\n  \"tenantKey\": \"demo-tenant\",\n  \"siteKey\": \"main-site\",\n  \"definitionJson\": \"{\\\"entityKey\\\": \\\"catalog-item\\\", \\\"title\\\": \\\"Catalog Item\\\", \\\"fields\\\": [{\\\"key\\\": \\\"title\\\", \\\"type\\\": \\\"text\\\", \\\"required\\\": true}, {\\\"key\\\": \\\"price\\\", \\\"type\\\": \\\"number\\\", \\\"required\\\": true}, {\\\"key\\\": \\\"status\\\", \\\"type\\\": \\\"select\\\", \\\"options\\\": [\\\"DRAFT\\\", \\\"PUBLISHED\\\"]}]}\"\n}",
+              "raw": "{\n  \"entityKey\": \"catalog-item\",\n  \"tenantKey\": \"demo-tenant\",\n  \"siteKey\": \"main-site\",\n  \"definition\": {\n    \"entityKey\": \"catalog-item\",\n    \"title\": \"Catalog Item\",\n    \"fields\": [\n      {\n        \"key\": \"title\",\n        \"type\": \"text\",\n        \"required\": true\n      },\n      {\n        \"key\": \"price\",\n        \"type\": \"number\",\n        \"required\": true\n      },\n      {\n        \"key\": \"status\",\n        \"type\": \"select\",\n        \"options\": [\n          \"DRAFT\",\n          \"PUBLISHED\"\n        ]\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4663,7 +4663,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"entityKey\": \"catalog-item\",\n  \"tenantKey\": \"demo-tenant\",\n  \"siteKey\": \"main-site\",\n  \"definitionJson\": \"{\\\"entityKey\\\": \\\"catalog-item\\\", \\\"title\\\": \\\"Catalog Item\\\", \\\"fields\\\": [{\\\"key\\\": \\\"title\\\", \\\"type\\\": \\\"text\\\", \\\"required\\\": true}, {\\\"key\\\": \\\"price\\\", \\\"type\\\": \\\"number\\\", \\\"required\\\": true}, {\\\"key\\\": \\\"status\\\", \\\"type\\\": \\\"select\\\", \\\"options\\\": [\\\"DRAFT\\\", \\\"PUBLISHED\\\"]}]}\"\n}",
+              "raw": "{\n  \"entityKey\": \"catalog-item\",\n  \"tenantKey\": \"demo-tenant\",\n  \"siteKey\": \"main-site\",\n  \"definition\": {\n    \"entityKey\": \"catalog-item\",\n    \"title\": \"Catalog Item\",\n    \"fields\": [\n      {\n        \"key\": \"title\",\n        \"type\": \"text\",\n        \"required\": true\n      },\n      {\n        \"key\": \"price\",\n        \"type\": \"number\",\n        \"required\": true\n      },\n      {\n        \"key\": \"status\",\n        \"type\": \"select\",\n        \"options\": [\n          \"DRAFT\",\n          \"PUBLISHED\"\n        ]\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4718,7 +4718,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"entityKey\": \"catalog-item\",\n  \"tenantKey\": \"demo-tenant\",\n  \"siteKey\": \"main-site\",\n  \"definitionJson\": \"{\\\"entityKey\\\": \\\"catalog-item\\\", \\\"title\\\": \\\"Catalog Item\\\", \\\"fields\\\": [{\\\"key\\\": \\\"title\\\", \\\"type\\\": \\\"text\\\", \\\"required\\\": true}, {\\\"key\\\": \\\"price\\\", \\\"type\\\": \\\"number\\\", \\\"required\\\": true}, {\\\"key\\\": \\\"status\\\", \\\"type\\\": \\\"select\\\", \\\"options\\\": [\\\"DRAFT\\\", \\\"PUBLISHED\\\"]}]}\"\n}",
+              "raw": "{\n  \"entityKey\": \"catalog-item\",\n  \"tenantKey\": \"demo-tenant\",\n  \"siteKey\": \"main-site\",\n  \"definition\": {\n    \"entityKey\": \"catalog-item\",\n    \"title\": \"Catalog Item\",\n    \"fields\": [\n      {\n        \"key\": \"title\",\n        \"type\": \"text\",\n        \"required\": true\n      },\n      {\n        \"key\": \"price\",\n        \"type\": \"number\",\n        \"required\": true\n      },\n      {\n        \"key\": \"status\",\n        \"type\": \"select\",\n        \"options\": [\n          \"DRAFT\",\n          \"PUBLISHED\"\n        ]\n      }\n    ]\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"

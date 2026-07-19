@@ -18,17 +18,15 @@ def example_dynamic_definition():
         "entityKey": "catalog-item",
         "tenantKey": "demo-tenant",
         "siteKey": "main-site",
-        "definitionJson": json.dumps(
-            {
-                "entityKey": "catalog-item",
-                "title": "Catalog Item",
-                "fields": [
-                    {"key": "title", "type": "text", "required": True},
-                    {"key": "price", "type": "number", "required": True},
-                    {"key": "status", "type": "select", "options": ["DRAFT", "PUBLISHED"]},
-                ],
-            }
-        ),
+        "definition": {
+            "entityKey": "catalog-item",
+            "title": "Catalog Item",
+            "fields": [
+                {"key": "title", "type": "text", "required": True},
+                {"key": "price", "type": "number", "required": True},
+                {"key": "status", "type": "select", "options": ["DRAFT", "PUBLISHED"]},
+            ],
+        },
     }
 
 

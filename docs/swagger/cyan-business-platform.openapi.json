@@ -2215,7 +2215,30 @@
                 "entityKey": "catalog-item",
                 "tenantKey": "demo-tenant",
                 "siteKey": "main-site",
-                "definitionJson": "{\"entityKey\": \"catalog-item\", \"title\": \"Catalog Item\", \"fields\": [{\"key\": \"title\", \"type\": \"text\", \"required\": true}, {\"key\": \"price\", \"type\": \"number\", \"required\": true}, {\"key\": \"status\", \"type\": \"select\", \"options\": [\"DRAFT\", \"PUBLISHED\"]}]}"
+                "definition": {
+                  "entityKey": "catalog-item",
+                  "title": "Catalog Item",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "type": "text",
+                      "required": true
+                    },
+                    {
+                      "key": "price",
+                      "type": "number",
+                      "required": true
+                    },
+                    {
+                      "key": "status",
+                      "type": "select",
+                      "options": [
+                        "DRAFT",
+                        "PUBLISHED"
+                      ]
+                    }
+                  ]
+                }
               }
             }
           }
@@ -2301,7 +2324,30 @@
                 "entityKey": "catalog-item",
                 "tenantKey": "demo-tenant",
                 "siteKey": "main-site",
-                "definitionJson": "{\"entityKey\": \"catalog-item\", \"title\": \"Catalog Item\", \"fields\": [{\"key\": \"title\", \"type\": \"text\", \"required\": true}, {\"key\": \"price\", \"type\": \"number\", \"required\": true}, {\"key\": \"status\", \"type\": \"select\", \"options\": [\"DRAFT\", \"PUBLISHED\"]}]}"
+                "definition": {
+                  "entityKey": "catalog-item",
+                  "title": "Catalog Item",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "type": "text",
+                      "required": true
+                    },
+                    {
+                      "key": "price",
+                      "type": "number",
+                      "required": true
+                    },
+                    {
+                      "key": "status",
+                      "type": "select",
+                      "options": [
+                        "DRAFT",
+                        "PUBLISHED"
+                      ]
+                    }
+                  ]
+                }
               }
             }
           }
@@ -3018,7 +3064,30 @@
                 "entityKey": "catalog-item",
                 "tenantKey": "demo-tenant",
                 "siteKey": "main-site",
-                "definitionJson": "{\"entityKey\": \"catalog-item\", \"title\": \"Catalog Item\", \"fields\": [{\"key\": \"title\", \"type\": \"text\", \"required\": true}, {\"key\": \"price\", \"type\": \"number\", \"required\": true}, {\"key\": \"status\", \"type\": \"select\", \"options\": [\"DRAFT\", \"PUBLISHED\"]}]}"
+                "definition": {
+                  "entityKey": "catalog-item",
+                  "title": "Catalog Item",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "type": "text",
+                      "required": true
+                    },
+                    {
+                      "key": "price",
+                      "type": "number",
+                      "required": true
+                    },
+                    {
+                      "key": "status",
+                      "type": "select",
+                      "options": [
+                        "DRAFT",
+                        "PUBLISHED"
+                      ]
+                    }
+                  ]
+                }
               }
             }
           }
@@ -3104,7 +3173,30 @@
                 "entityKey": "catalog-item",
                 "tenantKey": "demo-tenant",
                 "siteKey": "main-site",
-                "definitionJson": "{\"entityKey\": \"catalog-item\", \"title\": \"Catalog Item\", \"fields\": [{\"key\": \"title\", \"type\": \"text\", \"required\": true}, {\"key\": \"price\", \"type\": \"number\", \"required\": true}, {\"key\": \"status\", \"type\": \"select\", \"options\": [\"DRAFT\", \"PUBLISHED\"]}]}"
+                "definition": {
+                  "entityKey": "catalog-item",
+                  "title": "Catalog Item",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "type": "text",
+                      "required": true
+                    },
+                    {
+                      "key": "price",
+                      "type": "number",
+                      "required": true
+                    },
+                    {
+                      "key": "status",
+                      "type": "select",
+                      "options": [
+                        "DRAFT",
+                        "PUBLISHED"
+                      ]
+                    }
+                  ]
+                }
               }
             }
           }

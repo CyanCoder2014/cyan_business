@@ -45,9 +45,9 @@ Each definition stores:
 - `entityKey`
 - `entityType`
 - `title`
-- `definitionJson`
+- `definitionJson` (internal persistence column)
 
-`definitionJson` is the structured source of truth.
+The persistence column stores serialized JSON internally. API responses expose that value as a structured `definition` object.
 
 ## Record Storage
 
@@ -135,7 +135,25 @@ Definition create and update requests should send the definition as a structured
 }
 ```
 
-The runtime assigns the owning `serviceKey` and outer `entityKey`, then serializes `definition` internally for the existing `definitionJson` persistence column. The legacy request field `definitionJson` remains accepted during migration. If both fields are supplied, the structured `definition` field takes precedence. Stored definition responses continue to expose `definitionJson` for compatibility with existing consumers.
+The runtime assigns the owning `serviceKey` and outer `entityKey`, then serializes `definition` internally for the existing `definitionJson` persistence column. The legacy request field `definitionJson` remains accepted during migration. If both fields are supplied, the structured `definition` field takes precedence.
+
+Definition and template responses expose the schema as a structured object:
+
+```json
+{
+  "serviceKey": "bpm-service",
+  "entityKey": "leave-request-form",
+  "definition": {
+    "serviceKey": "bpm-service",
+    "entityKey": "leave-request-form",
+    "entityType": "BPM_FORM",
+    "title": "Leave Request",
+    "fields": {}
+  }
+}
+```
+
+The internal persistence name `definitionJson` is not exposed in API responses.
 
 ## Validation Behavior
 

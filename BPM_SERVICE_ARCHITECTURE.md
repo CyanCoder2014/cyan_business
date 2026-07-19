@@ -110,7 +110,7 @@ The active-form response includes `rendererDefinition`, which contains:
 - `entityKey`
 - `entityType`
 - `title`
-- `definitionJson`
+- `definition`
 
 That lets frontend or orchestration clients render the current structured entity form the same way they would use a form definition from `Cyan-core`.
 

@@ -14,7 +14,10 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/endpoint/entities")
+@RequestMapping({
+        "/endpoint/entities",
+        "/api/${dynamic.runtime.service-key}/endpoint/entities"
+})
 public class EndpointDynamicEntityController {
 
     private final DynamicRuntimeService runtimeService;

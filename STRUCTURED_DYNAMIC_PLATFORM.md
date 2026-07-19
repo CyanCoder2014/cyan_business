@@ -93,6 +93,21 @@ Shared controllers are exposed by `dynamic-entity-core`:
 - `GET /endpoint/entities/records/{entityKey}`
 - `GET /endpoint/entities/records/{entityKey}/{recordKey}`
 
+Each dynamic runtime service exposes the same endpoint controller under a second, service-qualified path:
+
+```text
+/api/{dynamic.runtime.service-key}/endpoint/entities/**
+```
+
+For example, `bpm-service` accepts both:
+
+```text
+POST /endpoint/entities/definitions
+POST /api/bpm-service/endpoint/entities/definitions
+```
+
+The first path preserves direct-service compatibility. The second matches the existing `/api/{service-key}/**` gateway routes used by dynamic business services. The service key is resolved from the host service's fixed `dynamic.runtime.service-key`; it is not an unrestricted path variable.
+
 And matching internal surfaces:
 
 - `GET /internal/entities/definitions`

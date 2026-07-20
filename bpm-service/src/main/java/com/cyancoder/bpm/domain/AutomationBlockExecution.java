@@ -9,8 +9,8 @@ import java.util.Map;
 public class AutomationBlockExecution {
     private String blockKey;
     private String automationFlowKey;
-    private AutomationExecutionMode executionMode = AutomationExecutionMode.ASYNC;
-    private AutomationFailurePolicy failurePolicy = AutomationFailurePolicy.MARK_FAILED;
+    private AutomationExecutionMode executionMode = AutomationExecutionMode.SYNC;
+    private AutomationFailurePolicy failurePolicy = AutomationFailurePolicy.FAIL_FAST;
     private String stateId;
     private String correlationKey;
     private boolean waitForCompletion = true;

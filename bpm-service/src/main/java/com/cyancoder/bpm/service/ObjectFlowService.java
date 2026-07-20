@@ -261,6 +261,11 @@ public class ObjectFlowService {
         block.setStatus(callbackStatus);
         block.setFinishedAt(Instant.now());
         block.setUpdatedAt(Instant.now());
+        String asyncRoot = "payload.asyncActions." + blockKey;
+        applyOptionalStore(object, asyncRoot + ".status", callbackStatus);
+        applyOptionalStore(object, asyncRoot + ".executionId", callbackPayload.get("executionId"));
+        applyOptionalStore(object, asyncRoot + ".finishedAt", Instant.now().toString());
+        if (callbackPayload.get("error") != null) applyOptionalStore(object, asyncRoot + ".error", callbackPayload.get("error"));
         if (callbackPayload.get("snapshot") instanceof Map<?, ?> map) {
             block.setSnapshot(new LinkedHashMap<>((Map<String, Object>) map));
         }
@@ -280,10 +285,16 @@ public class ObjectFlowService {
             return object;
         }
 
+        boolean callbackFailed = "FAILED".equalsIgnoreCase(callbackStatus) || "TIMED_OUT".equalsIgnoreCase(callbackStatus) || "CANCELLED".equalsIgnoreCase(callbackStatus);
+        if (callbackFailed && block.getFailurePolicy() == AutomationFailurePolicy.FAIL_FAST
+                && block.getNextStateOnFailure() == null && (request == null || request.nextState() == null)) {
+            return object;
+        }
+
         DynamicFlowDefinition definition = flowDefinitionService.getActiveByFlowKey(scope, object.getFlowKey());
         FlowState currentState = findState(definition, object.getState());
         if (isAutomaticState(currentState) && !hasPendingBlockingAutomationForCurrentState(object, currentState)) {
-            String requestedNextState = "FAILED".equalsIgnoreCase(callbackStatus) || "TIMED_OUT".equalsIgnoreCase(callbackStatus) || "CANCELLED".equalsIgnoreCase(callbackStatus)
+            String requestedNextState = callbackFailed
                     ? firstNonBlank(block.getNextStateOnFailure(), request == null ? null : request.nextState())
                     : firstNonBlank(block.getNextStateOnSuccess(), request == null ? null : request.nextState());
             return transit(scope,
@@ -520,7 +531,9 @@ public class ObjectFlowService {
                     && object.getState() != null
                     && object.getState().equals(block.getStateId())
                     && block.isWaitForCompletion()
-                    && ("PENDING".equalsIgnoreCase(block.getStatus()) || "RUNNING".equalsIgnoreCase(block.getStatus()))) {
+                    && ("PENDING".equalsIgnoreCase(block.getStatus()) || "RUNNING".equalsIgnoreCase(block.getStatus())
+                    || "WAITING".equalsIgnoreCase(block.getStatus()) || "WAITING_CALLBACK".equalsIgnoreCase(block.getStatus())
+                    || "WAITING_CONCURRENCY".equalsIgnoreCase(block.getStatus()))) {
                 return true;
             }
         }

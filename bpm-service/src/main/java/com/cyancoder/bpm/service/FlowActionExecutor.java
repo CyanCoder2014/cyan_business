@@ -236,6 +236,7 @@ public class FlowActionExecutor {
         block.setUpdatedAt(Instant.now());
         object.getAutomationBlockRegistry().removeIf(existing -> blockKey.equals(existing.getBlockKey()));
         object.getAutomationBlockRegistry().add(block);
+        updateAsyncTracking(object, block, blockKey, null);
 
         Map<String, Object> requestBody = new LinkedHashMap<>();
         requestBody.put("blockKey", blockKey);
@@ -266,6 +267,7 @@ public class FlowActionExecutor {
         ));
         Map<String, Object> response = integrationClient.callActionForResponse(requestAction, object, scope, actorUserId);
         applyAutomationStartResponse(object, block, response);
+        updateAsyncTracking(object, block, blockKey, response);
 
         if (mode == AutomationExecutionMode.SYNC) {
             finalizeSyncBlock(object, block, response);
@@ -363,7 +365,7 @@ public class FlowActionExecutor {
         }
         String resolved = stringValue(value);
         if (resolved == null || resolved.isBlank()) {
-            return AutomationExecutionMode.ASYNC;
+            return AutomationExecutionMode.SYNC;
         }
         return AutomationExecutionMode.valueOf(resolved.trim().toUpperCase());
     }
@@ -379,9 +381,23 @@ public class FlowActionExecutor {
     private AutomationFailurePolicy parseFailurePolicy(Object value) {
         String resolved = stringValue(value);
         if (resolved == null || resolved.isBlank()) {
-            return AutomationFailurePolicy.MARK_FAILED;
+            return AutomationFailurePolicy.FAIL_FAST;
         }
-        return AutomationFailurePolicy.valueOf(resolved.trim().toUpperCase());
+        return AutomationFailurePolicy.from(resolved);
+    }
+
+    private void updateAsyncTracking(ManagedObject object, AutomationBlockExecution block, String actionKey, Map<String,Object> response) {
+        String root = "payload.asyncActions." + actionKey;
+        ActionPayloadSupport.setPayloadPath(object, root + ".type", "RUN_AUTOMATION_BLOCK");
+        ActionPayloadSupport.setPayloadPath(object, root + ".stateId", block.getStateId());
+        ActionPayloadSupport.setPayloadPath(object, root + ".status", response == null ? block.getStatus() : response.getOrDefault("status", block.getStatus()));
+        ActionPayloadSupport.setPayloadPath(object, root + ".failurePolicy", block.getFailurePolicy().name());
+        ActionPayloadSupport.setPayloadPath(object, root + ".executionId", response == null ? null : response.get("executionId"));
+        ActionPayloadSupport.setPayloadPath(object, root + ".queuedAt", block.getStartedAt() == null ? null : block.getStartedAt().toString());
+        if (response != null) {
+            ActionPayloadSupport.setPayloadPath(object, root + ".startedAt", block.getStartedAt() == null ? null : block.getStartedAt().toString());
+            if (response.get("error") != null) ActionPayloadSupport.setPayloadPath(object, root + ".error", response.get("error"));
+        }
     }
 
     @SuppressWarnings("unchecked")

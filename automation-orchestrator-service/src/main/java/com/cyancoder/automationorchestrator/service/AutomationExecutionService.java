@@ -4,6 +4,7 @@ import com.cyancoder.automationorchestrator.config.AutomationCallbackProperties;
 import com.cyancoder.automationorchestrator.domain.AutomationExecution;
 import com.cyancoder.automationorchestrator.domain.AutomationExecutionMode;
 import com.cyancoder.automationorchestrator.domain.AutomationFailurePolicy;
+import com.cyancoder.automationorchestrator.domain.AutomationFlowDefinition;
 import com.cyancoder.automationorchestrator.model.AutomationStartRequest;
 import com.cyancoder.automationorchestrator.model.AutomationStartResponse;
 import com.cyancoder.automationorchestrator.model.BpmAsyncCallbackRequest;
@@ -12,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -22,7 +25,9 @@ import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,21 +39,35 @@ public class AutomationExecutionService {
     private final AutomationCallbackProperties callbackProperties;
     private final ObjectMapper objectMapper;
     private final PipelineAutomationRuntime pipelineRuntime;
+    private final AutomationFlowDefinitionService flowDefinitionService;
+    private final GraphAutomationRuntime graphRuntime;
 
     public AutomationExecutionService(AutomationExecutionRepository repository,
                                       InternalServiceHttpSupport httpSupport,
                                       AutomationCallbackProperties callbackProperties,
                                       ObjectMapper objectMapper) {
+        this(repository, httpSupport, callbackProperties, objectMapper, null, null);
+    }
+
+    @Autowired
+    public AutomationExecutionService(AutomationExecutionRepository repository,
+                                      InternalServiceHttpSupport httpSupport,
+                                      AutomationCallbackProperties callbackProperties,
+                                      ObjectMapper objectMapper,
+                                      AutomationFlowDefinitionService flowDefinitionService,
+                                      GraphAutomationRuntime graphRuntime) {
         this.repository = repository;
         this.httpSupport = httpSupport;
         this.callbackProperties = callbackProperties;
         this.objectMapper = objectMapper;
         this.pipelineRuntime = new PipelineAutomationRuntime(httpSupport);
+        this.flowDefinitionService = flowDefinitionService;
+        this.graphRuntime = graphRuntime;
     }
 
     public AutomationStartResponse start(AutomationStartRequest request) {
-        String tenantKey = request.tenantKey();
-        String siteKey = request.siteKey();
+        String tenantKey = scope(request.tenantKey());
+        String siteKey = scope(request.siteKey());
         String idempotencyKey = normalize(request.idempotencyKey());
         if (idempotencyKey != null) {
             Optional<AutomationExecution> existing = repository
@@ -64,14 +83,26 @@ public class AutomationExecutionService {
         execution.setAutomationFlowKey(firstNonBlank(request.automationFlowKey(), request.flowKey(), "hybrid-screening-automation"));
         execution.setManagedObjectId(request.managedObjectId());
         execution.setIdempotencyKey(idempotencyKey);
-        execution.setExecutionMode(request.executionMode() == null ? AutomationExecutionMode.ASYNC : request.executionMode());
-        execution.setFailurePolicy(request.failurePolicy() == null ? AutomationFailurePolicy.MARK_FAILED : request.failurePolicy());
+        execution.setExecutionMode(request.executionMode() == null ? AutomationExecutionMode.SYNC : request.executionMode());
+        execution.setFailurePolicy(request.failurePolicy() == null ? AutomationFailurePolicy.FAIL_FAST : request.failurePolicy());
         execution.setCorrelationKey(request.correlationKey());
         execution.setTenantKey(tenantKey);
         execution.setSiteKey(siteKey);
         execution.setStatus("RUNNING");
         execution.setInput(new LinkedHashMap<>(firstMap(request.input(), request.variables())));
-        execution.setInlineFragment(mongoSafeMap(firstMap(request.inlineFragment(), request.inlineFlow())));
+        execution.setOutput(new LinkedHashMap<>(execution.getInput()));
+        execution.setContext(request.context());
+        execution.setCallbackPath(request.callbackPath());
+        Map<String, Object> requestedInline = firstMap(request.inlineFragment(), request.inlineFlow());
+        AutomationFlowDefinition graph = resolveRequestedGraph(request, requestedInline);
+        if (graph != null) {
+            execution.setFlowVersion(graph.getVersion());
+            execution.setEntryType(requestedInline.isEmpty() ? "SAVED_FLOW" : "INLINE_FLOW");
+            execution.setInlineFragment(mongoSafeMap(objectMapper.convertValue(graph, Map.class)));
+            execution.setCurrentNodeId(graph.getEntryNodeId());
+        } else {
+            execution.setInlineFragment(mongoSafeMap(requestedInline));
+        }
         execution.setMaxRetries(request.maxRetries() == null ? 0 : Math.max(0, request.maxRetries()));
         execution.setTimeoutSeconds(request.timeoutSeconds());
         execution.setTimeoutAt(request.timeoutSeconds() == null ? null : Instant.now().plusSeconds(request.timeoutSeconds()));
@@ -98,20 +129,65 @@ public class AutomationExecutionService {
         return toResponse(execution);
     }
 
+    public AutomationStartResponse startAuthorized(AutomationStartRequest request, Set<String> roles) {
+        return startAuthorized(request, roles, request.tenantKey(), request.siteKey());
+    }
+
+    public AutomationStartResponse startAuthorized(AutomationStartRequest request, Set<String> roles, String tenantKey, String siteKey) {
+        request = withScope(request, tenantKey, siteKey);
+        Map<String,Object> inline = firstMap(request.inlineFragment(), request.inlineFlow());
+        AutomationFlowDefinition definition = resolveRequestedGraph(request, inline);
+        if (definition != null) flowDefinitionService.requireRoles(definition, roles);
+        Map<String,Object> context = new LinkedHashMap<>(request.context() == null ? Map.of() : request.context());
+        context.put("actorRoles", roles == null ? List.of() : roles);
+        return start(new AutomationStartRequest(request.blockKey(), request.automationFlowKey(), request.executionMode(), request.failurePolicy(),
+                request.correlationKey(), request.callbackPath(), request.tenantKey(), request.siteKey(), request.input(), context,
+                request.inlineFragment(), request.maxRetries(), request.timeoutSeconds(), request.delayMillis(), request.flowKey(),
+                request.managedObjectId(), request.idempotencyKey(), request.variables(), request.inlineFlow()));
+    }
+
     public AutomationStartResponse get(String executionId) {
         return toResponse(repository.findByExecutionId(executionId).orElseThrow());
     }
 
+    public AutomationStartResponse get(String executionId, String tenantKey, String siteKey) {
+        return toResponse(scopedExecution(executionId, tenantKey, siteKey));
+    }
+
+    public AutomationStartResponse triggerWebhook(String flowKey, String tenantKey, String siteKey,
+                                                   Map<String, Object> payload, Map<String, Object> context,
+                                                   String idempotencyKey) {
+        return start(new AutomationStartRequest(
+                flowKey, flowKey, AutomationExecutionMode.ASYNC, AutomationFailurePolicy.MARK_FAILED,
+                null, null, tenantKey, siteKey, payload, context, null, 0, null, 0L,
+                flowKey, null, idempotencyKey, payload, null
+        ));
+    }
+
     public AutomationStartResponse cancel(String executionId) {
         AutomationExecution execution = repository.findByExecutionId(executionId).orElseThrow();
+        return cancel(execution);
+    }
+
+    public AutomationStartResponse cancel(String executionId, String tenantKey, String siteKey) {
+        return cancel(scopedExecution(executionId, tenantKey, siteKey));
+    }
+
+    private AutomationStartResponse cancel(AutomationExecution execution) {
         execution.setCancelRequested(true);
         execution.setCancelledAt(Instant.now());
-        if ("RUNNING".equalsIgnoreCase(execution.getStatus())) {
+        if (!isTerminal(execution.getStatus())) {
             execution.setStatus("CANCELLED");
+            execution.setCompletedAt(Instant.now());
+            execution.setResumeAt(null);
+            execution.setResumeNodeId(null);
         }
         execution.setUpdatedAt(Instant.now());
         execution.setSnapshot(buildSnapshot(execution, execution.getOutput(), execution.getStatus()));
         repository.save(execution);
+        if (execution.getCallbackPath() != null && !execution.getCallbackPath().isBlank()) {
+            callbackBpm(execution, execution.getCallbackPath(), execution.getContext());
+        }
         return toResponse(execution);
     }
 
@@ -143,12 +219,21 @@ public class AutomationExecutionService {
         }
 
         try {
-            Map<String, Object> output = evaluateExecution(latest);
-            latest.setOutput(output);
-            latest.setStatus("COMPLETED");
-            latest.setCompletedAt(Instant.now());
+            Map<String, Object> output;
+            if (isGraphExecution(latest)) {
+                graphRuntime.run(latest, graphDefinition(latest));
+                output = latest.getOutput();
+                if (isWaiting(latest.getStatus()) && latest.getExecutionMode() == AutomationExecutionMode.SYNC) {
+                    throw new IllegalStateException("automation flows containing WAIT or WAIT_FOR_CALLBACK must run async");
+                }
+            } else {
+                output = evaluateExecution(latest);
+                latest.setOutput(output);
+                latest.setStatus("COMPLETED");
+                latest.setCompletedAt(Instant.now());
+            }
             latest.setUpdatedAt(Instant.now());
-            latest.setSnapshot(buildSnapshot(latest, output, "COMPLETED"));
+            latest.setSnapshot(buildSnapshot(latest, output, latest.getStatus()));
             repository.save(latest);
         } catch (RuntimeException ex) {
             latest.setStatus("FAILED");
@@ -159,8 +244,94 @@ public class AutomationExecutionService {
             repository.save(latest);
         }
 
-        if (request.callbackPath() != null && !request.callbackPath().isBlank()) {
+        if (!isWaiting(latest.getStatus()) && request.callbackPath() != null && !request.callbackPath().isBlank()) {
             callbackBpm(latest, request.callbackPath(), request.context());
+        }
+    }
+
+    public AutomationStartResponse acceptCallback(String executionId, String nodeId, String callbackId, Map<String, Object> payload) {
+        AutomationExecution execution = repository.findByExecutionId(executionId).orElseThrow();
+        if (isProcessedCallback(execution, callbackId, payload)) {
+            return toResponse(execution);
+        }
+        if (!"WAITING_CALLBACK".equals(execution.getStatus()) || !Objects.equals(nodeId, execution.getCurrentNodeId())) {
+            throw new IllegalArgumentException("execution is not waiting at callback node");
+        }
+        try { graphRuntime.callback(execution, graphDefinition(execution), nodeId, callbackId, payload == null ? Map.of() : payload); }
+        catch (RuntimeException ex) { execution.setStatus("FAILED"); execution.setError(Map.of("message", Objects.toString(ex.getMessage(), "callback resume failed"))); execution.setCompletedAt(Instant.now()); }
+        execution.setUpdatedAt(Instant.now()); execution.setSnapshot(buildSnapshot(execution, execution.getOutput(), execution.getStatus())); repository.save(execution);
+        if (!isWaiting(execution.getStatus()) && execution.getCallbackPath() != null) callbackBpm(execution, execution.getCallbackPath(), execution.getContext());
+        return toResponse(execution);
+    }
+
+    public List<com.cyancoder.automationorchestrator.domain.AutomationExecutionStep> steps(String executionId) {
+        return repository.findByExecutionId(executionId).orElseThrow().getSteps();
+    }
+
+    public List<com.cyancoder.automationorchestrator.domain.AutomationExecutionStep> steps(String executionId, String tenantKey, String siteKey) {
+        return scopedExecution(executionId, tenantKey, siteKey).getSteps();
+    }
+
+    public List<Map<String, Object>> deadLetters(String executionId) {
+        return repository.findByExecutionId(executionId).orElseThrow().getDeadLetters();
+    }
+
+    public List<Map<String, Object>> deadLetters(String executionId, String tenantKey, String siteKey) {
+        return scopedExecution(executionId, tenantKey, siteKey).getDeadLetters();
+    }
+
+    public AutomationStartResponse requeueDeadLetter(String executionId, String deadLetterId) {
+        AutomationExecution execution=repository.findByExecutionId(executionId).orElseThrow();
+        return requeueDeadLetter(execution, deadLetterId);
+    }
+
+    public AutomationStartResponse requeueDeadLetter(String executionId, String deadLetterId, String tenantKey, String siteKey) {
+        return requeueDeadLetter(scopedExecution(executionId, tenantKey, siteKey), deadLetterId);
+    }
+
+    private AutomationStartResponse requeueDeadLetter(AutomationExecution execution, String deadLetterId) {
+        Map<String,Object> letter=execution.getDeadLetters().stream().filter(item->deadLetterId.equals(item.get("id"))).findFirst().orElseThrow();
+        execution.getDeadLetters().remove(letter);execution.setCurrentNodeId(Objects.toString(letter.get("nodeId"),null));execution.setStatus("RUNNING");execution.setError(new LinkedHashMap<>());execution.setCompletedAt(null);
+        try { graphRuntime.run(execution,graphDefinition(execution)); }
+        catch(RuntimeException ex){execution.setStatus("FAILED");execution.setError(Map.of("message",Objects.toString(ex.getMessage(),"requeue failed")));execution.setCompletedAt(Instant.now());}
+        execution.setUpdatedAt(Instant.now());execution.setSnapshot(buildSnapshot(execution,execution.getOutput(),execution.getStatus()));repository.save(execution);
+        return toResponse(execution);
+    }
+
+    public Map<String,Object> metrics() {
+        return metrics(repository.findAll());
+    }
+
+    public Map<String,Object> metrics(String tenantKey, String siteKey) {
+        return metrics(repository.findAllByTenantKeyAndSiteKey(scope(tenantKey), scope(siteKey)));
+    }
+
+    private Map<String,Object> metrics(List<AutomationExecution> all) {
+        Map<String,Long> counts=all.stream().collect(java.util.stream.Collectors.groupingBy(AutomationExecution::getStatus,java.util.stream.Collectors.counting()));
+        long completed=all.stream().filter(item->item.getCreatedAt()!=null&&item.getCompletedAt()!=null).count();long duration=all.stream().filter(item->item.getCreatedAt()!=null&&item.getCompletedAt()!=null).mapToLong(item->item.getCompletedAt().toEpochMilli()-item.getCreatedAt().toEpochMilli()).sum();
+        return Map.of("executionCounts",counts,"deadLetters",all.stream().mapToLong(item->item.getDeadLetters().size()).sum(),"averageDurationMs",completed==0?0:duration/completed,"activeExecutions",counts.entrySet().stream().filter(item->List.of("RUNNING","WAITING","WAITING_CALLBACK","WAITING_CONCURRENCY").contains(item.getKey())).mapToLong(Map.Entry::getValue).sum());
+    }
+
+    @Scheduled(fixedDelayString = "${automation.wait.poll-ms:1000}")
+    public void resumeDueExecutions() {
+        if (graphRuntime == null) return;
+        for (AutomationExecution execution : repository.findAllByStatusInAndResumeAtLessThanEqual(List.of("WAITING", "WAITING_CONCURRENCY"), Instant.now())) {
+            try {
+                execution.setStatus("RUNNING"); execution.setCurrentNodeId(execution.getResumeNodeId()); execution.setResumeAt(null); execution.setResumeNodeId(null);
+                graphRuntime.run(execution, graphDefinition(execution));
+                execution.setUpdatedAt(Instant.now()); execution.setSnapshot(buildSnapshot(execution, execution.getOutput(), execution.getStatus())); repository.save(execution);
+                if (!isWaiting(execution.getStatus()) && execution.getCallbackPath() != null) callbackBpm(execution, execution.getCallbackPath(), execution.getContext());
+            } catch (RuntimeException ex) {
+                execution.setStatus("FAILED");
+                execution.setError(Map.of("message", Objects.toString(ex.getMessage(), "resume failed")));
+                execution.setCompletedAt(Instant.now());
+                execution.setUpdatedAt(Instant.now());
+                execution.setSnapshot(buildSnapshot(execution, execution.getOutput(), execution.getStatus()));
+                repository.save(execution);
+                if (execution.getCallbackPath() != null) {
+                    callbackBpm(execution, execution.getCallbackPath(), execution.getContext());
+                }
+            }
         }
     }
 
@@ -170,6 +341,7 @@ public class AutomationExecutionService {
         payload.put("blockKey", execution.getBlockKey());
         payload.put("status", execution.getStatus());
         payload.put("snapshot", execution.getSnapshot());
+        payload.put("output", execution.getOutput());
         payload.putAll(execution.getOutput());
         if (execution.getError() != null && !execution.getError().isEmpty()) {
             payload.put("error", execution.getError());
@@ -199,6 +371,36 @@ public class AutomationExecutionService {
             return evaluateInlineFragment(restoreMongoMap(execution.getInlineFragment()), execution.getInput(), execution.getTenantKey(), execution.getSiteKey());
         }
         return evaluateHybridScreening(execution.getInput());
+    }
+
+    private AutomationFlowDefinition resolveRequestedGraph(AutomationStartRequest request, Map<String, Object> inline) {
+        if (flowDefinitionService == null || graphRuntime == null) return null;
+        if (inline.containsKey("nodes")) {
+            AutomationFlowDefinition definition = objectMapper.convertValue(inline, AutomationFlowDefinition.class);
+            if (definition.getFlowKey() == null || definition.getFlowKey().isBlank()) definition.setFlowKey(firstNonBlank(request.flowKey(), request.automationFlowKey(), "inline-flow"));
+            if (definition.getVersion() == null) definition.setVersion(1);
+            flowDefinitionService.validate(definition);
+            return definition;
+        }
+        String flowKey = firstNonBlank(request.flowKey(), request.automationFlowKey());
+        if (flowKey != null && !"hybrid-screening-automation".equals(flowKey)) {
+            String environment = request.context() == null ? null : string(request.context().get("environment"));
+            return flowDefinitionService.active(request.tenantKey(), request.siteKey(), flowKey, firstNonBlank(environment, "default"));
+        }
+        return null;
+    }
+
+    private boolean isGraphExecution(AutomationExecution execution) {
+        if (execution.getInlineFragment() == null || execution.getInlineFragment().isEmpty()) return false;
+        return restoreMongoMap(execution.getInlineFragment()).containsKey("nodes");
+    }
+
+    private AutomationFlowDefinition graphDefinition(AutomationExecution execution) {
+        return objectMapper.convertValue(restoreMongoMap(execution.getInlineFragment()), AutomationFlowDefinition.class);
+    }
+
+    private boolean isWaiting(String status) {
+        return "WAITING".equalsIgnoreCase(status) || "WAITING_CALLBACK".equalsIgnoreCase(status) || "WAITING_CONCURRENCY".equalsIgnoreCase(status);
     }
 
     @SuppressWarnings("unchecked")
@@ -260,7 +462,7 @@ public class AutomationExecutionService {
         snapshot.put("output", output);
         snapshot.put("error", execution.getError());
         snapshot.put("retryCount", execution.getRetryCount());
-        snapshot.put("completedAt", Instant.now().toString());
+        snapshot.put("completedAt", execution.getCompletedAt() == null ? null : execution.getCompletedAt().toString());
         return snapshot;
     }
 
@@ -354,8 +556,43 @@ public class AutomationExecutionService {
         return "FAILED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status) || "TIMED_OUT".equalsIgnoreCase(status);
     }
 
+    private boolean isTerminal(String status) {
+        return "COMPLETED".equalsIgnoreCase(status) || isTerminalFailure(status);
+    }
+
+    private boolean isProcessedCallback(AutomationExecution execution, String callbackId, Map<String, Object> payload) {
+        Object callbacks = execution.getContext().get("processedCallbacks");
+        if (!(callbacks instanceof Iterable<?> processed)) {
+            return false;
+        }
+        String key = callbackId == null || callbackId.isBlank()
+                ? "payload:" + Objects.hashCode(payload)
+                : callbackId;
+        for (Object processedKey : processed) {
+            if (key.equals(processedKey)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Instant firstInstant(Instant left, Instant right) {
         return left == null ? right : left;
+    }
+
+    private AutomationExecution scopedExecution(String executionId, String tenantKey, String siteKey) {
+        return repository.findFirstByExecutionIdAndTenantKeyAndSiteKey(executionId, scope(tenantKey), scope(siteKey)).orElseThrow();
+    }
+
+    private String scope(String value) {
+        return value == null || value.isBlank() ? "default" : value.trim();
+    }
+
+    private AutomationStartRequest withScope(AutomationStartRequest request, String tenantKey, String siteKey) {
+        return new AutomationStartRequest(request.blockKey(), request.automationFlowKey(), request.executionMode(), request.failurePolicy(),
+                request.correlationKey(), request.callbackPath(), scope(tenantKey), scope(siteKey), request.input(), request.context(),
+                request.inlineFragment(), request.maxRetries(), request.timeoutSeconds(), request.delayMillis(), request.flowKey(),
+                request.managedObjectId(), request.idempotencyKey(), request.variables(), request.inlineFlow());
     }
 
     private String slug(String value) {

@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .permitAll()
                         .pathMatchers("/public/payment/**")
                         .permitAll()
+                        .pathMatchers("/public/automation-flows/**", "/public/automation-orchestrator/**")
+                        .permitAll()
                         .pathMatchers("/.well-known/**")
                         .permitAll()
                         .pathMatchers("/realms/cyan/protocol/openid-connect/**")

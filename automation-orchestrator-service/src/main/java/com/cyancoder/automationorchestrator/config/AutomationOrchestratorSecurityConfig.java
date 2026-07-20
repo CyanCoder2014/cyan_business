@@ -50,7 +50,7 @@ public class AutomationOrchestratorSecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/error", "/actuator/health").permitAll()
+                        .requestMatchers("/error", "/actuator/health", "/public/**").permitAll()
                         .anyRequest().denyAll());
         return http.build();
     }

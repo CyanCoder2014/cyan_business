@@ -130,7 +130,7 @@ class AutomationExecutionServiceTest {
     }
 
     @Test
-    void cancelMarksAsyncExecutionCancelled() {
+    void cancelImmediatelyStopsWaitingExecution() {
         AutomationExecutionRepository repository = mock(AutomationExecutionRepository.class);
         InternalServiceHttpSupport httpSupport = mock(InternalServiceHttpSupport.class);
         AutomationCallbackProperties properties = new AutomationCallbackProperties();
@@ -145,12 +145,14 @@ class AutomationExecutionServiceTest {
         stored.setAutomationFlowKey("hybrid-screening-automation");
         stored.setExecutionMode(AutomationExecutionMode.ASYNC);
         stored.setFailurePolicy(AutomationFailurePolicy.MARK_FAILED);
-        stored.setStatus("RUNNING");
+        stored.setStatus("WAITING_CALLBACK");
+        stored.setCurrentNodeId("review-callback");
         when(repository.findByExecutionId("exec-cancel")).thenReturn(java.util.Optional.of(stored));
 
         AutomationStartResponse cancelled = service.cancel("exec-cancel");
 
         assertEquals("CANCELLED", cancelled.status());
         assertTrue(stored.isCancelRequested());
+        assertTrue(stored.getCompletedAt() != null);
     }
 }

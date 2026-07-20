@@ -10,6 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestHeader;
+import java.util.List;
+import java.util.Map;
+import com.cyancoder.automationorchestrator.domain.AutomationExecutionStep;
+import org.springframework.security.core.Authentication;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/endpoint/automation-orchestrator")
@@ -22,19 +28,36 @@ public class EndpointAutomationExecutionController {
 
     @PostMapping("/executions/start")
     @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
-    public AutomationStartResponse start(@RequestBody AutomationStartRequest request) {
-        return automationExecutionService.start(request);
+    public AutomationStartResponse start(@RequestBody AutomationStartRequest request,
+                                         @RequestHeader(value="X-Tenant-Key", required=false) String tenant,
+                                         @RequestHeader(value="X-Site-Key", required=false) String site,
+                                         Authentication authentication) {
+        return automationExecutionService.startAuthorized(request, authentication == null ? java.util.Set.of() : authentication.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toSet()), tenant, site);
     }
 
     @GetMapping("/executions/{executionId}")
     @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
-    public AutomationStartResponse get(@PathVariable String executionId) {
-        return automationExecutionService.get(executionId);
+    public AutomationStartResponse get(@PathVariable String executionId,
+                                       @RequestHeader(value="X-Tenant-Key", required=false) String tenant,
+                                       @RequestHeader(value="X-Site-Key", required=false) String site) {
+        return automationExecutionService.get(executionId, tenant, site);
     }
 
     @PostMapping("/executions/{executionId}/cancel")
     @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
-    public AutomationStartResponse cancel(@PathVariable String executionId) {
-        return automationExecutionService.cancel(executionId);
+    public AutomationStartResponse cancel(@PathVariable String executionId,
+                                          @RequestHeader(value="X-Tenant-Key", required=false) String tenant,
+                                          @RequestHeader(value="X-Site-Key", required=false) String site) {
+        return automationExecutionService.cancel(executionId, tenant, site);
     }
+
+    @GetMapping("/executions/{executionId}/steps")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public List<AutomationExecutionStep> steps(@PathVariable String executionId, @RequestHeader(value="X-Tenant-Key", required=false) String tenant, @RequestHeader(value="X-Site-Key", required=false) String site) { return automationExecutionService.steps(executionId, tenant, site); }
+
+    @GetMapping("/executions/{executionId}/dead-letters")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public List<Map<String,Object>> deadLetters(@PathVariable String executionId, @RequestHeader(value="X-Tenant-Key", required=false) String tenant, @RequestHeader(value="X-Site-Key", required=false) String site) { return automationExecutionService.deadLetters(executionId, tenant, site); }
+    @PostMapping("/executions/{executionId}/dead-letters/{deadLetterId}/requeue") @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')") public AutomationStartResponse requeue(@PathVariable String executionId,@PathVariable String deadLetterId,@RequestHeader(value="X-Tenant-Key", required=false) String tenant,@RequestHeader(value="X-Site-Key", required=false) String site){return automationExecutionService.requeueDeadLetter(executionId,deadLetterId,tenant,site);}
+    @GetMapping("/metrics") @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')") public Map<String,Object> metrics(@RequestHeader(value="X-Tenant-Key", required=false) String tenant,@RequestHeader(value="X-Site-Key", required=false) String site){return automationExecutionService.metrics(tenant,site);}
 }

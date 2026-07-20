@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -45,6 +46,18 @@ public class InternalServiceHttpSupport {
             headers.set("X-Site-Key", siteKey);
         }
         return headers;
+    }
+
+    public <T> T exchangeUrl(String url, HttpMethod method, Object request, HttpHeaders headers,
+                             Integer connectTimeoutMs, Integer readTimeoutMs, Class<T> responseType) {
+        if (url == null || !(url.startsWith("http://") || url.startsWith("https://"))) {
+            throw new IllegalArgumentException("automation URL must use http or https");
+        }
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connectTimeoutMs == null ? 5000 : Math.max(1, connectTimeoutMs));
+        factory.setReadTimeout(readTimeoutMs == null ? 30000 : Math.max(1, readTimeoutMs));
+        return new RestTemplate(factory).exchange(URI.create(url), method,
+                new HttpEntity<>(request, headers == null ? new HttpHeaders() : headers), responseType).getBody();
     }
 
     private String normalizeServiceCredentialsKey(String serviceKey) {

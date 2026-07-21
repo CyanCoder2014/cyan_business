@@ -32,6 +32,7 @@ public class AutomationFlowDefinitionService {
         if (definition.getVersion() == null || definition.getVersion() < 1) definition.setVersion(1);
         if (blank(definition.getLifecycleStatus())) definition.setLifecycleStatus("DRAFT");
         if (blank(definition.getEnvironment())) definition.setEnvironment("default");
+        if (blank(definition.getRuntimeMode())) definition.setRuntimeMode("VARIABLES");
         if (blank(definition.getCreatedBy())) definition.setCreatedBy(actor);
         definition.setUpdatedAt(Instant.now());
         validate(definition);
@@ -41,6 +42,14 @@ public class AutomationFlowDefinitionService {
     public List<AutomationFlowDefinition> list(String tenantKey, String siteKey) {
         return repository.findAllByTenantKeyAndSiteKeyOrderByFlowKeyAscVersionDesc(scope(tenantKey, "default"), scope(siteKey, "default"))
                 .stream().map(this::decoded).toList();
+    }
+
+    public List<AutomationFlowDefinition> activeScheduledCandidates() {
+        return repository.findAllByActiveTrue().stream().map(this::decoded).toList();
+    }
+
+    public AutomationFlowDefinition saveScheduleState(AutomationFlowDefinition definition) {
+        return decoded(repository.save(encoded(definition)));
     }
 
     public AutomationFlowDefinition get(String tenantKey, String siteKey, String flowKey, Integer version) {
@@ -109,6 +118,9 @@ public class AutomationFlowDefinitionService {
 
     public void validate(AutomationFlowDefinition definition) {
         if (blank(definition.getFlowKey())) throw new IllegalArgumentException("flowKey is required");
+        if (!Set.of("VARIABLES", "N8N_ITEMS").contains(Objects.toString(definition.getRuntimeMode(), "VARIABLES").toUpperCase(Locale.ROOT))) {
+            throw new IllegalArgumentException("runtimeMode must be VARIABLES or N8N_ITEMS");
+        }
         if (blank(definition.getEntryNodeId())) throw new IllegalArgumentException("entryNodeId is required");
         if (definition.getNodes() == null || definition.getNodes().isEmpty()) throw new IllegalArgumentException("nodes are required");
         Set<String> ids = new HashSet<>();
@@ -117,7 +129,29 @@ public class AutomationFlowDefinitionService {
             if (!ids.add(node.id())) throw new IllegalArgumentException("duplicate node id: " + node.id());
         }
         AutomationNode entry = definition.getNodes().stream().filter(node -> definition.getEntryNodeId().equals(node.id())).findFirst().orElseThrow(() -> new IllegalArgumentException("entry node not found"));
-        if (entry.type() != AutomationNodeType.WEBHOOK_TRIGGER) throw new IllegalArgumentException("entry node must be WEBHOOK_TRIGGER");
+        boolean itemRuntime = "N8N_ITEMS".equalsIgnoreCase(definition.getRuntimeMode());
+        Set<AutomationNodeType> itemOnly = Set.of(
+                AutomationNodeType.MANUAL_TRIGGER, AutomationNodeType.SCHEDULE_TRIGGER, AutomationNodeType.ERROR_TRIGGER,
+                AutomationNodeType.HTTP_REQUEST, AutomationNodeType.LOOP_OVER_ITEMS, AutomationNodeType.EXECUTE_WORKFLOW,
+                AutomationNodeType.EDIT_FIELDS, AutomationNodeType.FILTER, AutomationNodeType.SPLIT_OUT,
+                AutomationNodeType.AGGREGATE, AutomationNodeType.SORT, AutomationNodeType.LIMIT,
+                AutomationNodeType.REMOVE_DUPLICATES, AutomationNodeType.EXECUTION_DATA,
+                AutomationNodeType.RESPOND_TO_WEBHOOK, AutomationNodeType.STOP_AND_ERROR, AutomationNodeType.NO_OP
+        );
+        if (!itemRuntime) definition.getNodes().stream().filter(node -> itemOnly.contains(node.type())).findFirst().ifPresent(node -> {
+            throw new IllegalArgumentException(node.type() + " requires runtimeMode=N8N_ITEMS");
+        });
+        Set<AutomationNodeType> itemTriggers = Set.of(
+                AutomationNodeType.WEBHOOK_TRIGGER,
+                AutomationNodeType.MANUAL_TRIGGER,
+                AutomationNodeType.SCHEDULE_TRIGGER,
+                AutomationNodeType.ERROR_TRIGGER
+        );
+        if (itemRuntime ? !itemTriggers.contains(entry.type()) : entry.type() != AutomationNodeType.WEBHOOK_TRIGGER) {
+            throw new IllegalArgumentException(itemRuntime
+                    ? "N8N_ITEMS entry node must be a trigger"
+                    : "entry node must be WEBHOOK_TRIGGER");
+        }
         for (AutomationEdge edge : definition.getEdges() == null ? List.<AutomationEdge>of() : definition.getEdges()) {
             if (edge == null || !ids.contains(edge.fromNodeId()) || !ids.contains(edge.toNodeId())) throw new IllegalArgumentException("edge references an unknown node");
         }
@@ -130,20 +164,43 @@ public class AutomationFlowDefinitionService {
             Map<String,Object> config = node.configOrEmpty();
             List<AutomationEdge> outgoing = edges.stream().filter(edge -> node.id().equals(edge.fromNodeId())).toList();
             switch (node.type()) {
+                case SCHEDULE_TRIGGER -> {
+                    if (config.get("cron") == null && config.get("cronExpression") == null
+                            && config.get("intervalSeconds") == null && config.get("rule") == null) {
+                        throw new IllegalArgumentException("SCHEDULE_TRIGGER requires cron, intervalSeconds, or rule: " + node.id());
+                    }
+                }
                 case END -> { if (!outgoing.isEmpty()) throw new IllegalArgumentException("END node cannot have outgoing edges: " + node.id()); }
                 case IF -> { required(config,"field",node); required(config,"operator",node); requirePorts(outgoing,node,"true","false"); }
+                case FILTER -> { required(config,"field",node); required(config,"operator",node); }
                 case SWITCH -> { required(config,"field",node); required(config,"cases",node); for(String port:configMap(config.get("cases")).keySet()) if(outgoing.stream().noneMatch(edge->port.equals(edge.fromPort()))) throw new IllegalArgumentException("SWITCH node lacks edge for port " + port); }
                 case WAIT_FOR_CALLBACK -> requirePorts(outgoing,node,"callback");
-                case CALL_API -> { if(config.get("url")==null&&(config.get("serviceKey")==null||config.get("path")==null)) throw new IllegalArgumentException("CALL_API requires url or serviceKey/path"); }
+                case CALL_API, HTTP_REQUEST -> { if(config.get("url")==null&&(config.get("serviceKey")==null||config.get("path")==null)) throw new IllegalArgumentException(node.type()+" requires url or serviceKey/path"); }
                 case N8N_WORKFLOW -> required(config,"webhookUrl",node);
                 case PAGINATED_CALL_API -> { required(config,"itemsPath",node); if(config.get("url")==null&&(config.get("serviceKey")==null||config.get("path")==null)) throw new IllegalArgumentException("PAGINATED_CALL_API requires url or serviceKey/path"); }
-                case FOR_EACH -> required(config,"sourcePath",node);
-                case SUBFLOW -> required(config,"flowKey",node);
+                case FOR_EACH -> {
+                    if ("N8N_ITEMS".equalsIgnoreCase(definition.getRuntimeMode())) {
+                        requirePorts(outgoing,node,"loop","done");
+                        long incoming = edges.stream().filter(edge -> node.id().equals(edge.toNodeId())).count();
+                        if (incoming < 2) throw new IllegalArgumentException("FOR_EACH requires a feedback edge in N8N_ITEMS mode: " + node.id());
+                    } else required(config,"sourcePath",node);
+                }
+                case LOOP_OVER_ITEMS -> {
+                    requirePorts(outgoing,node,"loop","done");
+                    long incoming = edges.stream().filter(edge -> node.id().equals(edge.toNodeId())).count();
+                    if (incoming < 2) throw new IllegalArgumentException("LOOP_OVER_ITEMS requires a feedback edge from the loop branch: " + node.id());
+                }
+                case SUBFLOW, EXECUTE_WORKFLOW -> required(config,"flowKey",node);
                 case JDM_DECISION -> { if(config.get("jdm")==null&&config.get("classpathResource")==null&&config.get("filePath")==null) throw new IllegalArgumentException("JDM_DECISION requires jdm, classpathResource, or filePath"); }
                 case MAP_FIELDS -> required(config,"mappings",node);
+                case EDIT_FIELDS -> { if (config.get("assignments") == null && config.get("mappings") == null) throw new IllegalArgumentException("EDIT_FIELDS node requires assignments: " + node.id()); }
                 case FILE_METADATA -> required(config,"sourcePath",node);
                 case DEDUP_BY_KEY -> { required(config,"sourcePath",node); required(config,"keyPath",node); }
-                case CODE -> required(config,"expression",node);
+                case REMOVE_DUPLICATES -> { if(config.get("field") == null && config.get("keyPath") == null) throw new IllegalArgumentException("REMOVE_DUPLICATES node requires field: " + node.id()); }
+                case SPLIT_OUT -> { if(config.get("field") == null && config.get("sourcePath") == null) throw new IllegalArgumentException("SPLIT_OUT node requires field: " + node.id()); }
+                case SORT -> required(config,"field",node);
+                case LIMIT -> { if(config.get("maxItems") == null && config.get("limit") == null) throw new IllegalArgumentException("LIMIT node requires maxItems: " + node.id()); }
+                case CODE -> { if(config.get("expression") == null && config.get("code") == null) throw new IllegalArgumentException("CODE node requires expression or code: " + node.id()); }
                 default -> { }
             }
         }

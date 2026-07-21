@@ -13,4 +13,5 @@ public interface AutomationFlowDefinitionRepository extends MongoRepository<Auto
     Optional<AutomationFlowDefinition> findFirstByTenantKeyAndSiteKeyAndFlowKeyAndEnvironmentAndActiveTrueOrderByVersionDesc(String tenantKey, String siteKey, String flowKey, String environment);
     Optional<AutomationFlowDefinition> findFirstByTenantKeyAndSiteKeyAndFlowKeyOrderByVersionDesc(String tenantKey, String siteKey, String flowKey);
     List<AutomationFlowDefinition> findAllByTenantKeyAndSiteKeyAndFlowKeyAndEnvironmentAndActiveTrue(String tenantKey, String siteKey, String flowKey, String environment);
+    List<AutomationFlowDefinition> findAllByActiveTrue();
 }

@@ -3,6 +3,7 @@ package com.cyancoder.automationorchestrator.controller;
 import com.cyancoder.automationorchestrator.config.AutomationCallbackProperties;
 import com.cyancoder.automationorchestrator.domain.AutomationFlowDefinition;
 import com.cyancoder.automationorchestrator.domain.AutomationNode;
+import com.cyancoder.automationorchestrator.domain.AutomationNodeType;
 import com.cyancoder.automationorchestrator.model.AutomationNodeCallbackRequest;
 import com.cyancoder.automationorchestrator.model.AutomationStartResponse;
 import com.cyancoder.automationorchestrator.service.AutomationExecutionService;
@@ -34,6 +35,9 @@ public class PublicAutomationTriggerController {
                                            @RequestBody(required=false) Map<String,Object> payload) {
         AutomationFlowDefinition definition=flows.active(tenant,site,flowKey,environment);
         AutomationNode entry=definition.getNodes().stream().filter(node->definition.getEntryNodeId().equals(node.id())).findFirst().orElseThrow();
+        if (entry.type() != AutomationNodeType.WEBHOOK_TRIGGER) {
+            throw unauthorized("flow is not configured for public webhook execution");
+        }
         Object expected=entry.configOrEmpty().get("webhookSecret");
         if(expected!=null&&!secureEquals(expected.toString(),secret)) {
             throw unauthorized("invalid webhook secret");

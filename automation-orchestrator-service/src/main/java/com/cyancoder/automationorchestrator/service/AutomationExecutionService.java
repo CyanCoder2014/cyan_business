@@ -41,12 +41,13 @@ public class AutomationExecutionService {
     private final PipelineAutomationRuntime pipelineRuntime;
     private final AutomationFlowDefinitionService flowDefinitionService;
     private final GraphAutomationRuntime graphRuntime;
+    private final N8nAutomationRuntime n8nRuntime;
 
     public AutomationExecutionService(AutomationExecutionRepository repository,
                                       InternalServiceHttpSupport httpSupport,
                                       AutomationCallbackProperties callbackProperties,
                                       ObjectMapper objectMapper) {
-        this(repository, httpSupport, callbackProperties, objectMapper, null, null);
+        this(repository, httpSupport, callbackProperties, objectMapper, null, null, null);
     }
 
     @Autowired
@@ -55,7 +56,8 @@ public class AutomationExecutionService {
                                       AutomationCallbackProperties callbackProperties,
                                       ObjectMapper objectMapper,
                                       AutomationFlowDefinitionService flowDefinitionService,
-                                      GraphAutomationRuntime graphRuntime) {
+                                      GraphAutomationRuntime graphRuntime,
+                                      N8nAutomationRuntime n8nRuntime) {
         this.repository = repository;
         this.httpSupport = httpSupport;
         this.callbackProperties = callbackProperties;
@@ -63,6 +65,7 @@ public class AutomationExecutionService {
         this.pipelineRuntime = new PipelineAutomationRuntime(httpSupport);
         this.flowDefinitionService = flowDefinitionService;
         this.graphRuntime = graphRuntime;
+        this.n8nRuntime = n8nRuntime;
     }
 
     public AutomationStartResponse start(AutomationStartRequest request) {
@@ -164,6 +167,60 @@ public class AutomationExecutionService {
         ));
     }
 
+    public AutomationStartResponse manualRun(String tenantKey, String siteKey, String flowKey, Integer version,
+                                              Map<String, Object> request, Set<String> roles) {
+        AutomationFlowDefinition definition = version == null
+                ? flowDefinitionService.active(tenantKey, siteKey, flowKey, Objects.toString(request.getOrDefault("environment", "default")))
+                : flowDefinitionService.get(tenantKey, siteKey, flowKey, version);
+        flowDefinitionService.requireRoles(definition, roles);
+        Map<String, Object> context = new LinkedHashMap<>(firstMap(AutomationDataSupport.map(request.get("context")), Map.of()));
+        context.put("runMode", "MANUAL");
+        context.put("actorRoles", roles == null ? List.of() : roles);
+        if (request.get("startNodeId") != null) context.put("startNodeId", request.get("startNodeId"));
+        Map<String, Object> input = new LinkedHashMap<>(AutomationDataSupport.map(request.get("input")));
+        if (request.get("items") != null) input.put("items", request.get("items"));
+        Map<String, Object> inline = objectMapper.convertValue(definition, Map.class);
+        AutomationStartRequest start = new AutomationStartRequest(
+                flowKey, flowKey,
+                Boolean.FALSE.equals(request.get("async")) ? AutomationExecutionMode.SYNC : AutomationExecutionMode.ASYNC,
+                AutomationFailurePolicy.MARK_FAILED, null, null, tenantKey, siteKey, input, context, inline,
+                0, null, 0L, flowKey, null, null, input, inline
+        );
+        return start(start);
+    }
+
+    public List<AutomationStartResponse> history(String tenantKey, String siteKey, String flowKey, String status) {
+        return repository.findAllByTenantKeyAndSiteKeyOrderByCreatedAtDesc(scope(tenantKey), scope(siteKey)).stream()
+                .filter(execution -> flowKey == null || flowKey.isBlank() || flowKey.equals(execution.getAutomationFlowKey()))
+                .filter(execution -> status == null || status.isBlank() || status.equalsIgnoreCase(execution.getStatus()))
+                .map(this::toResponse).toList();
+    }
+
+    public AutomationStartResponse retry(String executionId, String tenantKey, String siteKey, boolean fromFailedNode) {
+        AutomationExecution source = scopedExecution(executionId, tenantKey, siteKey);
+        if (!isTerminal(source.getStatus())) throw new IllegalArgumentException("only a terminal execution can be retried");
+        Map<String, Object> context = new LinkedHashMap<>(source.getContext());
+        context.remove("n8nState");
+        context.remove("processedCallbacks");
+        context.put("runMode", "RETRY");
+        context.put("retryOf", source.getExecutionId());
+        Map<String, Object> input = new LinkedHashMap<>(source.getInput());
+        if (fromFailedNode) {
+            source.getSteps().stream().filter(step -> "FAILED".equals(step.getStatus())).reduce((left, right) -> right).ifPresent(step -> {
+                context.put("startNodeId", step.getNodeId());
+                Object items = step.getInputSnapshot().get("items");
+                if (items != null) input.put("items", items);
+            });
+        }
+        Map<String, Object> inline = restoreMongoMap(source.getInlineFragment());
+        return start(new AutomationStartRequest(
+                source.getBlockKey(), source.getAutomationFlowKey(), AutomationExecutionMode.ASYNC, source.getFailurePolicy(),
+                source.getCorrelationKey(), source.getCallbackPath(), source.getTenantKey(), source.getSiteKey(), input, context,
+                inline, source.getMaxRetries(), source.getTimeoutSeconds(), 0L, source.getAutomationFlowKey(),
+                source.getManagedObjectId(), null, input, inline
+        ));
+    }
+
     public AutomationStartResponse cancel(String executionId) {
         AutomationExecution execution = repository.findByExecutionId(executionId).orElseThrow();
         return cancel(execution);
@@ -218,10 +275,12 @@ public class AutomationExecutionService {
             return;
         }
 
+        AutomationFlowDefinition executedDefinition = null;
         try {
             Map<String, Object> output;
             if (isGraphExecution(latest)) {
-                graphRuntime.run(latest, graphDefinition(latest));
+                executedDefinition = graphDefinition(latest);
+                runGraph(latest, executedDefinition);
                 output = latest.getOutput();
                 if (isWaiting(latest.getStatus()) && latest.getExecutionMode() == AutomationExecutionMode.SYNC) {
                     throw new IllegalStateException("automation flows containing WAIT or WAIT_FOR_CALLBACK must run async");
@@ -242,6 +301,7 @@ public class AutomationExecutionService {
             latest.setUpdatedAt(Instant.now());
             latest.setSnapshot(buildSnapshot(latest, Map.of(), "FAILED"));
             repository.save(latest);
+            startErrorWorkflow(latest, executedDefinition);
         }
 
         if (!isWaiting(latest.getStatus()) && request.callbackPath() != null && !request.callbackPath().isBlank()) {
@@ -257,7 +317,11 @@ public class AutomationExecutionService {
         if (!"WAITING_CALLBACK".equals(execution.getStatus()) || !Objects.equals(nodeId, execution.getCurrentNodeId())) {
             throw new IllegalArgumentException("execution is not waiting at callback node");
         }
-        try { graphRuntime.callback(execution, graphDefinition(execution), nodeId, callbackId, payload == null ? Map.of() : payload); }
+        try {
+            AutomationFlowDefinition definition = graphDefinition(execution);
+            if (isN8nItems(definition)) n8nRuntime.callback(execution, definition, nodeId, callbackId, payload == null ? Map.of() : payload);
+            else graphRuntime.callback(execution, definition, nodeId, callbackId, payload == null ? Map.of() : payload);
+        }
         catch (RuntimeException ex) { execution.setStatus("FAILED"); execution.setError(Map.of("message", Objects.toString(ex.getMessage(), "callback resume failed"))); execution.setCompletedAt(Instant.now()); }
         execution.setUpdatedAt(Instant.now()); execution.setSnapshot(buildSnapshot(execution, execution.getOutput(), execution.getStatus())); repository.save(execution);
         if (!isWaiting(execution.getStatus()) && execution.getCallbackPath() != null) callbackBpm(execution, execution.getCallbackPath(), execution.getContext());
@@ -292,7 +356,11 @@ public class AutomationExecutionService {
     private AutomationStartResponse requeueDeadLetter(AutomationExecution execution, String deadLetterId) {
         Map<String,Object> letter=execution.getDeadLetters().stream().filter(item->deadLetterId.equals(item.get("id"))).findFirst().orElseThrow();
         execution.getDeadLetters().remove(letter);execution.setCurrentNodeId(Objects.toString(letter.get("nodeId"),null));execution.setStatus("RUNNING");execution.setError(new LinkedHashMap<>());execution.setCompletedAt(null);
-        try { graphRuntime.run(execution,graphDefinition(execution)); }
+        try {
+            AutomationFlowDefinition definition = graphDefinition(execution);
+            if (isN8nItems(definition)) n8nRuntime.requeueDeadLetter(execution, definition, letter);
+            else graphRuntime.run(execution, definition);
+        }
         catch(RuntimeException ex){execution.setStatus("FAILED");execution.setError(Map.of("message",Objects.toString(ex.getMessage(),"requeue failed")));execution.setCompletedAt(Instant.now());}
         execution.setUpdatedAt(Instant.now());execution.setSnapshot(buildSnapshot(execution,execution.getOutput(),execution.getStatus()));repository.save(execution);
         return toResponse(execution);
@@ -314,11 +382,11 @@ public class AutomationExecutionService {
 
     @Scheduled(fixedDelayString = "${automation.wait.poll-ms:1000}")
     public void resumeDueExecutions() {
-        if (graphRuntime == null) return;
+        if (graphRuntime == null && n8nRuntime == null) return;
         for (AutomationExecution execution : repository.findAllByStatusInAndResumeAtLessThanEqual(List.of("WAITING", "WAITING_CONCURRENCY"), Instant.now())) {
             try {
                 execution.setStatus("RUNNING"); execution.setCurrentNodeId(execution.getResumeNodeId()); execution.setResumeAt(null); execution.setResumeNodeId(null);
-                graphRuntime.run(execution, graphDefinition(execution));
+                runGraph(execution, graphDefinition(execution));
                 execution.setUpdatedAt(Instant.now()); execution.setSnapshot(buildSnapshot(execution, execution.getOutput(), execution.getStatus())); repository.save(execution);
                 if (!isWaiting(execution.getStatus()) && execution.getCallbackPath() != null) callbackBpm(execution, execution.getCallbackPath(), execution.getContext());
             } catch (RuntimeException ex) {
@@ -374,7 +442,7 @@ public class AutomationExecutionService {
     }
 
     private AutomationFlowDefinition resolveRequestedGraph(AutomationStartRequest request, Map<String, Object> inline) {
-        if (flowDefinitionService == null || graphRuntime == null) return null;
+        if (flowDefinitionService == null || (graphRuntime == null && n8nRuntime == null)) return null;
         if (inline.containsKey("nodes")) {
             AutomationFlowDefinition definition = objectMapper.convertValue(inline, AutomationFlowDefinition.class);
             if (definition.getFlowKey() == null || definition.getFlowKey().isBlank()) definition.setFlowKey(firstNonBlank(request.flowKey(), request.automationFlowKey(), "inline-flow"));
@@ -397,6 +465,53 @@ public class AutomationExecutionService {
 
     private AutomationFlowDefinition graphDefinition(AutomationExecution execution) {
         return objectMapper.convertValue(restoreMongoMap(execution.getInlineFragment()), AutomationFlowDefinition.class);
+    }
+
+    private void runGraph(AutomationExecution execution, AutomationFlowDefinition definition) {
+        if (isN8nItems(definition)) {
+            if (n8nRuntime == null) throw new IllegalStateException("N8N_ITEMS runtime is unavailable");
+            n8nRuntime.run(execution, definition);
+        } else {
+            if (graphRuntime == null) throw new IllegalStateException("VARIABLES runtime is unavailable");
+            graphRuntime.run(execution, definition);
+        }
+    }
+
+    private void startErrorWorkflow(AutomationExecution failed, AutomationFlowDefinition definition) {
+        if (definition == null || definition.getErrorWorkflowKey() == null || definition.getErrorWorkflowKey().isBlank()) return;
+        int depth = (int) AutomationDataSupport.longValue(failed.getContext().get("errorWorkflowDepth"), 0);
+        if (depth >= 1) return;
+        Map<String, Object> errorInput = new LinkedHashMap<>();
+        errorInput.put("execution", Map.of(
+                "id", failed.getExecutionId(),
+                "flowKey", failed.getAutomationFlowKey(),
+                "status", failed.getStatus(),
+                "lastNodeId", Objects.toString(failed.getCurrentNodeId(), ""),
+                "error", failed.getError()
+        ));
+        errorInput.put("workflow", Map.of("flowKey", definition.getFlowKey(), "version", definition.getVersion()));
+        Map<String, Object> context = new LinkedHashMap<>();
+        context.put("runMode", "ERROR");
+        context.put("errorWorkflowDepth", depth + 1);
+        context.put("sourceExecutionId", failed.getExecutionId());
+        try {
+            start(new AutomationStartRequest(
+                    definition.getErrorWorkflowKey(), definition.getErrorWorkflowKey(), AutomationExecutionMode.ASYNC,
+                    AutomationFailurePolicy.MARK_FAILED, failed.getCorrelationKey(), null,
+                    failed.getTenantKey(), failed.getSiteKey(), errorInput, context, null, 0, null, 0L,
+                    definition.getErrorWorkflowKey(), failed.getManagedObjectId(),
+                    "error:" + failed.getExecutionId(), errorInput, null
+            ));
+        } catch (RuntimeException errorWorkflowFailure) {
+            Map<String, Object> error = new LinkedHashMap<>(failed.getError());
+            error.put("errorWorkflowFailure", Objects.toString(errorWorkflowFailure.getMessage(), "error workflow failed to start"));
+            failed.setError(error);
+            repository.save(failed);
+        }
+    }
+
+    private boolean isN8nItems(AutomationFlowDefinition definition) {
+        return "N8N_ITEMS".equalsIgnoreCase(definition.getRuntimeMode());
     }
 
     private boolean isWaiting(String status) {

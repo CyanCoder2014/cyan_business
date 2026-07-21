@@ -1,6 +1,7 @@
 package com.cyancoder.automationorchestrator.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 @CompoundIndex(name = "automation_flow_scope_version", def = "{'tenantKey':1,'siteKey':1,'flowKey':1,'version':1}", unique = true)
 public class AutomationFlowDefinition {
     @Id private String id;
+    @Version private Long revision;
     private String tenantKey;
     private String siteKey;
     private String flowKey;
@@ -21,6 +23,7 @@ public class AutomationFlowDefinition {
     private String name;
     private boolean active;
     private String entryNodeId;
+    private String runtimeMode = "VARIABLES";
     private List<AutomationNode> nodes = new ArrayList<>();
     private List<AutomationEdge> edges = new ArrayList<>();
     private Map<String, Object> inputsSchema = new LinkedHashMap<>();
@@ -29,6 +32,11 @@ public class AutomationFlowDefinition {
     private String environment = "default";
     private String lifecycleStatus = "DRAFT";
     private List<String> requiredRoles = new ArrayList<>();
+    private Map<String, Object> settings = new LinkedHashMap<>();
+    private Map<String, Object> pinData = new LinkedHashMap<>();
+    private String errorWorkflowKey;
+    private Instant nextScheduledAt;
+    private Instant lastScheduledAt;
     private String createdBy;
     private String approvedBy;
     private Instant approvedAt;
@@ -38,6 +46,8 @@ public class AutomationFlowDefinition {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+    public Long getRevision() { return revision; }
+    public void setRevision(Long revision) { this.revision = revision; }
     public String getTenantKey() { return tenantKey; }
     public void setTenantKey(String tenantKey) { this.tenantKey = tenantKey; }
     public String getSiteKey() { return siteKey; }
@@ -52,6 +62,8 @@ public class AutomationFlowDefinition {
     public void setActive(boolean active) { this.active = active; }
     public String getEntryNodeId() { return entryNodeId; }
     public void setEntryNodeId(String entryNodeId) { this.entryNodeId = entryNodeId; }
+    public String getRuntimeMode() { return runtimeMode; }
+    public void setRuntimeMode(String runtimeMode) { this.runtimeMode = runtimeMode; }
     public List<AutomationNode> getNodes() { return nodes; }
     public void setNodes(List<AutomationNode> nodes) { this.nodes = nodes == null ? new ArrayList<>() : new ArrayList<>(nodes); }
     public List<AutomationEdge> getEdges() { return edges; }
@@ -68,6 +80,16 @@ public class AutomationFlowDefinition {
     public void setLifecycleStatus(String lifecycleStatus) { this.lifecycleStatus = lifecycleStatus; }
     public List<String> getRequiredRoles() { return requiredRoles; }
     public void setRequiredRoles(List<String> requiredRoles) { this.requiredRoles = requiredRoles == null ? new ArrayList<>() : new ArrayList<>(requiredRoles); }
+    public Map<String, Object> getSettings() { return settings; }
+    public void setSettings(Map<String, Object> settings) { this.settings = settings == null ? new LinkedHashMap<>() : new LinkedHashMap<>(settings); }
+    public Map<String, Object> getPinData() { return pinData; }
+    public void setPinData(Map<String, Object> pinData) { this.pinData = pinData == null ? new LinkedHashMap<>() : new LinkedHashMap<>(pinData); }
+    public String getErrorWorkflowKey() { return errorWorkflowKey; }
+    public void setErrorWorkflowKey(String errorWorkflowKey) { this.errorWorkflowKey = errorWorkflowKey; }
+    public Instant getNextScheduledAt() { return nextScheduledAt; }
+    public void setNextScheduledAt(Instant nextScheduledAt) { this.nextScheduledAt = nextScheduledAt; }
+    public Instant getLastScheduledAt() { return lastScheduledAt; }
+    public void setLastScheduledAt(Instant lastScheduledAt) { this.lastScheduledAt = lastScheduledAt; }
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
     public String getApprovedBy() { return approvedBy; }

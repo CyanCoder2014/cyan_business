@@ -15,4 +15,5 @@ public interface AutomationExecutionRepository extends MongoRepository<Automatio
     long countByStatusInAndCurrentNodeId(List<String> statuses, String currentNodeId);
     long countByStatusInAndCurrentNodeIdAndCurrentConcurrencyKey(List<String> statuses, String currentNodeId, String currentConcurrencyKey);
     List<AutomationExecution> findAllByTenantKeyAndSiteKey(String tenantKey, String siteKey);
+    List<AutomationExecution> findAllByTenantKeyAndSiteKeyOrderByCreatedAtDesc(String tenantKey, String siteKey);
 }

@@ -1,6 +1,7 @@
 package com.cyancoder.automationorchestrator.service;
 
 import com.cyancoder.automationorchestrator.config.AutomationCallbackProperties;
+import com.cyancoder.automationorchestrator.config.AutomationWorkerProperties;
 import com.cyancoder.automationorchestrator.domain.AutomationExecution;
 import com.cyancoder.automationorchestrator.domain.AutomationExecutionMode;
 import com.cyancoder.automationorchestrator.domain.AutomationFailurePolicy;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.dao.DuplicateKeyException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -42,12 +44,13 @@ public class AutomationExecutionService {
     private final AutomationFlowDefinitionService flowDefinitionService;
     private final GraphAutomationRuntime graphRuntime;
     private final N8nAutomationRuntime n8nRuntime;
+    private final AutomationWorkerProperties workerProperties;
 
     public AutomationExecutionService(AutomationExecutionRepository repository,
                                       InternalServiceHttpSupport httpSupport,
                                       AutomationCallbackProperties callbackProperties,
                                       ObjectMapper objectMapper) {
-        this(repository, httpSupport, callbackProperties, objectMapper, null, null, null);
+        this(repository, httpSupport, callbackProperties, objectMapper, null, null, null, new AutomationWorkerProperties());
     }
 
     @Autowired
@@ -57,7 +60,8 @@ public class AutomationExecutionService {
                                       ObjectMapper objectMapper,
                                       AutomationFlowDefinitionService flowDefinitionService,
                                       GraphAutomationRuntime graphRuntime,
-                                      N8nAutomationRuntime n8nRuntime) {
+                                      N8nAutomationRuntime n8nRuntime,
+                                      AutomationWorkerProperties workerProperties) {
         this.repository = repository;
         this.httpSupport = httpSupport;
         this.callbackProperties = callbackProperties;
@@ -66,6 +70,7 @@ public class AutomationExecutionService {
         this.flowDefinitionService = flowDefinitionService;
         this.graphRuntime = graphRuntime;
         this.n8nRuntime = n8nRuntime;
+        this.workerProperties = workerProperties;
     }
 
     public AutomationStartResponse start(AutomationStartRequest request) {
@@ -111,10 +116,19 @@ public class AutomationExecutionService {
         execution.setTimeoutAt(request.timeoutSeconds() == null ? null : Instant.now().plusSeconds(request.timeoutSeconds()));
         execution.setCreatedAt(Instant.now());
         execution.setUpdatedAt(Instant.now());
-        repository.save(execution);
+        claimForLocalWorker(execution);
+        try {
+            repository.save(execution);
+        } catch (DuplicateKeyException duplicate) {
+            if (idempotencyKey == null) throw duplicate;
+            Optional<AutomationExecution> concurrent = repository
+                    .findFirstByTenantKeyAndSiteKeyAndIdempotencyKeyOrderByCreatedAtDesc(tenantKey, siteKey, idempotencyKey);
+            if (concurrent.isPresent()) return toResponse(concurrent.get());
+            throw duplicate;
+        }
 
         if (execution.getExecutionMode() == AutomationExecutionMode.SYNC) {
-            executeNow(execution, request);
+            executeNow(execution);
             return toResponse(repository.findByExecutionId(execution.getExecutionId()).orElse(execution));
         }
 
@@ -127,7 +141,7 @@ public class AutomationExecutionService {
                     Thread.currentThread().interrupt();
                 }
             }
-            executeNow(execution, request);
+            executeNow(execution);
         });
         return toResponse(execution);
     }
@@ -248,7 +262,7 @@ public class AutomationExecutionService {
         return toResponse(execution);
     }
 
-    private void executeNow(AutomationExecution execution, AutomationStartRequest request) {
+    private void executeNow(AutomationExecution execution) {
         AutomationExecution latest = repository.findByExecutionId(execution.getExecutionId()).orElse(execution);
         if (latest.isCancelRequested()) {
             latest.setStatus("CANCELLED");
@@ -256,9 +270,10 @@ public class AutomationExecutionService {
             latest.setCompletedAt(Instant.now());
             latest.setUpdatedAt(Instant.now());
             latest.setSnapshot(buildSnapshot(latest, Map.of(), "CANCELLED"));
+            releaseLease(latest);
             repository.save(latest);
-            if (request.callbackPath() != null && !request.callbackPath().isBlank()) {
-                callbackBpm(latest, request.callbackPath(), request.context());
+            if (latest.getCallbackPath() != null && !latest.getCallbackPath().isBlank()) {
+                callbackBpm(latest, latest.getCallbackPath(), latest.getContext());
             }
             return;
         }
@@ -268,9 +283,10 @@ public class AutomationExecutionService {
             latest.setCompletedAt(Instant.now());
             latest.setUpdatedAt(Instant.now());
             latest.setSnapshot(buildSnapshot(latest, Map.of(), "TIMED_OUT"));
+            releaseLease(latest);
             repository.save(latest);
-            if (request.callbackPath() != null && !request.callbackPath().isBlank()) {
-                callbackBpm(latest, request.callbackPath(), request.context());
+            if (latest.getCallbackPath() != null && !latest.getCallbackPath().isBlank()) {
+                callbackBpm(latest, latest.getCallbackPath(), latest.getContext());
             }
             return;
         }
@@ -293,6 +309,7 @@ public class AutomationExecutionService {
             }
             latest.setUpdatedAt(Instant.now());
             latest.setSnapshot(buildSnapshot(latest, output, latest.getStatus()));
+            if (isWaiting(latest.getStatus()) || isTerminal(latest.getStatus())) releaseLease(latest);
             repository.save(latest);
         } catch (RuntimeException ex) {
             latest.setStatus("FAILED");
@@ -300,12 +317,13 @@ public class AutomationExecutionService {
             latest.setCompletedAt(Instant.now());
             latest.setUpdatedAt(Instant.now());
             latest.setSnapshot(buildSnapshot(latest, Map.of(), "FAILED"));
+            releaseLease(latest);
             repository.save(latest);
             startErrorWorkflow(latest, executedDefinition);
         }
 
-        if (!isWaiting(latest.getStatus()) && request.callbackPath() != null && !request.callbackPath().isBlank()) {
-            callbackBpm(latest, request.callbackPath(), request.context());
+        if (!isWaiting(latest.getStatus()) && latest.getCallbackPath() != null && !latest.getCallbackPath().isBlank()) {
+            callbackBpm(latest, latest.getCallbackPath(), latest.getContext());
         }
     }
 
@@ -380,27 +398,57 @@ public class AutomationExecutionService {
         return Map.of("executionCounts",counts,"deadLetters",all.stream().mapToLong(item->item.getDeadLetters().size()).sum(),"averageDurationMs",completed==0?0:duration/completed,"activeExecutions",counts.entrySet().stream().filter(item->List.of("RUNNING","WAITING","WAITING_CALLBACK","WAITING_CONCURRENCY").contains(item.getKey())).mapToLong(Map.Entry::getValue).sum());
     }
 
-    @Scheduled(fixedDelayString = "${automation.wait.poll-ms:1000}")
+    @Scheduled(fixedDelayString = "${automation.worker.recovery-poll-ms:1000}")
     public void resumeDueExecutions() {
         if (graphRuntime == null && n8nRuntime == null) return;
-        for (AutomationExecution execution : repository.findAllByStatusInAndResumeAtLessThanEqual(List.of("WAITING", "WAITING_CONCURRENCY"), Instant.now())) {
+        int claimed = 0;
+        while (claimed++ < Math.max(1, workerProperties.getRecoveryBatchSize())) {
+            Instant now = Instant.now();
+            Optional<AutomationExecution> candidate = repository.claimNextRecoverable(
+                    workerProperties.getId(),
+                    now,
+                    now.minus(workerProperties.getOrphanGrace()),
+                    now.plus(workerProperties.getLeaseDuration())
+            );
+            if (candidate.isEmpty()) break;
+            AutomationExecution execution = candidate.get();
             try {
-                execution.setStatus("RUNNING"); execution.setCurrentNodeId(execution.getResumeNodeId()); execution.setResumeAt(null); execution.setResumeNodeId(null);
-                runGraph(execution, graphDefinition(execution));
-                execution.setUpdatedAt(Instant.now()); execution.setSnapshot(buildSnapshot(execution, execution.getOutput(), execution.getStatus())); repository.save(execution);
-                if (!isWaiting(execution.getStatus()) && execution.getCallbackPath() != null) callbackBpm(execution, execution.getCallbackPath(), execution.getContext());
+                String previousStatus = execution.getStatus();
+                String previousWorker = execution.getWorkerId();
+                execution.setRevision(execution.getRevision() == null ? 1L : execution.getRevision() + 1);
+                claimForLocalWorker(execution);
+                if ("WAITING".equals(previousStatus) || "WAITING_CONCURRENCY".equals(previousStatus)) {
+                    execution.setCurrentNodeId(execution.getResumeNodeId());
+                    execution.setResumeAt(null);
+                    execution.setResumeNodeId(null);
+                } else {
+                    Map<String, Object> context = new LinkedHashMap<>(execution.getContext());
+                    context.put("recoveredAt", now.toString());
+                    context.put("recoveredFromWorker", Objects.toString(previousWorker, "unknown"));
+                    context.put("recoveryCount", AutomationDataSupport.longValue(context.get("recoveryCount"), 0) + 1);
+                    execution.setContext(context);
+                }
+                repository.save(execution);
+                executeNow(execution);
             } catch (RuntimeException ex) {
                 execution.setStatus("FAILED");
                 execution.setError(Map.of("message", Objects.toString(ex.getMessage(), "resume failed")));
                 execution.setCompletedAt(Instant.now());
                 execution.setUpdatedAt(Instant.now());
                 execution.setSnapshot(buildSnapshot(execution, execution.getOutput(), execution.getStatus()));
+                releaseLease(execution);
                 repository.save(execution);
                 if (execution.getCallbackPath() != null) {
                     callbackBpm(execution, execution.getCallbackPath(), execution.getContext());
                 }
             }
         }
+    }
+
+    @Scheduled(fixedDelayString = "${automation.worker.heartbeat-ms:10000}")
+    public void renewWorkerLeases() {
+        Instant now = Instant.now();
+        repository.renewLeases(workerProperties.getId(), now, now.plus(workerProperties.getLeaseDuration()));
     }
 
     private void callbackBpm(AutomationExecution execution, String callbackPath, Map<String, Object> context) {
@@ -693,6 +741,21 @@ public class AutomationExecutionService {
 
     private Instant firstInstant(Instant left, Instant right) {
         return left == null ? right : left;
+    }
+
+    private void claimForLocalWorker(AutomationExecution execution) {
+        Instant now = Instant.now();
+        execution.setStatus("RUNNING");
+        execution.setWorkerId(workerProperties.getId());
+        execution.setHeartbeatAt(now);
+        execution.setLeaseUntil(now.plus(workerProperties.getLeaseDuration()));
+        execution.setUpdatedAt(now);
+    }
+
+    private void releaseLease(AutomationExecution execution) {
+        execution.setWorkerId(null);
+        execution.setLeaseUntil(null);
+        execution.setHeartbeatAt(null);
     }
 
     private AutomationExecution scopedExecution(String executionId, String tenantKey, String siteKey) {

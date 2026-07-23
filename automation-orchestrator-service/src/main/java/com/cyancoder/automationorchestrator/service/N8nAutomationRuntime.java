@@ -42,6 +42,7 @@ public class N8nAutomationRuntime {
     private final ObjectMapper objectMapper;
     private final N8nExpressionService expressions;
     private final String defaultScriptRunnerUrl;
+    private final AutomationExecutionCheckpointService checkpoints;
 
     public N8nAutomationRuntime(InternalServiceHttpSupport http,
                                 ConnectorCredentialService credentials,
@@ -50,6 +51,18 @@ public class N8nAutomationRuntime {
                                 ObjectMapper objectMapper,
                                 N8nExpressionService expressions,
                                 @Value("${automation.script-runner.url:}") String defaultScriptRunnerUrl) {
+        this(http, credentials, flows, executions, objectMapper, expressions, defaultScriptRunnerUrl, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public N8nAutomationRuntime(InternalServiceHttpSupport http,
+                                ConnectorCredentialService credentials,
+                                AutomationFlowDefinitionService flows,
+                                AutomationExecutionRepository executions,
+                                ObjectMapper objectMapper,
+                                N8nExpressionService expressions,
+                                @Value("${automation.script-runner.url:}") String defaultScriptRunnerUrl,
+                                AutomationExecutionCheckpointService checkpoints) {
         this.http = http;
         this.credentials = credentials;
         this.flows = flows;
@@ -57,6 +70,7 @@ public class N8nAutomationRuntime {
         this.objectMapper = objectMapper;
         this.expressions = expressions;
         this.defaultScriptRunnerUrl = defaultScriptRunnerUrl;
+        this.checkpoints = checkpoints;
     }
 
     public void run(AutomationExecution execution, AutomationFlowDefinition definition) {
@@ -115,6 +129,7 @@ public class N8nAutomationRuntime {
                 state.put("waitingNodeId", node.id());
                 execution.setStatus("WAITING_CALLBACK");
                 persistOutput(execution, state);
+                checkpoint(execution);
                 return;
             }
             rememberOutputs(state, node, outcome.emissions());
@@ -122,14 +137,18 @@ public class N8nAutomationRuntime {
             if (outcome.timedWait()) {
                 execution.setStatus("WAITING");
                 persistOutput(execution, state);
+                checkpoint(execution);
                 return;
             }
+            persistOutput(execution, state);
+            checkpoint(execution);
         }
 
         execution.setStatus("COMPLETED");
         execution.setCurrentNodeId(null);
         execution.setCompletedAt(Instant.now());
         persistOutput(execution, state);
+        checkpoint(execution);
     }
 
     public void callback(AutomationExecution execution, AutomationFlowDefinition definition, String nodeId,
@@ -847,6 +866,10 @@ public class N8nAutomationRuntime {
         output.put("customData", AutomationDataSupport.map(state.get("customData")));
         if (state.get("webhookResponse") != null) output.put("webhookResponse", state.get("webhookResponse"));
         execution.setOutput(output);
+    }
+
+    private void checkpoint(AutomationExecution execution) {
+        if (checkpoints != null) checkpoints.checkpoint(execution);
     }
 
     private String safeKey(String value) { return value.replace(".", "\uFF0E"); }

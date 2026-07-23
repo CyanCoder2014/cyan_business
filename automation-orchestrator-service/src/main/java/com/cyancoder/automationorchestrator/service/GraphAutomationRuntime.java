@@ -24,19 +24,21 @@ public class GraphAutomationRuntime {
     private final AutomationExecutionRepository executions;
     private final GoRulesDecisionService decisions;
     private final ObjectMapper objectMapper;
+    private final AutomationExecutionCheckpointService checkpoints;
     private final ExpressionParser expressions = new SpelExpressionParser();
 
     public GraphAutomationRuntime(InternalServiceHttpSupport http, ConnectorCredentialService credentials,
                                   AutomationFlowDefinitionService flows, AutomationExecutionRepository executions,
                                   GoRulesDecisionService decisions) {
-        this(http, credentials, flows, executions, decisions, new ObjectMapper());
+        this(http, credentials, flows, executions, decisions, new ObjectMapper(), null);
     }
 
     @Autowired
     public GraphAutomationRuntime(InternalServiceHttpSupport http, ConnectorCredentialService credentials,
                                   AutomationFlowDefinitionService flows, AutomationExecutionRepository executions,
-                                  GoRulesDecisionService decisions, ObjectMapper objectMapper) {
-        this.http=http;this.credentials=credentials;this.flows=flows;this.executions=executions;this.decisions=decisions;this.objectMapper=objectMapper;
+                                  GoRulesDecisionService decisions, ObjectMapper objectMapper,
+                                  AutomationExecutionCheckpointService checkpoints) {
+        this.http=http;this.credentials=credentials;this.flows=flows;this.executions=executions;this.decisions=decisions;this.objectMapper=objectMapper;this.checkpoints=checkpoints;
     }
 
     public void run(AutomationExecution execution, AutomationFlowDefinition definition) {
@@ -49,13 +51,15 @@ public class GraphAutomationRuntime {
             AutomationNode node=nodes.get(current);if(node==null)throw new IllegalArgumentException("automation node not found: "+current);
             execution.setCurrentNodeId(current);
             if(execution.isCancelRequested()){execution.setStatus("CANCELLED");return;}
-            if(!node.isEnabled()){current=next(node.id(),null,definition.getEdges());continue;}
+            if(!node.isEnabled()){current=next(node.id(),null,definition.getEdges());execution.setCurrentNodeId(current);checkpoint(execution);continue;}
             NodeResult result=runWithPolicies(execution,definition,node);
-            if(result.waiting()){execution.setCurrentNodeId(node.id());return;}
+            if(result.waiting()){execution.setCurrentNodeId(node.id());checkpoint(execution);return;}
             current=result.nextNodeId();execution.setCurrentNodeId(current);execution.setCurrentConcurrencyKey(null);
+            if(current!=null)checkpoint(execution);
         }
         execution.setStatus("COMPLETED");execution.setCompletedAt(Instant.now());
         AutomationSchemaSupport.validate(definition.getOutputsSchema(), execution.getOutput(), "automation output");
+        checkpoint(execution);
     }
 
     public void callback(AutomationExecution execution, AutomationFlowDefinition definition, String nodeId, String callbackId, Map<String,Object> payload) {
@@ -201,4 +205,5 @@ public class GraphAutomationRuntime {
     private Object value(AutomationExecution ex,Object value){return AutomationDataSupport.resolve(value,ex.getOutput(),ex.getContext());}
     private String next(String node,String port,List<AutomationEdge> edges){return (edges==null?List.<AutomationEdge>of():edges).stream().filter(e->node.equals(e.fromNodeId())).filter(e->port==null?e.fromPort()==null||e.fromPort().isBlank():port.equals(e.fromPort())).map(AutomationEdge::toNodeId).findFirst().orElse(null);}
     private NodeResult go(String next){return new NodeResult(next,false);}private NodeResult waitResult(){return new NodeResult(null,true);}private record NodeResult(String nextNodeId,boolean waiting){}
+    private void checkpoint(AutomationExecution execution){if(checkpoints!=null)checkpoints.checkpoint(execution);}
 }

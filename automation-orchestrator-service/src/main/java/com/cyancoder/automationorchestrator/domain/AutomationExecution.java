@@ -1,6 +1,7 @@
 package com.cyancoder.automationorchestrator.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,9 +13,17 @@ import java.util.Map;
 
 @Document("automation_executions")
 @CompoundIndex(name = "automation_execution_scope_key", def = "{'tenantKey':1,'siteKey':1,'executionId':1}", unique = true)
+@CompoundIndex(
+        name = "automation_execution_idempotency",
+        def = "{'tenantKey':1,'siteKey':1,'idempotencyKey':1}",
+        unique = true,
+        partialFilter = "{'idempotencyKey': {'$type': 'string'}}"
+)
 public class AutomationExecution {
     @Id
     private String id;
+    @Version
+    private Long revision;
     private String executionId;
     private String blockKey;
     private String automationFlowKey;
@@ -46,6 +55,10 @@ public class AutomationExecution {
     private Integer retryCount = 0;
     private Long timeoutSeconds;
     private Instant timeoutAt;
+    private String workerId;
+    private Instant leaseUntil;
+    private Instant heartbeatAt;
+    private long checkpointSequence;
     private boolean cancelRequested;
     private Instant cancelledAt;
     private Instant createdAt;
@@ -54,6 +67,8 @@ public class AutomationExecution {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+    public Long getRevision() { return revision; }
+    public void setRevision(Long revision) { this.revision = revision; }
     public String getExecutionId() { return executionId; }
     public void setExecutionId(String executionId) { this.executionId = executionId; }
     public String getBlockKey() { return blockKey; }
@@ -116,6 +131,14 @@ public class AutomationExecution {
     public void setTimeoutSeconds(Long timeoutSeconds) { this.timeoutSeconds = timeoutSeconds; }
     public Instant getTimeoutAt() { return timeoutAt; }
     public void setTimeoutAt(Instant timeoutAt) { this.timeoutAt = timeoutAt; }
+    public String getWorkerId() { return workerId; }
+    public void setWorkerId(String workerId) { this.workerId = workerId; }
+    public Instant getLeaseUntil() { return leaseUntil; }
+    public void setLeaseUntil(Instant leaseUntil) { this.leaseUntil = leaseUntil; }
+    public Instant getHeartbeatAt() { return heartbeatAt; }
+    public void setHeartbeatAt(Instant heartbeatAt) { this.heartbeatAt = heartbeatAt; }
+    public long getCheckpointSequence() { return checkpointSequence; }
+    public void setCheckpointSequence(long checkpointSequence) { this.checkpointSequence = checkpointSequence; }
     public boolean isCancelRequested() { return cancelRequested; }
     public void setCancelRequested(boolean cancelRequested) { this.cancelRequested = cancelRequested; }
     public Instant getCancelledAt() { return cancelledAt; }

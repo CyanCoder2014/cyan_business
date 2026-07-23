@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.time.Instant;
 import java.util.List;
 
-public interface AutomationExecutionRepository extends MongoRepository<AutomationExecution, String> {
+public interface AutomationExecutionRepository extends MongoRepository<AutomationExecution, String>, AutomationExecutionClaimRepository {
     Optional<AutomationExecution> findByExecutionId(String executionId);
     Optional<AutomationExecution> findFirstByExecutionIdAndTenantKeyAndSiteKey(String executionId, String tenantKey, String siteKey);
     Optional<AutomationExecution> findFirstByTenantKeyAndSiteKeyAndIdempotencyKeyOrderByCreatedAtDesc(String tenantKey, String siteKey, String idempotencyKey);

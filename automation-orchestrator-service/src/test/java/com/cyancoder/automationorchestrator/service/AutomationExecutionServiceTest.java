@@ -1,9 +1,11 @@
 package com.cyancoder.automationorchestrator.service;
 
 import com.cyancoder.automationorchestrator.config.AutomationCallbackProperties;
+import com.cyancoder.automationorchestrator.config.AutomationWorkerProperties;
 import com.cyancoder.automationorchestrator.domain.AutomationExecution;
 import com.cyancoder.automationorchestrator.domain.AutomationExecutionMode;
 import com.cyancoder.automationorchestrator.domain.AutomationFailurePolicy;
+import com.cyancoder.automationorchestrator.domain.AutomationFlowDefinition;
 import com.cyancoder.automationorchestrator.model.AutomationStartRequest;
 import com.cyancoder.automationorchestrator.model.AutomationStartResponse;
 import com.cyancoder.automationorchestrator.repo.AutomationExecutionRepository;
@@ -14,6 +16,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 
 import java.util.Map;
+import java.time.Duration;
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -154,5 +158,69 @@ class AutomationExecutionServiceTest {
         assertEquals("CANCELLED", cancelled.status());
         assertTrue(stored.isCancelRequested());
         assertTrue(stored.getCompletedAt() != null);
+    }
+
+    @Test
+    void recoveryAtomicallyClaimsAndContinuesExpiredRunningExecution() {
+        AutomationExecutionRepository repository = mock(AutomationExecutionRepository.class);
+        InternalServiceHttpSupport httpSupport = mock(InternalServiceHttpSupport.class);
+        GraphAutomationRuntime graphRuntime = mock(GraphAutomationRuntime.class);
+        AutomationWorkerProperties workers = new AutomationWorkerProperties();
+        workers.setId("pod-new");
+        workers.setLeaseDuration(Duration.ofMinutes(2));
+        workers.setRecoveryBatchSize(2);
+        AutomationExecutionService service = new AutomationExecutionService(
+                repository,
+                httpSupport,
+                new AutomationCallbackProperties(),
+                new ObjectMapper(),
+                mock(AutomationFlowDefinitionService.class),
+                graphRuntime,
+                mock(N8nAutomationRuntime.class),
+                workers
+        );
+
+        AutomationExecution orphan = new AutomationExecution();
+        orphan.setId("mongo-id");
+        orphan.setRevision(3L);
+        orphan.setExecutionId("exec-orphan");
+        orphan.setAutomationFlowKey("durable-flow");
+        orphan.setStatus("RUNNING");
+        orphan.setWorkerId("pod-dead");
+        orphan.setLeaseUntil(Instant.now().minusSeconds(30));
+        orphan.setCurrentNodeId("save");
+        orphan.setTenantKey("tenant");
+        orphan.setSiteKey("site");
+        orphan.setExecutionMode(AutomationExecutionMode.ASYNC);
+        orphan.setInlineFragment(Map.of(
+                "flowKey", "durable-flow",
+                "version", 1,
+                "runtimeMode", "VARIABLES",
+                "entryNodeId", "trigger",
+                "nodes", java.util.List.of(
+                        Map.of("id", "trigger", "type", "WEBHOOK_TRIGGER"),
+                        Map.of("id", "save", "type", "END")
+                ),
+                "edges", java.util.List.of()
+        ));
+
+        when(repository.claimNextRecoverable(eq("pod-new"), any(), any(), any()))
+                .thenReturn(java.util.Optional.of(orphan))
+                .thenReturn(java.util.Optional.empty());
+        when(repository.findByExecutionId("exec-orphan")).thenReturn(java.util.Optional.of(orphan));
+        doAnswer(invocation -> invocation.getArgument(0)).when(repository).save(any(AutomationExecution.class));
+        doAnswer(invocation -> {
+            AutomationExecution execution = invocation.getArgument(0);
+            execution.setStatus("COMPLETED");
+            execution.setCompletedAt(Instant.now());
+            return null;
+        }).when(graphRuntime).run(any(AutomationExecution.class), any(AutomationFlowDefinition.class));
+
+        service.resumeDueExecutions();
+
+        assertEquals("COMPLETED", orphan.getStatus());
+        assertEquals(4L, orphan.getRevision());
+        assertTrue(((Number) orphan.getContext().get("recoveryCount")).longValue() == 1L);
+        verify(graphRuntime).run(eq(orphan), any(AutomationFlowDefinition.class));
     }
 }

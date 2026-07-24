@@ -2,6 +2,8 @@ package com.cyancoder.batchworker.controller;
 
 import com.cyancoder.batchworker.api.*;
 import com.cyancoder.batchworker.domain.BatchDefinition;
+import com.cyancoder.batchworker.domain.BatchRejectedItem;
+import com.cyancoder.batchworker.repository.BatchRejectedItemRepository;
 import com.cyancoder.batchworker.service.BatchDefinitionService;
 import com.cyancoder.batchworker.service.BatchRunService;
 import jakarta.validation.Valid;
@@ -17,10 +19,13 @@ import org.springframework.web.bind.annotation.*;
 public class BatchController {
     private final BatchDefinitionService definitions;
     private final BatchRunService runs;
+    private final BatchRejectedItemRepository rejectedItems;
 
-    public BatchController(BatchDefinitionService definitions, BatchRunService runs) {
+    public BatchController(BatchDefinitionService definitions, BatchRunService runs,
+                           BatchRejectedItemRepository rejectedItems) {
         this.definitions = definitions;
         this.runs = runs;
+        this.rejectedItems = rejectedItems;
     }
 
     @PostMapping("/definitions")
@@ -65,6 +70,15 @@ public class BatchController {
             @RequestHeader("X-Site-Key") String site,
             @RequestParam(defaultValue = "50") int limit) {
         return runs.history(tenant, site, limit).stream().map(BatchRunResponse::from).toList();
+    }
+
+    @GetMapping("/runs/{id}/rejected-items")
+    public List<BatchRejectedItem> rejectedItems(
+            @RequestHeader("X-Tenant-Key") String tenant,
+            @RequestHeader("X-Site-Key") String site,
+            @PathVariable UUID id) {
+        runs.get(tenant, site, id);
+        return rejectedItems.findAllByRunIdOrderByCreatedAtAsc(id);
     }
 
     @PostMapping("/runs/{id}/retry")

@@ -13,6 +13,7 @@
 - `POST /internal/batch/definitions`
 - `POST /internal/batch/definitions/{definitionKey}/runs`
 - `GET /internal/batch/runs/{runId}`
+- `GET /internal/batch/runs/{runId}/rejected-items`
 - `POST /internal/batch/runs/{runId}/retry`
 - matching bearer-token endpoint APIs under `/endpoint/batch`
 

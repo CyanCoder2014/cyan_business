@@ -16,10 +16,16 @@ Next.js control panel for the structured app-maker flow.
 The UI expects the orchestrator on:
 
 - `NEXT_PUBLIC_PLATFORM_API_BASE_URL`
+- `NEXT_PUBLIC_AVAILABLE_SERVICE_KEYS` (optional comma-separated deployment inventory)
 
 Default:
 
 - `http://localhost:8001`
+
+When the inventory variable is omitted, AI request bodies advertise the lightweight
+panel deployment: AI orchestrator, notification, BPM, automation, report, SSO
+auth/user/captcha, media, and processor. Add `batch-worker-service` for durable
+high-volume ETL generation, or override the complete list for another deployment.
 
 Primary endpoint:
 

@@ -1,4 +1,5 @@
 import type { AiConversationSession, BotConversationSession, BotMessage } from "@/lib/types";
+import { withServiceInventory } from "@/lib/platform-service-inventory";
 
 const platformBaseUrl = process.env.AI_ORCHESTRATOR_SERVICE_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:9121";
 
@@ -64,7 +65,7 @@ export async function upsertBotSession(_: BotConversationSession): Promise<BotCo
 export async function createBotSession(input: Omit<BotConversationSession, "id" | "createdAt" | "updatedAt" | "messages"> & { messages?: BotMessage[] }): Promise<BotConversationSession> {
   const created = await requestPlatformJson<AiConversationSession>("/endpoint/ai-orchestrator/sessions", {
     method: "POST",
-    body: JSON.stringify({
+    body: JSON.stringify(withServiceInventory({
       channelType: input.channel.toUpperCase(),
       tenantKey: input.tenantKey,
       siteKey: input.siteKey,
@@ -73,7 +74,7 @@ export async function createBotSession(input: Omit<BotConversationSession, "id" 
       appTypeHint: input.appType,
       title: input.title,
       extractedAnswers: input.answers
-    })
+    }))
   });
   return mapConversationSession(created);
 }
@@ -82,11 +83,11 @@ export async function appendBotMessage(sessionId: string, message: Omit<BotMessa
   try {
     const session = await requestPlatformJson<AiConversationSession>(`/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}/message`, {
       method: "POST",
-      body: JSON.stringify({
+      body: JSON.stringify(withServiceInventory({
         role: message.role.toUpperCase(),
         content: message.content,
         answersPatch: {}
-      })
+      }))
     });
     return mapConversationSession(session);
   } catch {
@@ -99,11 +100,11 @@ export async function updateBotSession(sessionId: string, patch: Partial<BotConv
     try {
       const session = await requestPlatformJson<AiConversationSession>(`/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}/message`, {
         method: "POST",
-        body: JSON.stringify({
+        body: JSON.stringify(withServiceInventory({
           role: "SYSTEM",
           content: patch.lastPrompt ?? patch.title ?? "Session update",
           answersPatch: patch.answers
-        })
+        }))
       });
       return mapConversationSession(session);
     } catch {

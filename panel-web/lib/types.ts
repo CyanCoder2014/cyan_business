@@ -9,6 +9,7 @@ export type GeneratePlatformAppRequest = {
   sessionId?: string;
   execute: boolean;
   answers?: Record<string, unknown>;
+  availableServiceKeys?: string[];
 };
 
 export type ProvisioningResult = {
@@ -16,6 +17,7 @@ export type ProvisioningResult = {
   createdDefinitions: Array<Record<string, unknown>>;
   createdRecords: Array<Record<string, unknown>>;
   createdFlows: Array<Record<string, unknown>>;
+  createdResources?: Array<Record<string, unknown>>;
   deliveryEndpoints: Array<Record<string, unknown>>;
   manualActions: string[];
 };
@@ -29,10 +31,12 @@ export type PlatformAppDslDefinition = {
     siteKey?: string;
     desiredDomain?: string;
     capabilities?: string[];
+    availableServiceKeys?: string[];
   };
   entities: Array<Record<string, unknown>>;
   routes: Array<Record<string, unknown>>;
   flows: Array<Record<string, unknown>>;
+  resources?: Array<Record<string, unknown>>;
   delivery: {
     publicApis: string[];
     botApis: string[];
@@ -127,6 +131,7 @@ export type AiConversationSession = {
   status: string;
   messages: AiConversationMessage[];
   extractedAnswers: Record<string, unknown>;
+  availableServiceKeys?: string[];
   pendingQuestionKeys: string[];
   pendingQuestions: string[];
   latestPrompt?: string | null;

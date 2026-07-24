@@ -10,12 +10,17 @@ import type {
   ProvisioningRun
 } from "@/lib/types";
 import { getPlatformAuthToken, platformFetch } from "@/lib/platform-auth";
+import { withServiceInventory } from "@/lib/platform-service-inventory";
 
 type PlatformServiceKey = "ai-orchestrator-service" | "bot-adapter-service";
 
 async function requestJson<T>(serviceKey: PlatformServiceKey, path: string, init: RequestInit): Promise<T> {
+  const body = serviceKey === "ai-orchestrator-service" && init.body && typeof init.body === "string"
+    ? JSON.stringify(withServiceInventory(JSON.parse(init.body) as Record<string, unknown>))
+    : init.body;
   const response = await platformFetch(`/api/platform/service/${serviceKey}${path}`, {
     ...init,
+    body,
     headers: {
       "Content-Type": "application/json",
       ...(init.headers ?? {})
@@ -34,7 +39,7 @@ async function requestJson<T>(serviceKey: PlatformServiceKey, path: string, init
 export async function generatePlatformApp(request: GeneratePlatformAppRequest): Promise<GeneratePlatformAppResponse> {
   return requestJson<GeneratePlatformAppResponse>("ai-orchestrator-service", "/endpoint/ai-orchestrator/generate/app", {
     method: "POST",
-    body: JSON.stringify(request)
+    body: JSON.stringify(withServiceInventory(request))
   });
 }
 
@@ -62,7 +67,7 @@ export function generatePlatformAppOverWebSocket(request: GeneratePlatformAppReq
     }, 30000);
 
     socket.onopen = () => {
-      socket.send(JSON.stringify({ type: "generatePlatformApp", payload: request }));
+      socket.send(JSON.stringify({ type: "generatePlatformApp", payload: withServiceInventory(request) }));
     };
 
     socket.onerror = () => {
@@ -132,6 +137,7 @@ export function createClientDraft(request: {
   title?: string;
   prompt?: string;
   answers?: Record<string, unknown>;
+  availableServiceKeys?: string[];
 }): Promise<ClientAppDraft> {
   return requestJson<ClientAppDraft>("ai-orchestrator-service", "/endpoint/ai-orchestrator/drafts", {
     method: "POST",
@@ -184,6 +190,7 @@ export function createConversationSession(request: {
   appTypeHint?: string;
   title?: string;
   extractedAnswers?: Record<string, unknown>;
+  availableServiceKeys?: string[];
 }): Promise<AiConversationSession> {
   return requestJson<AiConversationSession>("ai-orchestrator-service", "/endpoint/ai-orchestrator/sessions", {
     method: "POST",
@@ -193,7 +200,7 @@ export function createConversationSession(request: {
 
 export function appendConversationMessage(
   sessionId: string,
-  request: { role: string; content: string; answersPatch?: Record<string, unknown> }
+  request: { role: string; content: string; answersPatch?: Record<string, unknown>; availableServiceKeys?: string[] }
 ): Promise<AiConversationSession> {
   return requestJson<AiConversationSession>("ai-orchestrator-service", `/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}/message`, {
     method: "POST",

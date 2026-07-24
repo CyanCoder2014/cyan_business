@@ -1,4 +1,5 @@
 import type { ClientAppDraft, ProjectDraft } from "@/lib/types";
+import { withServiceInventory } from "@/lib/platform-service-inventory";
 const platformBaseUrl = process.env.AI_ORCHESTRATOR_SERVICE_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:9121";
 
 function mapClientDraft(draft: ClientAppDraft): ProjectDraft {
@@ -54,21 +55,21 @@ async function upsertBackendDraft(draft: ProjectDraft): Promise<ProjectDraft | n
     if (existing) {
       const updated = await requestPlatformJson<ClientAppDraft>(`/endpoint/ai-orchestrator/drafts/${draft.id}`, {
         method: "PATCH",
-        body: JSON.stringify({
+        body: JSON.stringify(withServiceInventory({
           prompt: draft.prompt,
           title: draft.title,
           answersPatch: {
             generatedDsl: draft.dsl,
             nextQuestions: draft.nextQuestions
           }
-        })
+        }))
       });
       return mapClientDraft(updated);
     }
 
     const created = await requestPlatformJson<ClientAppDraft>("/endpoint/ai-orchestrator/drafts", {
       method: "POST",
-      body: JSON.stringify({
+      body: JSON.stringify(withServiceInventory({
         appType: draft.dsl.app.type,
         tenantKey: draft.tenantKey,
         siteKey: draft.siteKey,
@@ -78,7 +79,7 @@ async function upsertBackendDraft(draft: ProjectDraft): Promise<ProjectDraft | n
           generatedDsl: draft.dsl,
           nextQuestions: draft.nextQuestions
         }
-      })
+      }))
     });
     return mapClientDraft(created);
   } catch {

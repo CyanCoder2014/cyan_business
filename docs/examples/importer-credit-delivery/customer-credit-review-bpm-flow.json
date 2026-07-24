@@ -1,0 +1,111 @@
+{
+  "flowKey": "customer-credit-manual-review-v1",
+  "version": 1,
+  "name": "Customer Credit Manual Review",
+  "description": "Finance review for blocked, high-risk, or exceptional automated credit assessments.",
+  "startState": "finance-review",
+  "active": false,
+  "states": [
+    {
+      "id": "finance-review",
+      "displayName": "Finance Review",
+      "terminal": false,
+      "formKey": "customer-credit-review",
+      "processorKey": "credit-review-normalizer",
+      "reviewCommentRequired": true,
+      "candidateGroups": ["finance-credit-reviewers"],
+      "onEnterActions": [
+        {
+          "type": "ADD_AUDIT_ENTRY",
+          "params": { "message": "Automated credit assessment requires manual review" }
+        },
+        {
+          "type": "SET_ASSIGNEE",
+          "params": {
+            "assigneeType": "GROUP",
+            "groupAssignee": "finance-credit-reviewers"
+          }
+        }
+      ],
+      "accessRule": {
+        "canRead": ["ROLE_FINANCE", "ROLE_ADMIN"],
+        "canEdit": ["ROLE_FINANCE"],
+        "canApprove": ["ROLE_FINANCE_MANAGER"]
+      },
+      "entityService": "bpm-service",
+      "entityKey": "customer-credit-review",
+      "rendererService": "bpm-service",
+      "rendererKey": "customer-credit-review",
+      "submitMode": "DYNAMIC",
+      "waitForAutomation": false
+    },
+    {
+      "id": "approved",
+      "displayName": "Credit Approved",
+      "terminal": true,
+      "reviewCommentRequired": false,
+      "candidateGroups": [],
+      "onEnterActions": [
+        {
+          "type": "ADD_AUDIT_ENTRY",
+          "params": { "message": "Credit approved by finance" }
+        },
+        {
+          "type": "NOTIFY_OWNER",
+          "params": {
+            "serviceKey": "notification-service",
+            "path": "/internal/notifications/send",
+            "method": "POST"
+          }
+        }
+      ],
+      "accessRule": {
+        "canRead": ["ROLE_FINANCE", "ROLE_ADMIN"],
+        "canEdit": [],
+        "canApprove": []
+      },
+      "submitMode": "DYNAMIC",
+      "waitForAutomation": false
+    },
+    {
+      "id": "rejected",
+      "displayName": "Credit Rejected",
+      "terminal": true,
+      "reviewCommentRequired": false,
+      "candidateGroups": [],
+      "onEnterActions": [
+        {
+          "type": "ADD_AUDIT_ENTRY",
+          "params": { "message": "Credit rejected by finance" }
+        }
+      ],
+      "accessRule": {
+        "canRead": ["ROLE_FINANCE", "ROLE_ADMIN"],
+        "canEdit": [],
+        "canApprove": []
+      },
+      "submitMode": "DYNAMIC",
+      "waitForAutomation": false
+    }
+  ],
+  "transitions": [
+    {
+      "id": "approve",
+      "fromState": "finance-review",
+      "toState": "approved",
+      "label": "Approve credit",
+      "allowedGroups": ["finance-credit-reviewers"],
+      "allowedRoles": ["ROLE_FINANCE_MANAGER"],
+      "conditions": []
+    },
+    {
+      "id": "reject",
+      "fromState": "finance-review",
+      "toState": "rejected",
+      "label": "Reject credit",
+      "allowedGroups": ["finance-credit-reviewers"],
+      "allowedRoles": ["ROLE_FINANCE_MANAGER"],
+      "conditions": []
+    }
+  ]
+}

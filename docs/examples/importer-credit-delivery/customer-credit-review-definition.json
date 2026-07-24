@@ -1,0 +1,58 @@
+{
+  "entityKey": "customer-credit-review",
+  "definition": {
+    "entityType": "BPM_FORM",
+    "title": "Customer Credit Manual Review",
+    "fields": {
+      "assessmentKey": {
+        "id": "assessmentKey",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "customerKey": {
+        "id": "customerKey",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "recommendedLimit": {
+        "id": "recommendedLimit",
+        "type": "number",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "approvedLimit": {
+        "id": "approvedLimit",
+        "type": "number",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "riskBand": {
+        "id": "riskBand",
+        "type": "string",
+        "validations": [
+          { "validation": "ENUM", "order": 1, "validationParams": { "values": ["MEDIUM", "HIGH", "BLOCKED"] } }
+        ]
+      },
+      "reviewerDecision": {
+        "id": "reviewerDecision",
+        "type": "string",
+        "validations": [
+          { "validation": "ENUM", "order": 1, "validationParams": { "values": ["APPROVE", "REDUCE", "REJECT"] } }
+        ]
+      },
+      "reviewerComment": {
+        "id": "reviewerComment",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      }
+    }
+  }
+}

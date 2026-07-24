@@ -1,0 +1,229 @@
+{
+  "flowKey": "customer-credit-score-v1",
+  "version": 1,
+  "name": "Score one customer and open manual review when required",
+  "active": false,
+  "entryNodeId": "manual",
+  "runtimeMode": "VARIABLES",
+  "environment": "production",
+  "lifecycleStatus": "DRAFT",
+  "nodes": [
+    {
+      "id": "manual",
+      "type": "MANUAL_TRIGGER",
+      "name": "Internal idempotent customer-summary trigger",
+      "enabled": true,
+      "config": {}
+    },
+    {
+      "id": "credit-policy",
+      "type": "JDM_DECISION",
+      "name": "Zen credit policy",
+      "enabled": true,
+      "config": {
+        "inputTemplate": {
+          "metrics": "{{metrics}}"
+        },
+        "outputPath": "decision",
+        "tracePath": "decisionTrace",
+        "jdm": {
+          "contentType": "application/vnd.gorules.decision",
+          "edges": [
+            { "id": "jdm-e1", "type": "edge", "sourceId": "request", "targetId": "credit-table" },
+            { "id": "jdm-e2", "type": "edge", "sourceId": "credit-table", "targetId": "response" }
+          ],
+          "nodes": [
+            {
+              "id": "request",
+              "name": "Request",
+              "type": "inputNode",
+              "position": { "x": 80, "y": 200 }
+            },
+            {
+              "id": "credit-table",
+              "name": "Customer credit policy",
+              "type": "decisionTableNode",
+              "position": { "x": 380, "y": 200 },
+              "content": {
+                "hitPolicy": "first",
+                "passThrough": false,
+                "executionMode": "single",
+                "inputs": [
+                  { "id": "i-overdue", "name": "Maximum overdue days", "field": "metrics.maximumOverdueDays" },
+                  { "id": "i-orders", "name": "Order count 90d", "field": "metrics.orderCount90d" },
+                  { "id": "i-total", "name": "Total amount 90d", "field": "metrics.totalAmount90d" },
+                  { "id": "i-failed", "name": "Failed deliveries 90d", "field": "metrics.failedDeliveryCount90d" }
+                ],
+                "outputs": [
+                  { "id": "o-limit", "name": "Credit limit", "field": "creditLimit" },
+                  { "id": "o-risk", "name": "Risk band", "field": "riskBand" },
+                  { "id": "o-review", "name": "Manual review", "field": "manualReview" },
+                  { "id": "o-reason", "name": "Reason", "field": "reason" }
+                ],
+                "rules": [
+                  {
+                    "_id": "blocked-overdue",
+                    "i-overdue": "> 90",
+                    "i-orders": "",
+                    "i-total": "",
+                    "i-failed": "",
+                    "o-limit": "0",
+                    "o-risk": "\"BLOCKED\"",
+                    "o-review": "true",
+                    "o-reason": "\"Maximum overdue days exceeds 90\""
+                  },
+                  {
+                    "_id": "high-delivery-failure",
+                    "i-overdue": "",
+                    "i-orders": "",
+                    "i-total": "",
+                    "i-failed": ">= 5",
+                    "o-limit": "metrics.totalAmount90d * 0.05",
+                    "o-risk": "\"HIGH\"",
+                    "o-review": "true",
+                    "o-reason": "\"Repeated failed deliveries\""
+                  },
+                  {
+                    "_id": "high-thin-history",
+                    "i-overdue": "",
+                    "i-orders": "< 3",
+                    "i-total": "",
+                    "i-failed": "",
+                    "o-limit": "metrics.averageOrderAmount90d",
+                    "o-risk": "\"HIGH\"",
+                    "o-review": "true",
+                    "o-reason": "\"Insufficient order history\""
+                  },
+                  {
+                    "_id": "low-risk-established",
+                    "i-overdue": "<= 7",
+                    "i-orders": ">= 20",
+                    "i-total": ">= 1000000000",
+                    "i-failed": "< 2",
+                    "o-limit": "metrics.totalAmount90d * 0.30",
+                    "o-risk": "\"LOW\"",
+                    "o-review": "false",
+                    "o-reason": "\"Established customer with good payment and delivery history\""
+                  },
+                  {
+                    "_id": "default-medium",
+                    "i-overdue": "",
+                    "i-orders": "",
+                    "i-total": "",
+                    "i-failed": "",
+                    "o-limit": "metrics.totalAmount90d * 0.15",
+                    "o-risk": "\"MEDIUM\"",
+                    "o-review": "false",
+                    "o-reason": "\"Standard policy\""
+                  }
+                ]
+              }
+            },
+            {
+              "id": "response",
+              "name": "Response",
+              "type": "outputNode",
+              "position": { "x": 760, "y": 200 }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "save-credit-report",
+      "type": "CALL_API",
+      "name": "Upsert strict customer credit report",
+      "enabled": true,
+      "retryPolicy": {
+        "maxAttempts": 5,
+        "backoffMs": 1000,
+        "strategy": "exponential"
+      },
+      "config": {
+        "serviceKey": "report-service",
+        "path": "/internal/entities/records/customer-credit-report/{{assessmentKey}}",
+        "method": "PUT",
+        "body": {
+          "recordKey": "{{assessmentKey}}",
+          "data": {
+            "assessmentKey": "{{assessmentKey}}",
+            "customerKey": "{{customerKey}}",
+            "assessedAt": "{{assessedAt}}",
+            "currency": "{{currency}}",
+            "metrics": "{{metrics}}",
+            "creditLimit": "{{decision.creditLimit}}",
+            "riskBand": "{{decision.riskBand}}",
+            "manualReview": "{{decision.manualReview}}",
+            "reason": "{{decision.reason}}",
+            "sourceRunKey": "{{sourceRunKey}}"
+          }
+        },
+        "storeResponseAt": "savedReport"
+      }
+    },
+    {
+      "id": "needs-review",
+      "type": "IF",
+      "name": "Manual review required?",
+      "enabled": true,
+      "config": {
+        "field": "decision.manualReview",
+        "operator": "EQ",
+        "value": true
+      }
+    },
+    {
+      "id": "open-credit-review",
+      "type": "CALL_API",
+      "name": "Open BPM credit review",
+      "enabled": true,
+      "retryPolicy": {
+        "maxAttempts": 3,
+        "backoffMs": 1000,
+        "strategy": "exponential"
+      },
+      "config": {
+        "serviceKey": "bpm-service",
+        "path": "/internal/bpm/managed-objects",
+        "method": "POST",
+        "headers": {
+          "X-Actor-User": "credit-automation",
+          "X-Actor-Roles": "ROLE_SYSTEM"
+        },
+        "body": {
+          "flowKey": "customer-credit-manual-review-v1",
+          "objectType": "CUSTOMER_CREDIT_REVIEW",
+          "objectRef": {
+            "service": "report-service",
+            "entityKey": "customer-credit-report",
+            "recordKey": "{{assessmentKey}}"
+          },
+          "payload": {
+            "assessmentKey": "{{assessmentKey}}",
+            "customerKey": "{{customerKey}}",
+            "recommendedLimit": "{{decision.creditLimit}}",
+            "riskBand": "{{decision.riskBand}}",
+            "reason": "{{decision.reason}}",
+            "metrics": "{{metrics}}"
+          }
+        },
+        "storeResponseAt": "bpmReview"
+      }
+    },
+    {
+      "id": "end",
+      "type": "END",
+      "name": "Done",
+      "enabled": true,
+      "config": {}
+    }
+  ],
+  "edges": [
+    { "id": "e1", "fromNodeId": "manual", "toNodeId": "credit-policy" },
+    { "id": "e2", "fromNodeId": "credit-policy", "toNodeId": "save-credit-report" },
+    { "id": "e3", "fromNodeId": "save-credit-report", "toNodeId": "needs-review" },
+    { "id": "e4", "fromNodeId": "needs-review", "fromPort": "true", "toNodeId": "open-credit-review" },
+    { "id": "e5", "fromNodeId": "needs-review", "fromPort": "false", "toNodeId": "end" },
+    { "id": "e6", "fromNodeId": "open-credit-review", "toNodeId": "end" }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "flowKey": "morning-importer-credit-master-v1",
+  "version": 1,
+  "name": "Morning importer order ingestion and credit fan-out",
+  "active": false,
+  "entryNodeId": "schedule",
+  "runtimeMode": "VARIABLES",
+  "environment": "production",
+  "lifecycleStatus": "DRAFT",
+  "nodes": [
+    {
+      "id": "schedule",
+      "type": "SCHEDULE_TRIGGER",
+      "name": "Every morning at 08:00 Tehran",
+      "enabled": true,
+      "config": {
+        "cron": "0 0 8 * * *",
+        "timezone": "Asia/Tehran"
+      }
+    },
+    {
+      "id": "import-orders",
+      "type": "RUN_BATCH_JOB",
+      "name": "Durably import approximately 100000 orders",
+      "enabled": true,
+      "retryPolicy": {
+        "maxAttempts": 3,
+        "backoffMs": 5000,
+        "strategy": "exponential"
+      },
+      "config": {
+        "definitionKey": "importer-order-projection-v1",
+        "runKey": "{{scheduledAt}}",
+        "pollSeconds": 15,
+        "resultPath": "orderBatch"
+      }
+    },
+    {
+      "id": "finalize-projection",
+      "type": "CALL_API",
+      "name": "Finalize customer clusters and fan out scoring executions",
+      "enabled": true,
+      "credentialRef": "credit-projection-api",
+      "retryPolicy": {
+        "maxAttempts": 5,
+        "backoffMs": 2000,
+        "strategy": "exponential"
+      },
+      "config": {
+        "url": "https://projection.example/v1/credit-projection/finalize",
+        "method": "POST",
+        "body": {
+          "sourceRunKey": "{{scheduledAt}}",
+          "batchRunId": "{{orderBatch.id}}",
+          "expectedWriteCount": "{{orderBatch.writeCount}}",
+          "scoreFlowKey": "customer-credit-score-v1"
+        },
+        "storeResponseAt": "projection"
+      }
+    },
+    {
+      "id": "end",
+      "type": "END",
+      "name": "Done",
+      "enabled": true,
+      "config": {}
+    }
+  ],
+  "edges": [
+    { "id": "e1", "fromNodeId": "schedule", "toNodeId": "import-orders" },
+    { "id": "e2", "fromNodeId": "import-orders", "toNodeId": "finalize-projection" },
+    { "id": "e3", "fromNodeId": "finalize-projection", "toNodeId": "end" }
+  ]
+}

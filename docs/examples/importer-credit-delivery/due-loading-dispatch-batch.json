@@ -1,0 +1,41 @@
+{
+  "definitionKey": "importer-due-loading-dispatch-v1",
+  "title": "Dispatch this morning's due loadings",
+  "active": true,
+  "spec": {
+    "source": {
+      "url": "https://importer.example/v1/loadings/due?window=MORNING&status=READY",
+      "itemsPath": "content",
+      "pageParameter": "page",
+      "sizeParameter": "size",
+      "pageSize": 250,
+      "headers": {
+        "Accept": "application/json"
+      },
+      "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN"
+    },
+    "destination": {
+      "url": "https://delivery.example/v1/dispatches",
+      "method": "POST",
+      "itemKeyPath": "dispatchKey",
+      "headers": {
+        "X-Source-System": "cyan-importer-platform"
+      },
+      "bearerTokenEnvironmentVariable": "DELIVERY_API_TOKEN"
+    },
+    "fieldMappings": {
+      "dispatchKey": "loadingId",
+      "loadingKey": "loadingId",
+      "customerKey": "customer.id",
+      "recipient.name": "recipient.name",
+      "recipient.mobile": "recipient.mobile",
+      "address.city": "deliveryAddress.city",
+      "address.postalCode": "deliveryAddress.postalCode",
+      "promisedDeliveryAt": "promisedDeliveryAt",
+      "packages": "packages"
+    },
+    "chunkSize": 100,
+    "retryLimit": 7,
+    "skipLimit": 50
+  }
+}

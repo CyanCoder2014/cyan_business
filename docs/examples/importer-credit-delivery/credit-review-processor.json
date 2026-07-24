@@ -1,0 +1,8 @@
+{
+  "processorKey": "credit-review-normalizer",
+  "targetType": "BPM_FORM",
+  "validatorsJson": "[{\"type\":\"REQUIRED\",\"field\":\"assessmentKey\",\"message\":\"assessmentKey is required\"},{\"type\":\"REQUIRED\",\"field\":\"customerKey\",\"message\":\"customerKey is required\"},{\"type\":\"ENUM\",\"field\":\"reviewerDecision\",\"values\":[\"APPROVE\",\"REDUCE\",\"REJECT\"],\"message\":\"invalid reviewer decision\"},{\"type\":\"DECIMAL_MIN\",\"field\":\"approvedLimit\",\"value\":\"0\",\"message\":\"approvedLimit cannot be negative\"},{\"type\":\"DECIMAL_MAX\",\"field\":\"approvedLimit\",\"value\":\"1000000000\",\"message\":\"approvedLimit exceeds policy ceiling\"},{\"type\":\"REQUIRED\",\"field\":\"reviewerComment\",\"message\":\"reviewerComment is required\"}]",
+  "operatorsJson": "[{\"type\":\"TRIM\",\"field\":\"customerKey\"},{\"type\":\"UPPERCASE\",\"field\":\"reviewerDecision\"},{\"type\":\"TRIM\",\"field\":\"reviewerComment\"}]",
+  "description": "Normalizes and validates manual credit-review submissions before strict entity validation and persistence.",
+  "active": true
+}

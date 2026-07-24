@@ -1,0 +1,74 @@
+{
+  "entityKey": "customer-credit-report",
+  "definition": {
+    "entityType": "REPORT_RECORD",
+    "title": "Customer Credit Assessment",
+    "fields": {
+      "assessmentKey": {
+        "id": "assessmentKey",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "customerKey": {
+        "id": "customerKey",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "assessedAt": {
+        "id": "assessedAt",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "currency": {
+        "id": "currency",
+        "type": "string",
+        "validations": [
+          { "validation": "ENUM", "order": 1, "validationParams": { "values": ["IRR", "USD", "EUR"] } }
+        ]
+      },
+      "metrics": {
+        "id": "metrics",
+        "type": "object",
+        "itemValidations": {
+          "orderCount90d": { "id": "orderCount90d", "type": "number" },
+          "activeDays90d": { "id": "activeDays90d", "type": "number" },
+          "orderFrequencyPerActiveDay": { "id": "orderFrequencyPerActiveDay", "type": "number" },
+          "totalAmount90d": { "id": "totalAmount90d", "type": "number" },
+          "averageOrderAmount90d": { "id": "averageOrderAmount90d", "type": "number" },
+          "maximumOverdueDays": { "id": "maximumOverdueDays", "type": "number" },
+          "failedDeliveryCount90d": { "id": "failedDeliveryCount90d", "type": "number" }
+        }
+      },
+      "creditLimit": {
+        "id": "creditLimit",
+        "type": "number",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 },
+          { "validation": "DECIMAL_MIN", "order": 2, "validationParams": { "value": "0" } }
+        ]
+      },
+      "riskBand": {
+        "id": "riskBand",
+        "type": "string",
+        "validations": [
+          { "validation": "ENUM", "order": 1, "validationParams": { "values": ["LOW", "MEDIUM", "HIGH", "BLOCKED"] } }
+        ]
+      },
+      "manualReview": { "id": "manualReview", "type": "boolean" },
+      "reason": { "id": "reason", "type": "string" },
+      "sourceRunKey": {
+        "id": "sourceRunKey",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      }
+    }
+  }
+}

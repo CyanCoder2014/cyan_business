@@ -1,0 +1,42 @@
+{
+  "definitionKey": "importer-order-projection-v1",
+  "title": "Import orders into the customer credit projection",
+  "active": true,
+  "spec": {
+    "source": {
+      "url": "https://importer.example/v1/orders?status=CONFIRMED",
+      "itemsPath": "content",
+      "pageParameter": "page",
+      "sizeParameter": "size",
+      "pageSize": 500,
+      "headers": {
+        "Accept": "application/json"
+      },
+      "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN"
+    },
+    "destination": {
+      "url": "https://projection.example/v1/credit-projection/order-events",
+      "method": "POST",
+      "itemKeyPath": "eventKey",
+      "headers": {
+        "X-Projection-Key": "importer-credit-v1"
+      },
+      "bearerTokenEnvironmentVariable": "PROJECTION_API_TOKEN"
+    },
+    "fieldMappings": {
+      "eventKey": "orderId",
+      "orderKey": "orderId",
+      "customerKey": "customer.id",
+      "createdAt": "createdAt",
+      "totalAmount": "totalAmount",
+      "currency": "currency",
+      "maximumOverdueDays": "payment.maximumOverdueDays",
+      "loadingKey": "loading.id",
+      "promisedDeliveryAt": "loading.promisedDeliveryAt",
+      "deliveryStatus": "loading.status"
+    },
+    "chunkSize": 200,
+    "retryLimit": 5,
+    "skipLimit": 100
+  }
+}

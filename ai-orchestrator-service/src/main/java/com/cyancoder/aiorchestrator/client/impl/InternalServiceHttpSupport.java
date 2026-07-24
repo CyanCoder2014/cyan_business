@@ -45,7 +45,7 @@ public class InternalServiceHttpSupport {
         try {
             ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()
                     .orElseThrow(() -> new DownstreamServiceException(
-                            "Service is not registered in discovery: " + serviceKey,
+                            "No internal route is configured for service: " + serviceKey,
                             serviceKey,
                             path,
                             503,

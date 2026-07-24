@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 
-const gatewayBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:18001";
+const serviceBaseUrls: Record<string, string> = {
+  auth: process.env.SSO_AUTH_SERVICE_BASE_URL ?? "http://localhost:9001",
+  users: process.env.SSO_USER_SERVICE_BASE_URL ?? "http://localhost:9002",
+  captcha: process.env.SSO_CAPTCHA_SERVICE_BASE_URL ?? "http://localhost:9003",
+  otp: process.env.SSO_OTP_SERVICE_BASE_URL ?? "http://localhost:9004",
+  sessions: process.env.SSO_SESSION_SERVICE_BASE_URL ?? "http://localhost:9005",
+  fido: process.env.SSO_FIDO_SERVICE_BASE_URL ?? "http://localhost:9006"
+};
 
 type RouteContext = {
   params: {
@@ -9,9 +16,14 @@ type RouteContext = {
 };
 
 async function proxy(request: Request, context: RouteContext) {
+  const serviceSegment = context.params.path[0];
+  const baseUrl = serviceBaseUrls[serviceSegment];
+  if (!baseUrl) {
+    return NextResponse.json({ message: "Unsupported SSO service" }, { status: 404 });
+  }
   const incomingUrl = new URL(request.url);
   const targetPath = context.params.path.map(encodeURIComponent).join("/");
-  const targetUrl = `${gatewayBaseUrl}/api/sso/${targetPath}${incomingUrl.search}`;
+  const targetUrl = `${baseUrl}/api/sso/${targetPath}${incomingUrl.search}`;
   const body = request.method === "GET" || request.method === "HEAD" ? undefined : await request.text();
 
   const response = await fetch(targetUrl, {

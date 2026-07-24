@@ -1,6 +1,6 @@
 import { platformFetch } from "@/lib/platform-auth";
 
-const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
+const platformBaseUrl = "/api/platform/service/storefront-service";
 
 export type StorefrontResolvedRoute = {
   tenantKey?: string;

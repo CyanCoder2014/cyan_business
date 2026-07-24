@@ -13,7 +13,7 @@ Next.js control panel for the structured app-maker flow.
 
 ## Runtime contract
 
-The UI expects the orchestrator on:
+For local compatibility with legacy routes:
 
 - `NEXT_PUBLIC_PLATFORM_API_BASE_URL`
 - `NEXT_PUBLIC_AVAILABLE_SERVICE_KEYS` (optional comma-separated deployment inventory)
@@ -26,6 +26,11 @@ When the inventory variable is omitted, AI request bodies advertise the lightwei
 panel deployment: AI orchestrator, notification, BPM, automation, report, SSO
 auth/user/captcha, media, and processor. Add `batch-worker-service` for durable
 high-volume ETL generation, or override the complete list for another deployment.
+
+In Kubernetes production, the panel uses its same-origin `/api/platform/**` and
+`/api/sso/**` BFF routes. The BFF calls Kubernetes Services using server-side
+`*_SERVICE_BASE_URL` variables, so neither `api-gateway` nor
+`discovery-server` is required.
 
 Primary endpoint:
 

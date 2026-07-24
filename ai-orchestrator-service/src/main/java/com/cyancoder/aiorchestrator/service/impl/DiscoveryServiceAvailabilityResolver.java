@@ -28,9 +28,13 @@ public class DiscoveryServiceAvailabilityResolver implements ServiceAvailability
         if (requestedServiceKeys != null && !requestedServiceKeys.isEmpty()) {
             return new ServiceAvailabilitySnapshot(normalize(requestedServiceKeys), "REQUEST");
         }
+        if ("CONFIGURED".equalsIgnoreCase(properties.getAvailabilityMode())) {
+            return new ServiceAvailabilitySnapshot(
+                    normalize(properties.getServiceKeys()), "KUBERNETES_CONFIG");
+        }
         List<String> discovered = normalize(discoveryClient.getServices());
         if (!discovered.isEmpty()) {
-            return new ServiceAvailabilitySnapshot(discovered, "DISCOVERY");
+            return new ServiceAvailabilitySnapshot(discovered, "LOCAL_DISCOVERY");
         }
         return new ServiceAvailabilitySnapshot(normalize(properties.getServiceKeys()), "CONFIG_FALLBACK");
     }

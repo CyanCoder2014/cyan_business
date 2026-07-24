@@ -97,12 +97,13 @@ public class GraphAutomationRuntime {
     private NodeResult runNode(AutomationExecution ex,AutomationFlowDefinition def,AutomationNode node,AutomationExecutionStep step){
         Map<String,Object> c=node.configOrEmpty();List<AutomationEdge> edges=def.getEdges();
         return switch(node.type()){
-            case WEBHOOK_TRIGGER,MERGE->{finish(step,"COMPLETED",Map.of(),null);yield go(next(node.id(),null,edges));}
+            case WEBHOOK_TRIGGER,MANUAL_TRIGGER,SCHEDULE_TRIGGER,ERROR_TRIGGER,MERGE->{finish(step,"COMPLETED",Map.of(),null);yield go(next(node.id(),null,edges));}
             case END->{finish(step,"COMPLETED",Map.of(),null);yield go(null);}
             case WAIT->{Instant at=c.get("resumeAt")==null?Instant.now().plusSeconds(AutomationDataSupport.longValue(value(ex,c.get("delaySeconds")),60)):AutomationDataSupport.instant(value(ex,c.get("resumeAt")));if(at==null)at=Instant.now().plusSeconds(60);ex.setResumeAt(at);ex.setResumeNodeId(next(node.id(),null,edges));ex.setStatus("WAITING");finish(step,"WAITING",Map.of("resumeAt",at.toString()),null);yield waitResult();}
             case WAIT_FOR_CALLBACK->{ex.setResumeNodeId(next(node.id(),"callback",edges));ex.setStatus("WAITING_CALLBACK");finish(step,"WAITING_CALLBACK",Map.of("callbackNodeId",node.id()),null);yield waitResult();}
             case CALL_API,N8N_WORKFLOW->{Map<String,Object> response=call(ex,node,c,node.type()==AutomationNodeType.N8N_WORKFLOW);mapResponse(ex,c,response);finish(step,"COMPLETED",response,null);yield go(next(node.id(),null,edges));}
             case PAGINATED_CALL_API->{Map<String,Object> summary=paginate(ex,node,c);finish(step,"COMPLETED",summary,null);yield go(next(node.id(),null,edges));}
+            case RUN_BATCH_JOB->runBatch(ex,node,c,edges,step);
             case IF->{boolean yes=AutomationDataSupport.compare(value(ex,c.get("field")),AutomationDataSupport.string(c.get("operator")),value(ex,c.get("value")));finish(step,"COMPLETED",Map.of("result",yes),null);yield go(next(node.id(),yes?"true":"false",edges));}
             case SWITCH->{Object actual=value(ex,c.get("field"));String port="default";for(var entry:AutomationDataSupport.map(value(ex,c.get("cases"))).entrySet())if(Objects.equals(entry.getValue(),actual)){port=entry.getKey();break;}finish(step,"COMPLETED",Map.of("port",port),null);yield go(next(node.id(),port,edges));}
             case FOR_EACH->{List<Object> source=AutomationDataSupport.list(value(ex,c.get("sourcePath")));int chunk=(int)Math.max(1,AutomationDataSupport.longValue(c.get("chunkSize"),1));List<Object> output=new ArrayList<>();for(int start=0;start<source.size();start+=chunk)for(int i=start;i<Math.min(source.size(),start+chunk);i++){Map<String,Object> local=new LinkedHashMap<>(ex.getContext());local.put("item",source.get(i));local.put("index",i);Object mapped=AutomationDataSupport.materialize(c.get("itemTemplate"),ex.getOutput(),local);output.add(mapped==null?source.get(i):mapped);}String target=Objects.toString(c.getOrDefault("targetPath","forEachResult"));AutomationDataSupport.setPath(ex.getOutput(),target,output);finish(step,"COMPLETED",Map.of("processedCount",output.size(),"targetPath",target),null);yield go(next(node.id(),null,edges));}
@@ -194,6 +195,52 @@ public class GraphAutomationRuntime {
     }
 
     private Map<String,Object> paginate(AutomationExecution ex,AutomationNode node,Map<String,Object> c){int start=(int)AutomationDataSupport.longValue(value(ex,c.get("pageStart")),0);int end=c.get("pageEnd")!=null?(int)AutomationDataSupport.longValue(value(ex,c.get("pageEnd")),start):start+(int)Math.max(1,AutomationDataSupport.longValue(value(ex,c.get("pageCount")),1))-1;String itemsPath=AutomationDataSupport.string(c.get("itemsPath"));if(itemsPath==null)throw new IllegalArgumentException("itemsPath is required");List<Object> items=new ArrayList<>(),pages=new ArrayList<>();for(int page=start;page<=end;page++){Map<String,Object> local=new LinkedHashMap<>(c);Map<String,Object> body=AutomationDataSupport.map(AutomationDataSupport.copy(value(ex,c.get("body"))));AutomationDataSupport.setPath(body,Objects.toString(c.getOrDefault("pageParamPath","page")),page);if(c.get("size")!=null)AutomationDataSupport.setPath(body,Objects.toString(c.getOrDefault("sizeParamPath","size")),value(ex,c.get("size")));local.put("body",body);Map<String,Object> response=call(ex,node,local,false);pages.add(response);List<Object> found=AutomationDataSupport.list(AutomationDataSupport.readPath(response,itemsPath));items.addAll(found);if(found.isEmpty()&&AutomationDataSupport.bool(c.get("stopOnEmpty"),false))break;}String target=Objects.toString(c.getOrDefault("targetPath","paginatedItems"));AutomationDataSupport.setPath(ex.getOutput(),target,items);if(c.get("pageResponsesPath")!=null)AutomationDataSupport.setPath(ex.getOutput(),c.get("pageResponsesPath").toString(),pages);Map<String,Object> summary=new LinkedHashMap<>();summary.put("items",items);summary.put("pageResponses",pages);summary.put("itemCount",items.size());summary.put("pagesCalled",pages.size());applyMappings(ex.getOutput(),AutomationDataSupport.map(c.get("responseMappings")),summary);return summary;}
+
+    private NodeResult runBatch(AutomationExecution ex, AutomationNode node, Map<String, Object> config,
+                                List<AutomationEdge> edges, AutomationExecutionStep step) {
+        String definitionKey = AutomationDataSupport.string(value(ex, config.get("definitionKey")));
+        if (definitionKey == null || definitionKey.isBlank()) {
+            throw new IllegalArgumentException("RUN_BATCH_JOB definitionKey is required");
+        }
+        Map<String, Object> runs = AutomationDataSupport.map(ex.getContext().get("batchRuns"));
+        String marker = node.id().replace(".", "\uFF0E");
+        String runId = AutomationDataSupport.string(runs.get(marker));
+        HttpHeaders headers = http.internalHeaders("batch-worker-service", ex.getTenantKey(), ex.getSiteKey());
+        Map<String, Object> batch;
+        if (runId == null) {
+            String runKey = AutomationDataSupport.string(value(ex, config.get("runKey")));
+            if (runKey == null || runKey.isBlank()) runKey = ex.getExecutionId();
+            batch = AutomationDataSupport.map(http.exchange("batch-worker-service",
+                    "/internal/batch/definitions/" + definitionKey + "/runs",
+                    HttpMethod.POST, Map.of("runKey", runKey), headers, Object.class));
+            runId = AutomationDataSupport.string(batch.get("id"));
+            if (runId == null) throw new IllegalStateException("batch worker did not return a run id");
+            runs.put(marker, runId);
+            ex.getContext().put("batchRuns", runs);
+        } else {
+            batch = AutomationDataSupport.map(http.exchange("batch-worker-service",
+                    "/internal/batch/runs/" + runId, HttpMethod.GET, null, headers, Object.class));
+        }
+        String status = Objects.toString(batch.get("status"), "UNKNOWN");
+        if ("QUEUED".equals(status) || "RUNNING".equals(status)) {
+            long delay = Math.max(1, AutomationDataSupport.longValue(config.get("pollSeconds"), 15));
+            ex.setStatus("WAITING");
+            ex.setResumeAt(Instant.now().plusSeconds(delay));
+            ex.setResumeNodeId(node.id());
+            finish(step, "WAITING_BATCH", batch, null);
+            return waitResult();
+        }
+        if (!"COMPLETED".equals(status)) {
+            throw new IllegalStateException("batch run " + runId + " ended with status " + status
+                    + ": " + Objects.toString(batch.get("errorMessage"), "unknown failure"));
+        }
+        String target = Objects.toString(config.getOrDefault("resultPath", "batchResult"));
+        AutomationDataSupport.setPath(ex.getOutput(), target, batch);
+        runs.remove(marker);
+        if (runs.isEmpty()) ex.getContext().remove("batchRuns"); else ex.getContext().put("batchRuns", runs);
+        finish(step, "COMPLETED", batch, null);
+        return go(next(node.id(), null, edges));
+    }
     private Map<String,Object> dedup(AutomationExecution ex,Map<String,Object> c){String source=AutomationDataSupport.string(c.get("sourcePath")),keyPath=AutomationDataSupport.string(c.get("keyPath"));if(source==null||keyPath==null)throw new IllegalArgumentException("DEDUP_BY_KEY requires sourcePath and keyPath");boolean first="FIRST".equalsIgnoreCase(AutomationDataSupport.string(c.getOrDefault("keep","LAST"))),skip=AutomationDataSupport.bool(c.get("skipBlankKeys"),true);Map<String,Object> indexed=new LinkedHashMap<>();List<Object> list=AutomationDataSupport.list(value(ex,source));for(Object item:list){Object raw=AutomationDataSupport.readPath(item,keyPath);String key=raw==null?"":raw.toString();if(key.isBlank()&&skip)continue;if(first&&indexed.containsKey(key))continue;indexed.put(key,item);}List<Object> output=new ArrayList<>(indexed.values());String target=Objects.toString(c.getOrDefault("targetPath","dedupedItems"));AutomationDataSupport.setPath(ex.getOutput(),target,output);return Map.of("sourceCount",list.size(),"uniqueCount",output.size(),"targetPath",target);}
     private void mapResponse(AutomationExecution ex,Map<String,Object> c,Map<String,Object> response){Map<String,Object> mappings=AutomationDataSupport.map(c.get("responseMappings"));if(!mappings.isEmpty())applyMappings(ex.getOutput(),mappings,response);else if(c.get("storeResponseAt")==null)ex.setOutput(new LinkedHashMap<>(response));if(c.get("storeResponseAt")!=null)AutomationDataSupport.setPath(ex.getOutput(),c.get("storeResponseAt").toString(),response);}
     private void applyMappings(Map<String,Object> target,Map<String,Object> mappings,Map<String,Object> source){mappings.forEach((path,sourcePath)->AutomationDataSupport.setPath(target,path,AutomationDataSupport.readPath(source,Objects.toString(sourcePath))));}

@@ -56,13 +56,13 @@ public class AutomationScheduleService {
             Instant scheduledFor = definition.getNextScheduledAt();
             definition.setLastScheduledAt(scheduledFor);
             definition.setNextScheduledAt(next(trigger.configOrEmpty(), now));
-            definitions.saveScheduleState(definition);
             executions.triggerWebhook(
                     definition.getFlowKey(), definition.getTenantKey(), definition.getSiteKey(),
                     Map.of("scheduledAt", scheduledFor.toString(), "triggeredAt", now.toString()),
                     Map.of("runMode", "PRODUCTION", "triggerType", "SCHEDULE", "environment", definition.getEnvironment()),
                     "schedule:" + definition.getFlowKey() + ":" + scheduledFor
             );
+            definitions.saveScheduleState(definition);
     }
 
     Instant next(Map<String, Object> config, Instant after) {

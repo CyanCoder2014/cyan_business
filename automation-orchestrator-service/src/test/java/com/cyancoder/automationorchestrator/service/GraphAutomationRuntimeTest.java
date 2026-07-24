@@ -3,6 +3,8 @@ package com.cyancoder.automationorchestrator.service;
 import com.cyancoder.automationorchestrator.domain.*;
 import com.cyancoder.automationorchestrator.repo.AutomationExecutionRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 
 import java.util.*;
 
@@ -153,6 +155,42 @@ class GraphAutomationRuntimeTest {
         assertEquals("COMPLETED", parent.getStatus());
         assertEquals(true, AutomationDataSupport.readPath(parent.getOutput(), "childResult.child.done"));
         assertFalse(parent.getContext().containsKey("subflowExecutions"));
+    }
+
+    @Test
+    void startsBatchOnceThenPollsUntilCompleted() {
+        AutomationExecution execution = execution(Map.of("scheduledAt", "2026-07-23T08:00:00Z"));
+        when(http.internalHeaders("batch-worker-service", "tenant", "site")).thenReturn(new HttpHeaders());
+        when(http.exchange(eq("batch-worker-service"), contains("/runs"), any(), any(), any(), eq(Object.class)))
+                .thenReturn(Map.of("id", "run-1", "status", "QUEUED"))
+                .thenReturn(Map.of("id", "run-1", "status", "COMPLETED", "writeCount", 500L));
+        AutomationFlowDefinition definition = definition(List.of(
+                node("trigger", AutomationNodeType.WEBHOOK_TRIGGER, Map.of()),
+                node("batch", AutomationNodeType.RUN_BATCH_JOB, Map.of(
+                        "definitionKey", "morning-customer-sync",
+                        "runKey", "{{scheduledAt}}",
+                        "pollSeconds", 1,
+                        "resultPath", "batch")),
+                node("end", AutomationNodeType.END, Map.of())
+        ), List.of(edge("trigger", null, "batch"), edge("batch", null, "end")));
+
+        runtime.run(execution, definition);
+        assertEquals("WAITING", execution.getStatus());
+
+        execution.setStatus("RUNNING");
+        execution.setCurrentNodeId(execution.getResumeNodeId());
+        execution.setResumeAt(null);
+        execution.setResumeNodeId(null);
+        runtime.run(execution, definition);
+
+        assertEquals("COMPLETED", execution.getStatus());
+        assertEquals(500L, AutomationDataSupport.readPath(execution.getOutput(), "batch.writeCount"));
+        verify(http, times(1)).exchange(eq("batch-worker-service"),
+                eq("/internal/batch/definitions/morning-customer-sync/runs"),
+                eq(HttpMethod.POST), any(), any(), eq(Object.class));
+        verify(http, times(1)).exchange(eq("batch-worker-service"),
+                eq("/internal/batch/runs/run-1"),
+                eq(HttpMethod.GET), isNull(), any(), eq(Object.class));
     }
 
     private AutomationExecution execution(Map<String,Object> variables) { AutomationExecution value=new AutomationExecution();value.setExecutionId("exec-test");value.setTenantKey("tenant");value.setSiteKey("site");value.setStatus("RUNNING");value.setInput(new LinkedHashMap<>(variables));value.setOutput(new LinkedHashMap<>(variables));value.setContext(new LinkedHashMap<>());return value; }

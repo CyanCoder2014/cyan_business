@@ -131,7 +131,6 @@ public class AutomationFlowDefinitionService {
         AutomationNode entry = definition.getNodes().stream().filter(node -> definition.getEntryNodeId().equals(node.id())).findFirst().orElseThrow(() -> new IllegalArgumentException("entry node not found"));
         boolean itemRuntime = "N8N_ITEMS".equalsIgnoreCase(definition.getRuntimeMode());
         Set<AutomationNodeType> itemOnly = Set.of(
-                AutomationNodeType.MANUAL_TRIGGER, AutomationNodeType.SCHEDULE_TRIGGER, AutomationNodeType.ERROR_TRIGGER,
                 AutomationNodeType.HTTP_REQUEST, AutomationNodeType.LOOP_OVER_ITEMS, AutomationNodeType.EXECUTE_WORKFLOW,
                 AutomationNodeType.EDIT_FIELDS, AutomationNodeType.FILTER, AutomationNodeType.SPLIT_OUT,
                 AutomationNodeType.AGGREGATE, AutomationNodeType.SORT, AutomationNodeType.LIMIT,
@@ -147,10 +146,8 @@ public class AutomationFlowDefinitionService {
                 AutomationNodeType.SCHEDULE_TRIGGER,
                 AutomationNodeType.ERROR_TRIGGER
         );
-        if (itemRuntime ? !itemTriggers.contains(entry.type()) : entry.type() != AutomationNodeType.WEBHOOK_TRIGGER) {
-            throw new IllegalArgumentException(itemRuntime
-                    ? "N8N_ITEMS entry node must be a trigger"
-                    : "entry node must be WEBHOOK_TRIGGER");
+        if (!itemTriggers.contains(entry.type())) {
+            throw new IllegalArgumentException("entry node must be a trigger");
         }
         for (AutomationEdge edge : definition.getEdges() == null ? List.<AutomationEdge>of() : definition.getEdges()) {
             if (edge == null || !ids.contains(edge.fromNodeId()) || !ids.contains(edge.toNodeId())) throw new IllegalArgumentException("edge references an unknown node");
@@ -178,6 +175,7 @@ public class AutomationFlowDefinitionService {
                 case CALL_API, HTTP_REQUEST -> { if(config.get("url")==null&&(config.get("serviceKey")==null||config.get("path")==null)) throw new IllegalArgumentException(node.type()+" requires url or serviceKey/path"); }
                 case N8N_WORKFLOW -> required(config,"webhookUrl",node);
                 case PAGINATED_CALL_API -> { required(config,"itemsPath",node); if(config.get("url")==null&&(config.get("serviceKey")==null||config.get("path")==null)) throw new IllegalArgumentException("PAGINATED_CALL_API requires url or serviceKey/path"); }
+                case RUN_BATCH_JOB -> required(config, "definitionKey", node);
                 case FOR_EACH -> {
                     if ("N8N_ITEMS".equalsIgnoreCase(definition.getRuntimeMode())) {
                         requirePorts(outgoing,node,"loop","done");

@@ -10,6 +10,7 @@ public enum AutomationNodeType {
     CALL_API,
     HTTP_REQUEST,
     PAGINATED_CALL_API,
+    RUN_BATCH_JOB,
     IF,
     SWITCH,
     MERGE,

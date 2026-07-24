@@ -375,6 +375,21 @@ export type AutomationExecution = {
   [key: string]: unknown;
 };
 
+export type BatchRun = {
+  id: string;
+  definitionKey: string;
+  runKey: string;
+  status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+  batchExecutionId?: number;
+  readCount: number;
+  writeCount: number;
+  skipCount: number;
+  errorMessage?: string;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+};
+
 export type PaymentMethodRequest = {
   methodKey: string;
   displayName: string;

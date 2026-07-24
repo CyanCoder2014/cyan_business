@@ -8,6 +8,7 @@ const serviceBaseUrls: Record<string, string> = {
   "notification-service": process.env.NOTIFICATION_SERVICE_BASE_URL ?? "http://localhost:9122",
   "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9125",
   "automation-orchestrator-service": process.env.AUTOMATION_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9120",
+  "batch-worker-service": process.env.BATCH_WORKER_SERVICE_BASE_URL ?? "http://localhost:9127",
   "payment-service": process.env.PAYMENT_SERVICE_BASE_URL ?? "http://localhost:9114",
   "payment-orchestrator-service": process.env.PAYMENT_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9123"
 };

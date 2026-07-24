@@ -1,5 +1,6 @@
 import type {
   AutomationExecution,
+  BatchRun,
   ClientSummary,
   IamUserAccessSummary,
   NotificationDispatchResponse,
@@ -22,6 +23,7 @@ type ServiceKey =
   | "notification-service"
   | "search-index-service"
   | "automation-orchestrator-service"
+  | "batch-worker-service"
   | "payment-service"
   | "payment-orchestrator-service";
 
@@ -126,6 +128,62 @@ export function cancelAutomationExecution(executionId: string) {
   return requestJson<AutomationExecution>("automation-orchestrator-service", `/endpoint/automation-orchestrator/executions/${encodeURIComponent(executionId)}/cancel`, {
     method: "POST",
     body: JSON.stringify({})
+  });
+}
+
+export function saveAutomationFlow(request: Record<string, unknown>, tenantKey: string, siteKey: string) {
+  return requestJson<Record<string, unknown>>("automation-orchestrator-service", "/endpoint/automation-flows", {
+    method: "POST",
+    body: JSON.stringify(request),
+    tenantKey,
+    siteKey
+  });
+}
+
+export function listAutomationFlows(tenantKey: string, siteKey: string) {
+  return requestJson<Array<Record<string, unknown>>>("automation-orchestrator-service", "/endpoint/automation-flows", {
+    method: "GET",
+    tenantKey,
+    siteKey
+  });
+}
+
+export function transitionAutomationFlow(
+  flowKey: string,
+  version: number,
+  action: "SUBMIT" | "APPROVE" | "ACTIVATE",
+  tenantKey: string,
+  siteKey: string
+) {
+  return requestJson<Record<string, unknown>>(
+    "automation-orchestrator-service",
+    `/endpoint/automation-flows/${encodeURIComponent(flowKey)}/versions/${version}/${action}`,
+    { method: "POST", body: JSON.stringify({}), tenantKey, siteKey }
+  );
+}
+
+export function saveBatchDefinition(request: Record<string, unknown>, tenantKey: string, siteKey: string) {
+  return requestJson<Record<string, unknown>>("batch-worker-service", "/endpoint/batch/definitions", {
+    method: "POST",
+    body: JSON.stringify(request),
+    tenantKey,
+    siteKey
+  });
+}
+
+export function startBatchRun(definitionKey: string, runKey: string, tenantKey: string, siteKey: string) {
+  return requestJson<BatchRun>(
+    "batch-worker-service",
+    `/endpoint/batch/definitions/${encodeURIComponent(definitionKey)}/runs`,
+    { method: "POST", body: JSON.stringify({ runKey }), tenantKey, siteKey }
+  );
+}
+
+export function listBatchRuns(tenantKey: string, siteKey: string) {
+  return requestJson<BatchRun[]>("batch-worker-service", "/endpoint/batch/runs?limit=50", {
+    method: "GET",
+    tenantKey,
+    siteKey
   });
 }
 

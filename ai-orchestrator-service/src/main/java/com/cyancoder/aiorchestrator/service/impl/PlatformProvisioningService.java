@@ -8,6 +8,7 @@ import com.cyancoder.aiorchestrator.domain.ProvisioningRunStatus;
 import com.cyancoder.aiorchestrator.domain.ProvisioningStepResult;
 import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
 import com.cyancoder.aiorchestrator.domain.RouteBlueprint;
+import com.cyancoder.aiorchestrator.domain.PlatformResourceBlueprint;
 import com.cyancoder.aiorchestrator.repo.ProvisioningRunRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.Comparator;
 
 @Service
 public class PlatformProvisioningService {
@@ -38,9 +42,14 @@ public class PlatformProvisioningService {
         List<Map<String, Object>> createdDefinitions = new ArrayList<>();
         List<Map<String, Object>> createdRecords = new ArrayList<>();
         List<Map<String, Object>> createdFlows = new ArrayList<>();
+        List<Map<String, Object>> createdResources = new ArrayList<>();
         List<Map<String, Object>> deliveryEndpoints = new ArrayList<>();
+        Set<String> available = new LinkedHashSet<>(dsl.getApp().getAvailableServiceKeys());
 
-        ensureThemeExists(draftId, tenantKey, siteKey, createdDefinitions, createdRecords, run, requestIdempotencyKey);
+        validateAvailability(dsl, available);
+        if (isAvailable(available, "storefront-service")) {
+            ensureThemeExists(draftId, tenantKey, siteKey, createdDefinitions, createdRecords, run, requestIdempotencyKey);
+        }
 
         for (EntityBlueprint entity : dsl.getEntities()) {
             if (entity.isCreateDefinition()) {
@@ -64,6 +73,19 @@ public class PlatformProvisioningService {
                 ));
             }
         }
+
+        dsl.getResources().stream()
+                .sorted(Comparator.comparingInt(this::resourceOrder))
+                .forEach(resource -> createdResources.add(recordStep(
+                        run,
+                        stepKey("resource", resource.getServiceKey(), resource.getResourceKey()),
+                        resource.getServiceKey(),
+                        resourcePath(resource),
+                        buildIdempotencyKey(requestIdempotencyKey, draftId, resource.getServiceKey(),
+                                resource.getResourceKey(), "resource"),
+                        () -> provisioningClient.upsertResource(resource.getResourceType(), resource.getServiceKey(),
+                                resource.getResourceKey(), resource.getBody(), tenantKey, siteKey)
+                )));
 
         if (!dsl.getRoutes().isEmpty()) {
             recordStep(
@@ -114,8 +136,10 @@ public class PlatformProvisioningService {
         for (String api : dsl.getDelivery().getBotApis()) {
             deliveryEndpoints.add(Map.of("type", "bot", "path", api));
         }
-        deliveryEndpoints.add(Map.of("type", "public", "path", "/public/storefront/render?path=/"));
-        deliveryEndpoints.add(Map.of("type", "public", "path", "/public/storefront/sitemap"));
+        if (isAvailable(available, "storefront-service")) {
+            deliveryEndpoints.add(Map.of("type", "public", "path", "/public/storefront/render?path=/"));
+            deliveryEndpoints.add(Map.of("type", "public", "path", "/public/storefront/sitemap"));
+        }
 
         if (run != null) {
             run.setStatus(ProvisioningRunStatus.SUCCESS);
@@ -123,7 +147,47 @@ public class PlatformProvisioningService {
             provisioningRunRepository.save(run);
         }
 
-        return new ProvisioningResultDto("PROVISIONED", createdDefinitions, createdRecords, createdFlows, deliveryEndpoints, dsl.getManualActions());
+        return new ProvisioningResultDto("PROVISIONED", createdDefinitions, createdRecords, createdFlows,
+                createdResources, deliveryEndpoints, dsl.getManualActions());
+    }
+
+    private void validateAvailability(PlatformAppDslDefinition dsl, Set<String> available) {
+        if (available.isEmpty()) return;
+        dsl.getEntities().forEach(entity -> requireAvailable(available, entity.getServiceKey()));
+        dsl.getResources().forEach(resource -> requireAvailable(available, resource.getServiceKey()));
+        if (!dsl.getFlows().isEmpty()) requireAvailable(available, "bpm-service");
+        if (!dsl.getRoutes().isEmpty()) {
+            requireAvailable(available, "storefront-service");
+            dsl.getRoutes().forEach(route -> requireAvailable(available, route.getTargetServiceKey()));
+        }
+    }
+
+    private void requireAvailable(Set<String> available, String serviceKey) {
+        if (!available.contains(serviceKey)) {
+            throw new IllegalArgumentException("Provisioning plan requires unavailable service: " + serviceKey);
+        }
+    }
+
+    private boolean isAvailable(Set<String> available, String serviceKey) {
+        return available.isEmpty() || available.contains(serviceKey);
+    }
+
+    private String resourcePath(PlatformResourceBlueprint resource) {
+        return switch (resource.getResourceType()) {
+            case "PROCESSOR_DEFINITION" -> "/api/processor-service/processors/" + resource.getResourceKey();
+            case "AUTOMATION_FLOW" -> "/internal/automation-flows/" + resource.getResourceKey();
+            case "BATCH_DEFINITION" -> "/internal/batch/definitions/" + resource.getResourceKey();
+            default -> "unsupported";
+        };
+    }
+
+    private int resourceOrder(PlatformResourceBlueprint resource) {
+        return switch (resource.getResourceType()) {
+            case "PROCESSOR_DEFINITION" -> 0;
+            case "BATCH_DEFINITION" -> 1;
+            case "AUTOMATION_FLOW" -> 2;
+            default -> 3;
+        };
     }
 
     private void ensureThemeExists(String draftId,

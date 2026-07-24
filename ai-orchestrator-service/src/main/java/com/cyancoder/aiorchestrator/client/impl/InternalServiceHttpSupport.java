@@ -37,6 +37,10 @@ public class InternalServiceHttpSupport {
         return exchange(serviceKey, path, HttpMethod.POST, body, tenantKey, siteKey);
     }
 
+    public String put(String serviceKey, String path, Object body, String tenantKey, String siteKey) {
+        return exchange(serviceKey, path, HttpMethod.PUT, body, tenantKey, siteKey);
+    }
+
     private String exchange(String serviceKey, String path, HttpMethod method, Object body, String tenantKey, String siteKey) {
         try {
             ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()

@@ -30,6 +30,7 @@ public class ClientAppDraft {
     private List<String> pendingQuestionKeys = new ArrayList<>();
     private List<String> pendingQuestions = new ArrayList<>();
     private List<String> manualActions = new ArrayList<>();
+    private List<String> availableServiceKeys = new ArrayList<>();
     private String latestSessionId;
     private Integer revision;
     private Instant createdAt;
@@ -69,6 +70,10 @@ public class ClientAppDraft {
     public void setPendingQuestions(List<String> pendingQuestions) { this.pendingQuestions = pendingQuestions; }
     public List<String> getManualActions() { return manualActions; }
     public void setManualActions(List<String> manualActions) { this.manualActions = manualActions; }
+    public List<String> getAvailableServiceKeys() { return availableServiceKeys; }
+    public void setAvailableServiceKeys(List<String> availableServiceKeys) {
+        this.availableServiceKeys = availableServiceKeys == null ? new ArrayList<>() : new ArrayList<>(availableServiceKeys);
+    }
     public String getLatestSessionId() { return latestSessionId; }
     public void setLatestSessionId(String latestSessionId) { this.latestSessionId = latestSessionId; }
     public Integer getRevision() { return revision; }

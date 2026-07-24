@@ -12,6 +12,7 @@ import com.cyancoder.aiorchestrator.repo.ClientAppDraftRepository;
 import com.cyancoder.aiorchestrator.service.AppDraftService;
 import com.cyancoder.aiorchestrator.service.BlueprintCatalogService;
 import com.cyancoder.aiorchestrator.service.FollowUpQuestionService;
+import com.cyancoder.aiorchestrator.service.ServiceAvailabilityResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
@@ -30,15 +31,18 @@ public class MongoAppDraftService implements AppDraftService {
     private final BlueprintCatalogService blueprintCatalogService;
     private final FollowUpQuestionService followUpQuestionService;
     private final ObjectMapper objectMapper;
+    private final ServiceAvailabilityResolver availabilityResolver;
 
     public MongoAppDraftService(ClientAppDraftRepository repository,
                                 BlueprintCatalogService blueprintCatalogService,
                                 FollowUpQuestionService followUpQuestionService,
-                                ObjectMapper objectMapper) {
+                                ObjectMapper objectMapper,
+                                ServiceAvailabilityResolver availabilityResolver) {
         this.repository = repository;
         this.blueprintCatalogService = blueprintCatalogService;
         this.followUpQuestionService = followUpQuestionService;
         this.objectMapper = objectMapper;
+        this.availabilityResolver = availabilityResolver;
     }
 
     @Override
@@ -61,6 +65,8 @@ public class MongoAppDraftService implements AppDraftService {
         draft.setTitle(firstNonBlank(request.title(), blueprint.getTitle()));
         draft.setLatestIntent(firstNonBlank(request.prompt(), blueprint.getDescription()));
         draft.setAnswers(answers);
+        draft.setAvailableServiceKeys(
+                availabilityResolver.resolve(request.availableServiceKeys()).availableServiceKeys());
         draft.setRevision(1);
         draft.setCreatedAt(Instant.now());
         draft.setUpdatedAt(Instant.now());
@@ -102,6 +108,10 @@ public class MongoAppDraftService implements AppDraftService {
         if (request.answersPatch() != null) {
             draft.getAnswers().putAll(request.answersPatch());
         }
+        if (request.availableServiceKeys() != null && !request.availableServiceKeys().isEmpty()) {
+            draft.setAvailableServiceKeys(
+                    availabilityResolver.resolve(request.availableServiceKeys()).availableServiceKeys());
+        }
         draft.setRevision((draft.getRevision() == null ? 0 : draft.getRevision()) + 1);
         draft.setUpdatedAt(Instant.now());
         draft.setUpdatedBy(updatedBy);
@@ -111,6 +121,13 @@ public class MongoAppDraftService implements AppDraftService {
 
     @Override
     public Optional<ClientAppDraft> resolveKnownAppDraft(String appType, String tenantKey, String siteKey, String clientKey, String prompt) {
+        return resolveKnownAppDraft(appType, tenantKey, siteKey, clientKey, prompt, List.of());
+    }
+
+    @Override
+    public Optional<ClientAppDraft> resolveKnownAppDraft(String appType, String tenantKey, String siteKey,
+                                                         String clientKey, String prompt,
+                                                         List<String> availableServiceKeys) {
         String resolvedAppType = resolveAppType(appType, prompt);
         if (resolvedAppType == null) {
             return Optional.empty();
@@ -120,10 +137,17 @@ public class MongoAppDraftService implements AppDraftService {
                     ? repository.findFirstByTenantKeyAndSiteKeyAndClientKeyAndAppTypeOrderByUpdatedAtDesc(tenantKey, siteKey, clientKey, resolvedAppType)
                     : repository.findFirstByTenantKeyAndSiteKeyAndAppTypeOrderByUpdatedAtDesc(tenantKey, siteKey, resolvedAppType);
             if (existing.isPresent()) {
+                if (availableServiceKeys != null && !availableServiceKeys.isEmpty()) {
+                    ClientAppDraft draft = existing.get();
+                    draft.setAvailableServiceKeys(availableServiceKeys);
+                    applyResolvedDsl(draft, blueprintCatalogService.getActiveByBlueprintKey(draft.getBlueprintKey()));
+                    return Optional.of(repository.save(draft));
+                }
                 return existing;
             }
         }
-        CreateDraftRequest request = new CreateDraftRequest(resolvedAppType, null, tenantKey, siteKey, clientKey, null, prompt, Map.of());
+        CreateDraftRequest request = new CreateDraftRequest(resolvedAppType, null, tenantKey, siteKey,
+                clientKey, null, prompt, Map.of(), availableServiceKeys);
         return Optional.of(createDraft(request, "system-generate"));
     }
 
@@ -133,7 +157,9 @@ public class MongoAppDraftService implements AppDraftService {
         dsl.getApp().setTenantKey(draft.getTenantKey());
         dsl.getApp().setSiteKey(draft.getSiteKey());
         dsl.getApp().setCapabilities(new ArrayList<>(blueprint.getCapabilities()));
+        dsl.getApp().setAvailableServiceKeys(draft.getAvailableServiceKeys());
         dsl.setManualActions(new ArrayList<>());
+        filterUnavailableResources(dsl, draft.getAvailableServiceKeys());
         dsl.getApp().setDesiredDomain(firstNonBlank(
                 stringValue(draft.getAnswers().get("desiredDomain")),
                 resolveSubdomainHost(stringValue(draft.getAnswers().get("subdomainPrefix")))
@@ -150,6 +176,34 @@ public class MongoAppDraftService implements AppDraftService {
         draft.setPendingQuestions(followUpQuestions.stream().map(FollowUpQuestionDto::prompt).toList());
         draft.setManualActions(new ArrayList<>(dsl.getManualActions()));
         draft.setStatus(followUpQuestions.isEmpty() ? DraftStatus.READY : DraftStatus.WAITING_FOR_ANSWERS);
+    }
+
+    private void filterUnavailableResources(PlatformAppDslDefinition dsl, List<String> availableServiceKeys) {
+        if (availableServiceKeys == null || availableServiceKeys.isEmpty()) return;
+        var available = new java.util.LinkedHashSet<>(availableServiceKeys);
+        List<String> omitted = new ArrayList<>();
+        dsl.getEntities().removeIf(entity -> {
+            boolean remove = !available.contains(entity.getServiceKey());
+            if (remove) omitted.add(entity.getServiceKey() + " entity " + entity.getEntityKey());
+            return remove;
+        });
+        dsl.getRoutes().removeIf(route -> {
+            boolean remove = !available.contains("storefront-service")
+                    || !available.contains(route.getTargetServiceKey());
+            if (remove) omitted.add("storefront route " + route.getRouteKey());
+            return remove;
+        });
+        if (!available.contains("bpm-service") && !dsl.getFlows().isEmpty()) {
+            omitted.add("BPM flows");
+            dsl.getFlows().clear();
+        }
+        dsl.getResources().removeIf(resource -> {
+            boolean remove = !available.contains(resource.getServiceKey());
+            if (remove) omitted.add(resource.getResourceType() + " " + resource.getResourceKey());
+            return remove;
+        });
+        omitted.forEach(item -> dsl.getManualActions().add(
+                "Skipped because its owning microservice is unavailable: " + item));
     }
 
     private void enrichEntities(PlatformAppDslDefinition dsl, Map<String, Object> answers, String appType) {

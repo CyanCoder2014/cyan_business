@@ -66,4 +66,66 @@ public class HttpPlatformProvisioningClient implements PlatformProvisioningClien
             throw new IllegalStateException("Failed to create BPM flow", ex);
         }
     }
+
+    @Override
+    public Map<String, Object> upsertResource(String resourceType, String serviceKey, String resourceKey,
+                                              Map<String, Object> body, String tenantKey, String siteKey) {
+        try {
+            String response = switch (resourceType) {
+                case "PROCESSOR_DEFINITION" -> upsertProcessor(resourceKey, body, tenantKey, siteKey);
+                case "AUTOMATION_FLOW" -> upsertAutomation(resourceKey, body, tenantKey, siteKey);
+                case "BATCH_DEFINITION" -> httpSupport.post(
+                        "batch-worker-service", "/internal/batch/definitions", body, tenantKey, siteKey);
+                default -> throw new IllegalArgumentException("Unsupported resourceType: " + resourceType);
+            };
+            return objectMapper.readValue(response, Map.class);
+        } catch (DownstreamServiceException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to upsert " + resourceType + " " + resourceKey, ex);
+        }
+    }
+
+    private String upsertProcessor(String resourceKey, Map<String, Object> body,
+                                   String tenantKey, String siteKey) {
+        try {
+            return httpSupport.post("processor-service", "/api/processor-service/processors",
+                    body, tenantKey, siteKey);
+        } catch (DownstreamServiceException ex) {
+            if (ex.getDownstreamStatus() != null && ex.getDownstreamStatus() >= 409) {
+                return httpSupport.put("processor-service",
+                        "/api/processor-service/processors/" + resourceKey,
+                        body, tenantKey, siteKey);
+            }
+            throw ex;
+        }
+    }
+
+    private String upsertAutomation(String resourceKey, Map<String, Object> body,
+                                    String tenantKey, String siteKey) {
+        try {
+            return httpSupport.post("automation-orchestrator-service",
+                    "/internal/automation-flows", body, tenantKey, siteKey);
+        } catch (DownstreamServiceException ex) {
+            if (ex.getDownstreamStatus() != null && ex.getDownstreamStatus() >= 409) {
+                int version = body.get("version") instanceof Number value ? value.intValue() : 1;
+                String existingJson = httpSupport.get("automation-orchestrator-service",
+                        "/internal/automation-flows/" + resourceKey + "/versions/" + version,
+                        tenantKey, siteKey);
+                try {
+                    Map<String, Object> existing = objectMapper.readValue(existingJson, Map.class);
+                    Map<String, Object> replacement = new LinkedHashMap<>(body);
+                    replacement.put("id", existing.get("id"));
+                    replacement.put("revision", existing.get("revision"));
+                    return httpSupport.post("automation-orchestrator-service",
+                            "/internal/automation-flows", replacement, tenantKey, siteKey);
+                } catch (Exception parseException) {
+                    throw new IllegalStateException(
+                            "Failed to update automation flow " + resourceKey + " version " + version,
+                            parseException);
+                }
+            }
+            throw ex;
+        }
+    }
 }

@@ -1,5 +1,7 @@
 package com.cyancoder.ssoauth.controller;
 
+import com.cyancoder.platformopenapi.PlatformApiSecurity;
+import com.cyancoder.platformopenapi.PlatformOpenApiAuth;
 import com.cyancoder.sso.common.dto.*;
 import com.cyancoder.ssoauth.config.JwtConfigurationProperties;
 import com.cyancoder.ssoauth.service.AuthService;
@@ -11,6 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping
+@PlatformOpenApiAuth(PlatformApiSecurity.NONE)
 public class AuthController {
 
     private final AuthService authService;

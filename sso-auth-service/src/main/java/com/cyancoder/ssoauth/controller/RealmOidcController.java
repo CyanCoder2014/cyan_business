@@ -1,5 +1,7 @@
 package com.cyancoder.ssoauth.controller;
 
+import com.cyancoder.platformopenapi.PlatformApiSecurity;
+import com.cyancoder.platformopenapi.PlatformOpenApiAuth;
 import com.cyancoder.sso.common.dto.LoginRequest;
 import com.cyancoder.sso.common.dto.RefreshTokenRequest;
 import com.cyancoder.sso.common.dto.TokenIntrospectionRequest;
@@ -22,6 +24,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/realms/{realmKey}")
+@PlatformOpenApiAuth(PlatformApiSecurity.NONE)
 public class RealmOidcController {
     private final AuthService authService;
     private final RSAKey rsaKey;

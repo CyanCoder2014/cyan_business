@@ -1,5 +1,7 @@
 package com.cyancoder.ssouser.controller;
 
+import com.cyancoder.platformopenapi.PlatformApiSecurity;
+import com.cyancoder.platformopenapi.PlatformOpenApiAuth;
 import com.cyancoder.sso.common.dto.PasswordVerificationRequest;
 import com.cyancoder.sso.common.dto.PasswordVerificationResponse;
 import com.cyancoder.sso.common.dto.UserRegistrationRequest;
@@ -26,6 +28,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
     public UserSummary register(@RequestBody UserRegistrationRequest request) {
         iamSecurityService.requirePlatformAdmin();
         return userDirectoryService.register(request);
@@ -38,6 +41,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
     public java.util.List<UserSummary> listUsers() {
         iamSecurityService.requirePlatformAdmin();
         return userDirectoryService.listUsers();

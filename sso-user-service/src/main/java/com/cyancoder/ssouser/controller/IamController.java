@@ -1,5 +1,7 @@
 package com.cyancoder.ssouser.controller;
 
+import com.cyancoder.platformopenapi.PlatformApiSecurity;
+import com.cyancoder.platformopenapi.PlatformOpenApiAuth;
 import com.cyancoder.sso.common.dto.ClientSummary;
 import com.cyancoder.sso.common.dto.ClientUpsertRequest;
 import com.cyancoder.sso.common.dto.IamUserAccessSummary;
@@ -26,6 +28,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/sso/iam")
+@PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
 public class IamController {
     private final IamDirectoryService iamDirectoryService;
 
@@ -107,6 +110,7 @@ public class IamController {
     }
 
     @GetMapping("/internal/users/{username}/access")
+    @PlatformOpenApiAuth(PlatformApiSecurity.NONE)
     public IamUserAccessSummary resolveAccessInternal(@PathVariable("username") String username, @RequestParam(value = "clientId", required = false) String clientId) {
         return iamDirectoryService.resolveAccessInternal(username, clientId);
     }

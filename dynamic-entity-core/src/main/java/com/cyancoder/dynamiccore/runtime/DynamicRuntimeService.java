@@ -25,6 +25,8 @@ import java.util.UUID;
 public class DynamicRuntimeService {
     private static final int DEFAULT_DEFINITION_PAGE_SIZE = 20;
     private static final int MAX_DEFINITION_PAGE_SIZE = 200;
+    private static final int DEFAULT_RECORD_PAGE_SIZE = 200;
+    private static final int MAX_RECORD_PAGE_SIZE = 1000;
 
     private final StoredEntityDefinitionRepository definitionRepository;
     private final DynamicEntityRecordRepository recordRepository;
@@ -280,6 +282,38 @@ public class DynamicRuntimeService {
 
     public List<DynamicEntityRecordDocument> listRecords(String entityKey) {
         return listRecords(entityKey, new DynamicScope(null, null));
+    }
+
+    public Page<DynamicEntityRecordDocument> listRecords(
+            String entityKey, DynamicScope scope, int page, int size, String sort) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size < 1
+                ? DEFAULT_RECORD_PAGE_SIZE
+                : Math.min(size, MAX_RECORD_PAGE_SIZE);
+        return recordRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(
+                properties.getServiceKey(),
+                scope.tenantKey(),
+                scope.siteKey(),
+                entityKey,
+                PageRequest.of(safePage, safeSize, recordSort(sort)));
+    }
+
+    private Sort recordSort(String value) {
+        String[] parts = value == null ? new String[0] : value.split(",", 2);
+        String property = switch (parts.length == 0 ? "" : parts[0].trim()) {
+            case "recordKey" -> "recordKey";
+            case "updatedAt" -> "updatedAt";
+            case "status" -> "status";
+            default -> "createdAt";
+        };
+        Sort.Direction direction = parts.length > 1
+                && "asc".equalsIgnoreCase(parts[1].trim())
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+        Sort requested = Sort.by(direction, property);
+        return "recordKey".equals(property)
+                ? requested
+                : requested.and(Sort.by(Sort.Direction.ASC, "recordKey"));
     }
 
     public void deleteRecord(String entityKey, String recordKey, DynamicScope scope) {

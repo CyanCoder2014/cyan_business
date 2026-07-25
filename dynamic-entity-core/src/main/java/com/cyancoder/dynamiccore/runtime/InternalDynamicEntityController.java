@@ -146,12 +146,22 @@ public class InternalDynamicEntityController {
     }
 
     @GetMapping("/records/{entityKey}")
-    public List<DynamicEntityRecordDocument> listRecords(
+    public Object listRecords(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
-            @PathVariable("entityKey") String entityKey
+            @PathVariable("entityKey") String entityKey,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "size", required = false) Integer size,
+            @RequestParam(value = "sort", required = false) String sort
     ) {
-        return runtimeService.listRecords(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey));
+        DynamicScope scope = DynamicScopeResolver.fromHeaders(tenantKey, siteKey);
+        if (page == null && size == null && sort == null) {
+            return runtimeService.listRecords(entityKey, scope);
+        }
+        return DynamicPageResponse.from(
+                runtimeService.listRecords(
+                        entityKey, scope, page == null ? 0 : page, size == null ? 200 : size, sort),
+                record -> record);
     }
 
     @GetMapping("/records/{entityKey}/{recordKey}")

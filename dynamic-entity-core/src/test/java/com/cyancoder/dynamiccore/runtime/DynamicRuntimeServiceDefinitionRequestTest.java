@@ -7,6 +7,7 @@ import com.cyancoder.dynamiccore.service.DynamicOperatorEngine;
 import com.cyancoder.dynamiccore.service.DynamicValidationEngine;
 import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinition;
 import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinitionRepository;
+import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordRepository;
 import com.cyancoder.dynamiccore.template.DynamicTemplateRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,11 +34,13 @@ class DynamicRuntimeServiceDefinitionRequestTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private StoredEntityDefinitionRepository definitionRepository;
+    private DynamicEntityRecordRepository recordRepository;
     private DynamicRuntimeService runtimeService;
 
     @BeforeEach
     void setUp() {
         definitionRepository = mock(StoredEntityDefinitionRepository.class);
+        recordRepository = mock(DynamicEntityRecordRepository.class);
         when(definitionRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(
                 anyString(), any(), any(), anyString()
         )).thenReturn(Optional.empty());
@@ -48,7 +51,7 @@ class DynamicRuntimeServiceDefinitionRequestTest {
         properties.setServiceKey("bpm-service");
         runtimeService = new DynamicRuntimeService(
                 definitionRepository,
-                mock(DynamicEntityRecordRepository.class),
+                recordRepository,
                 new DynamicDefinitionParser(objectMapper),
                 mock(DynamicValidationEngine.class),
                 mock(DynamicOperatorEngine.class),
@@ -151,6 +154,37 @@ class DynamicRuntimeServiceDefinitionRequestTest {
         var stableOrder = pageable.getValue().getSort().getOrderFor("entityKey");
         assertThat(stableOrder).isNotNull();
         assertThat(stableOrder.getDirection())
+                .isEqualTo(org.springframework.data.domain.Sort.Direction.ASC);
+    }
+
+    @Test
+    void pagesScopedRecordsWithBoundedSizeAndStableRecordKeyOrdering() {
+        DynamicEntityRecordDocument record = new DynamicEntityRecordDocument();
+        record.setRecordKey("order-100");
+        when(recordRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(
+                anyString(), any(), any(), anyString(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(record)));
+
+        var result = runtimeService.listRecords(
+                "importer-order",
+                new DynamicScope("demo-tenant", "main-site"),
+                3,
+                5000,
+                "createdAt,asc");
+
+        ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
+        verify(recordRepository).findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(
+                eq("bpm-service"),
+                eq("demo-tenant"),
+                eq("main-site"),
+                eq("importer-order"),
+                pageable.capture());
+        assertThat(result.getContent()).containsExactly(record);
+        assertThat(pageable.getValue().getPageNumber()).isEqualTo(3);
+        assertThat(pageable.getValue().getPageSize()).isEqualTo(1000);
+        assertThat(pageable.getValue().getSort().getOrderFor("createdAt").getDirection())
+                .isEqualTo(org.springframework.data.domain.Sort.Direction.ASC);
+        assertThat(pageable.getValue().getSort().getOrderFor("recordKey").getDirection())
                 .isEqualTo(org.springframework.data.domain.Sort.Direction.ASC);
     }
 }

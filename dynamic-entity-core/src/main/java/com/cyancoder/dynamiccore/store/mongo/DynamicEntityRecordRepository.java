@@ -1,5 +1,7 @@
 package com.cyancoder.dynamiccore.store.mongo;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
@@ -9,6 +11,8 @@ public interface DynamicEntityRecordRepository extends MongoRepository<DynamicEn
     Optional<DynamicEntityRecordDocument> findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKey(String serviceKey, String tenantKey, String siteKey, String entityKey, String recordKey);
     Optional<DynamicEntityRecordDocument> findFirstByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKeyOrderByUpdatedAtDesc(String serviceKey, String tenantKey, String siteKey, String entityKey, String recordKey);
     List<DynamicEntityRecordDocument> findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyOrderByCreatedAtDesc(String serviceKey, String tenantKey, String siteKey, String entityKey);
+    Page<DynamicEntityRecordDocument> findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(
+            String serviceKey, String tenantKey, String siteKey, String entityKey, Pageable pageable);
     void deleteByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKey(String serviceKey, String tenantKey, String siteKey, String entityKey, String recordKey);
     void deleteAllByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRecordKey(String serviceKey, String tenantKey, String siteKey, String entityKey, String recordKey);
 }

@@ -10,8 +10,10 @@ Generated assets:
 Usage:
 1. Import the Postman collection and environment template.
 2. Run `SSO / Login` first. Its test script stores `access_token`, `refresh_token`, and `session_id` in the environment.
-3. Open `docs/swagger/index.html` in a browser, then use Swagger's `Authorize` button with either a bearer token or internal basic credentials.
-4. Use the Swagger spec selector to switch between the full platform inventory and per-service specs.
+3. Set `dynamic_service_base_url` to the dynamic service under test; it defaults to local `bpm-service` on port `9119`.
+4. Definition list requests use `definition_page`, `definition_page_size`, and `definition_sort`; their tests verify the pagination envelope.
+5. Open `docs/swagger/index.html` in a browser, then use Swagger's `Authorize` button with either a bearer token or internal basic credentials.
+6. Use the Swagger spec selector to switch between the full platform inventory and per-service specs.
 
 Coverage tags:
 - `AI Orchestrator`

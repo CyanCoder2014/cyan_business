@@ -144,13 +144,13 @@ class ImporterCreditDeliveryBatchScenarioTest {
             BatchDefinitionSpec.Source fixture, String path, int pageSize) {
         return new BatchDefinitionSpec.Source(
                 baseUrl(path), fixture.itemsPath(), fixture.pageParameter(),
-                fixture.sizeParameter(), pageSize, Map.of(), null);
+                fixture.sizeParameter(), pageSize, Map.of(), null, null);
     }
 
     private BatchDefinitionSpec.Destination localDestination(
             BatchDefinitionSpec.Destination fixture, String path) {
         return new BatchDefinitionSpec.Destination(
-                baseUrl(path), fixture.method(), fixture.itemKeyPath(), Map.of(), null);
+                baseUrl(path), fixture.method(), fixture.itemKeyPath(), Map.of(), null, null);
     }
 
     private String baseUrl(String path) {

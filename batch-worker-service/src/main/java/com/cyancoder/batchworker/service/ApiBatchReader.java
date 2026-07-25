@@ -7,12 +7,15 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import org.springframework.batch.infrastructure.item.ExecutionContext;
 import org.springframework.batch.infrastructure.item.ItemStreamReader;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -75,7 +78,8 @@ public class ApiBatchReader implements ItemStreamReader<Map<String, Object>> {
                 .queryParam(defaultValue(source.sizeParameter(), "size"), pageSize())
                 .build(true).toUri();
         HttpRequest.Builder request = HttpRequest.newBuilder(uri).GET().timeout(Duration.ofSeconds(30));
-        applyHeaders(request, source.headers(), source.bearerTokenEnvironmentVariable());
+        applyHeaders(request, source.headers(), source.bearerTokenEnvironmentVariable(),
+                source.authentication());
         try {
             HttpResponse<String> response = client.send(request.build(), HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 429 || response.statusCode() >= 500) {
@@ -105,17 +109,74 @@ public class ApiBatchReader implements ItemStreamReader<Map<String, Object>> {
         }
     }
 
-    static void applyHeaders(HttpRequest.Builder builder, Map<String, String> headers, String tokenEnv) {
+    static void applyHeaders(
+            HttpRequest.Builder builder,
+            Map<String, String> headers,
+            String tokenEnv,
+            BatchDefinitionSpec.Authentication authentication
+    ) {
+        applyHeaders(builder, headers, tokenEnv, authentication, System::getenv);
+    }
+
+    static void applyHeaders(
+            HttpRequest.Builder builder,
+            Map<String, String> headers,
+            String tokenEnv,
+            BatchDefinitionSpec.Authentication authentication,
+            Function<String, String> environment
+    ) {
         if (headers != null) {
             headers.forEach(builder::header);
         }
-        if (tokenEnv != null && !tokenEnv.isBlank()) {
-            String token = System.getenv(tokenEnv);
-            if (token == null || token.isBlank()) {
-                throw new IllegalStateException("Missing credential environment variable: " + tokenEnv);
-            }
-            builder.header("Authorization", token.startsWith("Bearer ") ? token : "Bearer " + token);
+        if (tokenEnv != null && !tokenEnv.isBlank() && authentication != null) {
+            throw new IllegalStateException(
+                    "Configure bearerTokenEnvironmentVariable or authentication, not both");
         }
+        if (tokenEnv != null && !tokenEnv.isBlank()) {
+            String token = requiredEnvironment(environment, tokenEnv);
+            builder.header("Authorization", token.startsWith("Bearer ") ? token : "Bearer " + token);
+            return;
+        }
+        if (authentication == null || authentication.type() == null
+                || authentication.type().isBlank()) {
+            return;
+        }
+        String type = authentication.type().trim().toUpperCase();
+        String secret = requiredEnvironment(environment, authentication.secretEnvironmentVariable());
+        if ("BEARER".equals(type)) {
+            builder.header("Authorization", secret.startsWith("Bearer ") ? secret : "Bearer " + secret);
+            return;
+        }
+        if ("BASIC".equals(type)) {
+            String username = authentication.username();
+            if ((username == null || username.isBlank())
+                    && authentication.usernameEnvironmentVariable() != null
+                    && !authentication.usernameEnvironmentVariable().isBlank()) {
+                username = requiredEnvironment(
+                        environment, authentication.usernameEnvironmentVariable());
+            }
+            if (username == null || username.isBlank()) {
+                throw new IllegalStateException("BASIC authentication requires a username");
+            }
+            String value = Base64.getEncoder().encodeToString(
+                    (username + ":" + secret).getBytes(StandardCharsets.UTF_8));
+            builder.header("Authorization", "Basic " + value);
+            return;
+        }
+        throw new IllegalStateException("Unsupported batch authentication type: " + type);
+    }
+
+    private static String requiredEnvironment(
+            Function<String, String> environment, String variableName) {
+        if (variableName == null || variableName.isBlank()) {
+            throw new IllegalStateException("Credential environment variable is required");
+        }
+        String value = environment.apply(variableName);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(
+                    "Missing credential environment variable: " + variableName);
+        }
+        return value;
     }
 
     private int pageSize() {

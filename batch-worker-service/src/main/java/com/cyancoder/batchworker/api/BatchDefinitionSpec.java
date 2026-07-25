@@ -17,7 +17,8 @@ public record BatchDefinitionSpec(
             String sizeParameter,
             Integer pageSize,
             Map<String, String> headers,
-            String bearerTokenEnvironmentVariable
+            String bearerTokenEnvironmentVariable,
+            Authentication authentication
     ) {}
 
     public record Destination(
@@ -25,6 +26,22 @@ public record BatchDefinitionSpec(
             String method,
             String itemKeyPath,
             Map<String, String> headers,
-            String bearerTokenEnvironmentVariable
+            String bearerTokenEnvironmentVariable,
+            Authentication authentication
+    ) {}
+
+    /**
+     * Secret-safe outbound authentication. The secret is resolved only in the
+     * worker process and is never persisted in a definition or job parameter.
+     *
+     * <p>Supported types are {@code BASIC} and {@code BEARER}. BASIC requires a
+     * username (literal or environment variable) and a secret environment
+     * variable. BEARER requires only the secret environment variable.</p>
+     */
+    public record Authentication(
+            String type,
+            String username,
+            String usernameEnvironmentVariable,
+            String secretEnvironmentVariable
     ) {}
 }

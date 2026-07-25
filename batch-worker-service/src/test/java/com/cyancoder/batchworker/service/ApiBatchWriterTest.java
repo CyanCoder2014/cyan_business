@@ -66,7 +66,7 @@ class ApiBatchWriterTest {
     private ApiBatchWriter writer(String method) {
         BatchDefinitionSpec.Destination destination = new BatchDefinitionSpec.Destination(
                 "http://localhost:" + server.getAddress().getPort() + "/target",
-                method, "id", Map.of(), null);
+                method, "id", Map.of(), null, null);
         return new ApiBatchWriter(destination, new ObjectMapper(),
                 "tenant:site:customers:2026-07-23");
     }

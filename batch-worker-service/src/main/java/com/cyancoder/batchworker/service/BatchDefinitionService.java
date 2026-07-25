@@ -68,6 +68,44 @@ public class BatchDefinitionService {
         if (method != null && !method.equalsIgnoreCase("POST") && !method.equalsIgnoreCase("PUT")) {
             throw new IllegalArgumentException("Destination method must be POST or PUT");
         }
+        validateAuthentication(
+                spec.source().bearerTokenEnvironmentVariable(),
+                spec.source().authentication(),
+                "spec.source");
+        validateAuthentication(
+                spec.destination().bearerTokenEnvironmentVariable(),
+                spec.destination().authentication(),
+                "spec.destination");
+    }
+
+    private void validateAuthentication(
+            String legacyBearerEnvironmentVariable,
+            BatchDefinitionSpec.Authentication authentication,
+            String path
+    ) {
+        if (!blank(legacyBearerEnvironmentVariable) && authentication != null) {
+            throw new IllegalArgumentException(
+                    path + " cannot configure bearerTokenEnvironmentVariable and authentication together");
+        }
+        if (authentication == null) {
+            return;
+        }
+        String type = authentication.type() == null
+                ? ""
+                : authentication.type().trim().toUpperCase();
+        if (!type.equals("BASIC") && !type.equals("BEARER")) {
+            throw new IllegalArgumentException(path + ".authentication.type must be BASIC or BEARER");
+        }
+        if (blank(authentication.secretEnvironmentVariable())) {
+            throw new IllegalArgumentException(
+                    path + ".authentication.secretEnvironmentVariable is required");
+        }
+        if (type.equals("BASIC")
+                && blank(authentication.username())
+                && blank(authentication.usernameEnvironmentVariable())) {
+            throw new IllegalArgumentException(
+                    path + ".authentication requires username or usernameEnvironmentVariable");
+        }
     }
 
     private boolean blank(String value) {

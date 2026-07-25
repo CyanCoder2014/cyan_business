@@ -45,7 +45,7 @@ public class ApiBatchWriter implements ItemWriter<Map<String, Object>> {
                             (idempotencyPrefix + ":" + itemKey).getBytes(StandardCharsets.UTF_8)))
                     .method(method, publisher);
             ApiBatchReader.applyHeaders(request, destination.headers(),
-                    destination.bearerTokenEnvironmentVariable());
+                    destination.bearerTokenEnvironmentVariable(), destination.authentication());
             HttpResponse<String> response;
             try {
                 response = client.send(request.build(), HttpResponse.BodyHandlers.ofString());

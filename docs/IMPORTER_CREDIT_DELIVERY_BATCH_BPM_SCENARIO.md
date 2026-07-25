@@ -22,6 +22,56 @@ It is deliberately more complex than a simple scheduled HTTP call. It exercises:
 The canonical JSON payloads are under
 [`docs/examples/importer-credit-delivery`](examples/importer-credit-delivery).
 
+## 0. What is implemented and what is a solution extension
+
+There are two different source modes:
+
+1. **Platform-owned orders.** Orders are dynamic records in `commerce-service`.
+   Use `order-projection-batch-platform.json`. The batch reads the real internal
+   dynamic-record API with bounded pagination and Basic authentication, then
+   upserts normalized projection-event records in `report-service`.
+2. **External client orders.** Use `order-projection-batch.json`. The batch reads
+   the client's paginated API and sends to the client's projection API with
+   bearer tokens.
+
+The generic platform currently provides paging, batch durability, idempotent
+dynamic-record keys, automation, BPM, and basic processor rules. It does **not**
+yet provide the domain-specific atomic 90-day credit aggregator described below.
+That component must be implemented as a versioned report/analytics processor (or
+a custom report-service projection endpoint) before `/finalize` is a real route.
+The earlier `projection.example` URL is therefore an integration contract, not an
+existing platform microservice.
+
+For the platform-owned path, the concrete calls are:
+
+```text
+automation
+  -> batch-worker-service /internal/batch/.../runs
+batch worker
+  -> commerce-service /internal/entities/records/importer-order?page=N&size=500
+  -> report-service /internal/entities/records/customer-credit-order-event
+future projection processor
+  -> reads customer-credit-order-event pages
+  -> creates/upserts customer-credit-projection records
+  -> invokes processor-service customer-credit-score-v1
+  -> stores customer-credit-report and optionally starts BPM review
+```
+
+The source page envelope is:
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 500,
+  "totalElements": 100000,
+  "totalPages": 200
+}
+```
+
+Calls that omit `page`, `size`, and `sort` still receive the legacy array response.
+This preserves existing internal consumers while allowing large batch reads.
+
 ## 1. Why the work is split across services
 
 Do not fetch 100,000 orders into one automation execution. Automation execution
@@ -34,8 +84,8 @@ The safe ownership split is:
 | 08:00 and 08:30 schedules | automation orchestrator | Cron is orchestration state |
 | Paginated 100k-order read | batch worker | Bounded pages, chunks, checkpoints |
 | Per-order retries and quarantine | batch worker | Restartable Spring Batch semantics |
-| Customer clustering | projection receiver | Atomic incremental aggregation by customer |
-| Credit policy | Zen/JDM automation node | Versioned deterministic business rules |
+| Customer clustering and metrics | versioned projection processor | Stateful, explainable aggregation by customer |
+| Credit policy | versioned processor or Zen/JDM node | Deterministic rules with optional AI/ML adapters |
 | Credit report schema | report-service dynamic entity | Strict controlled report record |
 | High-risk/manual decisions | BPM | Human task, access rules, audit trail |
 | Due-loading dispatch | second batch definition | Large remote side-effect set |
@@ -58,14 +108,13 @@ not be the system of record for important credit data.
 ## 2. End-to-end sequence
 
 ```text
-08:00 automation schedule
+08:00 automation schedule (platform-owned source)
   -> start importer-order-projection-v1 batch with runKey=scheduledAt
-  -> batch reads /orders?page=N&size=500
-  -> maps each order to an order projection event
-  -> projection API deduplicates Idempotency-Key/eventKey
-  -> projection API atomically updates per-customer 90-day metrics
-  -> automation calls projection /finalize
-  -> projection starts one idempotent customer-credit-score-v1 execution per customer
+  -> batch reads commerce-service dynamic order records?page=N&size=500
+  -> maps data.* fields to a report-service projection-event record
+  -> report-service deduplicates by the scoped recordKey unique index
+  -> projection processor calculates per-customer 90-day metrics
+  -> projection processor starts one idempotent customer-credit-score-v1 execution per customer
   -> Zen JDM calculates limit/risk/manualReview
   -> automation upserts strict customer-credit-report
   -> high-risk customer opens customer-credit-manual-review-v1 BPM object
@@ -79,7 +128,46 @@ not be the system of record for important credit data.
   -> if skipCount > 0, automation opens one delivery batch BPM exception
 ```
 
-## 3. External API contracts
+## 3. Platform and external API contracts
+
+### 3.0 Platform dynamic-record source with Basic authentication
+
+The platform batch definition stores only environment-variable names, never the
+password:
+
+```json
+{
+  "url": "http://commerce-service:9104/internal/entities/records/importer-order",
+  "itemsPath": "content",
+  "pageSize": 500,
+  "headers": {
+    "X-Tenant-Key": "importer-demo",
+    "X-Site-Key": "main-site"
+  },
+  "authentication": {
+    "type": "BASIC",
+    "username": "commerce_internal",
+    "secretEnvironmentVariable": "COMMERCE_SERVICE_INTERNAL_PASSWORD"
+  }
+}
+```
+
+`authentication.type` supports `BASIC` and `BEARER`. For Basic auth, either
+`username` or `usernameEnvironmentVariable` is required. The password/token is
+always loaded from `secretEnvironmentVariable` inside the worker pod. The legacy
+`bearerTokenEnvironmentVariable` remains supported, but it cannot be combined
+with `authentication`.
+
+Authentication ownership elsewhere is:
+
+- automation `CALL_API` supports `BASIC`, `BEARER`, and `API_KEY` connector
+  credentials; a Basic credential secret is `username:password` (or its Base64
+  representation)
+- BPM `DYNAMIC` submissions and service-key/path actions use the platform's
+  internal Basic service credentials automatically
+- an arbitrary external client call with its own Basic credential should be an
+  automation `CALL_API` node referenced by BPM, because BPM does not own connector
+  secrets
 
 ### 3.1 Paginated order source
 
@@ -253,9 +341,17 @@ export BATCH_URL='http://batch-worker-service:9127'
 
 Do not store real bearer tokens or connector secrets in the JSON files.
 
-### 4.1 Create the strict credit report entity
+### 4.1 Create the projection-event and strict credit-report entities
 
 ```bash
+curl -fSs \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' \
+  -H "X-Tenant-Key: $TENANT_KEY" \
+  -H "X-Site-Key: $SITE_KEY" \
+  --data-binary "@$EXAMPLE_DIR/customer-credit-order-event-definition.json" \
+  "$REPORT_URL/endpoint/entities/definitions"
+
 curl -fSs \
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
@@ -333,7 +429,7 @@ curl -fSs -u batch_worker_internal:batch_worker_secret \
   -H 'Content-Type: application/json' \
   -H "X-Tenant-Key: $TENANT_KEY" \
   -H "X-Site-Key: $SITE_KEY" \
-  --data-binary "@$EXAMPLE_DIR/order-projection-batch.json" \
+  --data-binary "@$EXAMPLE_DIR/order-projection-batch-platform.json" \
   "$BATCH_URL/internal/batch/definitions"
 
 curl -fSs -u batch_worker_internal:batch_worker_secret \
@@ -344,12 +440,21 @@ curl -fSs -u batch_worker_internal:batch_worker_secret \
   "$BATCH_URL/internal/batch/definitions"
 ```
 
-The referenced environment variables must exist only in the batch-worker pod:
+For the platform-owned source, these referenced secrets must exist only in the
+batch-worker pod:
+
+```text
+COMMERCE_SERVICE_INTERNAL_PASSWORD
+REPORT_SERVICE_INTERNAL_PASSWORD
+DELIVERY_API_TOKEN
+```
+
+To test the external-client variant instead, save
+`order-projection-batch.json`. That variant references:
 
 ```text
 IMPORTER_API_TOKEN
 PROJECTION_API_TOKEN
-DELIVERY_API_TOKEN
 ```
 
 ### 4.5 Create and activate BPM flows
@@ -740,7 +845,7 @@ The scenario-specific tests verify:
 - paginated order ingestion
 - field mappings
 - per-item stable idempotency keys
-- customer clustering receiver contract
+- customer clustering receiver contract (mock contract, not a platform implementation)
 - paginated due-loading dispatch
 - real Zen/JDM evaluation
 - batch WAIT/resume behavior in automation
@@ -769,3 +874,51 @@ The scenario-specific tests verify:
 
 The inline credit policy uses GoRules JSON Decision Model, following the official
 [JDM node and decision-table format](https://docs.gorules.io/developers/jdm/node-types).
+
+## 9. Professional processor and operator toolkit
+
+Complex finance and risk logic must not be embedded in batch readers, BPM state
+transitions, or entity persistence code. Add it through a versioned processor
+toolkit with these extension categories:
+
+| Extension | Good examples | State |
+|---|---|---|
+| Entity operator | normalize IBAN, round money, derive a field | Stateless and deterministic |
+| Validator | exposure limit, date consistency, accounting balance | Stateless and deterministic |
+| Rules adapter | Zen/GoRules JDM, Drools decision table | Versioned rule artifact |
+| Analytics processor | 90-day metrics, RFM, clustering, anomaly detection | May read bounded datasets and write projections |
+| Model processor | default probability, forecast, classification | Versioned model with explainability |
+| AI processor | document extraction or advisory classification | Optional, policy-controlled, never the only control for critical finance writes |
+
+The platform tooling should provide:
+
+- a Java SPI/SDK for typed validators, operators, and processors
+- input/output JSON Schema and entity-definition compatibility checks
+- a registry containing `processorKey`, immutable version, implementation type,
+  checksum, capabilities, and lifecycle (`DRAFT`, `TESTED`, `APPROVED`, `RETIRED`)
+- a simulation API and web-panel test bench with fixtures and expected results
+- deterministic replay using the exact rule/model version and parameters
+- timeout, input-size, memory, concurrency, and tenant allow-list controls
+- structured explanation output: decisions, contributing features, thresholds,
+  warnings, and rule/model version
+- audit records without secrets or sensitive raw prompt leakage
+- adapters for local Java, Zen/JDM, Drools, ONNX/PMML, remote model APIs, and AI
+- approval gates for finance/risk processors before production activation
+
+A flow should reference a stable logical key and version policy:
+
+```json
+{
+  "processorKey": "customer-credit-score",
+  "version": "1.3.0",
+  "executionMode": "DETERMINISTIC",
+  "inputEntityKey": "customer-credit-projection",
+  "outputEntityKey": "customer-credit-report",
+  "idempotencyKey": "credit:{{assessmentKey}}",
+  "explanationRequired": true
+}
+```
+
+AI-assisted provisioning may select or configure an approved processor, but the
+same processor must also be runnable without AI. AI must not generate and activate
+unreviewed financial code or rules in one step.

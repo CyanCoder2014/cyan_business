@@ -104,30 +104,46 @@ def example_notification():
 def example_batch_definition():
     return {
         "definitionKey": "importer-order-projection-v1",
-        "title": "Import orders into the customer credit projection",
+        "title": "Copy platform orders into the credit event entity",
         "active": True,
         "spec": {
             "source": {
-                "url": "https://importer.example/v1/orders?status=CONFIRMED",
+                "url": "http://commerce-service:9104/internal/entities/records/importer-order",
                 "itemsPath": "content",
                 "pageParameter": "page",
                 "sizeParameter": "size",
                 "pageSize": 500,
-                "headers": {"Accept": "application/json"},
-                "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN",
+                "headers": {
+                    "Accept": "application/json",
+                    "X-Tenant-Key": "demo-tenant",
+                    "X-Site-Key": "main-site",
+                },
+                "authentication": {
+                    "type": "BASIC",
+                    "username": "commerce_internal",
+                    "secretEnvironmentVariable": "COMMERCE_SERVICE_INTERNAL_PASSWORD",
+                },
             },
             "destination": {
-                "url": "https://projection.example/v1/credit-projection/order-events",
+                "url": "http://report-service:9107/internal/entities/records/customer-credit-order-event",
                 "method": "POST",
-                "itemKeyPath": "eventKey",
-                "headers": {"X-Projection-Key": "importer-credit-v1"},
-                "bearerTokenEnvironmentVariable": "PROJECTION_API_TOKEN",
+                "itemKeyPath": "recordKey",
+                "headers": {
+                    "X-Tenant-Key": "demo-tenant",
+                    "X-Site-Key": "main-site",
+                },
+                "authentication": {
+                    "type": "BASIC",
+                    "username": "report_internal",
+                    "secretEnvironmentVariable": "REPORT_SERVICE_INTERNAL_PASSWORD",
+                },
             },
             "fieldMappings": {
-                "eventKey": "orderId",
-                "customerKey": "customer.id",
-                "createdAt": "createdAt",
-                "totalAmount": "totalAmount",
+                "recordKey": "recordKey",
+                "data.orderKey": "recordKey",
+                "data.customerKey": "data.customerKey",
+                "data.createdAt": "data.createdAt",
+                "data.totalAmount": "data.totalAmount",
             },
             "chunkSize": 200,
             "retryLimit": 5,
@@ -441,7 +457,23 @@ def build_endpoints():
             ep(service, "POST", f"{prefix}/records/{{entityKey}}", "Create Record", auth=auth, body=example_dynamic_record()),
             ep(service, "PUT", f"{prefix}/records/{{entityKey}}/{{recordKey}}", "Replace Record", auth=auth, body=example_dynamic_record()),
             ep(service, "PATCH", f"{prefix}/records/{{entityKey}}/{{recordKey}}", "Patch Record", auth=auth, body={"data": {"price": 1350000, "status": "PUBLISHED"}}),
-            ep(service, "GET", f"{prefix}/records/{{entityKey}}", "List Records", auth=auth),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/records/{{entityKey}}",
+                "List Records",
+                auth=auth,
+                query=[
+                    {"name": "page", "example": "0"},
+                    {"name": "size", "example": "500"},
+                    {"name": "sort", "example": "createdAt,asc"},
+                ],
+                description=(
+                    "Bounded tenant/site-scoped record page. Supplying page, size, or sort "
+                    "returns {content,page,size,totalElements,totalPages}; maximum size=1000. "
+                    "Omitting all three preserves the legacy array response."
+                ),
+            ),
             ep(service, "GET", f"{prefix}/records/{{entityKey}}/{{recordKey}}", "Get Record", auth=auth),
             ep(service, "DELETE", f"{prefix}/records/{{entityKey}}/{{recordKey}}", "Delete Record", auth=auth),
         ])

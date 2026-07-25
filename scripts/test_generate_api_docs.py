@@ -33,6 +33,29 @@ class ApiDocsInventoryTest(unittest.TestCase):
             })
         self.assertTrue(expected.issubset(self.routes), expected - self.routes)
 
+    def test_batch_example_uses_platform_records_and_secret_safe_basic_auth(self):
+        body = generator.example_batch_definition()
+        source = body["spec"]["source"]
+        destination = body["spec"]["destination"]
+        self.assertIn("/internal/entities/records/importer-order", source["url"])
+        self.assertEqual(source["itemsPath"], "content")
+        self.assertEqual(source["authentication"]["type"], "BASIC")
+        self.assertIn("secretEnvironmentVariable", source["authentication"])
+        self.assertEqual(destination["authentication"]["type"], "BASIC")
+        self.assertNotIn("password", source["authentication"])
+        self.assertNotIn("secret", source["authentication"])
+
+    def test_dynamic_record_lists_document_bounded_pagination(self):
+        record_lists = [
+            endpoint for endpoint in self.endpoints
+            if endpoint["summary"] == "List Records"
+        ]
+        self.assertTrue(record_lists)
+        for endpoint in record_lists:
+            query_names = {item["name"] for item in endpoint["query"]}
+            self.assertEqual(query_names, {"page", "size", "sort"})
+            self.assertIn("legacy array", endpoint["description"])
+
     def test_durable_automation_routes_are_complete(self):
         expected = {
             ("POST", "/endpoint/automation-orchestrator/flows/{flowKey}/manual-run"),

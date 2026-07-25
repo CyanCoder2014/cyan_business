@@ -1,0 +1,59 @@
+{
+  "entityKey": "customer-credit-order-event",
+  "tenantKey": "importer-demo",
+  "siteKey": "main-site",
+  "definition": {
+    "entityType": "REPORT_PROJECTION_EVENT",
+    "title": "Customer Credit Order Event",
+    "fields": {
+      "orderKey": {
+        "id": "orderKey",
+        "type": "string",
+        "validations": [
+          {
+            "validation": "REQUIRED",
+            "order": 1
+          }
+        ]
+      },
+      "customerKey": {
+        "id": "customerKey",
+        "type": "string",
+        "validations": [
+          {
+            "validation": "REQUIRED",
+            "order": 1
+          }
+        ]
+      },
+      "createdAt": {
+        "id": "createdAt",
+        "type": "string"
+      },
+      "totalAmount": {
+        "id": "totalAmount",
+        "type": "number"
+      },
+      "currency": {
+        "id": "currency",
+        "type": "string"
+      },
+      "maximumOverdueDays": {
+        "id": "maximumOverdueDays",
+        "type": "number"
+      },
+      "loadingKey": {
+        "id": "loadingKey",
+        "type": "string"
+      },
+      "promisedDeliveryAt": {
+        "id": "promisedDeliveryAt",
+        "type": "string"
+      },
+      "deliveryStatus": {
+        "id": "deliveryStatus",
+        "type": "string"
+      }
+    }
+  }
+}

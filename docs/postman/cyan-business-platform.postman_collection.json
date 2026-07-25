@@ -4961,7 +4961,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definitionKey\": \"importer-order-projection-v1\",\n  \"title\": \"Import orders into the customer credit projection\",\n  \"active\": true,\n  \"spec\": {\n    \"source\": {\n      \"url\": \"https://importer.example/v1/orders?status=CONFIRMED\",\n      \"itemsPath\": \"content\",\n      \"pageParameter\": \"page\",\n      \"sizeParameter\": \"size\",\n      \"pageSize\": 500,\n      \"headers\": {\n        \"Accept\": \"application/json\"\n      },\n      \"bearerTokenEnvironmentVariable\": \"IMPORTER_API_TOKEN\"\n    },\n    \"destination\": {\n      \"url\": \"https://projection.example/v1/credit-projection/order-events\",\n      \"method\": \"POST\",\n      \"itemKeyPath\": \"eventKey\",\n      \"headers\": {\n        \"X-Projection-Key\": \"importer-credit-v1\"\n      },\n      \"bearerTokenEnvironmentVariable\": \"PROJECTION_API_TOKEN\"\n    },\n    \"fieldMappings\": {\n      \"eventKey\": \"orderId\",\n      \"customerKey\": \"customer.id\",\n      \"createdAt\": \"createdAt\",\n      \"totalAmount\": \"totalAmount\"\n    },\n    \"chunkSize\": 200,\n    \"retryLimit\": 5,\n    \"skipLimit\": 100\n  }\n}",
+              "raw": "{\n  \"definitionKey\": \"importer-order-projection-v1\",\n  \"title\": \"Copy platform orders into the credit event entity\",\n  \"active\": true,\n  \"spec\": {\n    \"source\": {\n      \"url\": \"http://commerce-service:9104/internal/entities/records/importer-order\",\n      \"itemsPath\": \"content\",\n      \"pageParameter\": \"page\",\n      \"sizeParameter\": \"size\",\n      \"pageSize\": 500,\n      \"headers\": {\n        \"Accept\": \"application/json\",\n        \"X-Tenant-Key\": \"demo-tenant\",\n        \"X-Site-Key\": \"main-site\"\n      },\n      \"authentication\": {\n        \"type\": \"BASIC\",\n        \"username\": \"commerce_internal\",\n        \"secretEnvironmentVariable\": \"COMMERCE_SERVICE_INTERNAL_PASSWORD\"\n      }\n    },\n    \"destination\": {\n      \"url\": \"http://report-service:9107/internal/entities/records/customer-credit-order-event\",\n      \"method\": \"POST\",\n      \"itemKeyPath\": \"recordKey\",\n      \"headers\": {\n        \"X-Tenant-Key\": \"demo-tenant\",\n        \"X-Site-Key\": \"main-site\"\n      },\n      \"authentication\": {\n        \"type\": \"BASIC\",\n        \"username\": \"report_internal\",\n        \"secretEnvironmentVariable\": \"REPORT_SERVICE_INTERNAL_PASSWORD\"\n      }\n    },\n    \"fieldMappings\": {\n      \"recordKey\": \"recordKey\",\n      \"data.orderKey\": \"recordKey\",\n      \"data.customerKey\": \"data.customerKey\",\n      \"data.createdAt\": \"data.createdAt\",\n      \"data.totalAmount\": \"data.totalAmount\"\n    },\n    \"chunkSize\": 200,\n    \"retryLimit\": 5,\n    \"skipLimit\": 100\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -5268,7 +5268,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"definitionKey\": \"importer-order-projection-v1\",\n  \"title\": \"Import orders into the customer credit projection\",\n  \"active\": true,\n  \"spec\": {\n    \"source\": {\n      \"url\": \"https://importer.example/v1/orders?status=CONFIRMED\",\n      \"itemsPath\": \"content\",\n      \"pageParameter\": \"page\",\n      \"sizeParameter\": \"size\",\n      \"pageSize\": 500,\n      \"headers\": {\n        \"Accept\": \"application/json\"\n      },\n      \"bearerTokenEnvironmentVariable\": \"IMPORTER_API_TOKEN\"\n    },\n    \"destination\": {\n      \"url\": \"https://projection.example/v1/credit-projection/order-events\",\n      \"method\": \"POST\",\n      \"itemKeyPath\": \"eventKey\",\n      \"headers\": {\n        \"X-Projection-Key\": \"importer-credit-v1\"\n      },\n      \"bearerTokenEnvironmentVariable\": \"PROJECTION_API_TOKEN\"\n    },\n    \"fieldMappings\": {\n      \"eventKey\": \"orderId\",\n      \"customerKey\": \"customer.id\",\n      \"createdAt\": \"createdAt\",\n      \"totalAmount\": \"totalAmount\"\n    },\n    \"chunkSize\": 200,\n    \"retryLimit\": 5,\n    \"skipLimit\": 100\n  }\n}",
+              "raw": "{\n  \"definitionKey\": \"importer-order-projection-v1\",\n  \"title\": \"Copy platform orders into the credit event entity\",\n  \"active\": true,\n  \"spec\": {\n    \"source\": {\n      \"url\": \"http://commerce-service:9104/internal/entities/records/importer-order\",\n      \"itemsPath\": \"content\",\n      \"pageParameter\": \"page\",\n      \"sizeParameter\": \"size\",\n      \"pageSize\": 500,\n      \"headers\": {\n        \"Accept\": \"application/json\",\n        \"X-Tenant-Key\": \"demo-tenant\",\n        \"X-Site-Key\": \"main-site\"\n      },\n      \"authentication\": {\n        \"type\": \"BASIC\",\n        \"username\": \"commerce_internal\",\n        \"secretEnvironmentVariable\": \"COMMERCE_SERVICE_INTERNAL_PASSWORD\"\n      }\n    },\n    \"destination\": {\n      \"url\": \"http://report-service:9107/internal/entities/records/customer-credit-order-event\",\n      \"method\": \"POST\",\n      \"itemKeyPath\": \"recordKey\",\n      \"headers\": {\n        \"X-Tenant-Key\": \"demo-tenant\",\n        \"X-Site-Key\": \"main-site\"\n      },\n      \"authentication\": {\n        \"type\": \"BASIC\",\n        \"username\": \"report_internal\",\n        \"secretEnvironmentVariable\": \"REPORT_SERVICE_INTERNAL_PASSWORD\"\n      }\n    },\n    \"fieldMappings\": {\n      \"recordKey\": \"recordKey\",\n      \"data.orderKey\": \"recordKey\",\n      \"data.customerKey\": \"data.customerKey\",\n      \"data.createdAt\": \"data.createdAt\",\n      \"data.totalAmount\": \"data.totalAmount\"\n    },\n    \"chunkSize\": 200,\n    \"retryLimit\": 5,\n    \"skipLimit\": 100\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7499,8 +7499,8 @@
                 }
               ]
             },
-            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item",
-            "description": ""
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item?page=0&size=500&sort=createdAt,asc",
+            "description": "Bounded tenant/site-scoped record page. Supplying page, size, or sort returns {content,page,size,totalElements,totalPages}; maximum size=1000. Omitting all three preserves the legacy array response."
           },
           "response": []
         },
@@ -8289,8 +8289,8 @@
                 }
               ]
             },
-            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item",
-            "description": ""
+            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item?page=0&size=500&sort=createdAt,asc",
+            "description": "Bounded tenant/site-scoped record page. Supplying page, size, or sort returns {content,page,size,totalElements,totalPages}; maximum size=1000. Omitting all three preserves the legacy array response."
           },
           "response": []
         },

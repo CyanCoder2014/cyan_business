@@ -73,34 +73,46 @@
               },
               "example": {
                 "definitionKey": "importer-order-projection-v1",
-                "title": "Import orders into the customer credit projection",
+                "title": "Copy platform orders into the credit event entity",
                 "active": true,
                 "spec": {
                   "source": {
-                    "url": "https://importer.example/v1/orders?status=CONFIRMED",
+                    "url": "http://commerce-service:9104/internal/entities/records/importer-order",
                     "itemsPath": "content",
                     "pageParameter": "page",
                     "sizeParameter": "size",
                     "pageSize": 500,
                     "headers": {
-                      "Accept": "application/json"
+                      "Accept": "application/json",
+                      "X-Tenant-Key": "demo-tenant",
+                      "X-Site-Key": "main-site"
                     },
-                    "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN"
+                    "authentication": {
+                      "type": "BASIC",
+                      "username": "commerce_internal",
+                      "secretEnvironmentVariable": "COMMERCE_SERVICE_INTERNAL_PASSWORD"
+                    }
                   },
                   "destination": {
-                    "url": "https://projection.example/v1/credit-projection/order-events",
+                    "url": "http://report-service:9107/internal/entities/records/customer-credit-order-event",
                     "method": "POST",
-                    "itemKeyPath": "eventKey",
+                    "itemKeyPath": "recordKey",
                     "headers": {
-                      "X-Projection-Key": "importer-credit-v1"
+                      "X-Tenant-Key": "demo-tenant",
+                      "X-Site-Key": "main-site"
                     },
-                    "bearerTokenEnvironmentVariable": "PROJECTION_API_TOKEN"
+                    "authentication": {
+                      "type": "BASIC",
+                      "username": "report_internal",
+                      "secretEnvironmentVariable": "REPORT_SERVICE_INTERNAL_PASSWORD"
+                    }
                   },
                   "fieldMappings": {
-                    "eventKey": "orderId",
-                    "customerKey": "customer.id",
-                    "createdAt": "createdAt",
-                    "totalAmount": "totalAmount"
+                    "recordKey": "recordKey",
+                    "data.orderKey": "recordKey",
+                    "data.customerKey": "data.customerKey",
+                    "data.createdAt": "data.createdAt",
+                    "data.totalAmount": "data.totalAmount"
                   },
                   "chunkSize": 200,
                   "retryLimit": 5,

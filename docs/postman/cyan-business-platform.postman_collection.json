@@ -49,7 +49,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"prompt\": \"Want an e-commerce site like Spiffy with CRM, notifications, and Zarinpal payment.\",\n  \"appType\": \"ECOMMERCE\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"sessionId\": \"{{ai_session_id}}\",\n  \"execute\": false,\n  \"answers\": {\n    \"subdomain\": \"spiffy-demo\"\n  }\n}",
+              "raw": "{\n  \"prompt\": \"Want an e-commerce site like Spiffy with CRM, notifications, and Zarinpal payment.\",\n  \"appType\": \"ECOMMERCE\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"sessionId\": \"{{ai_session_id}}\",\n  \"execute\": false,\n  \"answers\": {\n    \"subdomain\": \"spiffy-demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -173,7 +173,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"appType\": \"ECOMMERCE\",\n  \"blueprintKey\": \"ecommerce-crm-zarinpal-v1\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Spiffy Clone\",\n  \"prompt\": \"Spiffy-like ecommerce with CRM and notifications.\",\n  \"answers\": {\n    \"subdomain\": \"spiffy-demo\",\n    \"brandName\": \"Spiffy Demo\"\n  }\n}",
+              "raw": "{\n  \"appType\": \"ECOMMERCE\",\n  \"blueprintKey\": \"ecommerce-crm-zarinpal-v1\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Spiffy Clone\",\n  \"prompt\": \"Spiffy-like ecommerce with CRM and notifications.\",\n  \"answers\": {\n    \"subdomain\": \"spiffy-demo\",\n    \"brandName\": \"Spiffy Demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -297,7 +297,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"prompt\": \"Spiffy-like ecommerce with CRM, notifications, and Zarinpal.\",\n  \"title\": \"Spiffy Demo Updated\",\n  \"answersPatch\": {\n    \"subdomain\": \"spiffy-shop\",\n    \"primaryCurrency\": \"IRR\"\n  }\n}",
+              "raw": "{\n  \"prompt\": \"Spiffy-like ecommerce with CRM, notifications, and Zarinpal.\",\n  \"title\": \"Spiffy Demo Updated\",\n  \"answersPatch\": {\n    \"subdomain\": \"spiffy-shop\",\n    \"primaryCurrency\": \"IRR\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -471,7 +471,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"channelType\": \"CHAT\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"draftId\": \"{{draft_id}}\",\n  \"appTypeHint\": \"ECOMMERCE\",\n  \"title\": \"Spiffy Intake\",\n  \"extractedAnswers\": {\n    \"subdomain\": \"spiffy-demo\"\n  }\n}",
+              "raw": "{\n  \"channelType\": \"CHAT\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"draftId\": \"{{draft_id}}\",\n  \"appTypeHint\": \"ECOMMERCE\",\n  \"title\": \"Spiffy Intake\",\n  \"extractedAnswers\": {\n    \"subdomain\": \"spiffy-demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -558,7 +558,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"USER\",\n  \"content\": \"Use a subdomain and add CRM plus notification flows.\",\n  \"answersPatch\": {\n    \"subdomain\": \"spiffy-demo\",\n    \"crmEnabled\": true\n  }\n}",
+              "raw": "{\n  \"role\": \"USER\",\n  \"content\": \"Use a subdomain and add CRM plus notification flows.\",\n  \"answersPatch\": {\n    \"subdomain\": \"spiffy-demo\",\n    \"crmEnabled\": true\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -618,7 +618,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"prompt\": \"Generate a tenant blueprint draft for a store.\",\n  \"appType\": \"ECOMMERCE\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"execute\": false,\n  \"answers\": {\n    \"subdomain\": \"internal-spiffy\"\n  }\n}",
+              "raw": "{\n  \"prompt\": \"Generate a tenant blueprint draft for a store.\",\n  \"appType\": \"ECOMMERCE\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"execute\": false,\n  \"answers\": {\n    \"subdomain\": \"internal-spiffy\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -757,7 +757,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"appType\": \"ECOMMERCE\",\n  \"blueprintKey\": \"ecommerce-crm-zarinpal-v1\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Internal Spiffy Draft\",\n  \"prompt\": \"Internal provisioning path.\",\n  \"answers\": {\n    \"subdomain\": \"internal-spiffy\"\n  }\n}",
+              "raw": "{\n  \"appType\": \"ECOMMERCE\",\n  \"blueprintKey\": \"ecommerce-crm-zarinpal-v1\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Internal Spiffy Draft\",\n  \"prompt\": \"Internal provisioning path.\",\n  \"answers\": {\n    \"subdomain\": \"internal-spiffy\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -896,7 +896,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Internal Updated\"\n}",
+              "raw": "{\n  \"title\": \"Internal Updated\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1090,7 +1090,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"channelType\": \"SYSTEM\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Internal Session\"\n}",
+              "raw": "{\n  \"channelType\": \"SYSTEM\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Internal Session\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1187,13 +1187,887 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"SYSTEM\",\n  \"content\": \"Continue blueprint enrichment.\"\n}",
+              "raw": "{\n  \"role\": \"SYSTEM\",\n  \"content\": \"Continue blueprint enrichment.\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Automation Credentials",
+      "item": [
+        {
+          "name": "Save Automation Credential",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/credentials",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"credit-projection-api\",\n  \"type\": \"BEARER\",\n  \"secret\": \"{{connector_secret}}\",\n  \"metadata\": {\n    \"authType\": \"BEARER\"\n  },\n  \"allowedRoles\": [\n    \"ROLE_SYSTEM\"\n  ],\n  \"active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('credential_id', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Automation Credentials",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/credentials",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Rotate Automation Credential",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/credentials/{{credential_id}}/rotate",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"secret\": \"{{connector_secret}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Automation Flows",
+      "item": [
+        {
+          "name": "Save Automation Flow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-flows",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flowKey\": \"customer-credit-score-v1\",\n  \"version\": 1,\n  \"name\": \"Customer credit score\",\n  \"active\": false,\n  \"entryNodeId\": \"manual\",\n  \"runtimeMode\": \"VARIABLES\",\n  \"environment\": \"default\",\n  \"lifecycleStatus\": \"DRAFT\",\n  \"nodes\": [\n    {\n      \"id\": \"manual\",\n      \"type\": \"MANUAL_TRIGGER\",\n      \"name\": \"Manual trigger\",\n      \"enabled\": true,\n      \"config\": {}\n    },\n    {\n      \"id\": \"end\",\n      \"type\": \"END\",\n      \"name\": \"Done\",\n      \"enabled\": true,\n      \"config\": {}\n    }\n  ],\n  \"edges\": [\n    {\n      \"id\": \"edge-1\",\n      \"fromNodeId\": \"manual\",\n      \"toNodeId\": \"end\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Automation Flows",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-flows",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Automation Flow Version",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-flows/{{automation_flow_key}}/versions/1",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Automation Flow",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-flows/{{automation_flow_key}}/active?environment=default",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Run Automation Flow Lifecycle Action",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-flows/{{automation_flow_key}}/versions/1/SUBMIT?targetEnvironment=production",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Analyze n8n Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-flows/n8n/analyze",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Customer credit webhook\",\n  \"active\": false,\n  \"nodes\": [\n    {\n      \"id\": \"webhook-1\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 2,\n      \"position\": [\n        0,\n        0\n      ],\n      \"parameters\": {\n        \"path\": \"customer-credit\",\n        \"httpMethod\": \"POST\"\n      }\n    }\n  ],\n  \"connections\": {},\n  \"settings\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Import n8n Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-flows/n8n/import?flowKey={{automation_flow_key}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Customer credit webhook\",\n  \"active\": false,\n  \"nodes\": [\n    {\n      \"id\": \"webhook-1\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 2,\n      \"position\": [\n        0,\n        0\n      ],\n      \"parameters\": {\n        \"path\": \"customer-credit\",\n        \"httpMethod\": \"POST\"\n      }\n    }\n  ],\n  \"connections\": {},\n  \"settings\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export Automation Flow as n8n",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-flows/{{automation_flow_key}}/versions/1/n8n-export",
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Automation Flows Internal",
+      "item": [
+        {
+          "name": "Save Automation Flow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-flows",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"flowKey\": \"customer-credit-score-v1\",\n  \"version\": 1,\n  \"name\": \"Customer credit score\",\n  \"active\": false,\n  \"entryNodeId\": \"manual\",\n  \"runtimeMode\": \"VARIABLES\",\n  \"environment\": \"default\",\n  \"lifecycleStatus\": \"DRAFT\",\n  \"nodes\": [\n    {\n      \"id\": \"manual\",\n      \"type\": \"MANUAL_TRIGGER\",\n      \"name\": \"Manual trigger\",\n      \"enabled\": true,\n      \"config\": {}\n    },\n    {\n      \"id\": \"end\",\n      \"type\": \"END\",\n      \"name\": \"Done\",\n      \"enabled\": true,\n      \"config\": {}\n    }\n  ],\n  \"edges\": [\n    {\n      \"id\": \"edge-1\",\n      \"fromNodeId\": \"manual\",\n      \"toNodeId\": \"end\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Automation Flows",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-flows",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Automation Flow Version",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-flows/{{automation_flow_key}}/versions/1",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Active Automation Flow",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-flows/{{automation_flow_key}}/active?environment=default",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Run Automation Flow Lifecycle Action",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-flows/{{automation_flow_key}}/versions/1/SUBMIT?targetEnvironment=production",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Analyze n8n Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-flows/n8n/analyze",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Customer credit webhook\",\n  \"active\": false,\n  \"nodes\": [\n    {\n      \"id\": \"webhook-1\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 2,\n      \"position\": [\n        0,\n        0\n      ],\n      \"parameters\": {\n        \"path\": \"customer-credit\",\n        \"httpMethod\": \"POST\"\n      }\n    }\n  ],\n  \"connections\": {},\n  \"settings\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Import n8n Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-flows/n8n/import?flowKey={{automation_flow_key}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Customer credit webhook\",\n  \"active\": false,\n  \"nodes\": [\n    {\n      \"id\": \"webhook-1\",\n      \"name\": \"Webhook\",\n      \"type\": \"n8n-nodes-base.webhook\",\n      \"typeVersion\": 2,\n      \"position\": [\n        0,\n        0\n      ],\n      \"parameters\": {\n        \"path\": \"customer-credit\",\n        \"httpMethod\": \"POST\"\n      }\n    }\n  ],\n  \"connections\": {},\n  \"settings\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Export Automation Flow as n8n",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-flows/{{automation_flow_key}}/versions/1/n8n-export",
+            "description": ""
           },
           "response": []
         }
@@ -1229,25 +2103,378 @@
               }
             ],
             "auth": {
-              "type": "basic",
-              "basic": [
+              "type": "bearer",
+              "bearer": [
                 {
-                  "key": "username",
-                  "value": "{{internal_basic_username}}",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "key": "token",
+                  "value": "{{access_token}}",
                   "type": "string"
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/automation-orchestrator/executions/start",
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/executions/start",
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"blockKey\": \"credit-check\",\n  \"automationFlowKey\": \"credit-screening\",\n  \"executionMode\": \"ASYNC\",\n  \"failurePolicy\": \"MARK_FAILED\",\n  \"correlationKey\": \"corr-1001\",\n  \"callbackPath\": \"/public/bpm/async-actions/callbacks/corr-1001\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"input\": {\n    \"customerKey\": \"lead-1001\"\n  },\n  \"context\": {\n    \"objectId\": \"{{object_id}}\"\n  },\n  \"inlineFragment\": {\n    \"type\": \"MAP_OUTPUT\",\n    \"mappings\": {\n      \"riskBucket\": \"$.riskBucket\"\n    }\n  },\n  \"maxRetries\": 2,\n  \"timeoutSeconds\": 120,\n  \"delayMillis\": 0\n}",
+              "raw": "{\n  \"blockKey\": \"credit-check\",\n  \"automationFlowKey\": \"customer-credit-score-v1\",\n  \"executionMode\": \"ASYNC\",\n  \"failurePolicy\": \"MARK_FAILED\",\n  \"correlationKey\": \"corr-1001\",\n  \"callbackPath\": \"/public/bpm/async-actions/callbacks/corr-1001\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"input\": {\n    \"customerKey\": \"customer-1001\"\n  },\n  \"context\": {\n    \"objectId\": \"{{object_id}}\"\n  },\n  \"maxRetries\": 2,\n  \"timeoutSeconds\": 120,\n  \"delayMillis\": 0,\n  \"idempotencyKey\": \"credit-customer-1001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.executionId) pm.environment.set('execution_id', json.executionId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Automation Execution",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/executions/{{execution_id}}",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Automation Execution",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/executions/{{execution_id}}/cancel",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Automation Execution Steps",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/executions/{{execution_id}}/steps",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Automation Dead Letters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/executions/{{execution_id}}/dead-letters",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Requeue Automation Dead Letter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/executions/{{execution_id}}/dead-letters/{{dead_letter_id}}/requeue",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Automation Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/metrics",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Automation Executions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/executions?flowKey={{automation_flow_key}}&status=FAILED",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Retry Automation Execution",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/executions/{{execution_id}}/retry?fromFailedNode=true",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Run Automation Flow Manually",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/automation-orchestrator/flows/{{automation_flow_key}}/manual-run?version=1",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"environment\": \"default\",\n  \"async\": true,\n  \"input\": {\n    \"customerKey\": \"customer-1001\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1256,6 +2483,78 @@
             }
           },
           "response": []
+        }
+      ]
+    },
+    {
+      "name": "Automation Orchestrator Internal",
+      "item": [
+        {
+          "name": "Start Automation Execution",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-orchestrator/executions/start",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blockKey\": \"credit-check\",\n  \"automationFlowKey\": \"customer-credit-score-v1\",\n  \"executionMode\": \"ASYNC\",\n  \"failurePolicy\": \"MARK_FAILED\",\n  \"correlationKey\": \"corr-1001\",\n  \"callbackPath\": \"/public/bpm/async-actions/callbacks/corr-1001\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"input\": {\n    \"customerKey\": \"customer-1001\"\n  },\n  \"context\": {\n    \"objectId\": \"{{object_id}}\"\n  },\n  \"maxRetries\": 2,\n  \"timeoutSeconds\": 120,\n  \"delayMillis\": 0,\n  \"idempotencyKey\": \"credit-customer-1001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.executionId) pm.environment.set('execution_id', json.executionId);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get Automation Execution",
@@ -1284,12 +2583,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{automation_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{automation_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -1326,18 +2625,437 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{automation_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{automation_internal_password}}",
                   "type": "string"
                 }
               ]
             },
             "url": "{{gateway_base_url}}/internal/automation-orchestrator/executions/{{execution_id}}/cancel",
             "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Automation Execution Steps",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-orchestrator/executions/{{execution_id}}/steps",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Automation Dead Letters",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-orchestrator/executions/{{execution_id}}/dead-letters",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Requeue Automation Dead Letter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-orchestrator/executions/{{execution_id}}/dead-letters/{{dead_letter_id}}/requeue",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Automation Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-orchestrator/metrics",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Automation Executions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-orchestrator/executions?flowKey={{automation_flow_key}}&status=FAILED",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Retry Automation Execution",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{automation_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{automation_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/automation-orchestrator/executions/{{execution_id}}/retry?fromFailedNode=true",
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Automation Public",
+      "item": [
+        {
+          "name": "List Automation Node Structures",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{gateway_base_url}}/public/automation-flows/node-structures",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Automation Edge Structures",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{gateway_base_url}}/public/automation-flows/edge-structures",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Trigger Automation Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Automation-Environment",
+                "value": "default"
+              },
+              {
+                "key": "X-Webhook-Secret",
+                "value": "{{automation_webhook_secret}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "webhook-customer-1001"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{gateway_base_url}}/public/automation-orchestrator/webhooks/{{automation_flow_key}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerKey\": \"customer-1001\",\n  \"event\": \"CUSTOMER_UPDATED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Automation Node Callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Automation-Callback-Secret",
+                "value": "{{automation_callback_secret}}"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{gateway_base_url}}/public/automation-orchestrator/executions/{{execution_id}}/nodes/http-callback/callback",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"callbackId\": \"callback-1001\",\n  \"payload\": {\n    \"status\": \"SUCCEEDED\",\n    \"externalReference\": \"ext-1001\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
           "response": []
         }
@@ -1740,7 +3458,19 @@
               }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('object_id', json.id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Execute Transition",
@@ -1917,6 +3647,180 @@
           "response": []
         },
         {
+          "name": "Add Managed Object Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/bpm/managed-objects/{{object_id}}/comments",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stateId\": \"finance-review\",\n  \"body\": \"Credit exposure reviewed with finance.\",\n  \"visibleToRoles\": [\n    \"ROLE_FINANCE\"\n  ],\n  \"visibleToGroups\": [\n    \"finance-credit-reviewers\"\n  ],\n  \"metadata\": {\n    \"source\": \"postman\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Managed Object Comments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/bpm/managed-objects/{{object_id}}/comments",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Add Managed Object Attachment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/bpm/managed-objects/{{object_id}}/attachments",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stateId\": \"finance-review\",\n  \"assetKey\": \"credit-review-document-1\",\n  \"fileName\": \"credit-review.pdf\",\n  \"downloadUrl\": \"https://media.example/credit-review-document-1\",\n  \"contentType\": \"application/pdf\",\n  \"sizeBytes\": 245000,\n  \"visibleToGroups\": [\n    \"finance-credit-reviewers\"\n  ],\n  \"metadata\": {\n    \"source\": \"postman\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Managed Object Attachments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/bpm/managed-objects/{{object_id}}/attachments",
+            "description": ""
+          },
+          "response": []
+        },
+        {
           "name": "Get Managed Object",
           "request": {
             "method": "GET",
@@ -2028,12 +3932,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2070,12 +3974,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2116,12 +4020,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2167,12 +4071,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2207,6 +4111,18 @@
               {
                 "key": "X-Client-Key",
                 "value": "{{client_key}}"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
               }
             ],
             "auth": {
@@ -2214,12 +4130,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2253,6 +4169,18 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
               }
             ],
             "auth": {
@@ -2260,12 +4188,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2282,7 +4210,19 @@
               }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('object_id', json.id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Execute Transition Internal",
@@ -2308,6 +4248,18 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
               }
             ],
             "auth": {
@@ -2315,12 +4267,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2359,6 +4311,18 @@
               {
                 "key": "X-Client-Key",
                 "value": "{{client_key}}"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
               }
             ],
             "auth": {
@@ -2366,12 +4330,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2401,6 +4365,18 @@
               {
                 "key": "X-Client-Key",
                 "value": "{{client_key}}"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
               }
             ],
             "auth": {
@@ -2408,12 +4384,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2447,6 +4423,18 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
               }
             ],
             "auth": {
@@ -2454,12 +4442,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2475,6 +4463,248 @@
                 }
               }
             }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Managed Object Comment Internal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{bpm_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{bpm_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/bpm/managed-objects/{{object_id}}/comments",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stateId\": \"finance-review\",\n  \"body\": \"Internal finance review note.\",\n  \"visibleToRoles\": [\n    \"ROLE_FINANCE\"\n  ],\n  \"visibleToGroups\": [\n    \"finance-credit-reviewers\"\n  ],\n  \"metadata\": {\n    \"source\": \"postman-internal\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Managed Object Comments Internal",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{bpm_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{bpm_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/bpm/managed-objects/{{object_id}}/comments",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Add Managed Object Attachment Internal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{bpm_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{bpm_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/bpm/managed-objects/{{object_id}}/attachments",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stateId\": \"finance-review\",\n  \"assetKey\": \"credit-review-document-1\",\n  \"fileName\": \"credit-review.pdf\",\n  \"downloadUrl\": \"https://media.example/credit-review-document-1\",\n  \"contentType\": \"application/pdf\",\n  \"sizeBytes\": 245000,\n  \"visibleToGroups\": [\n    \"finance-credit-reviewers\"\n  ],\n  \"metadata\": {\n    \"source\": \"postman-internal\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Managed Object Attachments Internal",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{bpm_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{bpm_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/bpm/managed-objects/{{object_id}}/attachments",
+            "description": ""
           },
           "response": []
         },
@@ -2498,6 +4728,18 @@
               {
                 "key": "X-Client-Key",
                 "value": "{{client_key}}"
+              },
+              {
+                "key": "X-Actor-User",
+                "value": "postman-internal"
+              },
+              {
+                "key": "X-Actor-Roles",
+                "value": "ROLE_SYSTEM,ROLE_FINANCE"
+              },
+              {
+                "key": "X-Actor-Groups",
+                "value": "finance-credit-reviewers"
               }
             ],
             "auth": {
@@ -2505,12 +4747,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2552,12 +4794,12 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
@@ -2594,17 +4836,721 @@
               "basic": [
                 {
                   "key": "username",
-                  "value": "{{internal_basic_username}}",
+                  "value": "{{bpm_internal_username}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "{{internal_basic_password}}",
+                  "value": "{{bpm_internal_password}}",
                   "type": "string"
                 }
               ]
             },
             "url": "{{gateway_base_url}}/internal/bpm/metadata/transition-conditions",
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "BPM Public Metadata",
+      "item": [
+        {
+          "name": "List State Action Structures",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{dynamic_service_base_url}}/public/dynamic-flows/state-action-structures",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Transition Condition Structures",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": "{{dynamic_service_base_url}}/public/dynamic-flows/transition-condition-structures",
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Batch Worker",
+      "item": [
+        {
+          "name": "Save Batch Definition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/batch/definitions",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definitionKey\": \"importer-order-projection-v1\",\n  \"title\": \"Import orders into the customer credit projection\",\n  \"active\": true,\n  \"spec\": {\n    \"source\": {\n      \"url\": \"https://importer.example/v1/orders?status=CONFIRMED\",\n      \"itemsPath\": \"content\",\n      \"pageParameter\": \"page\",\n      \"sizeParameter\": \"size\",\n      \"pageSize\": 500,\n      \"headers\": {\n        \"Accept\": \"application/json\"\n      },\n      \"bearerTokenEnvironmentVariable\": \"IMPORTER_API_TOKEN\"\n    },\n    \"destination\": {\n      \"url\": \"https://projection.example/v1/credit-projection/order-events\",\n      \"method\": \"POST\",\n      \"itemKeyPath\": \"eventKey\",\n      \"headers\": {\n        \"X-Projection-Key\": \"importer-credit-v1\"\n      },\n      \"bearerTokenEnvironmentVariable\": \"PROJECTION_API_TOKEN\"\n    },\n    \"fieldMappings\": {\n      \"eventKey\": \"orderId\",\n      \"customerKey\": \"customer.id\",\n      \"createdAt\": \"createdAt\",\n      \"totalAmount\": \"totalAmount\"\n    },\n    \"chunkSize\": 200,\n    \"retryLimit\": 5,\n    \"skipLimit\": 100\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Batch Definition",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/batch/definitions/{{batch_definition_key}}",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Start Batch Run",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/batch/definitions/{{batch_definition_key}}/runs",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"runKey\": \"2026-07-25T04:30:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('batch_run_id', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Batch Run",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/batch/runs/{{batch_run_id}}",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Batch Runs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/batch/runs?limit=50",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Rejected Batch Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/batch/runs/{{batch_run_id}}/rejected-items",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Retry Batch Run",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/endpoint/batch/runs/{{batch_run_id}}/retry",
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Batch Worker Internal",
+      "item": [
+        {
+          "name": "Save Batch Definition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{batch_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{batch_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/batch/definitions",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definitionKey\": \"importer-order-projection-v1\",\n  \"title\": \"Import orders into the customer credit projection\",\n  \"active\": true,\n  \"spec\": {\n    \"source\": {\n      \"url\": \"https://importer.example/v1/orders?status=CONFIRMED\",\n      \"itemsPath\": \"content\",\n      \"pageParameter\": \"page\",\n      \"sizeParameter\": \"size\",\n      \"pageSize\": 500,\n      \"headers\": {\n        \"Accept\": \"application/json\"\n      },\n      \"bearerTokenEnvironmentVariable\": \"IMPORTER_API_TOKEN\"\n    },\n    \"destination\": {\n      \"url\": \"https://projection.example/v1/credit-projection/order-events\",\n      \"method\": \"POST\",\n      \"itemKeyPath\": \"eventKey\",\n      \"headers\": {\n        \"X-Projection-Key\": \"importer-credit-v1\"\n      },\n      \"bearerTokenEnvironmentVariable\": \"PROJECTION_API_TOKEN\"\n    },\n    \"fieldMappings\": {\n      \"eventKey\": \"orderId\",\n      \"customerKey\": \"customer.id\",\n      \"createdAt\": \"createdAt\",\n      \"totalAmount\": \"totalAmount\"\n    },\n    \"chunkSize\": 200,\n    \"retryLimit\": 5,\n    \"skipLimit\": 100\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Batch Definition",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{batch_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{batch_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/batch/definitions/{{batch_definition_key}}",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Start Batch Run",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{batch_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{batch_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/batch/definitions/{{batch_definition_key}}/runs",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"runKey\": \"2026-07-25T04:30:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('batch_run_id', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Batch Run",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{batch_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{batch_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/batch/runs/{{batch_run_id}}",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Batch Runs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{batch_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{batch_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/batch/runs?limit=50",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "List Rejected Batch Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{batch_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{batch_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/batch/runs/{{batch_run_id}}/rejected-items",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Retry Batch Run",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{batch_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{batch_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{gateway_base_url}}/internal/batch/runs/{{batch_run_id}}/retry",
             "description": ""
           },
           "response": []
@@ -3249,7 +6195,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"paymentMethodKey\": \"zarinpal-main\",\n  \"orderKey\": \"order-1001\",\n  \"invoiceKey\": \"invoice-1001\",\n  \"customerKey\": \"customer-farid\",\n  \"relatedService\": \"checkout-service\",\n  \"relatedEntityType\": \"order\",\n  \"relatedEntityKey\": \"order-1001\",\n  \"amount\": 1250000,\n  \"currency\": \"IRR\",\n  \"description\": \"Checkout payment\",\n  \"callbackUrl\": \"http://localhost:8080/public/payment/callback/ZARINPAL/order-1001\",\n  \"successUrl\": \"http://localhost:3000/checkout/success\",\n  \"failureUrl\": \"http://localhost:3000/checkout/failure\",\n  \"metaData\": {\n    \"cartKey\": \"cart-1001\"\n  }\n}",
+              "raw": "{\n  \"paymentMethodKey\": \"zarinpal-main\",\n  \"orderKey\": \"order-1001\",\n  \"invoiceKey\": \"invoice-1001\",\n  \"customerKey\": \"customer-farid\",\n  \"relatedService\": \"checkout-service\",\n  \"relatedEntityType\": \"order\",\n  \"relatedEntityKey\": \"order-1001\",\n  \"amount\": 1250000,\n  \"currency\": \"IRR\",\n  \"description\": \"Checkout payment\",\n  \"callbackUrl\": \"http://localhost:8001/public/payment/callback/ZARINPAL/order-1001\",\n  \"successUrl\": \"http://localhost:3000/checkout/success\",\n  \"failureUrl\": \"http://localhost:3000/checkout/failure\",\n  \"metaData\": {\n    \"cartKey\": \"cart-1001\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4052,6 +6998,7 @@
             "url": "{{dynamic_service_base_url}}/endpoint/entities/definitions?page={{definition_page}}&size={{definition_page_size}}&sort={{definition_sort}}",
             "description": "Paginated tenant/site-scoped entity definitions. Default page=0, size=20; maximum size=200. Supported sort fields: entityKey, title, entityType, createdAt, updatedAt."
           },
+          "response": [],
           "event": [
             {
               "listen": "test",
@@ -4070,8 +7017,7 @@
                 ]
               }
             }
-          ],
-          "response": []
+          ]
         },
         {
           "name": "Get Definition",
@@ -4787,6 +7733,7 @@
             "url": "{{dynamic_service_base_url}}/internal/entities/definitions?page={{definition_page}}&size={{definition_page_size}}&sort={{definition_sort}}",
             "description": "Paginated internal tenant/site-scoped entity definitions using Basic authentication. Default page=0, size=20; maximum size=200."
           },
+          "response": [],
           "event": [
             {
               "listen": "test",
@@ -4805,8 +7752,7 @@
                 ]
               }
             }
-          ],
-          "response": []
+          ]
         },
         {
           "name": "Get Definition",
@@ -7273,7 +10219,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"methodKey\": \"zarinpal-main\",\n  \"displayName\": \"Zarinpal Main\",\n  \"providerCode\": \"ZARINPAL\",\n  \"region\": \"IRANIAN\",\n  \"flowType\": \"REDIRECT\",\n  \"enabled\": true,\n  \"active\": true,\n  \"priorityOrder\": 1,\n  \"supportedCurrencies\": [\n    \"IRR\"\n  ],\n  \"configuration\": {\n    \"merchantId\": \"merchant-demo\",\n    \"callbackBaseUrl\": \"http://localhost:8080\"\n  },\n  \"description\": \"Primary Zarinpal payment method\"\n}",
+              "raw": "{\n  \"methodKey\": \"zarinpal-main\",\n  \"displayName\": \"Zarinpal Main\",\n  \"providerCode\": \"ZARINPAL\",\n  \"region\": \"IRANIAN\",\n  \"flowType\": \"REDIRECT\",\n  \"enabled\": true,\n  \"active\": true,\n  \"priorityOrder\": 1,\n  \"supportedCurrencies\": [\n    \"IRR\"\n  ],\n  \"configuration\": {\n    \"merchantId\": \"merchant-demo\",\n    \"callbackBaseUrl\": \"http://localhost:8001\"\n  },\n  \"description\": \"Primary Zarinpal payment method\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7323,7 +10269,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"methodKey\": \"zarinpal-main\",\n  \"displayName\": \"Zarinpal Main Updated\",\n  \"providerCode\": \"ZARINPAL\",\n  \"region\": \"IRANIAN\",\n  \"flowType\": \"REDIRECT\",\n  \"enabled\": true,\n  \"active\": true,\n  \"priorityOrder\": 1,\n  \"supportedCurrencies\": [\n    \"IRR\"\n  ],\n  \"configuration\": {\n    \"merchantId\": \"merchant-demo\",\n    \"callbackBaseUrl\": \"http://localhost:8080\"\n  },\n  \"description\": \"Updated method\"\n}",
+              "raw": "{\n  \"methodKey\": \"zarinpal-main\",\n  \"displayName\": \"Zarinpal Main Updated\",\n  \"providerCode\": \"ZARINPAL\",\n  \"region\": \"IRANIAN\",\n  \"flowType\": \"REDIRECT\",\n  \"enabled\": true,\n  \"active\": true,\n  \"priorityOrder\": 1,\n  \"supportedCurrencies\": [\n    \"IRR\"\n  ],\n  \"configuration\": {\n    \"merchantId\": \"merchant-demo\",\n    \"callbackBaseUrl\": \"http://localhost:8001\"\n  },\n  \"description\": \"Updated method\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7410,7 +10356,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"paymentMethodKey\": \"zarinpal-main\",\n  \"orderKey\": \"order-1001\",\n  \"invoiceKey\": \"invoice-1001\",\n  \"customerKey\": \"customer-farid\",\n  \"relatedService\": \"checkout-service\",\n  \"relatedEntityType\": \"order\",\n  \"relatedEntityKey\": \"order-1001\",\n  \"amount\": 1250000,\n  \"currency\": \"IRR\",\n  \"description\": \"Order payment for Spiffy checkout\",\n  \"callbackUrl\": \"http://localhost:8080/public/payment/callback/ZARINPAL/order-1001\",\n  \"successUrl\": \"http://localhost:3000/checkout/success\",\n  \"failureUrl\": \"http://localhost:3000/checkout/failure\",\n  \"metaData\": {\n    \"cartKey\": \"cart-1001\",\n    \"source\": \"storefront\"\n  }\n}",
+              "raw": "{\n  \"paymentMethodKey\": \"zarinpal-main\",\n  \"orderKey\": \"order-1001\",\n  \"invoiceKey\": \"invoice-1001\",\n  \"customerKey\": \"customer-farid\",\n  \"relatedService\": \"checkout-service\",\n  \"relatedEntityType\": \"order\",\n  \"relatedEntityKey\": \"order-1001\",\n  \"amount\": 1250000,\n  \"currency\": \"IRR\",\n  \"description\": \"Order payment for Spiffy checkout\",\n  \"callbackUrl\": \"http://localhost:8001/public/payment/callback/ZARINPAL/order-1001\",\n  \"successUrl\": \"http://localhost:3000/checkout/success\",\n  \"failureUrl\": \"http://localhost:3000/checkout/failure\",\n  \"metaData\": {\n    \"cartKey\": \"cart-1001\",\n    \"source\": \"storefront\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -7830,7 +10776,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"paymentMethodKey\": \"zarinpal-main\",\n  \"orderKey\": \"order-1001\",\n  \"invoiceKey\": \"invoice-1001\",\n  \"customerKey\": \"customer-farid\",\n  \"relatedService\": \"checkout-service\",\n  \"relatedEntityType\": \"order\",\n  \"relatedEntityKey\": \"order-1001\",\n  \"amount\": 1250000,\n  \"currency\": \"IRR\",\n  \"description\": \"Order payment for Spiffy checkout\",\n  \"callbackUrl\": \"http://localhost:8080/public/payment/callback/ZARINPAL/order-1001\",\n  \"successUrl\": \"http://localhost:3000/checkout/success\",\n  \"failureUrl\": \"http://localhost:3000/checkout/failure\",\n  \"metaData\": {\n    \"cartKey\": \"cart-1001\",\n    \"source\": \"storefront\"\n  }\n}",
+              "raw": "{\n  \"paymentMethodKey\": \"zarinpal-main\",\n  \"orderKey\": \"order-1001\",\n  \"invoiceKey\": \"invoice-1001\",\n  \"customerKey\": \"customer-farid\",\n  \"relatedService\": \"checkout-service\",\n  \"relatedEntityType\": \"order\",\n  \"relatedEntityKey\": \"order-1001\",\n  \"amount\": 1250000,\n  \"currency\": \"IRR\",\n  \"description\": \"Order payment for Spiffy checkout\",\n  \"callbackUrl\": \"http://localhost:8001/public/payment/callback/ZARINPAL/order-1001\",\n  \"successUrl\": \"http://localhost:3000/checkout/success\",\n  \"failureUrl\": \"http://localhost:3000/checkout/failure\",\n  \"metaData\": {\n    \"cartKey\": \"cart-1001\",\n    \"source\": \"storefront\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8071,7 +11017,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"paymentMethodKey\": \"zarinpal-main\",\n  \"orderKey\": \"order-1001\",\n  \"invoiceKey\": \"invoice-1001\",\n  \"customerKey\": \"customer-farid\",\n  \"relatedService\": \"checkout-service\",\n  \"relatedEntityType\": \"order\",\n  \"relatedEntityKey\": \"order-1001\",\n  \"amount\": 1250000,\n  \"currency\": \"IRR\",\n  \"description\": \"Order payment for Spiffy checkout\",\n  \"callbackUrl\": \"http://localhost:8080/public/payment/callback/ZARINPAL/order-1001\",\n  \"successUrl\": \"http://localhost:3000/checkout/success\",\n  \"failureUrl\": \"http://localhost:3000/checkout/failure\",\n  \"metaData\": {\n    \"cartKey\": \"cart-1001\",\n    \"source\": \"storefront\"\n  }\n}",
+              "raw": "{\n  \"paymentMethodKey\": \"zarinpal-main\",\n  \"orderKey\": \"order-1001\",\n  \"invoiceKey\": \"invoice-1001\",\n  \"customerKey\": \"customer-farid\",\n  \"relatedService\": \"checkout-service\",\n  \"relatedEntityType\": \"order\",\n  \"relatedEntityKey\": \"order-1001\",\n  \"amount\": 1250000,\n  \"currency\": \"IRR\",\n  \"description\": \"Order payment for Spiffy checkout\",\n  \"callbackUrl\": \"http://localhost:8001/public/payment/callback/ZARINPAL/order-1001\",\n  \"successUrl\": \"http://localhost:3000/checkout/success\",\n  \"failureUrl\": \"http://localhost:3000/checkout/failure\",\n  \"metaData\": {\n    \"cartKey\": \"cart-1001\",\n    \"source\": \"storefront\"\n  }\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -8976,7 +11922,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"clientId\": \"panel.sampv3\",\n  \"username\": \"farid\",\n  \"password\": \"Passw0rd!\",\n  \"captchaChallengeId\": null,\n  \"captchaAnswer\": null,\n  \"otpCode\": null,\n  \"deviceId\": \"chrome-local\"\n}",
+              "raw": "{\n  \"clientId\": \"panel.sampv3\",\n  \"username\": \"cyan-admin\",\n  \"password\": \"admin123\",\n  \"captchaChallengeId\": null,\n  \"captchaAnswer\": null,\n  \"otpCode\": null,\n  \"deviceId\": \"chrome-local\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9169,7 +12115,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"phoneNumber\": \"+989121234567\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"phoneNumber\": \"+989121234567\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9212,7 +12158,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"deviceId\": \"chrome-local\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"deviceId\": \"chrome-local\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9255,7 +12201,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"challengeId\": \"challenge-1\",\n  \"credential\": \"signed-payload\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"challengeId\": \"challenge-1\",\n  \"credential\": \"signed-payload\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9431,7 +12377,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"destination\": \"+989121234567\",\n  \"reason\": \"LOGIN\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"destination\": \"+989121234567\",\n  \"reason\": \"LOGIN\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9474,7 +12420,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"otpCode\": \"123456\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"otpCode\": \"123456\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9517,7 +12463,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"clientId\": \"panel.sampv3\",\n  \"deviceId\": \"chrome-local\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"clientId\": \"panel.sampv3\",\n  \"deviceId\": \"chrome-local\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9647,7 +12593,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"password\": \"Passw0rd!\",\n  \"email\": \"farid@example.com\",\n  \"phoneNumber\": \"+989121234567\",\n  \"mfaEnabled\": false,\n  \"roles\": [\n    \"ROLE_USER\",\n    \"ROLE_ADMIN\"\n  ]\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"password\": \"admin123\",\n  \"email\": \"farid@example.com\",\n  \"phoneNumber\": \"+989121234567\",\n  \"mfaEnabled\": false,\n  \"roles\": [\n    \"ROLE_USER\",\n    \"ROLE_ADMIN\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9689,7 +12635,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/api/sso/users/farid",
+            "url": "{{gateway_base_url}}/api/sso/users/cyan-admin",
             "description": ""
           },
           "response": []
@@ -9727,7 +12673,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"password\": \"Passw0rd!\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"password\": \"admin123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9770,7 +12716,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"deviceId\": \"chrome-local\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"deviceId\": \"chrome-local\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -9813,7 +12759,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"farid\",\n  \"challengeId\": \"challenge-1\",\n  \"credential\": \"signed-payload\"\n}",
+              "raw": "{\n  \"username\": \"cyan-admin\",\n  \"challengeId\": \"challenge-1\",\n  \"credential\": \"signed-payload\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -10545,6 +13491,26 @@
     {
       "key": "definition_sort",
       "value": "entityKey,asc"
+    },
+    {
+      "key": "batch_definition_key",
+      "value": "importer-order-projection-v1"
+    },
+    {
+      "key": "batch_run_id",
+      "value": ""
+    },
+    {
+      "key": "automation_flow_key",
+      "value": "customer-credit-score-v1"
+    },
+    {
+      "key": "dead_letter_id",
+      "value": ""
+    },
+    {
+      "key": "credential_id",
+      "value": ""
     }
   ]
 }

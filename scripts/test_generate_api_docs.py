@@ -129,6 +129,20 @@ class ApiDocsInventoryTest(unittest.TestCase):
             })
         self.assertTrue(expected.issubset(self.routes), expected - self.routes)
 
+    def test_live_openapi_routes_are_complete(self):
+        expected = {
+            ("GET", "/endpoint/entities/definitions/{entityKey}/openapi"),
+            ("GET", "/internal/entities/definitions/{entityKey}/openapi"),
+        }
+        for prefix in ("/endpoint/api-docs", "/internal/api-docs"):
+            expected.update({
+                ("GET", f"{prefix}/services"),
+                ("GET", f"{prefix}/services/{{serviceKey}}"),
+                ("GET", f"{prefix}/aggregate"),
+            })
+        self.assertTrue(expected.issubset(self.routes), expected - self.routes)
+        self.assertIn("api-docs-service", generator.DEFAULT_AVAILABLE_SERVICE_KEYS)
+
     def test_postman_collection_has_recent_folders_variables_and_tests(self):
         collection = generator.build_postman_collection(self.endpoints)
         folders = {
@@ -145,6 +159,8 @@ class ApiDocsInventoryTest(unittest.TestCase):
             "Automation Credentials": 3,
             "Automation Public": 4,
             "BPM Public Metadata": 2,
+            "API Docs Catalog": 3,
+            "API Docs Catalog Internal": 3,
         }
         for folder, count in expected_counts.items():
             self.assertEqual(len(folders[folder]), count)
@@ -156,6 +172,7 @@ class ApiDocsInventoryTest(unittest.TestCase):
         self.assertIn("batch_run_id", variables)
         self.assertIn("automation_flow_key", variables)
         self.assertIn("credential_id", variables)
+        self.assertIn("api_docs_service_base_url", variables)
 
         start_batch = next(
             item for item in folders["Batch Worker"]
@@ -171,6 +188,15 @@ class ApiDocsInventoryTest(unittest.TestCase):
         self.assertIn(
             "{{automation_internal_username}}",
             str(internal_automation["request"]["auth"]),
+        )
+        internal_api_docs = folders["API Docs Catalog Internal"][0]
+        self.assertIn(
+            "{{api_docs_internal_username}}",
+            str(internal_api_docs["request"]["auth"]),
+        )
+        self.assertIn(
+            "{{api_docs_service_base_url}}",
+            str(internal_api_docs["request"]["url"]),
         )
 
     def test_ai_examples_send_available_service_inventory(self):

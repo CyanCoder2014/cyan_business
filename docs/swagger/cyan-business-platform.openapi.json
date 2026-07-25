@@ -24,6 +24,12 @@
       "name": "AI Orchestrator Internal"
     },
     {
+      "name": "API Docs Catalog"
+    },
+    {
+      "name": "API Docs Catalog Internal"
+    },
+    {
       "name": "Automation Credentials"
     },
     {
@@ -1078,7 +1084,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -1216,7 +1223,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -1356,7 +1364,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -1562,7 +1571,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -1676,7 +1686,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -1741,7 +1752,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -1878,7 +1890,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -2013,7 +2026,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -2211,7 +2225,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -2321,7 +2336,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -2581,6 +2597,47 @@
         ],
         "summary": "Delete Definition",
         "description": "Delete Definition for Dynamic Entity.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ]
+      }
+    },
+    "/endpoint/entities/definitions/{entityKey}/openapi": {
+      "get": {
+        "tags": [
+          "Dynamic Entity"
+        ],
+        "summary": "Get Dynamic Entity OpenAPI",
+        "description": "Generate a strict OpenAPI document from the stored tenant/site entity definition.",
         "security": [
           {
             "BearerAuth": []
@@ -3520,6 +3577,47 @@
         ]
       }
     },
+    "/internal/entities/definitions/{entityKey}/openapi": {
+      "get": {
+        "tags": [
+          "Dynamic Entity Internal"
+        ],
+        "summary": "Get Dynamic Entity OpenAPI",
+        "description": "Generate a strict OpenAPI document from the stored tenant/site entity definition.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ]
+      }
+    },
     "/internal/entities/templates": {
       "get": {
         "tags": [
@@ -4135,6 +4233,248 @@
               "type": "string"
             },
             "example": "{{record_key}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/api-docs/services": {
+      "get": {
+        "tags": [
+          "API Docs Catalog"
+        ],
+        "summary": "List Live API Specifications",
+        "description": "List Live API Specifications for API Docs Catalog.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/api-docs/services/{serviceKey}": {
+      "get": {
+        "tags": [
+          "API Docs Catalog"
+        ],
+        "summary": "Get Live Service OpenAPI",
+        "description": "Get Live Service OpenAPI for API Docs Catalog.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "serviceKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "processor-service"
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
+          }
+        ]
+      }
+    },
+    "/endpoint/api-docs/aggregate": {
+      "get": {
+        "tags": [
+          "API Docs Catalog"
+        ],
+        "summary": "Get Aggregated Live OpenAPI",
+        "description": "Get Aggregated Live OpenAPI for API Docs Catalog.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
+          }
+        ]
+      }
+    },
+    "/internal/api-docs/services": {
+      "get": {
+        "tags": [
+          "API Docs Catalog Internal"
+        ],
+        "summary": "List Live API Specifications",
+        "description": "List Live API Specifications for API Docs Catalog Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/api-docs/services/{serviceKey}": {
+      "get": {
+        "tags": [
+          "API Docs Catalog Internal"
+        ],
+        "summary": "Get Live Service OpenAPI",
+        "description": "Get Live Service OpenAPI for API Docs Catalog Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "serviceKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "processor-service"
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
+          }
+        ]
+      }
+    },
+    "/internal/api-docs/aggregate": {
+      "get": {
+        "tags": [
+          "API Docs Catalog Internal"
+        ],
+        "summary": "Get Aggregated Live OpenAPI",
+        "description": "Get Aggregated Live OpenAPI for API Docs Catalog Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
           }
         ]
       }

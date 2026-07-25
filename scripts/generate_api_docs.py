@@ -32,6 +32,7 @@ DEFAULT_AVAILABLE_SERVICE_KEYS = [
     "media-service",
     "processor-service",
     "batch-worker-service",
+    "api-docs-service",
 ]
 
 
@@ -444,6 +445,17 @@ def build_endpoints():
                 ),
             ),
             ep(service, "GET", f"{prefix}/definitions/{{entityKey}}", "Get Definition", auth=auth),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/definitions/{{entityKey}}/openapi",
+                "Get Dynamic Entity OpenAPI",
+                auth=auth,
+                description=(
+                    "Generate a strict OpenAPI document from the stored tenant/site "
+                    "entity definition."
+                ),
+            ),
             ep(service, "DELETE", f"{prefix}/definitions/{{entityKey}}", "Delete Definition", auth=auth),
             ep(service, "GET", f"{prefix}/templates", "List Templates", auth=auth),
             ep(service, "GET", f"{prefix}/templates/{{templateKey}}", "Get Template", auth=auth),
@@ -476,6 +488,30 @@ def build_endpoints():
             ),
             ep(service, "GET", f"{prefix}/records/{{entityKey}}/{{recordKey}}", "Get Record", auth=auth),
             ep(service, "DELETE", f"{prefix}/records/{{entityKey}}/{{recordKey}}", "Delete Record", auth=auth),
+        ])
+
+    for prefix, service, auth in [
+        ("/endpoint/api-docs", "API Docs Catalog", "bearer"),
+        ("/internal/api-docs", "API Docs Catalog Internal", "basic"),
+    ]:
+        endpoints.extend([
+            ep(service, "GET", f"{prefix}/services", "List Live API Specifications", auth=auth),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/services/{{serviceKey}}",
+                "Get Live Service OpenAPI",
+                auth=auth,
+                query=[{"name": "refresh", "example": "false"}],
+            ),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/aggregate",
+                "Get Aggregated Live OpenAPI",
+                auth=auth,
+                query=[{"name": "refresh", "example": "false"}],
+            ),
         ])
 
     for prefix, service, auth in [
@@ -1094,6 +1130,7 @@ def example_from_path_param(name):
         "username": DEFAULT_USERNAME,
         "slug": "homepage",
         "correlationKey": "corr-1001",
+        "serviceKey": "processor-service",
     }
     return examples.get(name, f"{{{{{name}}}}}")
 
@@ -1141,6 +1178,10 @@ def build_postman_collection(endpoints):
                 "automation_internal_password",
             ),
             "/internal/bpm": ("bpm_internal_username", "bpm_internal_password"),
+            "/internal/api-docs": (
+                "api_docs_internal_username",
+                "api_docs_internal_password",
+            ),
         }
         for prefix, (username_key, password_key) in internal_auth_prefixes.items():
             if endpoint["path"].startswith(prefix):
@@ -1189,6 +1230,9 @@ def build_postman_collection(endpoints):
         if endpoint["path"].startswith(("/endpoint/entities", "/internal/entities")):
             request["request"]["url"] = request["request"]["url"].replace(
                 "{{gateway_base_url}}", "{{dynamic_service_base_url}}", 1)
+        if endpoint["path"].startswith(("/endpoint/api-docs", "/internal/api-docs")):
+            request["request"]["url"] = request["request"]["url"].replace(
+                "{{gateway_base_url}}", "{{api_docs_service_base_url}}", 1)
         if endpoint["path"].startswith("/public/dynamic-flows"):
             request["request"]["url"] = request["request"]["url"].replace(
                 "{{gateway_base_url}}", "{{dynamic_service_base_url}}", 1)
@@ -1280,6 +1324,7 @@ def build_postman_collection(endpoints):
         "variable": [
             {"key": "gateway_base_url", "value": DEFAULT_GATEWAY_BASE_URL},
             {"key": "dynamic_service_base_url", "value": "http://localhost:9119"},
+            {"key": "api_docs_service_base_url", "value": "http://localhost:9128"},
             {"key": "tenant_key", "value": "demo-tenant"},
             {"key": "site_key", "value": "main-site"},
             {"key": "client_key", "value": "spiffy-client"},
@@ -1299,6 +1344,7 @@ def build_postman_environment():
     values = OrderedDict([
         ("gateway_base_url", DEFAULT_GATEWAY_BASE_URL),
         ("dynamic_service_base_url", "http://localhost:9119"),
+        ("api_docs_service_base_url", "http://localhost:9128"),
         ("tenant_key", "demo-tenant"),
         ("site_key", "main-site"),
         ("client_key", "spiffy-client"),
@@ -1319,6 +1365,8 @@ def build_postman_environment():
         ("automation_internal_password", "automation_orchestrator_secret"),
         ("bpm_internal_username", "bpm_internal"),
         ("bpm_internal_password", "bpm_secret"),
+        ("api_docs_internal_username", "api_docs_internal"),
+        ("api_docs_internal_password", "api_docs_secret"),
         ("username", DEFAULT_USERNAME),
         ("password", DEFAULT_PASSWORD),
         ("access_token", ""),
@@ -1346,6 +1394,7 @@ def build_postman_environment():
         "batch_internal_password",
         "automation_internal_password",
         "bpm_internal_password",
+        "api_docs_internal_password",
         "internal_basic_password",
     }
     return {
@@ -1494,6 +1543,21 @@ def build_readme(endpoints):
     return "\n".join([
         "# API Docs",
         "",
+        "The authoritative API documentation is generated from live Spring controllers.",
+        "See [`DYNAMIC_OPENAPI_PLATFORM.md`](DYNAMIC_OPENAPI_PLATFORM.md).",
+        "",
+        "Primary export:",
+        "",
+        "```bash",
+        "export API_DOCS_CATALOG_URL=http://localhost:9128/internal/api-docs",
+        "export API_DOCS_USERNAME=api_docs_internal",
+        "export API_DOCS_PASSWORD=api_docs_secret",
+        "python3 scripts/export_live_api_docs.py --refresh",
+        "```",
+        "",
+        "The assets below are legacy offline snapshots. They are not authoritative when",
+        "controllers have changed.",
+        "",
         "Generated assets:",
         "- `docs/postman/cyan-business-platform.postman_collection.json`",
         "- `docs/postman/cyan-business-platform.postman_environment.template.json`",
@@ -1506,7 +1570,7 @@ def build_readme(endpoints):
         "2. Run `SSO / Login` first. Its test script stores `access_token`, `refresh_token`, and `session_id` in the environment.",
         "3. Set `dynamic_service_base_url` to the dynamic service under test; it defaults to local `bpm-service` on port `9119`.",
         "4. Definition list requests use `definition_page`, `definition_page_size`, and `definition_sort`; their tests verify the pagination envelope.",
-        "5. Batch, automation, and BPM internal folders use their own `*_internal_username` and secret `*_internal_password` variables.",
+        "5. Batch, automation, BPM, and API Docs internal folders use their own `*_internal_username` and secret `*_internal_password` variables.",
         "6. `Start Batch Run`, `Start Automation Execution`, and credential/managed-object creation requests store their returned IDs for later requests.",
         "7. Open `docs/swagger/index.html` in a browser, then use Swagger's `Authorize` button with either a bearer token or internal basic credentials.",
         "8. Use the Swagger spec selector to switch between the full platform inventory and per-service specs.",

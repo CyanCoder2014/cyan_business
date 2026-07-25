@@ -92,7 +92,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -229,7 +230,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -364,7 +366,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -562,7 +565,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }
@@ -672,7 +676,8 @@
                   "sso-captcha-service",
                   "media-service",
                   "processor-service",
-                  "batch-worker-service"
+                  "batch-worker-service",
+                  "api-docs-service"
                 ]
               }
             }

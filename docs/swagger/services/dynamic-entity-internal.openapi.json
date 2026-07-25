@@ -321,6 +321,47 @@
         ]
       }
     },
+    "/internal/entities/definitions/{entityKey}/openapi": {
+      "get": {
+        "tags": [
+          "Dynamic Entity Internal"
+        ],
+        "summary": "Get Dynamic Entity OpenAPI",
+        "description": "Generate a strict OpenAPI document from the stored tenant/site entity definition.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ]
+      }
+    },
     "/internal/entities/templates": {
       "get": {
         "tags": [

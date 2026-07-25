@@ -49,7 +49,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"prompt\": \"Want an e-commerce site like Spiffy with CRM, notifications, and Zarinpal payment.\",\n  \"appType\": \"ECOMMERCE\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"sessionId\": \"{{ai_session_id}}\",\n  \"execute\": false,\n  \"answers\": {\n    \"subdomain\": \"spiffy-demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"prompt\": \"Want an e-commerce site like Spiffy with CRM, notifications, and Zarinpal payment.\",\n  \"appType\": \"ECOMMERCE\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"sessionId\": \"{{ai_session_id}}\",\n  \"execute\": false,\n  \"answers\": {\n    \"subdomain\": \"spiffy-demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -173,7 +173,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"appType\": \"ECOMMERCE\",\n  \"blueprintKey\": \"ecommerce-crm-zarinpal-v1\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Spiffy Clone\",\n  \"prompt\": \"Spiffy-like ecommerce with CRM and notifications.\",\n  \"answers\": {\n    \"subdomain\": \"spiffy-demo\",\n    \"brandName\": \"Spiffy Demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"appType\": \"ECOMMERCE\",\n  \"blueprintKey\": \"ecommerce-crm-zarinpal-v1\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Spiffy Clone\",\n  \"prompt\": \"Spiffy-like ecommerce with CRM and notifications.\",\n  \"answers\": {\n    \"subdomain\": \"spiffy-demo\",\n    \"brandName\": \"Spiffy Demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -297,7 +297,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"prompt\": \"Spiffy-like ecommerce with CRM, notifications, and Zarinpal.\",\n  \"title\": \"Spiffy Demo Updated\",\n  \"answersPatch\": {\n    \"subdomain\": \"spiffy-shop\",\n    \"primaryCurrency\": \"IRR\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"prompt\": \"Spiffy-like ecommerce with CRM, notifications, and Zarinpal.\",\n  \"title\": \"Spiffy Demo Updated\",\n  \"answersPatch\": {\n    \"subdomain\": \"spiffy-shop\",\n    \"primaryCurrency\": \"IRR\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -471,7 +471,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"channelType\": \"CHAT\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"draftId\": \"{{draft_id}}\",\n  \"appTypeHint\": \"ECOMMERCE\",\n  \"title\": \"Spiffy Intake\",\n  \"extractedAnswers\": {\n    \"subdomain\": \"spiffy-demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"channelType\": \"CHAT\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"draftId\": \"{{draft_id}}\",\n  \"appTypeHint\": \"ECOMMERCE\",\n  \"title\": \"Spiffy Intake\",\n  \"extractedAnswers\": {\n    \"subdomain\": \"spiffy-demo\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -558,7 +558,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"USER\",\n  \"content\": \"Use a subdomain and add CRM plus notification flows.\",\n  \"answersPatch\": {\n    \"subdomain\": \"spiffy-demo\",\n    \"crmEnabled\": true\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"role\": \"USER\",\n  \"content\": \"Use a subdomain and add CRM plus notification flows.\",\n  \"answersPatch\": {\n    \"subdomain\": \"spiffy-demo\",\n    \"crmEnabled\": true\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -618,7 +618,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"prompt\": \"Generate a tenant blueprint draft for a store.\",\n  \"appType\": \"ECOMMERCE\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"execute\": false,\n  \"answers\": {\n    \"subdomain\": \"internal-spiffy\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"prompt\": \"Generate a tenant blueprint draft for a store.\",\n  \"appType\": \"ECOMMERCE\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"execute\": false,\n  \"answers\": {\n    \"subdomain\": \"internal-spiffy\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -757,7 +757,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"appType\": \"ECOMMERCE\",\n  \"blueprintKey\": \"ecommerce-crm-zarinpal-v1\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Internal Spiffy Draft\",\n  \"prompt\": \"Internal provisioning path.\",\n  \"answers\": {\n    \"subdomain\": \"internal-spiffy\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"appType\": \"ECOMMERCE\",\n  \"blueprintKey\": \"ecommerce-crm-zarinpal-v1\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Internal Spiffy Draft\",\n  \"prompt\": \"Internal provisioning path.\",\n  \"answers\": {\n    \"subdomain\": \"internal-spiffy\"\n  },\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -896,7 +896,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Internal Updated\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"title\": \"Internal Updated\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1090,7 +1090,7 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"channelType\": \"SYSTEM\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Internal Session\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"channelType\": \"SYSTEM\",\n  \"tenantKey\": \"{{tenant_key}}\",\n  \"siteKey\": \"{{site_key}}\",\n  \"clientKey\": \"{{client_key}}\",\n  \"title\": \"Internal Session\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1187,13 +1187,260 @@
             "description": "",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"SYSTEM\",\n  \"content\": \"Continue blueprint enrichment.\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\"\n  ]\n}",
+              "raw": "{\n  \"role\": \"SYSTEM\",\n  \"content\": \"Continue blueprint enrichment.\",\n  \"availableServiceKeys\": [\n    \"ai-orchestrator-service\",\n    \"notification-service\",\n    \"bpm-service\",\n    \"automation-orchestrator-service\",\n    \"report-service\",\n    \"sso-auth-service\",\n    \"sso-user-service\",\n    \"sso-captcha-service\",\n    \"media-service\",\n    \"processor-service\",\n    \"batch-worker-service\",\n    \"api-docs-service\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "API Docs Catalog",
+      "item": [
+        {
+          "name": "List Live API Specifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{api_docs_service_base_url}}/endpoint/api-docs/services",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Live Service OpenAPI",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{api_docs_service_base_url}}/endpoint/api-docs/services/processor-service?refresh=false",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Aggregated Live OpenAPI",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{api_docs_service_base_url}}/endpoint/api-docs/aggregate?refresh=false",
+            "description": ""
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "API Docs Catalog Internal",
+      "item": [
+        {
+          "name": "List Live API Specifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{api_docs_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{api_docs_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{api_docs_service_base_url}}/internal/api-docs/services",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Live Service OpenAPI",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{api_docs_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{api_docs_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{api_docs_service_base_url}}/internal/api-docs/services/processor-service?refresh=false",
+            "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Aggregated Live OpenAPI",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{api_docs_internal_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{api_docs_internal_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{api_docs_service_base_url}}/internal/api-docs/aggregate?refresh=false",
+            "description": ""
           },
           "response": []
         }
@@ -7057,6 +7304,43 @@
           "response": []
         },
         {
+          "name": "Get Dynamic Entity OpenAPI",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/definitions/catalog-item/openapi",
+            "description": "Generate a strict OpenAPI document from the stored tenant/site entity definition."
+          },
+          "response": []
+        },
+        {
           "name": "Delete Definition",
           "request": {
             "method": "DELETE",
@@ -7793,6 +8077,48 @@
             },
             "url": "{{dynamic_service_base_url}}/internal/entities/definitions/catalog-item",
             "description": ""
+          },
+          "response": []
+        },
+        {
+          "name": "Get Dynamic Entity OpenAPI",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-Key",
+                "value": "{{tenant_key}}"
+              },
+              {
+                "key": "X-Site-Key",
+                "value": "{{site_key}}"
+              },
+              {
+                "key": "X-Client-Key",
+                "value": "{{client_key}}"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{internal_basic_username}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{internal_basic_password}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{dynamic_service_base_url}}/internal/entities/definitions/catalog-item/openapi",
+            "description": "Generate a strict OpenAPI document from the stored tenant/site entity definition."
           },
           "response": []
         },
@@ -13467,6 +13793,10 @@
     {
       "key": "dynamic_service_base_url",
       "value": "http://localhost:9119"
+    },
+    {
+      "key": "api_docs_service_base_url",
+      "value": "http://localhost:9128"
     },
     {
       "key": "tenant_key",

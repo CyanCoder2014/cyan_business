@@ -12,7 +12,11 @@ import com.cyancoder.dynamiccore.template.DynamicTemplateRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,17 +24,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class DynamicRuntimeServiceDefinitionRequestTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private StoredEntityDefinitionRepository definitionRepository;
     private DynamicRuntimeService runtimeService;
 
     @BeforeEach
     void setUp() {
-        StoredEntityDefinitionRepository definitionRepository = mock(StoredEntityDefinitionRepository.class);
+        definitionRepository = mock(StoredEntityDefinitionRepository.class);
         when(definitionRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(
                 anyString(), any(), any(), anyString()
         )).thenReturn(Optional.empty());
@@ -118,5 +125,32 @@ class DynamicRuntimeServiceDefinitionRequestTest {
         assertThatThrownBy(() -> runtimeService.saveDefinition(request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("definition or definitionJson is required");
+    }
+
+    @Test
+    void pagesScopedDefinitionsWithBoundedSizeAndStableEntityKeyOrdering() {
+        StoredEntityDefinition definition = new StoredEntityDefinition();
+        definition.setEntityKey("customer-credit-report");
+        when(definitionRepository.findByServiceKeyAndTenantKeyAndSiteKey(
+                anyString(), any(), any(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(definition)));
+
+        var result = runtimeService.listDefinitions(
+                new DynamicScope("demo-tenant", "main-site"), 2, 500, "title,desc");
+
+        ArgumentCaptor<Pageable> pageable = ArgumentCaptor.forClass(Pageable.class);
+        verify(definitionRepository).findByServiceKeyAndTenantKeyAndSiteKey(
+                eq("bpm-service"), eq("demo-tenant"), eq("main-site"), pageable.capture());
+        assertThat(result.getContent()).containsExactly(definition);
+        assertThat(pageable.getValue().getPageNumber()).isEqualTo(2);
+        assertThat(pageable.getValue().getPageSize()).isEqualTo(200);
+        var requestedOrder = pageable.getValue().getSort().getOrderFor("title");
+        assertThat(requestedOrder).isNotNull();
+        assertThat(requestedOrder.getDirection())
+                .isEqualTo(org.springframework.data.domain.Sort.Direction.DESC);
+        var stableOrder = pageable.getValue().getSort().getOrderFor("entityKey");
+        assertThat(stableOrder).isNotNull();
+        assertThat(stableOrder.getDirection())
+                .isEqualTo(org.springframework.data.domain.Sort.Direction.ASC);
     }
 }

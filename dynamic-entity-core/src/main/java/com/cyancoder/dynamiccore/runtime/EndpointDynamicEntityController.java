@@ -60,13 +60,18 @@ public class EndpointDynamicEntityController {
 
     @GetMapping("/definitions")
     @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
-    public List<DynamicEntityDefinitionResponse> listDefinitions(
+    public DynamicPageResponse<DynamicEntityDefinitionResponse> listDefinitions(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
-            @RequestHeader(value = "X-Site-Key", required = false) String siteKey
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @RequestParam(value = "sort", defaultValue = "entityKey,asc") String sort
     ) {
-        return runtimeService.listDefinitions(DynamicScopeResolver.fromHeaders(tenantKey, siteKey)).stream()
-                .map(responseMapper::toDefinitionResponse)
-                .toList();
+        return DynamicPageResponse.from(
+                runtimeService.listDefinitions(
+                        DynamicScopeResolver.fromHeaders(tenantKey, siteKey), page, size, sort),
+                responseMapper::toDefinitionResponse
+        );
     }
 
     @GetMapping("/definitions/{entityKey}")

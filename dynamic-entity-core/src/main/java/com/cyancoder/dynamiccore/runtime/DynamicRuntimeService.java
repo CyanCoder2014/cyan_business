@@ -12,6 +12,9 @@ import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordRepository;
 import com.cyancoder.dynamiccore.template.DynamicEntityTemplate;
 import com.cyancoder.dynamiccore.template.DynamicTemplateRegistry;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -20,6 +23,8 @@ import java.util.Map;
 import java.util.UUID;
 
 public class DynamicRuntimeService {
+    private static final int DEFAULT_DEFINITION_PAGE_SIZE = 20;
+    private static final int MAX_DEFINITION_PAGE_SIZE = 200;
 
     private final StoredEntityDefinitionRepository definitionRepository;
     private final DynamicEntityRecordRepository recordRepository;
@@ -78,12 +83,42 @@ public class DynamicRuntimeService {
         return new ResolvedDefinition(definitionParser.parse(request.getDefinitionJson()), request.getDefinitionJson());
     }
 
-    public List<StoredEntityDefinition> listDefinitions() {
-        return listDefinitions(new DynamicScope(null, null));
+    public Page<StoredEntityDefinition> listDefinitions(int page, int size, String sort) {
+        return listDefinitions(new DynamicScope(null, null), page, size, sort);
     }
 
-    public List<StoredEntityDefinition> listDefinitions(DynamicScope scope) {
-        return definitionRepository.findByServiceKeyAndTenantKeyAndSiteKeyOrderByEntityKeyAsc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey());
+    public Page<StoredEntityDefinition> listDefinitions(
+            DynamicScope scope, int page, int size, String sort) {
+        int safePage = Math.max(page, 0);
+        int safeSize = size < 1
+                ? DEFAULT_DEFINITION_PAGE_SIZE
+                : Math.min(size, MAX_DEFINITION_PAGE_SIZE);
+        PageRequest pageable = PageRequest.of(
+                safePage,
+                safeSize,
+                definitionSort(sort)
+        );
+        return definitionRepository.findByServiceKeyAndTenantKeyAndSiteKey(
+                properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), pageable);
+    }
+
+    private Sort definitionSort(String value) {
+        String[] parts = value == null ? new String[0] : value.split(",", 2);
+        String property = switch (parts.length == 0 ? "" : parts[0].trim()) {
+            case "title" -> "title";
+            case "entityType" -> "entityType";
+            case "createdAt" -> "createdAt";
+            case "updatedAt" -> "updatedAt";
+            default -> "entityKey";
+        };
+        Sort.Direction direction = parts.length > 1
+                && "desc".equalsIgnoreCase(parts[1].trim())
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Sort requested = Sort.by(direction, property);
+        return "entityKey".equals(property)
+                ? requested
+                : requested.and(Sort.by(Sort.Direction.ASC, "entityKey"));
     }
 
     public StoredEntityDefinition getDefinition(String entityKey) {

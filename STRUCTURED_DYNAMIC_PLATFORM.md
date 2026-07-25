@@ -93,6 +93,28 @@ Shared controllers are exposed by `dynamic-entity-core`:
 - `GET /endpoint/entities/records/{entityKey}`
 - `GET /endpoint/entities/records/{entityKey}/{recordKey}`
 
+Definition listing is paginated for both endpoint and internal APIs:
+
+```http
+GET /endpoint/entities/definitions?page=0&size=20&sort=entityKey,asc
+GET /internal/entities/definitions?page=0&size=20&sort=updatedAt,desc
+```
+
+The default page is `0`, the default size is `20`, and the maximum size is
+`200`. Supported sort fields are `entityKey`, `title`, `entityType`,
+`createdAt`, and `updatedAt`. Non-`entityKey` sorting automatically adds
+`entityKey ASC` as a stable tie-breaker.
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 20,
+  "totalElements": 0,
+  "totalPages": 0
+}
+```
+
 Each dynamic runtime service exposes the same endpoint controller under a second, service-qualified path:
 
 ```text

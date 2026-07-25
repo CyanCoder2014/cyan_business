@@ -25,7 +25,8 @@ type ServiceKey =
   | "automation-orchestrator-service"
   | "batch-worker-service"
   | "payment-service"
-  | "payment-orchestrator-service";
+  | "payment-orchestrator-service"
+  | "api-docs-service";
 
 type ScopedRequest = {
   tenantKey?: string;
@@ -185,6 +186,50 @@ export function listBatchRuns(tenantKey: string, siteKey: string) {
     tenantKey,
     siteKey
   });
+}
+
+export type ApiDocsServiceSummary = {
+  serviceKey: string;
+  baseUrl: string;
+  status: "AVAILABLE" | "UNAVAILABLE";
+  title?: string | null;
+  version?: string | null;
+  pathCount: number;
+  fetchedAt: string;
+  error?: string | null;
+};
+
+export type OpenApiDocument = {
+  openapi?: string;
+  info?: {
+    title?: string;
+    description?: string;
+    version?: string;
+  };
+  paths?: Record<string, Record<string, {
+    summary?: string;
+    operationId?: string;
+    description?: string;
+    security?: Array<Record<string, unknown>>;
+    "x-platform-auth"?: "NONE" | "BEARER" | "BASIC";
+  }>>;
+  components?: Record<string, unknown>;
+};
+
+export function listApiDocsServices() {
+  return requestJson<ApiDocsServiceSummary[]>(
+    "api-docs-service",
+    "/endpoint/api-docs/services",
+    { method: "GET" }
+  );
+}
+
+export function getApiDocsService(serviceKey: string, refresh = false) {
+  return requestJson<OpenApiDocument>(
+    "api-docs-service",
+    `/endpoint/api-docs/services/${encodeURIComponent(serviceKey)}?refresh=${refresh}`,
+    { method: "GET" }
+  );
 }
 
 export function listPaymentMethods() {

@@ -30,6 +30,7 @@ const navigation = [
   { href: "/site-builder", key: "site-builder", icon: "▣", en: "Site Builder", fa: "سایت‌ساز" },
   { href: "/search", key: "search", icon: "⌕", en: "Media", fa: "مدیا" },
   { href: "/automation", key: "automation", icon: "◔", en: "Analytics", fa: "آنالیتیکس" },
+  { href: "/api-docs", key: "api-docs", icon: "{ }", en: "API Docs", fa: "مستندات API" },
   { href: "/iam", key: "iam", icon: "⚙", en: "Settings", fa: "تنظیمات" }
 ];
 

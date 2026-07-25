@@ -8,7 +8,8 @@ export const DEFAULT_AVAILABLE_SERVICE_KEYS = [
   "sso-user-service",
   "sso-captcha-service",
   "media-service",
-  "processor-service"
+  "processor-service",
+  "api-docs-service"
 ] as const;
 
 export function availablePlatformServiceKeys(): string[] {

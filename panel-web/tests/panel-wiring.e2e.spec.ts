@@ -436,6 +436,48 @@ test("profile page renders live account data and logout returns to auth", async 
   await expect(page.getByRole("button", { name: "Sign in" }).first()).toBeVisible();
 });
 
+test("api docs page renders live controller paths and authentication modes", async ({ page }) => {
+  await page.route("**/api/platform/service/api-docs-service/endpoint/api-docs/services", async (route) => {
+    await route.fulfill({
+      json: [
+        {
+          serviceKey: "commerce-service",
+          baseUrl: "http://commerce-service:9104",
+          status: "AVAILABLE",
+          title: "commerce-service",
+          version: "1.0.0",
+          pathCount: 2,
+          fetchedAt: "2026-07-25T12:00:00Z"
+        }
+      ]
+    });
+  });
+  await page.route("**/api/platform/service/api-docs-service/endpoint/api-docs/services/commerce-service?refresh=false", async (route) => {
+    await route.fulfill({
+      json: {
+        openapi: "3.1.0",
+        info: { title: "Commerce Service", description: "Controller-derived platform API", version: "1.0.0" },
+        paths: {
+          "/endpoint/entities/records/importer-order": {
+            get: { summary: "List records", "x-platform-auth": "BEARER", security: [{ bearerAuth: [] }] }
+          },
+          "/internal/entities/records/importer-order": {
+            post: { summary: "Create record", "x-platform-auth": "BASIC", security: [{ basicAuth: [] }] }
+          }
+        }
+      }
+    });
+  });
+
+  await page.goto("/api-docs");
+
+  await expect(page.getByRole("heading", { name: "Live API Documentation" })).toBeVisible();
+  await expect(page.getByText("/endpoint/entities/records/importer-order")).toBeVisible();
+  await expect(page.getByText("/internal/entities/records/importer-order")).toBeVisible();
+  await expect(page.getByText("BEARER").first()).toBeVisible();
+  await expect(page.getByText("BASIC").first()).toBeVisible();
+});
+
 async function seedAuth(page: Page) {
   await page.addInitScript((keys) => {
     window.localStorage.setItem(keys.accessToken, "seeded-access");

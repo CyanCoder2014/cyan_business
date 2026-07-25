@@ -86,6 +86,7 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
                 2. Never create an entity, route, flow, resource, action, or dependency owned by an unavailable service.
                 3. Copy the authoritative list into app.availableServiceKeys. Do not add services.
                 4. If a requested feature needs an unavailable service, add a precise manualActions entry explaining which service must be enabled. Do not invent a replacement API.
+                5. When metadata contains controllerApis, treat its method, path, and auth values as the authoritative live API contract. Do not invent a static route or change BASIC/BEARER/NONE authentication.
 
                 Platform composition rules:
                 1. Always use structured platform entities and routes.

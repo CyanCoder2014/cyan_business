@@ -4,8 +4,11 @@ import com.cyancoder.dynamiccore.operator.OperatorRegistry;
 import com.cyancoder.dynamiccore.operator.operators.CopyFieldOperator;
 import com.cyancoder.dynamiccore.operator.operators.SetFieldOperator;
 import com.cyancoder.dynamiccore.operator.operators.SumFieldsOperator;
+import com.cyancoder.dynamiccore.runtime.DynamicEntityOpenApiService;
 import com.cyancoder.dynamiccore.runtime.EndpointDynamicEntityController;
+import com.cyancoder.dynamiccore.runtime.EndpointDynamicEntityOpenApiController;
 import com.cyancoder.dynamiccore.runtime.InternalDynamicEntityController;
+import com.cyancoder.dynamiccore.runtime.InternalDynamicEntityOpenApiController;
 import com.cyancoder.dynamiccore.runtime.DynamicEntityResponseMapper;
 import com.cyancoder.dynamiccore.runtime.DynamicRuntimeService;
 import com.cyancoder.dynamiccore.service.DynamicDefinitionParser;
@@ -104,5 +107,29 @@ public class DynamicCoreConfig {
             DynamicEntityResponseMapper responseMapper
     ) {
         return new InternalDynamicEntityController(runtimeService, responseMapper);
+    }
+
+    @Bean
+    public DynamicEntityOpenApiService dynamicEntityOpenApiService(
+            DynamicRuntimeService runtimeService,
+            DynamicDefinitionParser definitionParser,
+            DynamicRuntimeProperties properties
+    ) {
+        return new DynamicEntityOpenApiService(runtimeService, definitionParser, properties);
+    }
+
+    @Bean
+    public EndpointDynamicEntityOpenApiController endpointDynamicEntityOpenApiController(
+            DynamicEntityOpenApiService openApiService,
+            DynamicRuntimeProperties properties
+    ) {
+        return new EndpointDynamicEntityOpenApiController(openApiService, properties);
+    }
+
+    @Bean
+    public InternalDynamicEntityOpenApiController internalDynamicEntityOpenApiController(
+            DynamicEntityOpenApiService openApiService
+    ) {
+        return new InternalDynamicEntityOpenApiController(openApiService);
     }
 }

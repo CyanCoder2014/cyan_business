@@ -18,7 +18,7 @@
   ],
   "tags": [
     {
-      "name": "Content"
+      "name": "Batch Worker Internal"
     }
   ],
   "components": {
@@ -35,16 +35,16 @@
     }
   },
   "paths": {
-    "/api/content-service/content": {
+    "/internal/batch/definitions": {
       "post": {
         "tags": [
-          "Content"
+          "Batch Worker Internal"
         ],
-        "summary": "Create Content Content",
-        "description": "Create Content Content for Content.",
+        "summary": "Save Batch Definition",
+        "description": "Save Batch Definition for Batch Worker Internal.",
         "security": [
           {
-            "BearerAuth": []
+            "BasicAuth": []
           }
         ],
         "responses": {
@@ -72,41 +72,39 @@
                 "additionalProperties": true
               },
               "example": {
-                "contentKey": "content-1001",
-                "title": "Sample Content Content",
-                "status": "ACTIVE",
-                "payload": {
-                  "source": "postman",
-                  "tenantKey": "{{tenant_key}}",
-                  "siteKey": "{{site_key}}"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Content"
-        ],
-        "summary": "List Content Contents",
-        "description": "List Content Contents for Content.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
+                "definitionKey": "importer-order-projection-v1",
+                "title": "Import orders into the customer credit projection",
+                "active": true,
+                "spec": {
+                  "source": {
+                    "url": "https://importer.example/v1/orders?status=CONFIRMED",
+                    "itemsPath": "content",
+                    "pageParameter": "page",
+                    "sizeParameter": "size",
+                    "pageSize": 500,
+                    "headers": {
+                      "Accept": "application/json"
+                    },
+                    "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN"
+                  },
+                  "destination": {
+                    "url": "https://projection.example/v1/credit-projection/order-events",
+                    "method": "POST",
+                    "itemKeyPath": "eventKey",
+                    "headers": {
+                      "X-Projection-Key": "importer-credit-v1"
+                    },
+                    "bearerTokenEnvironmentVariable": "PROJECTION_API_TOKEN"
+                  },
+                  "fieldMappings": {
+                    "eventKey": "orderId",
+                    "customerKey": "customer.id",
+                    "createdAt": "createdAt",
+                    "totalAmount": "totalAmount"
+                  },
+                  "chunkSize": 200,
+                  "retryLimit": 5,
+                  "skipLimit": 100
                 }
               }
             }
@@ -114,16 +112,16 @@
         }
       }
     },
-    "/api/content-service/content/{contentKey}": {
+    "/internal/batch/definitions/{definitionKey}": {
       "get": {
         "tags": [
-          "Content"
+          "Batch Worker Internal"
         ],
-        "summary": "Get Content Content",
-        "description": "Get Content Content for Content.",
+        "summary": "Get Batch Definition",
+        "description": "Get Batch Definition for Batch Worker Internal.",
         "security": [
           {
-            "BearerAuth": []
+            "BasicAuth": []
           }
         ],
         "responses": {
@@ -144,25 +142,27 @@
         },
         "parameters": [
           {
-            "name": "contentKey",
+            "name": "definitionKey",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "content-1001"
+            "example": "{{batch_definition_key}}"
           }
         ]
-      },
-      "put": {
+      }
+    },
+    "/internal/batch/definitions/{definitionKey}/runs": {
+      "post": {
         "tags": [
-          "Content"
+          "Batch Worker Internal"
         ],
-        "summary": "Update Content Content",
-        "description": "Update Content Content for Content.",
+        "summary": "Start Batch Run",
+        "description": "Start Batch Run for Batch Worker Internal.",
         "security": [
           {
-            "BearerAuth": []
+            "BasicAuth": []
           }
         ],
         "responses": {
@@ -183,13 +183,13 @@
         },
         "parameters": [
           {
-            "name": "contentKey",
+            "name": "definitionKey",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "content-1001"
+            "example": "{{batch_definition_key}}"
           }
         ],
         "requestBody": {
@@ -201,28 +201,23 @@
                 "additionalProperties": true
               },
               "example": {
-                "contentKey": "content-1001",
-                "title": "Sample Content Content",
-                "status": "ACTIVE",
-                "payload": {
-                  "source": "postman",
-                  "tenantKey": "{{tenant_key}}",
-                  "siteKey": "{{site_key}}"
-                }
+                "runKey": "2026-07-25T04:30:00Z"
               }
             }
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/internal/batch/runs/{id}": {
+      "get": {
         "tags": [
-          "Content"
+          "Batch Worker Internal"
         ],
-        "summary": "Delete Content Content",
-        "description": "Delete Content Content for Content.",
+        "summary": "Get Batch Run",
+        "description": "Get Batch Run for Batch Worker Internal.",
         "security": [
           {
-            "BearerAuth": []
+            "BasicAuth": []
           }
         ],
         "responses": {
@@ -243,57 +238,27 @@
         },
         "parameters": [
           {
-            "name": "contentKey",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "content-1001"
+            "example": "{{id}}"
           }
         ]
       }
     },
-    "/api/content-service/content/internal/export": {
+    "/internal/batch/runs": {
       "get": {
         "tags": [
-          "Content"
+          "Batch Worker Internal"
         ],
-        "summary": "Export Content",
-        "description": "Export Content for Content.",
+        "summary": "List Batch Runs",
+        "description": "List Batch Runs for Batch Worker Internal.",
         "security": [
           {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/content-service/content/slug/{slug}": {
-      "get": {
-        "tags": [
-          "Content"
-        ],
-        "summary": "Get Content By Slug",
-        "description": "Get Content By Slug for Content.",
-        "security": [
-          {
-            "BearerAuth": []
+            "BasicAuth": []
           }
         ],
         "responses": {
@@ -314,13 +279,95 @@
         },
         "parameters": [
           {
-            "name": "slug",
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "50"
+          }
+        ]
+      }
+    },
+    "/internal/batch/runs/{id}/rejected-items": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "List Rejected Batch Items",
+        "description": "List Rejected Batch Items for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "homepage"
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/internal/batch/runs/{id}/retry": {
+      "post": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Retry Batch Run",
+        "description": "Retry Batch Run for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
           }
         ]
       }

@@ -18,7 +18,7 @@
   ],
   "tags": [
     {
-      "name": "Inventory"
+      "name": "Batch Worker"
     }
   ],
   "components": {
@@ -35,13 +35,13 @@
     }
   },
   "paths": {
-    "/api/inventory-service/items": {
+    "/endpoint/batch/definitions": {
       "post": {
         "tags": [
-          "Inventory"
+          "Batch Worker"
         ],
-        "summary": "Create Inventory Item",
-        "description": "Create Inventory Item for Inventory.",
+        "summary": "Save Batch Definition",
+        "description": "Save Batch Definition for Batch Worker.",
         "security": [
           {
             "BearerAuth": []
@@ -72,41 +72,39 @@
                 "additionalProperties": true
               },
               "example": {
-                "itemKey": "item-1001",
-                "title": "Sample Inventory Item",
-                "status": "ACTIVE",
-                "payload": {
-                  "source": "postman",
-                  "tenantKey": "{{tenant_key}}",
-                  "siteKey": "{{site_key}}"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Inventory"
-        ],
-        "summary": "List Inventory Items",
-        "description": "List Inventory Items for Inventory.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
+                "definitionKey": "importer-order-projection-v1",
+                "title": "Import orders into the customer credit projection",
+                "active": true,
+                "spec": {
+                  "source": {
+                    "url": "https://importer.example/v1/orders?status=CONFIRMED",
+                    "itemsPath": "content",
+                    "pageParameter": "page",
+                    "sizeParameter": "size",
+                    "pageSize": 500,
+                    "headers": {
+                      "Accept": "application/json"
+                    },
+                    "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN"
+                  },
+                  "destination": {
+                    "url": "https://projection.example/v1/credit-projection/order-events",
+                    "method": "POST",
+                    "itemKeyPath": "eventKey",
+                    "headers": {
+                      "X-Projection-Key": "importer-credit-v1"
+                    },
+                    "bearerTokenEnvironmentVariable": "PROJECTION_API_TOKEN"
+                  },
+                  "fieldMappings": {
+                    "eventKey": "orderId",
+                    "customerKey": "customer.id",
+                    "createdAt": "createdAt",
+                    "totalAmount": "totalAmount"
+                  },
+                  "chunkSize": 200,
+                  "retryLimit": 5,
+                  "skipLimit": 100
                 }
               }
             }
@@ -114,13 +112,13 @@
         }
       }
     },
-    "/api/inventory-service/items/{itemKey}": {
+    "/endpoint/batch/definitions/{definitionKey}": {
       "get": {
         "tags": [
-          "Inventory"
+          "Batch Worker"
         ],
-        "summary": "Get Inventory Item",
-        "description": "Get Inventory Item for Inventory.",
+        "summary": "Get Batch Definition",
+        "description": "Get Batch Definition for Batch Worker.",
         "security": [
           {
             "BearerAuth": []
@@ -144,22 +142,24 @@
         },
         "parameters": [
           {
-            "name": "itemKey",
+            "name": "definitionKey",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "item-1001"
+            "example": "{{batch_definition_key}}"
           }
         ]
-      },
-      "put": {
+      }
+    },
+    "/endpoint/batch/definitions/{definitionKey}/runs": {
+      "post": {
         "tags": [
-          "Inventory"
+          "Batch Worker"
         ],
-        "summary": "Update Inventory Item",
-        "description": "Update Inventory Item for Inventory.",
+        "summary": "Start Batch Run",
+        "description": "Start Batch Run for Batch Worker.",
         "security": [
           {
             "BearerAuth": []
@@ -183,13 +183,13 @@
         },
         "parameters": [
           {
-            "name": "itemKey",
+            "name": "definitionKey",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "item-1001"
+            "example": "{{batch_definition_key}}"
           }
         ],
         "requestBody": {
@@ -201,25 +201,20 @@
                 "additionalProperties": true
               },
               "example": {
-                "itemKey": "item-1001",
-                "title": "Sample Inventory Item",
-                "status": "ACTIVE",
-                "payload": {
-                  "source": "postman",
-                  "tenantKey": "{{tenant_key}}",
-                  "siteKey": "{{site_key}}"
-                }
+                "runKey": "2026-07-25T04:30:00Z"
               }
             }
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/endpoint/batch/runs/{id}": {
+      "get": {
         "tags": [
-          "Inventory"
+          "Batch Worker"
         ],
-        "summary": "Delete Inventory Item",
-        "description": "Delete Inventory Item for Inventory.",
+        "summary": "Get Batch Run",
+        "description": "Get Batch Run for Batch Worker.",
         "security": [
           {
             "BearerAuth": []
@@ -243,24 +238,24 @@
         },
         "parameters": [
           {
-            "name": "itemKey",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "item-1001"
+            "example": "{{id}}"
           }
         ]
       }
     },
-    "/api/inventory-service/items/internal/export": {
+    "/endpoint/batch/runs": {
       "get": {
         "tags": [
-          "Inventory"
+          "Batch Worker"
         ],
-        "summary": "Export Inventory",
-        "description": "Export Inventory for Inventory.",
+        "summary": "List Batch Runs",
+        "description": "List Batch Runs for Batch Worker.",
         "security": [
           {
             "BearerAuth": []
@@ -281,7 +276,100 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "50"
+          }
+        ]
+      }
+    },
+    "/endpoint/batch/runs/{id}/rejected-items": {
+      "get": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "List Rejected Batch Items",
+        "description": "List Rejected Batch Items for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/batch/runs/{id}/retry": {
+      "post": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "Retry Batch Run",
+        "description": "Retry Batch Run for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
       }
     }
   }

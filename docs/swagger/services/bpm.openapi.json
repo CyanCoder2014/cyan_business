@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }
@@ -628,6 +628,215 @@
             }
           }
         }
+      }
+    },
+    "/endpoint/bpm/managed-objects/{objectId}/comments": {
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Add Managed Object Comment",
+        "description": "Add Managed Object Comment for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "stateId": "finance-review",
+                "body": "Credit exposure reviewed with finance.",
+                "visibleToRoles": [
+                  "ROLE_FINANCE"
+                ],
+                "visibleToGroups": [
+                  "finance-credit-reviewers"
+                ],
+                "metadata": {
+                  "source": "postman"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List Managed Object Comments",
+        "description": "List Managed Object Comments for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/bpm/managed-objects/{objectId}/attachments": {
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Add Managed Object Attachment",
+        "description": "Add Managed Object Attachment for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "stateId": "finance-review",
+                "assetKey": "credit-review-document-1",
+                "fileName": "credit-review.pdf",
+                "downloadUrl": "https://media.example/credit-review-document-1",
+                "contentType": "application/pdf",
+                "sizeBytes": 245000,
+                "visibleToGroups": [
+                  "finance-credit-reviewers"
+                ],
+                "metadata": {
+                  "source": "postman"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List Managed Object Attachments",
+        "description": "List Managed Object Attachments for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
       }
     },
     "/endpoint/bpm/managed-objects/{objectId}": {

@@ -18,7 +18,7 @@
   ],
   "tags": [
     {
-      "name": "Payment Internal"
+      "name": "Automation Flows Internal"
     }
   ],
   "components": {
@@ -35,13 +35,13 @@
     }
   },
   "paths": {
-    "/internal/payment/methods": {
-      "get": {
+    "/internal/automation-flows": {
+      "post": {
         "tags": [
-          "Payment Internal"
+          "Automation Flows Internal"
         ],
-        "summary": "List Payment Methods Internal",
-        "description": "List Payment Methods Internal for Payment Internal.",
+        "summary": "Save Automation Flow",
+        "description": "Save Automation Flow for Automation Flows Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -62,102 +62,58 @@
               }
             }
           }
-        }
-      }
-    },
-    "/internal/payment/admin/methods": {
-      "get": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "List Admin Payment Methods Internal",
-        "description": "List Admin Payment Methods Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "flowKey": "customer-credit-score-v1",
+                "version": 1,
+                "name": "Customer credit score",
+                "active": false,
+                "entryNodeId": "manual",
+                "runtimeMode": "VARIABLES",
+                "environment": "default",
+                "lifecycleStatus": "DRAFT",
+                "nodes": [
+                  {
+                    "id": "manual",
+                    "type": "MANUAL_TRIGGER",
+                    "name": "Manual trigger",
+                    "enabled": true,
+                    "config": {}
+                  },
+                  {
+                    "id": "end",
+                    "type": "END",
+                    "name": "Done",
+                    "enabled": true,
+                    "config": {}
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-1",
+                    "fromNodeId": "manual",
+                    "toNodeId": "end"
+                  }
+                ]
               }
             }
           }
         }
       },
-      "post": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "Create Payment Method Internal",
-        "description": "Create Payment Method Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              },
-              "example": {
-                "methodKey": "zarinpal-main",
-                "displayName": "Zarinpal Main",
-                "providerCode": "ZARINPAL",
-                "region": "IRANIAN",
-                "flowType": "REDIRECT",
-                "enabled": true,
-                "active": true,
-                "priorityOrder": 1,
-                "supportedCurrencies": [
-                  "IRR"
-                ],
-                "configuration": {
-                  "merchantId": "merchant-demo"
-                },
-                "description": "Internal create"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/internal/payment/admin/methods/{methodKey}": {
       "get": {
         "tags": [
-          "Payment Internal"
+          "Automation Flows Internal"
         ],
-        "summary": "Get Admin Payment Method Internal",
-        "description": "Get Admin Payment Method Internal for Payment Internal.",
+        "summary": "List Automation Flows",
+        "description": "List Automation Flows for Automation Flows Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -174,144 +130,6 @@
                 },
                 "example": {
                   "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "methodKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "zarinpal-main"
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "Update Payment Method Internal",
-        "description": "Update Payment Method Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "methodKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "zarinpal-main"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              },
-              "example": {
-                "methodKey": "zarinpal-main",
-                "displayName": "Zarinpal Main",
-                "providerCode": "ZARINPAL",
-                "region": "IRANIAN",
-                "flowType": "REDIRECT",
-                "enabled": true,
-                "active": true,
-                "priorityOrder": 2,
-                "supportedCurrencies": [
-                  "IRR"
-                ],
-                "configuration": {
-                  "merchantId": "merchant-demo"
-                },
-                "description": "Internal update"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/internal/payment/transactions/initiate": {
-      "post": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "Initiate Payment Internal",
-        "description": "Initiate Payment Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              },
-              "example": {
-                "paymentMethodKey": "zarinpal-main",
-                "orderKey": "order-1001",
-                "invoiceKey": "invoice-1001",
-                "customerKey": "customer-farid",
-                "relatedService": "checkout-service",
-                "relatedEntityType": "order",
-                "relatedEntityKey": "order-1001",
-                "amount": 1250000,
-                "currency": "IRR",
-                "description": "Order payment for Spiffy checkout",
-                "callbackUrl": "http://localhost:8001/public/payment/callback/ZARINPAL/order-1001",
-                "successUrl": "http://localhost:3000/checkout/success",
-                "failureUrl": "http://localhost:3000/checkout/failure",
-                "metaData": {
-                  "cartKey": "cart-1001",
-                  "source": "storefront"
                 }
               }
             }
@@ -319,70 +137,13 @@
         }
       }
     },
-    "/internal/payment/transactions/{transactionKey}/verify": {
-      "post": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "Verify Payment Internal",
-        "description": "Verify Payment Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "transactionKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "{{transaction_key}}"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              },
-              "example": {
-                "payload": {
-                  "authority": "A0000001"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/internal/payment/transactions/{transactionKey}": {
+    "/internal/automation-flows/{flowKey}/versions/{version}": {
       "get": {
         "tags": [
-          "Payment Internal"
+          "Automation Flows Internal"
         ],
-        "summary": "Get Payment Transaction Internal",
-        "description": "Get Payment Transaction Internal for Payment Internal.",
+        "summary": "Get Automation Flow Version",
+        "description": "Get Automation Flow Version for Automation Flows Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -406,24 +167,33 @@
         },
         "parameters": [
           {
-            "name": "transactionKey",
+            "name": "flowKey",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "{{transaction_key}}"
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
           }
         ]
       }
     },
-    "/internal/payment/transactions": {
+    "/internal/automation-flows/{flowKey}/active": {
       "get": {
         "tags": [
-          "Payment Internal"
+          "Automation Flows Internal"
         ],
-        "summary": "List Payment Transactions Internal",
-        "description": "List Payment Transactions Internal for Payment Internal.",
+        "summary": "Get Active Automation Flow",
+        "description": "Get Active Automation Flow for Automation Flows Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -444,7 +214,282 @@
               }
             }
           }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "default"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows/{flowKey}/versions/{version}/{action}": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Run Automation Flow Lifecycle Action",
+        "description": "Run Automation Flow Lifecycle Action for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "SUBMIT"
+          },
+          {
+            "name": "targetEnvironment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "production"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows/n8n/analyze": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Analyze n8n Workflow",
+        "description": "Analyze n8n Workflow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
+              }
+            }
+          }
         }
+      }
+    },
+    "/internal/automation-flows/n8n/import": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Import n8n Workflow",
+        "description": "Import n8n Workflow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-flows/{flowKey}/versions/{version}/n8n-export": {
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Export Automation Flow as n8n",
+        "description": "Export Automation Flow as n8n for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ]
       }
     }
   }

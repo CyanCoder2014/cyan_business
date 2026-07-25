@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }
@@ -81,7 +81,20 @@
                 "execute": false,
                 "answers": {
                   "subdomain": "spiffy-demo"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -206,7 +219,20 @@
                 "answers": {
                   "subdomain": "spiffy-demo",
                   "brandName": "Spiffy Demo"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -333,7 +359,20 @@
                 "answersPatch": {
                   "subdomain": "spiffy-shop",
                   "primaryCurrency": "IRR"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -526,7 +565,20 @@
                 "title": "Spiffy Intake",
                 "extractedAnswers": {
                   "subdomain": "spiffy-demo"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -627,7 +679,20 @@
                 "answersPatch": {
                   "subdomain": "spiffy-demo",
                   "crmEnabled": true
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }

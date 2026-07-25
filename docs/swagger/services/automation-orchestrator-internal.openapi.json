@@ -18,7 +18,7 @@
   ],
   "tags": [
     {
-      "name": "Payment Internal"
+      "name": "Automation Orchestrator Internal"
     }
   ],
   "components": {
@@ -35,71 +35,13 @@
     }
   },
   "paths": {
-    "/internal/payment/methods": {
-      "get": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "List Payment Methods Internal",
-        "description": "List Payment Methods Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/internal/payment/admin/methods": {
-      "get": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "List Admin Payment Methods Internal",
-        "description": "List Admin Payment Methods Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/internal/automation-orchestrator/executions/start": {
       "post": {
         "tags": [
-          "Payment Internal"
+          "Automation Orchestrator Internal"
         ],
-        "summary": "Create Payment Method Internal",
-        "description": "Create Payment Method Internal for Payment Internal.",
+        "summary": "Start Automation Execution",
+        "description": "Start Automation Execution for Automation Orchestrator Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -130,34 +72,37 @@
                 "additionalProperties": true
               },
               "example": {
-                "methodKey": "zarinpal-main",
-                "displayName": "Zarinpal Main",
-                "providerCode": "ZARINPAL",
-                "region": "IRANIAN",
-                "flowType": "REDIRECT",
-                "enabled": true,
-                "active": true,
-                "priorityOrder": 1,
-                "supportedCurrencies": [
-                  "IRR"
-                ],
-                "configuration": {
-                  "merchantId": "merchant-demo"
+                "blockKey": "credit-check",
+                "automationFlowKey": "customer-credit-score-v1",
+                "executionMode": "ASYNC",
+                "failurePolicy": "MARK_FAILED",
+                "correlationKey": "corr-1001",
+                "callbackPath": "/public/bpm/async-actions/callbacks/corr-1001",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "input": {
+                  "customerKey": "customer-1001"
                 },
-                "description": "Internal create"
+                "context": {
+                  "objectId": "{{object_id}}"
+                },
+                "maxRetries": 2,
+                "timeoutSeconds": 120,
+                "delayMillis": 0,
+                "idempotencyKey": "credit-customer-1001"
               }
             }
           }
         }
       }
     },
-    "/internal/payment/admin/methods/{methodKey}": {
+    "/internal/automation-orchestrator/executions/{executionId}": {
       "get": {
         "tags": [
-          "Payment Internal"
+          "Automation Orchestrator Internal"
         ],
-        "summary": "Get Admin Payment Method Internal",
-        "description": "Get Admin Payment Method Internal for Payment Internal.",
+        "summary": "Get Automation Execution",
+        "description": "Get Automation Execution for Automation Orchestrator Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -181,249 +126,197 @@
         },
         "parameters": [
           {
-            "name": "methodKey",
+            "name": "executionId",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "zarinpal-main"
-          }
-        ]
-      },
-      "put": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "Update Payment Method Internal",
-        "description": "Update Payment Method Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "methodKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "zarinpal-main"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              },
-              "example": {
-                "methodKey": "zarinpal-main",
-                "displayName": "Zarinpal Main",
-                "providerCode": "ZARINPAL",
-                "region": "IRANIAN",
-                "flowType": "REDIRECT",
-                "enabled": true,
-                "active": true,
-                "priorityOrder": 2,
-                "supportedCurrencies": [
-                  "IRR"
-                ],
-                "configuration": {
-                  "merchantId": "merchant-demo"
-                },
-                "description": "Internal update"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/internal/payment/transactions/initiate": {
-      "post": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "Initiate Payment Internal",
-        "description": "Initiate Payment Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              },
-              "example": {
-                "paymentMethodKey": "zarinpal-main",
-                "orderKey": "order-1001",
-                "invoiceKey": "invoice-1001",
-                "customerKey": "customer-farid",
-                "relatedService": "checkout-service",
-                "relatedEntityType": "order",
-                "relatedEntityKey": "order-1001",
-                "amount": 1250000,
-                "currency": "IRR",
-                "description": "Order payment for Spiffy checkout",
-                "callbackUrl": "http://localhost:8001/public/payment/callback/ZARINPAL/order-1001",
-                "successUrl": "http://localhost:3000/checkout/success",
-                "failureUrl": "http://localhost:3000/checkout/failure",
-                "metaData": {
-                  "cartKey": "cart-1001",
-                  "source": "storefront"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/internal/payment/transactions/{transactionKey}/verify": {
-      "post": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "Verify Payment Internal",
-        "description": "Verify Payment Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "transactionKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "{{transaction_key}}"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              },
-              "example": {
-                "payload": {
-                  "authority": "A0000001"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/internal/payment/transactions/{transactionKey}": {
-      "get": {
-        "tags": [
-          "Payment Internal"
-        ],
-        "summary": "Get Payment Transaction Internal",
-        "description": "Get Payment Transaction Internal for Payment Internal.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "transactionKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "{{transaction_key}}"
+            "example": "{{execution_id}}"
           }
         ]
       }
     },
-    "/internal/payment/transactions": {
+    "/internal/automation-orchestrator/executions/{executionId}/cancel": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Cancel Automation Execution",
+        "description": "Cancel Automation Execution for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/steps": {
       "get": {
         "tags": [
-          "Payment Internal"
+          "Automation Orchestrator Internal"
         ],
-        "summary": "List Payment Transactions Internal",
-        "description": "List Payment Transactions Internal for Payment Internal.",
+        "summary": "List Automation Execution Steps",
+        "description": "List Automation Execution Steps for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/dead-letters": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "List Automation Dead Letters",
+        "description": "List Automation Dead Letters for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/dead-letters/{deadLetterId}/requeue": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Requeue Automation Dead Letter",
+        "description": "Requeue Automation Dead Letter for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "deadLetterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{dead_letter_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/metrics": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Get Automation Metrics",
+        "description": "Get Automation Metrics for Automation Orchestrator Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -445,6 +338,106 @@
             }
           }
         }
+      }
+    },
+    "/internal/automation-orchestrator/executions": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "List Automation Executions",
+        "description": "List Automation Executions for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "FAILED"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/retry": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Retry Automation Execution",
+        "description": "Retry Automation Execution for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "fromFailedNode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "true"
+          }
+        ]
       }
     }
   }

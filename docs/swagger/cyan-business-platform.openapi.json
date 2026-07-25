@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }
@@ -24,7 +24,22 @@
       "name": "AI Orchestrator Internal"
     },
     {
+      "name": "Automation Credentials"
+    },
+    {
+      "name": "Automation Flows"
+    },
+    {
+      "name": "Automation Flows Internal"
+    },
+    {
       "name": "Automation Orchestrator"
+    },
+    {
+      "name": "Automation Orchestrator Internal"
+    },
+    {
+      "name": "Automation Public"
     },
     {
       "name": "BPM"
@@ -37,6 +52,15 @@
     },
     {
       "name": "BPM Internal Metadata"
+    },
+    {
+      "name": "BPM Public Metadata"
+    },
+    {
+      "name": "Batch Worker"
+    },
+    {
+      "name": "Batch Worker Internal"
     },
     {
       "name": "CRM"
@@ -193,8 +217,8 @@
               },
               "example": {
                 "clientId": "panel.sampv3",
-                "username": "farid",
-                "password": "Passw0rd!",
+                "username": "cyan-admin",
+                "password": "admin123",
                 "captchaChallengeId": null,
                 "captchaAnswer": null,
                 "otpCode": null,
@@ -363,7 +387,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "phoneNumber": "+989121234567"
               }
             }
@@ -404,7 +428,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "deviceId": "chrome-local"
               }
             }
@@ -445,7 +469,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "challengeId": "challenge-1",
                 "credential": "signed-payload"
               }
@@ -606,7 +630,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "destination": "+989121234567",
                 "reason": "LOGIN"
               }
@@ -648,7 +672,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "otpCode": "123456"
               }
             }
@@ -689,7 +713,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "clientId": "panel.sampv3",
                 "deviceId": "chrome-local"
               }
@@ -816,8 +840,8 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
-                "password": "Passw0rd!",
+                "username": "cyan-admin",
+                "password": "admin123",
                 "email": "farid@example.com",
                 "phoneNumber": "+989121234567",
                 "mfaEnabled": false,
@@ -867,7 +891,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "farid"
+            "example": "cyan-admin"
           }
         ]
       }
@@ -905,8 +929,8 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
-                "password": "Passw0rd!"
+                "username": "cyan-admin",
+                "password": "admin123"
               }
             }
           }
@@ -946,7 +970,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "deviceId": "chrome-local"
               }
             }
@@ -987,7 +1011,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "challengeId": "challenge-1",
                 "credential": "signed-payload"
               }
@@ -1042,7 +1066,20 @@
                 "execute": false,
                 "answers": {
                   "subdomain": "spiffy-demo"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -1167,7 +1204,20 @@
                 "answers": {
                   "subdomain": "spiffy-demo",
                   "brandName": "Spiffy Demo"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -1294,7 +1344,20 @@
                 "answersPatch": {
                   "subdomain": "spiffy-shop",
                   "primaryCurrency": "IRR"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -1487,7 +1550,20 @@
                 "title": "Spiffy Intake",
                 "extractedAnswers": {
                   "subdomain": "spiffy-demo"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -1588,7 +1664,20 @@
                 "answersPatch": {
                   "subdomain": "spiffy-demo",
                   "crmEnabled": true
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -1640,7 +1729,20 @@
                 "execute": false,
                 "answers": {
                   "subdomain": "internal-spiffy"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -1764,7 +1866,20 @@
                 "prompt": "Internal provisioning path.",
                 "answers": {
                   "subdomain": "internal-spiffy"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -1886,7 +2001,20 @@
                 "additionalProperties": true
               },
               "example": {
-                "title": "Internal Updated"
+                "title": "Internal Updated",
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -2071,7 +2199,20 @@
                 "tenantKey": "{{tenant_key}}",
                 "siteKey": "{{site_key}}",
                 "clientKey": "{{client_key}}",
-                "title": "Internal Session"
+                "title": "Internal Session",
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -2168,7 +2309,20 @@
               },
               "example": {
                 "role": "SYSTEM",
-                "content": "Continue blueprint enrichment."
+                "content": "Continue blueprint enrichment.",
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -2249,7 +2403,7 @@
           "Dynamic Entity"
         ],
         "summary": "List Definitions",
-        "description": "List Definitions for Dynamic Entity.",
+        "description": "Paginated tenant/site-scoped entity definitions. Default page=0, size=20; maximum size=200. Supported sort fields: entityKey, title, entityType, createdAt, updatedAt.",
         "security": [
           {
             "BearerAuth": []
@@ -2270,7 +2424,36 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "0"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "20"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "entityKey,asc"
+          }
+        ]
       }
     },
     "/endpoint/entities/definitions/{entityKey}": {
@@ -3098,7 +3281,7 @@
           "Dynamic Entity Internal"
         ],
         "summary": "List Definitions",
-        "description": "List Definitions for Dynamic Entity Internal.",
+        "description": "Paginated internal tenant/site-scoped entity definitions using Basic authentication. Default page=0, size=20; maximum size=200.",
         "security": [
           {
             "BasicAuth": []
@@ -3119,7 +3302,36 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "0"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "20"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "entityKey,asc"
+          }
+        ]
       }
     },
     "/internal/entities/definitions/{entityKey}": {
@@ -3873,6 +4085,680 @@
         ]
       }
     },
+    "/endpoint/batch/definitions": {
+      "post": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "Save Batch Definition",
+        "description": "Save Batch Definition for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "definitionKey": "importer-order-projection-v1",
+                "title": "Import orders into the customer credit projection",
+                "active": true,
+                "spec": {
+                  "source": {
+                    "url": "https://importer.example/v1/orders?status=CONFIRMED",
+                    "itemsPath": "content",
+                    "pageParameter": "page",
+                    "sizeParameter": "size",
+                    "pageSize": 500,
+                    "headers": {
+                      "Accept": "application/json"
+                    },
+                    "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN"
+                  },
+                  "destination": {
+                    "url": "https://projection.example/v1/credit-projection/order-events",
+                    "method": "POST",
+                    "itemKeyPath": "eventKey",
+                    "headers": {
+                      "X-Projection-Key": "importer-credit-v1"
+                    },
+                    "bearerTokenEnvironmentVariable": "PROJECTION_API_TOKEN"
+                  },
+                  "fieldMappings": {
+                    "eventKey": "orderId",
+                    "customerKey": "customer.id",
+                    "createdAt": "createdAt",
+                    "totalAmount": "totalAmount"
+                  },
+                  "chunkSize": 200,
+                  "retryLimit": 5,
+                  "skipLimit": 100
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/batch/definitions/{definitionKey}": {
+      "get": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "Get Batch Definition",
+        "description": "Get Batch Definition for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "definitionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{batch_definition_key}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/batch/definitions/{definitionKey}/runs": {
+      "post": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "Start Batch Run",
+        "description": "Start Batch Run for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "definitionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{batch_definition_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "runKey": "2026-07-25T04:30:00Z"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/batch/runs/{id}": {
+      "get": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "Get Batch Run",
+        "description": "Get Batch Run for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/batch/runs": {
+      "get": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "List Batch Runs",
+        "description": "List Batch Runs for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "50"
+          }
+        ]
+      }
+    },
+    "/endpoint/batch/runs/{id}/rejected-items": {
+      "get": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "List Rejected Batch Items",
+        "description": "List Rejected Batch Items for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/batch/runs/{id}/retry": {
+      "post": {
+        "tags": [
+          "Batch Worker"
+        ],
+        "summary": "Retry Batch Run",
+        "description": "Retry Batch Run for Batch Worker.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/internal/batch/definitions": {
+      "post": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Save Batch Definition",
+        "description": "Save Batch Definition for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "definitionKey": "importer-order-projection-v1",
+                "title": "Import orders into the customer credit projection",
+                "active": true,
+                "spec": {
+                  "source": {
+                    "url": "https://importer.example/v1/orders?status=CONFIRMED",
+                    "itemsPath": "content",
+                    "pageParameter": "page",
+                    "sizeParameter": "size",
+                    "pageSize": 500,
+                    "headers": {
+                      "Accept": "application/json"
+                    },
+                    "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN"
+                  },
+                  "destination": {
+                    "url": "https://projection.example/v1/credit-projection/order-events",
+                    "method": "POST",
+                    "itemKeyPath": "eventKey",
+                    "headers": {
+                      "X-Projection-Key": "importer-credit-v1"
+                    },
+                    "bearerTokenEnvironmentVariable": "PROJECTION_API_TOKEN"
+                  },
+                  "fieldMappings": {
+                    "eventKey": "orderId",
+                    "customerKey": "customer.id",
+                    "createdAt": "createdAt",
+                    "totalAmount": "totalAmount"
+                  },
+                  "chunkSize": 200,
+                  "retryLimit": 5,
+                  "skipLimit": 100
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/batch/definitions/{definitionKey}": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Get Batch Definition",
+        "description": "Get Batch Definition for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "definitionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{batch_definition_key}}"
+          }
+        ]
+      }
+    },
+    "/internal/batch/definitions/{definitionKey}/runs": {
+      "post": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Start Batch Run",
+        "description": "Start Batch Run for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "definitionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{batch_definition_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "runKey": "2026-07-25T04:30:00Z"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/batch/runs/{id}": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Get Batch Run",
+        "description": "Get Batch Run for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/internal/batch/runs": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "List Batch Runs",
+        "description": "List Batch Runs for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "50"
+          }
+        ]
+      }
+    },
+    "/internal/batch/runs/{id}/rejected-items": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "List Rejected Batch Items",
+        "description": "List Rejected Batch Items for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/internal/batch/runs/{id}/retry": {
+      "post": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Retry Batch Run",
+        "description": "Retry Batch Run for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
     "/endpoint/bpm/metadata/actions": {
       "get": {
         "tags": [
@@ -4468,6 +5354,215 @@
         }
       }
     },
+    "/endpoint/bpm/managed-objects/{objectId}/comments": {
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Add Managed Object Comment",
+        "description": "Add Managed Object Comment for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "stateId": "finance-review",
+                "body": "Credit exposure reviewed with finance.",
+                "visibleToRoles": [
+                  "ROLE_FINANCE"
+                ],
+                "visibleToGroups": [
+                  "finance-credit-reviewers"
+                ],
+                "metadata": {
+                  "source": "postman"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List Managed Object Comments",
+        "description": "List Managed Object Comments for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/bpm/managed-objects/{objectId}/attachments": {
+      "post": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "Add Managed Object Attachment",
+        "description": "Add Managed Object Attachment for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "stateId": "finance-review",
+                "assetKey": "credit-review-document-1",
+                "fileName": "credit-review.pdf",
+                "downloadUrl": "https://media.example/credit-review-document-1",
+                "contentType": "application/pdf",
+                "sizeBytes": 245000,
+                "visibleToGroups": [
+                  "finance-credit-reviewers"
+                ],
+                "metadata": {
+                  "source": "postman"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BPM"
+        ],
+        "summary": "List Managed Object Attachments",
+        "description": "List Managed Object Attachments for BPM.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
     "/endpoint/bpm/managed-objects/{objectId}": {
       "get": {
         "tags": [
@@ -4560,6 +5655,58 @@
                 },
                 "errorCode": null,
                 "errorMessage": null
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/dynamic-flows/state-action-structures": {
+      "get": {
+        "tags": [
+          "BPM Public Metadata"
+        ],
+        "summary": "List State Action Structures",
+        "description": "List State Action Structures for BPM Public Metadata.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/dynamic-flows/transition-condition-structures": {
+      "get": {
+        "tags": [
+          "BPM Public Metadata"
+        ],
+        "summary": "Get Transition Condition Structures",
+        "description": "Get Transition Condition Structures for BPM Public Metadata.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
               }
             }
           }
@@ -5065,6 +6212,215 @@
         }
       }
     },
+    "/internal/bpm/managed-objects/{objectId}/comments": {
+      "post": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "Add Managed Object Comment Internal",
+        "description": "Add Managed Object Comment Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "stateId": "finance-review",
+                "body": "Internal finance review note.",
+                "visibleToRoles": [
+                  "ROLE_FINANCE"
+                ],
+                "visibleToGroups": [
+                  "finance-credit-reviewers"
+                ],
+                "metadata": {
+                  "source": "postman-internal"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "List Managed Object Comments Internal",
+        "description": "List Managed Object Comments Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/bpm/managed-objects/{objectId}/attachments": {
+      "post": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "Add Managed Object Attachment Internal",
+        "description": "Add Managed Object Attachment Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "stateId": "finance-review",
+                "assetKey": "credit-review-document-1",
+                "fileName": "credit-review.pdf",
+                "downloadUrl": "https://media.example/credit-review-document-1",
+                "contentType": "application/pdf",
+                "sizeBytes": 245000,
+                "visibleToGroups": [
+                  "finance-credit-reviewers"
+                ],
+                "metadata": {
+                  "source": "postman-internal"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "BPM Internal Managed Objects"
+        ],
+        "summary": "List Managed Object Attachments Internal",
+        "description": "List Managed Object Attachments Internal for BPM Internal Managed Objects.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "objectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{object_id}}"
+          }
+        ]
+      }
+    },
     "/internal/bpm/managed-objects/{objectId}": {
       "get": {
         "tags": [
@@ -5106,13 +6462,418 @@
         ]
       }
     },
-    "/internal/automation-orchestrator/executions/start": {
+    "/endpoint/automation-orchestrator/executions/start": {
       "post": {
         "tags": [
           "Automation Orchestrator"
         ],
         "summary": "Start Automation Execution",
         "description": "Start Automation Execution for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "blockKey": "credit-check",
+                "automationFlowKey": "customer-credit-score-v1",
+                "executionMode": "ASYNC",
+                "failurePolicy": "MARK_FAILED",
+                "correlationKey": "corr-1001",
+                "callbackPath": "/public/bpm/async-actions/callbacks/corr-1001",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "input": {
+                  "customerKey": "customer-1001"
+                },
+                "context": {
+                  "objectId": "{{object_id}}"
+                },
+                "maxRetries": 2,
+                "timeoutSeconds": 120,
+                "delayMillis": 0,
+                "idempotencyKey": "credit-customer-1001"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Get Automation Execution",
+        "description": "Get Automation Execution for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/cancel": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Cancel Automation Execution",
+        "description": "Cancel Automation Execution for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/steps": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "List Automation Execution Steps",
+        "description": "List Automation Execution Steps for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/dead-letters": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "List Automation Dead Letters",
+        "description": "List Automation Dead Letters for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/dead-letters/{deadLetterId}/requeue": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Requeue Automation Dead Letter",
+        "description": "Requeue Automation Dead Letter for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "deadLetterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{dead_letter_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/metrics": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Get Automation Metrics",
+        "description": "Get Automation Metrics for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/automation-orchestrator/executions": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "List Automation Executions",
+        "description": "List Automation Executions for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "FAILED"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/retry": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Retry Automation Execution",
+        "description": "Retry Automation Execution for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "fromFailedNode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "true"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/start": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Start Automation Execution",
+        "description": "Start Automation Execution for Automation Orchestrator Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -5144,7 +6905,7 @@
               },
               "example": {
                 "blockKey": "credit-check",
-                "automationFlowKey": "credit-screening",
+                "automationFlowKey": "customer-credit-score-v1",
                 "executionMode": "ASYNC",
                 "failurePolicy": "MARK_FAILED",
                 "correlationKey": "corr-1001",
@@ -5152,20 +6913,15 @@
                 "tenantKey": "{{tenant_key}}",
                 "siteKey": "{{site_key}}",
                 "input": {
-                  "customerKey": "lead-1001"
+                  "customerKey": "customer-1001"
                 },
                 "context": {
                   "objectId": "{{object_id}}"
                 },
-                "inlineFragment": {
-                  "type": "MAP_OUTPUT",
-                  "mappings": {
-                    "riskBucket": "$.riskBucket"
-                  }
-                },
                 "maxRetries": 2,
                 "timeoutSeconds": 120,
-                "delayMillis": 0
+                "delayMillis": 0,
+                "idempotencyKey": "credit-customer-1001"
               }
             }
           }
@@ -5175,10 +6931,10 @@
     "/internal/automation-orchestrator/executions/{executionId}": {
       "get": {
         "tags": [
-          "Automation Orchestrator"
+          "Automation Orchestrator Internal"
         ],
         "summary": "Get Automation Execution",
-        "description": "Get Automation Execution for Automation Orchestrator.",
+        "description": "Get Automation Execution for Automation Orchestrator Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -5216,10 +6972,10 @@
     "/internal/automation-orchestrator/executions/{executionId}/cancel": {
       "post": {
         "tags": [
-          "Automation Orchestrator"
+          "Automation Orchestrator Internal"
         ],
         "summary": "Cancel Automation Execution",
-        "description": "Cancel Automation Execution for Automation Orchestrator.",
+        "description": "Cancel Automation Execution for Automation Orchestrator Internal.",
         "security": [
           {
             "BasicAuth": []
@@ -5252,6 +7008,1554 @@
             "example": "{{execution_id}}"
           }
         ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/steps": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "List Automation Execution Steps",
+        "description": "List Automation Execution Steps for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/dead-letters": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "List Automation Dead Letters",
+        "description": "List Automation Dead Letters for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/dead-letters/{deadLetterId}/requeue": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Requeue Automation Dead Letter",
+        "description": "Requeue Automation Dead Letter for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "deadLetterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{dead_letter_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/metrics": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Get Automation Metrics",
+        "description": "Get Automation Metrics for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-orchestrator/executions": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "List Automation Executions",
+        "description": "List Automation Executions for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "FAILED"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/retry": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Retry Automation Execution",
+        "description": "Retry Automation Execution for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "fromFailedNode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "true"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/flows/{flowKey}/manual-run": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Run Automation Flow Manually",
+        "description": "Run Automation Flow Manually for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "environment": "default",
+                "async": true,
+                "input": {
+                  "customerKey": "customer-1001"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/automation-flows": {
+      "post": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Save Automation Flow",
+        "description": "Save Automation Flow for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "flowKey": "customer-credit-score-v1",
+                "version": 1,
+                "name": "Customer credit score",
+                "active": false,
+                "entryNodeId": "manual",
+                "runtimeMode": "VARIABLES",
+                "environment": "default",
+                "lifecycleStatus": "DRAFT",
+                "nodes": [
+                  {
+                    "id": "manual",
+                    "type": "MANUAL_TRIGGER",
+                    "name": "Manual trigger",
+                    "enabled": true,
+                    "config": {}
+                  },
+                  {
+                    "id": "end",
+                    "type": "END",
+                    "name": "Done",
+                    "enabled": true,
+                    "config": {}
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-1",
+                    "fromNodeId": "manual",
+                    "toNodeId": "end"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "List Automation Flows",
+        "description": "List Automation Flows for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/automation-flows/{flowKey}/versions/{version}": {
+      "get": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Get Automation Flow Version",
+        "description": "Get Automation Flow Version for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-flows/{flowKey}/active": {
+      "get": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Get Active Automation Flow",
+        "description": "Get Active Automation Flow for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "default"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-flows/{flowKey}/versions/{version}/{action}": {
+      "post": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Run Automation Flow Lifecycle Action",
+        "description": "Run Automation Flow Lifecycle Action for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "SUBMIT"
+          },
+          {
+            "name": "targetEnvironment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "production"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-flows/n8n/analyze": {
+      "post": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Analyze n8n Workflow",
+        "description": "Analyze n8n Workflow for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/automation-flows/n8n/import": {
+      "post": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Import n8n Workflow",
+        "description": "Import n8n Workflow for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/automation-flows/{flowKey}/versions/{version}/n8n-export": {
+      "get": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Export Automation Flow as n8n",
+        "description": "Export Automation Flow as n8n for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Save Automation Flow",
+        "description": "Save Automation Flow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "flowKey": "customer-credit-score-v1",
+                "version": 1,
+                "name": "Customer credit score",
+                "active": false,
+                "entryNodeId": "manual",
+                "runtimeMode": "VARIABLES",
+                "environment": "default",
+                "lifecycleStatus": "DRAFT",
+                "nodes": [
+                  {
+                    "id": "manual",
+                    "type": "MANUAL_TRIGGER",
+                    "name": "Manual trigger",
+                    "enabled": true,
+                    "config": {}
+                  },
+                  {
+                    "id": "end",
+                    "type": "END",
+                    "name": "Done",
+                    "enabled": true,
+                    "config": {}
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-1",
+                    "fromNodeId": "manual",
+                    "toNodeId": "end"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "List Automation Flows",
+        "description": "List Automation Flows for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-flows/{flowKey}/versions/{version}": {
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Get Automation Flow Version",
+        "description": "Get Automation Flow Version for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows/{flowKey}/active": {
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Get Active Automation Flow",
+        "description": "Get Active Automation Flow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "default"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows/{flowKey}/versions/{version}/{action}": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Run Automation Flow Lifecycle Action",
+        "description": "Run Automation Flow Lifecycle Action for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "SUBMIT"
+          },
+          {
+            "name": "targetEnvironment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "production"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows/n8n/analyze": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Analyze n8n Workflow",
+        "description": "Analyze n8n Workflow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-flows/n8n/import": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Import n8n Workflow",
+        "description": "Import n8n Workflow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-flows/{flowKey}/versions/{version}/n8n-export": {
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Export Automation Flow as n8n",
+        "description": "Export Automation Flow as n8n for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/credentials": {
+      "post": {
+        "tags": [
+          "Automation Credentials"
+        ],
+        "summary": "Save Automation Credential",
+        "description": "Save Automation Credential for Automation Credentials.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "credit-projection-api",
+                "type": "BEARER",
+                "secret": "{{connector_secret}}",
+                "metadata": {
+                  "authType": "BEARER"
+                },
+                "allowedRoles": [
+                  "ROLE_SYSTEM"
+                ],
+                "active": true
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Automation Credentials"
+        ],
+        "summary": "List Automation Credentials",
+        "description": "List Automation Credentials for Automation Credentials.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/automation-orchestrator/credentials/{id}/rotate": {
+      "patch": {
+        "tags": [
+          "Automation Credentials"
+        ],
+        "summary": "Rotate Automation Credential",
+        "description": "Rotate Automation Credential for Automation Credentials.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "secret": "{{connector_secret}}"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/automation-flows/node-structures": {
+      "get": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "List Automation Node Structures",
+        "description": "List Automation Node Structures for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/automation-flows/edge-structures": {
+      "get": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "Get Automation Edge Structures",
+        "description": "Get Automation Edge Structures for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/automation-orchestrator/webhooks/{flowKey}": {
+      "post": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "Trigger Automation Webhook",
+        "description": "Trigger Automation Webhook for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "customerKey": "customer-1001",
+                "event": "CUSTOMER_UPDATED"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/automation-orchestrator/executions/{executionId}/nodes/{nodeId}/callback": {
+      "post": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "Complete Automation Node Callback",
+        "description": "Complete Automation Node Callback for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "nodeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "http-callback"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "callbackId": "callback-1001",
+                "payload": {
+                  "status": "SUCCEEDED",
+                  "externalReference": "ext-1001"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/internal/checkout/sessions/{entityKey}/{recordKey}/snapshot": {
@@ -5371,7 +8675,7 @@
                 "amount": 1250000,
                 "currency": "IRR",
                 "description": "Checkout payment",
-                "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+                "callbackUrl": "http://localhost:8001/public/payment/callback/ZARINPAL/order-1001",
                 "successUrl": "http://localhost:3000/checkout/success",
                 "failureUrl": "http://localhost:3000/checkout/failure",
                 "metaData": {
@@ -5597,7 +8901,7 @@
                 "amount": 1250000,
                 "currency": "IRR",
                 "description": "Order payment for Spiffy checkout",
-                "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+                "callbackUrl": "http://localhost:8001/public/payment/callback/ZARINPAL/order-1001",
                 "successUrl": "http://localhost:3000/checkout/success",
                 "failureUrl": "http://localhost:3000/checkout/failure",
                 "metaData": {
@@ -5776,7 +9080,7 @@
                 ],
                 "configuration": {
                   "merchantId": "merchant-demo",
-                  "callbackBaseUrl": "http://localhost:8080"
+                  "callbackBaseUrl": "http://localhost:8001"
                 },
                 "description": "Primary Zarinpal payment method"
               }
@@ -5885,7 +9189,7 @@
                 ],
                 "configuration": {
                   "merchantId": "merchant-demo",
-                  "callbackBaseUrl": "http://localhost:8080"
+                  "callbackBaseUrl": "http://localhost:8001"
                 },
                 "description": "Updated method"
               }
@@ -5980,7 +9284,7 @@
                 "amount": 1250000,
                 "currency": "IRR",
                 "description": "Order payment for Spiffy checkout",
-                "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+                "callbackUrl": "http://localhost:8001/public/payment/callback/ZARINPAL/order-1001",
                 "successUrl": "http://localhost:3000/checkout/success",
                 "failureUrl": "http://localhost:3000/checkout/failure",
                 "metaData": {
@@ -6393,7 +9697,7 @@
                 "amount": 1250000,
                 "currency": "IRR",
                 "description": "Order payment for Spiffy checkout",
-                "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+                "callbackUrl": "http://localhost:8001/public/payment/callback/ZARINPAL/order-1001",
                 "successUrl": "http://localhost:3000/checkout/success",
                 "failureUrl": "http://localhost:3000/checkout/failure",
                 "metaData": {

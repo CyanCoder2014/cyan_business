@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }
@@ -80,7 +80,20 @@
                 "execute": false,
                 "answers": {
                   "subdomain": "internal-spiffy"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -204,7 +217,20 @@
                 "prompt": "Internal provisioning path.",
                 "answers": {
                   "subdomain": "internal-spiffy"
-                }
+                },
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -326,7 +352,20 @@
                 "additionalProperties": true
               },
               "example": {
-                "title": "Internal Updated"
+                "title": "Internal Updated",
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -511,7 +550,20 @@
                 "tenantKey": "{{tenant_key}}",
                 "siteKey": "{{site_key}}",
                 "clientKey": "{{client_key}}",
-                "title": "Internal Session"
+                "title": "Internal Session",
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }
@@ -608,7 +660,20 @@
               },
               "example": {
                 "role": "SYSTEM",
-                "content": "Continue blueprint enrichment."
+                "content": "Continue blueprint enrichment.",
+                "availableServiceKeys": [
+                  "ai-orchestrator-service",
+                  "notification-service",
+                  "bpm-service",
+                  "automation-orchestrator-service",
+                  "report-service",
+                  "sso-auth-service",
+                  "sso-user-service",
+                  "sso-captcha-service",
+                  "media-service",
+                  "processor-service",
+                  "batch-worker-service"
+                ]
               }
             }
           }

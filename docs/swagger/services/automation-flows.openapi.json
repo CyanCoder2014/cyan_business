@@ -18,7 +18,7 @@
   ],
   "tags": [
     {
-      "name": "Payment"
+      "name": "Automation Flows"
     }
   ],
   "components": {
@@ -35,71 +35,13 @@
     }
   },
   "paths": {
-    "/endpoint/payment/methods": {
-      "get": {
-        "tags": [
-          "Payment"
-        ],
-        "summary": "List Payment Methods",
-        "description": "List Payment Methods for Payment.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/endpoint/payment/admin/methods": {
-      "get": {
-        "tags": [
-          "Payment"
-        ],
-        "summary": "List Admin Payment Methods",
-        "description": "List Admin Payment Methods for Payment.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/endpoint/automation-flows": {
       "post": {
         "tags": [
-          "Payment"
+          "Automation Flows"
         ],
-        "summary": "Create Payment Method",
-        "description": "Create Payment Method for Payment.",
+        "summary": "Save Automation Flow",
+        "description": "Save Automation Flow for Automation Flows.",
         "security": [
           {
             "BearerAuth": []
@@ -130,35 +72,78 @@
                 "additionalProperties": true
               },
               "example": {
-                "methodKey": "zarinpal-main",
-                "displayName": "Zarinpal Main",
-                "providerCode": "ZARINPAL",
-                "region": "IRANIAN",
-                "flowType": "REDIRECT",
-                "enabled": true,
-                "active": true,
-                "priorityOrder": 1,
-                "supportedCurrencies": [
-                  "IRR"
+                "flowKey": "customer-credit-score-v1",
+                "version": 1,
+                "name": "Customer credit score",
+                "active": false,
+                "entryNodeId": "manual",
+                "runtimeMode": "VARIABLES",
+                "environment": "default",
+                "lifecycleStatus": "DRAFT",
+                "nodes": [
+                  {
+                    "id": "manual",
+                    "type": "MANUAL_TRIGGER",
+                    "name": "Manual trigger",
+                    "enabled": true,
+                    "config": {}
+                  },
+                  {
+                    "id": "end",
+                    "type": "END",
+                    "name": "Done",
+                    "enabled": true,
+                    "config": {}
+                  }
                 ],
-                "configuration": {
-                  "merchantId": "merchant-demo",
-                  "callbackBaseUrl": "http://localhost:8001"
+                "edges": [
+                  {
+                    "id": "edge-1",
+                    "fromNodeId": "manual",
+                    "toNodeId": "end"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "List Automation Flows",
+        "description": "List Automation Flows for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
                 },
-                "description": "Primary Zarinpal payment method"
+                "example": {
+                  "status": "ok"
+                }
               }
             }
           }
         }
       }
     },
-    "/endpoint/payment/admin/methods/{methodKey}": {
+    "/endpoint/automation-flows/{flowKey}/versions/{version}": {
       "get": {
         "tags": [
-          "Payment"
+          "Automation Flows"
         ],
-        "summary": "Get Admin Payment Method",
-        "description": "Get Admin Payment Method for Payment.",
+        "summary": "Get Automation Flow Version",
+        "description": "Get Automation Flow Version for Automation Flows.",
         "security": [
           {
             "BearerAuth": []
@@ -182,22 +167,33 @@
         },
         "parameters": [
           {
-            "name": "methodKey",
+            "name": "flowKey",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "zarinpal-main"
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
           }
         ]
-      },
-      "put": {
+      }
+    },
+    "/endpoint/automation-flows/{flowKey}/active": {
+      "get": {
         "tags": [
-          "Payment"
+          "Automation Flows"
         ],
-        "summary": "Update Payment Method",
-        "description": "Update Payment Method for Payment.",
+        "summary": "Get Active Automation Flow",
+        "description": "Get Active Automation Flow for Automation Flows.",
         "security": [
           {
             "BearerAuth": []
@@ -221,15 +217,122 @@
         },
         "parameters": [
           {
-            "name": "methodKey",
+            "name": "flowKey",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "zarinpal-main"
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "default"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-flows/{flowKey}/versions/{version}/{action}": {
+      "post": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Run Automation Flow Lifecycle Action",
+        "description": "Run Automation Flow Lifecycle Action for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "SUBMIT"
+          },
+          {
+            "name": "targetEnvironment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "production"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-flows/n8n/analyze": {
+      "post": {
+        "tags": [
+          "Automation Flows"
+        ],
+        "summary": "Analyze n8n Workflow",
+        "description": "Analyze n8n Workflow for Automation Flows.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
         "requestBody": {
           "required": true,
           "content": {
@@ -239,33 +342,39 @@
                 "additionalProperties": true
               },
               "example": {
-                "methodKey": "zarinpal-main",
-                "displayName": "Zarinpal Main Updated",
-                "providerCode": "ZARINPAL",
-                "region": "IRANIAN",
-                "flowType": "REDIRECT",
-                "enabled": true,
-                "active": true,
-                "priorityOrder": 1,
-                "supportedCurrencies": [
-                  "IRR"
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
                 ],
-                "configuration": {
-                  "merchantId": "merchant-demo",
-                  "callbackBaseUrl": "http://localhost:8001"
-                },
-                "description": "Updated method"
+                "connections": {},
+                "settings": {}
               }
             }
           }
         }
-      },
-      "delete": {
+      }
+    },
+    "/endpoint/automation-flows/n8n/import": {
+      "post": {
         "tags": [
-          "Payment"
+          "Automation Flows"
         ],
-        "summary": "Delete Payment Method",
-        "description": "Delete Payment Method for Payment.",
+        "summary": "Import n8n Workflow",
+        "description": "Import n8n Workflow for Automation Flows.",
         "security": [
           {
             "BearerAuth": []
@@ -289,114 +398,13 @@
         },
         "parameters": [
           {
-            "name": "methodKey",
-            "in": "path",
-            "required": true,
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
             "schema": {
               "type": "string"
             },
-            "example": "zarinpal-main"
-          }
-        ]
-      }
-    },
-    "/endpoint/payment/transactions/initiate": {
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "summary": "Initiate Payment",
-        "description": "Initiate Payment for Payment.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": true
-              },
-              "example": {
-                "paymentMethodKey": "zarinpal-main",
-                "orderKey": "order-1001",
-                "invoiceKey": "invoice-1001",
-                "customerKey": "customer-farid",
-                "relatedService": "checkout-service",
-                "relatedEntityType": "order",
-                "relatedEntityKey": "order-1001",
-                "amount": 1250000,
-                "currency": "IRR",
-                "description": "Order payment for Spiffy checkout",
-                "callbackUrl": "http://localhost:8001/public/payment/callback/ZARINPAL/order-1001",
-                "successUrl": "http://localhost:3000/checkout/success",
-                "failureUrl": "http://localhost:3000/checkout/failure",
-                "metaData": {
-                  "cartKey": "cart-1001",
-                  "source": "storefront"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/endpoint/payment/transactions/{transactionKey}/verify": {
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "summary": "Verify Payment",
-        "description": "Verify Payment for Payment.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "transactionKey",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "{{transaction_key}}"
+            "example": "{{automation_flow_key}}"
           }
         ],
         "requestBody": {
@@ -408,23 +416,39 @@
                 "additionalProperties": true
               },
               "example": {
-                "payload": {
-                  "authority": "A0000001",
-                  "status": "OK"
-                }
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
               }
             }
           }
         }
       }
     },
-    "/endpoint/payment/transactions/{transactionKey}": {
+    "/endpoint/automation-flows/{flowKey}/versions/{version}/n8n-export": {
       "get": {
         "tags": [
-          "Payment"
+          "Automation Flows"
         ],
-        "summary": "Get Payment Transaction",
-        "description": "Get Payment Transaction for Payment.",
+        "summary": "Export Automation Flow as n8n",
+        "description": "Export Automation Flow as n8n for Automation Flows.",
         "security": [
           {
             "BearerAuth": []
@@ -448,45 +472,24 @@
         },
         "parameters": [
           {
-            "name": "transactionKey",
+            "name": "flowKey",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "{{transaction_key}}"
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
           }
         ]
-      }
-    },
-    "/endpoint/payment/transactions": {
-      "get": {
-        "tags": [
-          "Payment"
-        ],
-        "summary": "List Payment Transactions",
-        "description": "List Payment Transactions for Payment.",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        }
       }
     }
   }

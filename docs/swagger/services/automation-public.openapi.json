@@ -18,7 +18,7 @@
   ],
   "tags": [
     {
-      "name": "Legacy Client"
+      "name": "Automation Public"
     }
   ],
   "components": {
@@ -35,13 +35,13 @@
     }
   },
   "paths": {
-    "/v2/api/client-service/clients": {
+    "/public/automation-flows/node-structures": {
       "get": {
         "tags": [
-          "Legacy Client"
+          "Automation Public"
         ],
-        "summary": "List Clients",
-        "description": "List Clients for Legacy Client.",
+        "summary": "List Automation Node Structures",
+        "description": "List Automation Node Structures for Automation Public.",
         "security": [],
         "responses": {
           "200": {
@@ -59,13 +59,41 @@
             }
           }
         }
-      },
+      }
+    },
+    "/public/automation-flows/edge-structures": {
+      "get": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "Get Automation Edge Structures",
+        "description": "Get Automation Edge Structures for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/automation-orchestrator/webhooks/{flowKey}": {
       "post": {
         "tags": [
-          "Legacy Client"
+          "Automation Public"
         ],
-        "summary": "Create Client",
-        "description": "Create Client for Legacy Client.",
+        "summary": "Trigger Automation Webhook",
+        "description": "Trigger Automation Webhook for Automation Public.",
         "security": [],
         "responses": {
           "200": {
@@ -83,6 +111,17 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -92,71 +131,21 @@
                 "additionalProperties": true
               },
               "example": {
-                "clientCode": "client-1001",
-                "name": "Spiffy Client"
+                "customerKey": "customer-1001",
+                "event": "CUSTOMER_UPDATED"
               }
             }
           }
         }
       }
     },
-    "/v2/api/client-service/clients1": {
-      "get": {
-        "tags": [
-          "Legacy Client"
-        ],
-        "summary": "List Clients Legacy 1",
-        "description": "List Clients Legacy 1 for Legacy Client.",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v2/api/client-service/companies": {
-      "get": {
-        "tags": [
-          "Legacy Client"
-        ],
-        "summary": "List Companies",
-        "description": "List Companies for Legacy Client.",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/public/automation-orchestrator/executions/{executionId}/nodes/{nodeId}/callback": {
       "post": {
         "tags": [
-          "Legacy Client"
+          "Automation Public"
         ],
-        "summary": "Create Company",
-        "description": "Create Company for Legacy Client.",
+        "summary": "Complete Automation Node Callback",
+        "description": "Complete Automation Node Callback for Automation Public.",
         "security": [],
         "responses": {
           "200": {
@@ -174,6 +163,26 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "nodeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "http-callback"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -183,33 +192,10 @@
                 "additionalProperties": true
               },
               "example": {
-                "companyCode": "comp-1001",
-                "name": "Spiffy Co"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/v2/api/client-service/companies/": {
-      "get": {
-        "tags": [
-          "Legacy Client"
-        ],
-        "summary": "List Companies Slash",
-        "description": "List Companies Slash for Legacy Client.",
-        "security": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                },
-                "example": {
-                  "status": "ok"
+                "callbackId": "callback-1001",
+                "payload": {
+                  "status": "SUCCEEDED",
+                  "externalReference": "ext-1001"
                 }
               }
             }

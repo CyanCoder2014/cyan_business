@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }

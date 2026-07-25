@@ -18,7 +18,7 @@
   ],
   "tags": [
     {
-      "name": "BPM Internal Metadata"
+      "name": "BPM Public Metadata"
     }
   ],
   "components": {
@@ -35,18 +35,14 @@
     }
   },
   "paths": {
-    "/internal/bpm/metadata/actions": {
+    "/public/dynamic-flows/state-action-structures": {
       "get": {
         "tags": [
-          "BPM Internal Metadata"
+          "BPM Public Metadata"
         ],
-        "summary": "List BPM Action Metadata Internal",
-        "description": "List BPM Action Metadata Internal for BPM Internal Metadata.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
+        "summary": "List State Action Structures",
+        "description": "List State Action Structures for BPM Public Metadata.",
+        "security": [],
         "responses": {
           "200": {
             "description": "Successful response",
@@ -65,18 +61,14 @@
         }
       }
     },
-    "/internal/bpm/metadata/transition-conditions": {
+    "/public/dynamic-flows/transition-condition-structures": {
       "get": {
         "tags": [
-          "BPM Internal Metadata"
+          "BPM Public Metadata"
         ],
-        "summary": "List BPM Transition Conditions Internal",
-        "description": "List BPM Transition Conditions Internal for BPM Internal Metadata.",
-        "security": [
-          {
-            "BasicAuth": []
-          }
-        ],
+        "summary": "Get Transition Condition Structures",
+        "description": "Get Transition Condition Structures for BPM Public Metadata.",
+        "security": [],
         "responses": {
           "200": {
             "description": "Successful response",

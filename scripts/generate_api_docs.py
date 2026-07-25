@@ -11,6 +11,15 @@ SWAGGER_SERVICES_DIR = SWAGGER_DIR / "services"
 DEFAULT_GATEWAY_BASE_URL = "http://localhost:8001"
 DEFAULT_USERNAME = "cyan-admin"
 DEFAULT_PASSWORD = "admin123"
+DEFINITION_LIST_PATHS = {
+    "/endpoint/entities/definitions",
+    "/internal/entities/definitions",
+}
+DEFINITION_PAGE_QUERY = [
+    {"name": "page", "example": "0"},
+    {"name": "size", "example": "20"},
+    {"name": "sort", "example": "entityKey,asc"},
+]
 
 
 def example_dynamic_definition():
@@ -263,7 +272,27 @@ def build_endpoints():
         endpoints.extend([
             ep(service, "POST", f"{prefix}/definitions", "Create Definition", auth=auth, body=example_dynamic_definition()),
             ep(service, "PUT", f"{prefix}/definitions/{{entityKey}}", "Update Definition", auth=auth, body=example_dynamic_definition()),
-            ep(service, "GET", f"{prefix}/definitions", "List Definitions", auth=auth),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/definitions",
+                "List Definitions",
+                auth=auth,
+                query=DEFINITION_PAGE_QUERY,
+                description=(
+                    (
+                        "Paginated internal tenant/site-scoped entity definitions "
+                        "using Basic authentication. Default page=0, size=20; "
+                        "maximum size=200."
+                    )
+                    if auth == "basic"
+                    else (
+                        "Paginated tenant/site-scoped entity definitions. Default "
+                        "page=0, size=20; maximum size=200. Supported sort fields: "
+                        "entityKey, title, entityType, createdAt, updatedAt."
+                    )
+                ),
+            ),
             ep(service, "GET", f"{prefix}/definitions/{{entityKey}}", "Get Definition", auth=auth),
             ep(service, "DELETE", f"{prefix}/definitions/{{entityKey}}", "Delete Definition", auth=auth),
             ep(service, "GET", f"{prefix}/templates", "List Templates", auth=auth),
@@ -771,6 +800,44 @@ def build_postman_collection(endpoints):
             },
             "response": [],
         }
+        if endpoint["path"].startswith(("/endpoint/entities", "/internal/entities")):
+            request["request"]["url"] = request["request"]["url"].replace(
+                "{{gateway_base_url}}", "{{dynamic_service_base_url}}", 1)
+        if endpoint["method"] == "GET" and endpoint["path"] in DEFINITION_LIST_PATHS:
+            request["request"]["url"] = (
+                "{{dynamic_service_base_url}}"
+                + endpoint["path"]
+                + "?page={{definition_page}}"
+                + "&size={{definition_page_size}}"
+                + "&sort={{definition_sort}}"
+            )
+            response_name = (
+                "Internal definition page returned"
+                if endpoint["path"].startswith("/internal/")
+                else "Definition page returned"
+            )
+            metadata_name = (
+                "Internal definition page has pagination metadata"
+                if endpoint["path"].startswith("/internal/")
+                else "Definition page has pagination metadata"
+            )
+            request["event"] = [{
+                "listen": "test",
+                "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                        f"pm.test('{response_name}', () => pm.response.to.have.status(200));",
+                        "const page = pm.response.json();",
+                        f"pm.test('{metadata_name}', () => {{",
+                        "  pm.expect(page.content).to.be.an('array');",
+                        "  pm.expect(page.page).to.be.a('number');",
+                        "  pm.expect(page.size).to.be.a('number');",
+                        "  pm.expect(page.totalElements).to.be.a('number');",
+                        "  pm.expect(page.totalPages).to.be.a('number');",
+                        "});",
+                    ],
+                },
+            }]
         if endpoint["body"] is not None:
             request["request"]["body"] = {
                 "mode": "raw",
@@ -803,9 +870,13 @@ def build_postman_collection(endpoints):
         "item": items,
         "variable": [
             {"key": "gateway_base_url", "value": DEFAULT_GATEWAY_BASE_URL},
+            {"key": "dynamic_service_base_url", "value": "http://localhost:9119"},
             {"key": "tenant_key", "value": "demo-tenant"},
             {"key": "site_key", "value": "main-site"},
             {"key": "client_key", "value": "spiffy-client"},
+            {"key": "definition_page", "value": "0"},
+            {"key": "definition_page_size", "value": "20"},
+            {"key": "definition_sort", "value": "entityKey,asc"},
         ],
     }
 
@@ -813,9 +884,13 @@ def build_postman_collection(endpoints):
 def build_postman_environment():
     values = OrderedDict([
         ("gateway_base_url", DEFAULT_GATEWAY_BASE_URL),
+        ("dynamic_service_base_url", "http://localhost:9119"),
         ("tenant_key", "demo-tenant"),
         ("site_key", "main-site"),
         ("client_key", "spiffy-client"),
+        ("definition_page", "0"),
+        ("definition_page_size", "20"),
+        ("definition_sort", "entityKey,asc"),
         ("username", DEFAULT_USERNAME),
         ("password", DEFAULT_PASSWORD),
         ("access_token", ""),
@@ -981,8 +1056,10 @@ def build_readme(endpoints):
         "Usage:",
         "1. Import the Postman collection and environment template.",
         "2. Run `SSO / Login` first. Its test script stores `access_token`, `refresh_token`, and `session_id` in the environment.",
-        "3. Open `docs/swagger/index.html` in a browser, then use Swagger's `Authorize` button with either a bearer token or internal basic credentials.",
-        "4. Use the Swagger spec selector to switch between the full platform inventory and per-service specs.",
+        "3. Set `dynamic_service_base_url` to the dynamic service under test; it defaults to local `bpm-service` on port `9119`.",
+        "4. Definition list requests use `definition_page`, `definition_page_size`, and `definition_sort`; their tests verify the pagination envelope.",
+        "5. Open `docs/swagger/index.html` in a browser, then use Swagger's `Authorize` button with either a bearer token or internal basic credentials.",
+        "6. Use the Swagger spec selector to switch between the full platform inventory and per-service specs.",
         "",
         "Coverage tags:",
         *[f"- `{service}`" for service in services],

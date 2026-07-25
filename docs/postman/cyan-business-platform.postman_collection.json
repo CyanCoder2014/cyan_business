@@ -3953,7 +3953,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/definitions",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/definitions",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4003,7 +4003,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/definitions/catalog-item",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/definitions/catalog-item",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4049,9 +4049,28 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/definitions",
-            "description": ""
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/definitions?page={{definition_page}}&size={{definition_page_size}}&sort={{definition_sort}}",
+            "description": "Paginated tenant/site-scoped entity definitions. Default page=0, size=20; maximum size=200. Supported sort fields: entityKey, title, entityType, createdAt, updatedAt."
           },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Definition page returned', () => pm.response.to.have.status(200));",
+                  "const page = pm.response.json();",
+                  "pm.test('Definition page has pagination metadata', () => {",
+                  "  pm.expect(page.content).to.be.an('array');",
+                  "  pm.expect(page.page).to.be.a('number');",
+                  "  pm.expect(page.size).to.be.a('number');",
+                  "  pm.expect(page.totalElements).to.be.a('number');",
+                  "  pm.expect(page.totalPages).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "response": []
         },
         {
@@ -4086,7 +4105,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/definitions/catalog-item",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/definitions/catalog-item",
             "description": ""
           },
           "response": []
@@ -4123,7 +4142,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/definitions/catalog-item",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/definitions/catalog-item",
             "description": ""
           },
           "response": []
@@ -4160,7 +4179,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/templates",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/templates",
             "description": ""
           },
           "response": []
@@ -4197,7 +4216,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/templates/{{templateKey}}",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/templates/{{templateKey}}",
             "description": ""
           },
           "response": []
@@ -4238,7 +4257,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/templates/{{templateKey}}/definitions",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/templates/{{templateKey}}/definitions",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4288,7 +4307,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/records/catalog-item/validate",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item/validate",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4338,7 +4357,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/submit/catalog-item?recordKey=item-spiffy-bag",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/submit/catalog-item?recordKey=item-spiffy-bag",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4388,7 +4407,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/records/catalog-item",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4438,7 +4457,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/records/catalog-item/{{record_key}}",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item/{{record_key}}",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4488,7 +4507,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/records/catalog-item/{{record_key}}",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item/{{record_key}}",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4534,7 +4553,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/records/catalog-item",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item",
             "description": ""
           },
           "response": []
@@ -4571,7 +4590,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/records/catalog-item/{{record_key}}",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item/{{record_key}}",
             "description": ""
           },
           "response": []
@@ -4608,7 +4627,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/endpoint/entities/records/catalog-item/{{record_key}}",
+            "url": "{{dynamic_service_base_url}}/endpoint/entities/records/catalog-item/{{record_key}}",
             "description": ""
           },
           "response": []
@@ -4659,7 +4678,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/definitions",
+            "url": "{{dynamic_service_base_url}}/internal/entities/definitions",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4714,7 +4733,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/definitions/catalog-item",
+            "url": "{{dynamic_service_base_url}}/internal/entities/definitions/catalog-item",
             "description": "",
             "body": {
               "mode": "raw",
@@ -4765,9 +4784,28 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/definitions",
-            "description": ""
+            "url": "{{dynamic_service_base_url}}/internal/entities/definitions?page={{definition_page}}&size={{definition_page_size}}&sort={{definition_sort}}",
+            "description": "Paginated internal tenant/site-scoped entity definitions using Basic authentication. Default page=0, size=20; maximum size=200."
           },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Internal definition page returned', () => pm.response.to.have.status(200));",
+                  "const page = pm.response.json();",
+                  "pm.test('Internal definition page has pagination metadata', () => {",
+                  "  pm.expect(page.content).to.be.an('array');",
+                  "  pm.expect(page.page).to.be.a('number');",
+                  "  pm.expect(page.size).to.be.a('number');",
+                  "  pm.expect(page.totalElements).to.be.a('number');",
+                  "  pm.expect(page.totalPages).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "response": []
         },
         {
@@ -4807,7 +4845,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/definitions/catalog-item",
+            "url": "{{dynamic_service_base_url}}/internal/entities/definitions/catalog-item",
             "description": ""
           },
           "response": []
@@ -4849,7 +4887,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/definitions/catalog-item",
+            "url": "{{dynamic_service_base_url}}/internal/entities/definitions/catalog-item",
             "description": ""
           },
           "response": []
@@ -4891,7 +4929,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/templates",
+            "url": "{{dynamic_service_base_url}}/internal/entities/templates",
             "description": ""
           },
           "response": []
@@ -4933,7 +4971,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/templates/{{templateKey}}",
+            "url": "{{dynamic_service_base_url}}/internal/entities/templates/{{templateKey}}",
             "description": ""
           },
           "response": []
@@ -4979,7 +5017,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/templates/{{templateKey}}/definitions",
+            "url": "{{dynamic_service_base_url}}/internal/entities/templates/{{templateKey}}/definitions",
             "description": "",
             "body": {
               "mode": "raw",
@@ -5034,7 +5072,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/records/catalog-item/validate",
+            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item/validate",
             "description": "",
             "body": {
               "mode": "raw",
@@ -5089,7 +5127,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/submit/catalog-item?recordKey=item-spiffy-bag",
+            "url": "{{dynamic_service_base_url}}/internal/entities/submit/catalog-item?recordKey=item-spiffy-bag",
             "description": "",
             "body": {
               "mode": "raw",
@@ -5144,7 +5182,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/records/catalog-item",
+            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item",
             "description": "",
             "body": {
               "mode": "raw",
@@ -5199,7 +5237,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/records/catalog-item/{{record_key}}",
+            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item/{{record_key}}",
             "description": "",
             "body": {
               "mode": "raw",
@@ -5254,7 +5292,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/records/catalog-item/{{record_key}}",
+            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item/{{record_key}}",
             "description": "",
             "body": {
               "mode": "raw",
@@ -5305,7 +5343,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/records/catalog-item",
+            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item",
             "description": ""
           },
           "response": []
@@ -5347,7 +5385,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/records/catalog-item/{{record_key}}",
+            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item/{{record_key}}",
             "description": ""
           },
           "response": []
@@ -5389,7 +5427,7 @@
                 }
               ]
             },
-            "url": "{{gateway_base_url}}/internal/entities/records/catalog-item/{{record_key}}",
+            "url": "{{dynamic_service_base_url}}/internal/entities/records/catalog-item/{{record_key}}",
             "description": ""
           },
           "response": []
@@ -10478,7 +10516,11 @@
   "variable": [
     {
       "key": "gateway_base_url",
-      "value": "http://localhost:8080"
+      "value": "http://localhost:8001"
+    },
+    {
+      "key": "dynamic_service_base_url",
+      "value": "http://localhost:9119"
     },
     {
       "key": "tenant_key",
@@ -10491,6 +10533,18 @@
     {
       "key": "client_key",
       "value": "spiffy-client"
+    },
+    {
+      "key": "definition_page",
+      "value": "0"
+    },
+    {
+      "key": "definition_page_size",
+      "value": "20"
+    },
+    {
+      "key": "definition_sort",
+      "value": "entityKey,asc"
     }
   ]
 }

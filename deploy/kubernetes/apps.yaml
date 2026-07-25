@@ -2217,3 +2217,167 @@ spec:
     - name: http
       port: 9126
       targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: batch-worker-service
+  labels:
+    app.kubernetes.io/name: batch-worker-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: batch-worker-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: batch-worker-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: batch-worker-service
+          image: ghcr.io/your-org/cyan-business/batch-worker-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9127
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+            - name: EUREKA_CLIENT_ENABLED
+              value: "false"
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: batch-worker-service
+  labels:
+    app.kubernetes.io/name: batch-worker-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: batch-worker-service
+  ports:
+    - name: http
+      port: 9127
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-docs-service
+  labels:
+    app.kubernetes.io/name: api-docs-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-docs-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api-docs-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: api-docs-service
+          image: ghcr.io/your-org/cyan-business/api-docs-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9128
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+            - name: PLATFORM_API_DOCS_TARGETS_JSON
+              value: >-
+                [
+                  {"serviceKey":"sso-auth-service","baseUrl":"http://sso-auth-service:9001","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-user-service","baseUrl":"http://sso-user-service:9002","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-captcha-service","baseUrl":"http://sso-captcha-service:9003","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-otp-service","baseUrl":"http://sso-otp-service:9004","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-session-service","baseUrl":"http://sso-session-service:9005","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-fido-service","baseUrl":"http://sso-fido-service:9006","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"content-service","baseUrl":"http://content-service:9101","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"catalog-service","baseUrl":"http://catalog-service:9102","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"crm-service","baseUrl":"http://crm-service:9103","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"commerce-service","baseUrl":"http://commerce-service:9104","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"finance-service","baseUrl":"http://finance-service:9105","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"inventory-service","baseUrl":"http://inventory-service:9106","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"report-service","baseUrl":"http://report-service:9107","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"processor-service","baseUrl":"http://processor-service:9108","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"event-service","baseUrl":"http://event-service:9109","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"crm-automation-service","baseUrl":"http://crm-automation-service:9110","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"finance-automation-service","baseUrl":"http://finance-automation-service:9111","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"inventory-automation-service","baseUrl":"http://inventory-automation-service:9112","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"report-automation-service","baseUrl":"http://report-automation-service:9113","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"payment-service","baseUrl":"http://payment-service:9114","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"storefront-service","baseUrl":"http://storefront-service:9115","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"media-service","baseUrl":"http://media-service:9116","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"cart-service","baseUrl":"http://cart-service:9117","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"checkout-service","baseUrl":"http://checkout-service:9118","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"bpm-service","baseUrl":"http://bpm-service:9119","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"automation-orchestrator-service","baseUrl":"http://automation-orchestrator-service:9120","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"ai-orchestrator-service","baseUrl":"http://ai-orchestrator-service:9121","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"notification-service","baseUrl":"http://notification-service:9122","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"payment-orchestrator-service","baseUrl":"http://payment-orchestrator-service:9123","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"pricing-promotion-service","baseUrl":"http://pricing-promotion-service:9124","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"search-index-service","baseUrl":"http://search-index-service:9125","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"bot-adapter-service","baseUrl":"http://bot-adapter-service:9126","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"batch-worker-service","baseUrl":"http://batch-worker-service:9127","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"tax-pay-sys","baseUrl":"http://tax-pay-sys:8002","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"factor-service","baseUrl":"http://factor-service:8003","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"buyer-service","baseUrl":"http://buyer-service:8004","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"product-service","baseUrl":"http://product-service:8005","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"client-service","baseUrl":"http://client-service:8010","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"}
+                ]
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-docs-service
+  labels:
+    app.kubernetes.io/name: api-docs-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: api-docs-service
+  ports:
+    - name: http
+      port: 9128
+      targetPort: http

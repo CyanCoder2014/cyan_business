@@ -154,6 +154,8 @@ Do not assume every module has a fully equivalent localdemo mode.
 | `bpm-service` | `9119` | Mongo + H2 |
 | `event-service` | `9109` | H2 |
 | `bot-adapter-service` | `9126` | Mongo |
+| `batch-worker-service` | `9127` | PostgreSQL / Spring Batch metadata |
+| `api-docs-service` | `9128` | none; bounded in-memory OpenAPI cache |
 
 ### Dynamic business services
 
@@ -224,6 +226,7 @@ bash ./gradlew :storefront-service:bootRun --args='--spring.profiles.active=loca
 bash ./gradlew :bpm-service:bootRun --args='--spring.profiles.active=localdemo'
 bash ./gradlew :ai-orchestrator-service:bootRun --args='--spring.profiles.active=localdemo'
 bash ./gradlew :bot-adapter-service:bootRun --args='--spring.profiles.active=localdemo'
+bash ./gradlew :api-docs-service:bootRun
 ```
 
 This is enough for:
@@ -232,6 +235,7 @@ This is enough for:
 - website builder publish and storefront preview
 - BPM flow builder and managed-object testing
 - bot integration save, webhook registration, outbound test message, and delivery log
+- live controller-derived API documentation and panel API catalog
 
 ## Panel Frontend
 

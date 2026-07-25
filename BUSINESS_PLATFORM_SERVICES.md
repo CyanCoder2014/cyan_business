@@ -28,6 +28,14 @@ And a public bot adapter for Telegram/Bale channels:
 
 - `bot-adapter-service`
 
+And a controller-derived OpenAPI catalog:
+
+- `api-docs-service`
+
+And a durable chunk-oriented ETL runtime:
+
+- `batch-worker-service`
+
 And Kafka-driven automation consumers:
 
 - `crm-automation-service`

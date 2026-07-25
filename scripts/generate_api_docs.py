@@ -20,6 +20,19 @@ DEFINITION_PAGE_QUERY = [
     {"name": "size", "example": "20"},
     {"name": "sort", "example": "entityKey,asc"},
 ]
+DEFAULT_AVAILABLE_SERVICE_KEYS = [
+    "ai-orchestrator-service",
+    "notification-service",
+    "bpm-service",
+    "automation-orchestrator-service",
+    "report-service",
+    "sso-auth-service",
+    "sso-user-service",
+    "sso-captcha-service",
+    "media-service",
+    "processor-service",
+    "batch-worker-service",
+]
 
 
 def example_dynamic_definition():
@@ -85,6 +98,115 @@ def example_notification():
         "body": "Order {{orderNumber}} has been created.",
         "model": {"orderNumber": "1001", "customerName": "Farid"},
         "relatedRef": {"service": "checkout-service", "entityKey": "order", "recordKey": "order-1001"},
+    }
+
+
+def example_batch_definition():
+    return {
+        "definitionKey": "importer-order-projection-v1",
+        "title": "Import orders into the customer credit projection",
+        "active": True,
+        "spec": {
+            "source": {
+                "url": "https://importer.example/v1/orders?status=CONFIRMED",
+                "itemsPath": "content",
+                "pageParameter": "page",
+                "sizeParameter": "size",
+                "pageSize": 500,
+                "headers": {"Accept": "application/json"},
+                "bearerTokenEnvironmentVariable": "IMPORTER_API_TOKEN",
+            },
+            "destination": {
+                "url": "https://projection.example/v1/credit-projection/order-events",
+                "method": "POST",
+                "itemKeyPath": "eventKey",
+                "headers": {"X-Projection-Key": "importer-credit-v1"},
+                "bearerTokenEnvironmentVariable": "PROJECTION_API_TOKEN",
+            },
+            "fieldMappings": {
+                "eventKey": "orderId",
+                "customerKey": "customer.id",
+                "createdAt": "createdAt",
+                "totalAmount": "totalAmount",
+            },
+            "chunkSize": 200,
+            "retryLimit": 5,
+            "skipLimit": 100,
+        },
+    }
+
+
+def example_automation_start():
+    return {
+        "blockKey": "credit-check",
+        "automationFlowKey": "customer-credit-score-v1",
+        "executionMode": "ASYNC",
+        "failurePolicy": "MARK_FAILED",
+        "correlationKey": "corr-1001",
+        "callbackPath": "/public/bpm/async-actions/callbacks/corr-1001",
+        "tenantKey": "{{tenant_key}}",
+        "siteKey": "{{site_key}}",
+        "input": {"customerKey": "customer-1001"},
+        "context": {"objectId": "{{object_id}}"},
+        "maxRetries": 2,
+        "timeoutSeconds": 120,
+        "delayMillis": 0,
+        "idempotencyKey": "credit-customer-1001",
+    }
+
+
+def example_automation_flow():
+    return {
+        "flowKey": "customer-credit-score-v1",
+        "version": 1,
+        "name": "Customer credit score",
+        "active": False,
+        "entryNodeId": "manual",
+        "runtimeMode": "VARIABLES",
+        "environment": "default",
+        "lifecycleStatus": "DRAFT",
+        "nodes": [
+            {
+                "id": "manual",
+                "type": "MANUAL_TRIGGER",
+                "name": "Manual trigger",
+                "enabled": True,
+                "config": {},
+            },
+            {
+                "id": "end",
+                "type": "END",
+                "name": "Done",
+                "enabled": True,
+                "config": {},
+            },
+        ],
+        "edges": [
+            {
+                "id": "edge-1",
+                "fromNodeId": "manual",
+                "toNodeId": "end",
+            }
+        ],
+    }
+
+
+def example_n8n_workflow():
+    return {
+        "name": "Customer credit webhook",
+        "active": False,
+        "nodes": [
+            {
+                "id": "webhook-1",
+                "name": "Webhook",
+                "type": "n8n-nodes-base.webhook",
+                "typeVersion": 2,
+                "position": [0, 0],
+                "parameters": {"path": "customer-credit", "httpMethod": "POST"},
+            }
+        ],
+        "connections": {},
+        "settings": {},
     }
 
 
@@ -179,7 +301,8 @@ def build_endpoints():
             "clientKey": "{{client_key}}",
             "sessionId": "{{ai_session_id}}",
             "execute": False,
-            "answers": {"subdomain": "spiffy-demo"}
+            "answers": {"subdomain": "spiffy-demo"},
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
         ep("AI Orchestrator", "GET", "/endpoint/ai-orchestrator/blueprints", "List Blueprints"),
         ep("AI Orchestrator", "GET", "/endpoint/ai-orchestrator/blueprints/{blueprintKey}", "Get Blueprint"),
@@ -191,14 +314,16 @@ def build_endpoints():
             "clientKey": "{{client_key}}",
             "title": "Spiffy Clone",
             "prompt": "Spiffy-like ecommerce with CRM and notifications.",
-            "answers": {"subdomain": "spiffy-demo", "brandName": "Spiffy Demo"}
+            "answers": {"subdomain": "spiffy-demo", "brandName": "Spiffy Demo"},
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
         ep("AI Orchestrator", "GET", "/endpoint/ai-orchestrator/drafts", "List Drafts"),
         ep("AI Orchestrator", "GET", "/endpoint/ai-orchestrator/drafts/{draftId}", "Get Draft"),
         ep("AI Orchestrator", "PATCH", "/endpoint/ai-orchestrator/drafts/{draftId}", "Patch Draft", body={
             "prompt": "Spiffy-like ecommerce with CRM, notifications, and Zarinpal.",
             "title": "Spiffy Demo Updated",
-            "answersPatch": {"subdomain": "spiffy-shop", "primaryCurrency": "IRR"}
+            "answersPatch": {"subdomain": "spiffy-shop", "primaryCurrency": "IRR"},
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
         ep("AI Orchestrator", "POST", "/endpoint/ai-orchestrator/drafts/{draftId}/provision", "Provision Draft", body={
             "mode": "EXECUTE",
@@ -216,13 +341,15 @@ def build_endpoints():
             "draftId": "{{draft_id}}",
             "appTypeHint": "ECOMMERCE",
             "title": "Spiffy Intake",
-            "extractedAnswers": {"subdomain": "spiffy-demo"}
+            "extractedAnswers": {"subdomain": "spiffy-demo"},
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
         ep("AI Orchestrator", "GET", "/endpoint/ai-orchestrator/sessions/{sessionId}", "Get Conversation Session"),
         ep("AI Orchestrator", "POST", "/endpoint/ai-orchestrator/sessions/{sessionId}/message", "Send Conversation Message", body={
             "role": "USER",
             "content": "Use a subdomain and add CRM plus notification flows.",
-            "answersPatch": {"subdomain": "spiffy-demo", "crmEnabled": True}
+            "answersPatch": {"subdomain": "spiffy-demo", "crmEnabled": True},
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
         ep("AI Orchestrator Internal", "POST", "/internal/ai-orchestrator/generate/app", "Generate Platform App Internal", auth="basic", body={
             "prompt": "Generate a tenant blueprint draft for a store.",
@@ -231,7 +358,8 @@ def build_endpoints():
             "siteKey": "{{site_key}}",
             "clientKey": "{{client_key}}",
             "execute": False,
-            "answers": {"subdomain": "internal-spiffy"}
+            "answers": {"subdomain": "internal-spiffy"},
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
         ep("AI Orchestrator Internal", "GET", "/internal/ai-orchestrator/blueprints", "List Blueprints Internal", auth="basic"),
         ep("AI Orchestrator Internal", "GET", "/internal/ai-orchestrator/blueprints/{blueprintKey}", "Get Blueprint Internal", auth="basic"),
@@ -243,11 +371,15 @@ def build_endpoints():
             "clientKey": "{{client_key}}",
             "title": "Internal Spiffy Draft",
             "prompt": "Internal provisioning path.",
-            "answers": {"subdomain": "internal-spiffy"}
+            "answers": {"subdomain": "internal-spiffy"},
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
         ep("AI Orchestrator Internal", "GET", "/internal/ai-orchestrator/drafts", "List Drafts Internal", auth="basic"),
         ep("AI Orchestrator Internal", "GET", "/internal/ai-orchestrator/drafts/{draftId}", "Get Draft Internal", auth="basic"),
-        ep("AI Orchestrator Internal", "PATCH", "/internal/ai-orchestrator/drafts/{draftId}", "Patch Draft Internal", auth="basic", body={"title": "Internal Updated"}),
+        ep("AI Orchestrator Internal", "PATCH", "/internal/ai-orchestrator/drafts/{draftId}", "Patch Draft Internal", auth="basic", body={
+            "title": "Internal Updated",
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
+        }),
         ep("AI Orchestrator Internal", "POST", "/internal/ai-orchestrator/drafts/{draftId}/provision", "Provision Draft Internal", auth="basic", body={"mode": "EXECUTE"}),
         ep("AI Orchestrator Internal", "GET", "/internal/ai-orchestrator/drafts/{draftId}/runs", "List Runs Internal", auth="basic"),
         ep("AI Orchestrator Internal", "GET", "/internal/ai-orchestrator/runs/{runId}", "Get Run Internal", auth="basic"),
@@ -256,12 +388,14 @@ def build_endpoints():
             "tenantKey": "{{tenant_key}}",
             "siteKey": "{{site_key}}",
             "clientKey": "{{client_key}}",
-            "title": "Internal Session"
+            "title": "Internal Session",
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
         ep("AI Orchestrator Internal", "GET", "/internal/ai-orchestrator/sessions/{sessionId}", "Get Session Internal", auth="basic"),
         ep("AI Orchestrator Internal", "POST", "/internal/ai-orchestrator/sessions/{sessionId}/message", "Message Session Internal", auth="basic", body={
             "role": "SYSTEM",
-            "content": "Continue blueprint enrichment."
+            "content": "Continue blueprint enrichment.",
+            "availableServiceKeys": DEFAULT_AVAILABLE_SERVICE_KEYS,
         }),
     ])
 
@@ -312,6 +446,65 @@ def build_endpoints():
             ep(service, "DELETE", f"{prefix}/records/{{entityKey}}/{{recordKey}}", "Delete Record", auth=auth),
         ])
 
+    for prefix, service, auth in [
+        ("/endpoint/batch", "Batch Worker", "bearer"),
+        ("/internal/batch", "Batch Worker Internal", "basic"),
+    ]:
+        endpoints.extend([
+            ep(
+                service,
+                "POST",
+                f"{prefix}/definitions",
+                "Save Batch Definition",
+                auth=auth,
+                body=example_batch_definition(),
+            ),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/definitions/{{definitionKey}}",
+                "Get Batch Definition",
+                auth=auth,
+            ),
+            ep(
+                service,
+                "POST",
+                f"{prefix}/definitions/{{definitionKey}}/runs",
+                "Start Batch Run",
+                auth=auth,
+                body={"runKey": "2026-07-25T04:30:00Z"},
+            ),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/runs/{{id}}",
+                "Get Batch Run",
+                auth=auth,
+            ),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/runs",
+                "List Batch Runs",
+                auth=auth,
+                query=[{"name": "limit", "example": "50"}],
+            ),
+            ep(
+                service,
+                "GET",
+                f"{prefix}/runs/{{id}}/rejected-items",
+                "List Rejected Batch Items",
+                auth=auth,
+            ),
+            ep(
+                service,
+                "POST",
+                f"{prefix}/runs/{{id}}/retry",
+                "Retry Batch Run",
+                auth=auth,
+            ),
+        ])
+
     endpoints.extend([
         ep("BPM", "GET", "/endpoint/bpm/metadata/actions", "List BPM Action Metadata"),
         ep("BPM", "GET", "/endpoint/bpm/metadata/transition-conditions", "List BPM Transition Conditions"),
@@ -359,6 +552,25 @@ def build_endpoints():
             "nextState": "REVIEW",
             "context": {"submittedBy": "farid"}
         }),
+        ep("BPM", "POST", "/endpoint/bpm/managed-objects/{objectId}/comments", "Add Managed Object Comment", body={
+            "stateId": "finance-review",
+            "body": "Credit exposure reviewed with finance.",
+            "visibleToRoles": ["ROLE_FINANCE"],
+            "visibleToGroups": ["finance-credit-reviewers"],
+            "metadata": {"source": "postman"},
+        }),
+        ep("BPM", "GET", "/endpoint/bpm/managed-objects/{objectId}/comments", "List Managed Object Comments"),
+        ep("BPM", "POST", "/endpoint/bpm/managed-objects/{objectId}/attachments", "Add Managed Object Attachment", body={
+            "stateId": "finance-review",
+            "assetKey": "credit-review-document-1",
+            "fileName": "credit-review.pdf",
+            "downloadUrl": "https://media.example/credit-review-document-1",
+            "contentType": "application/pdf",
+            "sizeBytes": 245000,
+            "visibleToGroups": ["finance-credit-reviewers"],
+            "metadata": {"source": "postman"},
+        }),
+        ep("BPM", "GET", "/endpoint/bpm/managed-objects/{objectId}/attachments", "List Managed Object Attachments"),
         ep("BPM", "GET", "/endpoint/bpm/managed-objects/{objectId}", "Get Managed Object"),
         ep("BPM", "POST", "/public/bpm/async-actions/callbacks/{correlationKey}", "Async Callback", auth="none", body={
             "status": "SUCCEEDED",
@@ -366,6 +578,8 @@ def build_endpoints():
             "errorCode": None,
             "errorMessage": None
         }),
+        ep("BPM Public Metadata", "GET", "/public/dynamic-flows/state-action-structures", "List State Action Structures", auth="none"),
+        ep("BPM Public Metadata", "GET", "/public/dynamic-flows/transition-condition-structures", "Get Transition Condition Structures", auth="none"),
     ])
 
     for prefix, service, auth in [
@@ -398,28 +612,108 @@ def build_endpoints():
                 ep(service, "GET", f"{prefix}/{{objectId}}/transitions", "List Available Transitions Internal", auth=auth),
                 ep(service, "GET", f"{prefix}/{{objectId}}/active-form", "Get Active Form Internal", auth=auth),
                 ep(service, "POST", f"{prefix}/{{objectId}}/active-form/submissions", "Submit Active Form Internal", auth=auth, body={"formData": {"approved": True}}),
+                ep(service, "POST", f"{prefix}/{{objectId}}/comments", "Add Managed Object Comment Internal", auth=auth, body={
+                    "stateId": "finance-review",
+                    "body": "Internal finance review note.",
+                    "visibleToRoles": ["ROLE_FINANCE"],
+                    "visibleToGroups": ["finance-credit-reviewers"],
+                    "metadata": {"source": "postman-internal"},
+                }),
+                ep(service, "GET", f"{prefix}/{{objectId}}/comments", "List Managed Object Comments Internal", auth=auth),
+                ep(service, "POST", f"{prefix}/{{objectId}}/attachments", "Add Managed Object Attachment Internal", auth=auth, body={
+                    "stateId": "finance-review",
+                    "assetKey": "credit-review-document-1",
+                    "fileName": "credit-review.pdf",
+                    "downloadUrl": "https://media.example/credit-review-document-1",
+                    "contentType": "application/pdf",
+                    "sizeBytes": 245000,
+                    "visibleToGroups": ["finance-credit-reviewers"],
+                    "metadata": {"source": "postman-internal"},
+                }),
+                ep(service, "GET", f"{prefix}/{{objectId}}/attachments", "List Managed Object Attachments Internal", auth=auth),
                 ep(service, "GET", f"{prefix}/{{objectId}}", "Get Managed Object Internal", auth=auth),
             ])
 
+    for prefix, service, auth in [
+        ("/endpoint/automation-orchestrator", "Automation Orchestrator", "bearer"),
+        ("/internal/automation-orchestrator", "Automation Orchestrator Internal", "basic"),
+    ]:
+        endpoints.extend([
+            ep(service, "POST", f"{prefix}/executions/start", "Start Automation Execution", auth=auth, body=example_automation_start()),
+            ep(service, "GET", f"{prefix}/executions/{{executionId}}", "Get Automation Execution", auth=auth),
+            ep(service, "POST", f"{prefix}/executions/{{executionId}}/cancel", "Cancel Automation Execution", auth=auth),
+            ep(service, "GET", f"{prefix}/executions/{{executionId}}/steps", "List Automation Execution Steps", auth=auth),
+            ep(service, "GET", f"{prefix}/executions/{{executionId}}/dead-letters", "List Automation Dead Letters", auth=auth),
+            ep(service, "POST", f"{prefix}/executions/{{executionId}}/dead-letters/{{deadLetterId}}/requeue", "Requeue Automation Dead Letter", auth=auth),
+            ep(service, "GET", f"{prefix}/metrics", "Get Automation Metrics", auth=auth),
+            ep(service, "GET", f"{prefix}/executions", "List Automation Executions", auth=auth, query=[
+                {"name": "flowKey", "example": "{{automation_flow_key}}"},
+                {"name": "status", "example": "FAILED"},
+            ]),
+            ep(service, "POST", f"{prefix}/executions/{{executionId}}/retry", "Retry Automation Execution", auth=auth, query=[
+                {"name": "fromFailedNode", "example": "true"},
+            ]),
+        ])
+
+    endpoints.append(
+        ep(
+            "Automation Orchestrator",
+            "POST",
+            "/endpoint/automation-orchestrator/flows/{flowKey}/manual-run",
+            "Run Automation Flow Manually",
+            body={
+                "environment": "default",
+                "async": True,
+                "input": {"customerKey": "customer-1001"},
+            },
+            query=[{"name": "version", "example": "1"}],
+        )
+    )
+
+    for prefix, service, auth in [
+        ("/endpoint/automation-flows", "Automation Flows", "bearer"),
+        ("/internal/automation-flows", "Automation Flows Internal", "basic"),
+    ]:
+        endpoints.extend([
+            ep(service, "POST", prefix, "Save Automation Flow", auth=auth, body=example_automation_flow()),
+            ep(service, "GET", prefix, "List Automation Flows", auth=auth),
+            ep(service, "GET", f"{prefix}/{{flowKey}}/versions/{{version}}", "Get Automation Flow Version", auth=auth),
+            ep(service, "GET", f"{prefix}/{{flowKey}}/active", "Get Active Automation Flow", auth=auth, query=[
+                {"name": "environment", "example": "default"},
+            ]),
+            ep(service, "POST", f"{prefix}/{{flowKey}}/versions/{{version}}/{{action}}", "Run Automation Flow Lifecycle Action", auth=auth, query=[
+                {"name": "targetEnvironment", "example": "production"},
+            ]),
+            ep(service, "POST", f"{prefix}/n8n/analyze", "Analyze n8n Workflow", auth=auth, body=example_n8n_workflow()),
+            ep(service, "POST", f"{prefix}/n8n/import", "Import n8n Workflow", auth=auth, body=example_n8n_workflow(), query=[
+                {"name": "flowKey", "example": "{{automation_flow_key}}"},
+            ]),
+            ep(service, "GET", f"{prefix}/{{flowKey}}/versions/{{version}}/n8n-export", "Export Automation Flow as n8n", auth=auth),
+        ])
+
     endpoints.extend([
-        ep("Automation Orchestrator", "POST", "/internal/automation-orchestrator/executions/start", "Start Automation Execution", auth="basic", body={
-            "blockKey": "credit-check",
-            "automationFlowKey": "credit-screening",
-            "executionMode": "ASYNC",
-            "failurePolicy": "MARK_FAILED",
-            "correlationKey": "corr-1001",
-            "callbackPath": "/public/bpm/async-actions/callbacks/corr-1001",
-            "tenantKey": "{{tenant_key}}",
-            "siteKey": "{{site_key}}",
-            "input": {"customerKey": "lead-1001"},
-            "context": {"objectId": "{{object_id}}"},
-            "inlineFragment": {"type": "MAP_OUTPUT", "mappings": {"riskBucket": "$.riskBucket"}},
-            "maxRetries": 2,
-            "timeoutSeconds": 120,
-            "delayMillis": 0
+        ep("Automation Credentials", "POST", "/endpoint/automation-orchestrator/credentials", "Save Automation Credential", body={
+            "name": "credit-projection-api",
+            "type": "BEARER",
+            "secret": "{{connector_secret}}",
+            "metadata": {"authType": "BEARER"},
+            "allowedRoles": ["ROLE_SYSTEM"],
+            "active": True,
         }),
-        ep("Automation Orchestrator", "GET", "/internal/automation-orchestrator/executions/{executionId}", "Get Automation Execution", auth="basic"),
-        ep("Automation Orchestrator", "POST", "/internal/automation-orchestrator/executions/{executionId}/cancel", "Cancel Automation Execution", auth="basic"),
+        ep("Automation Credentials", "GET", "/endpoint/automation-orchestrator/credentials", "List Automation Credentials"),
+        ep("Automation Credentials", "PATCH", "/endpoint/automation-orchestrator/credentials/{id}/rotate", "Rotate Automation Credential", body={
+            "secret": "{{connector_secret}}",
+        }),
+        ep("Automation Public", "GET", "/public/automation-flows/node-structures", "List Automation Node Structures", auth="none"),
+        ep("Automation Public", "GET", "/public/automation-flows/edge-structures", "Get Automation Edge Structures", auth="none"),
+        ep("Automation Public", "POST", "/public/automation-orchestrator/webhooks/{flowKey}", "Trigger Automation Webhook", auth="none", body={
+            "customerKey": "customer-1001",
+            "event": "CUSTOMER_UPDATED",
+        }),
+        ep("Automation Public", "POST", "/public/automation-orchestrator/executions/{executionId}/nodes/{nodeId}/callback", "Complete Automation Node Callback", auth="none", body={
+            "callbackId": "callback-1001",
+            "payload": {"status": "SUCCEEDED", "externalReference": "ext-1001"},
+        }),
     ])
 
     endpoints.extend([
@@ -761,6 +1055,10 @@ def example_from_path_param(name):
         "reportKey": "sales-summary",
         "processorKey": "sync-customer-profile",
         "eventKey": "order-created-1001",
+        "definitionKey": "{{batch_definition_key}}",
+        "deadLetterId": "{{dead_letter_id}}",
+        "nodeId": "http-callback",
+        "action": "SUBMIT",
         "username": DEFAULT_USERNAME,
         "slug": "homepage",
         "correlationKey": "corr-1001",
@@ -800,7 +1098,66 @@ def build_postman_collection(endpoints):
             },
             "response": [],
         }
+        internal_auth_prefixes = {
+            "/internal/batch": ("batch_internal_username", "batch_internal_password"),
+            "/internal/automation-orchestrator": (
+                "automation_internal_username",
+                "automation_internal_password",
+            ),
+            "/internal/automation-flows": (
+                "automation_internal_username",
+                "automation_internal_password",
+            ),
+            "/internal/bpm": ("bpm_internal_username", "bpm_internal_password"),
+        }
+        for prefix, (username_key, password_key) in internal_auth_prefixes.items():
+            if endpoint["path"].startswith(prefix):
+                request["request"]["auth"] = {
+                    "type": "basic",
+                    "basic": [
+                        {
+                            "key": "username",
+                            "value": f"{{{{{username_key}}}}}",
+                            "type": "string",
+                        },
+                        {
+                            "key": "password",
+                            "value": f"{{{{{password_key}}}}}",
+                            "type": "string",
+                        },
+                    ],
+                }
+                break
+        if endpoint["path"].startswith(("/endpoint/batch", "/internal/batch")):
+            request["request"]["url"] = request["request"]["url"].replace(
+                "{{id}}", "{{batch_run_id}}")
+        if endpoint["path"].startswith("/endpoint/automation-orchestrator/credentials"):
+            request["request"]["url"] = request["request"]["url"].replace(
+                "{{id}}", "{{credential_id}}")
+        if "automation" in endpoint["path"]:
+            request["request"]["url"] = request["request"]["url"].replace(
+                "customer-onboarding", "{{automation_flow_key}}")
+        if endpoint["path"].startswith("/internal/bpm/managed-objects"):
+            request["request"]["header"].extend([
+                {"key": "X-Actor-User", "value": "postman-internal"},
+                {"key": "X-Actor-Roles", "value": "ROLE_SYSTEM,ROLE_FINANCE"},
+                {"key": "X-Actor-Groups", "value": "finance-credit-reviewers"},
+            ])
+        if endpoint["path"] == "/public/automation-orchestrator/webhooks/{flowKey}":
+            request["request"]["header"].extend([
+                {"key": "X-Automation-Environment", "value": "default"},
+                {"key": "X-Webhook-Secret", "value": "{{automation_webhook_secret}}"},
+                {"key": "Idempotency-Key", "value": "webhook-customer-1001"},
+            ])
+        if endpoint["path"] == "/public/automation-orchestrator/executions/{executionId}/nodes/{nodeId}/callback":
+            request["request"]["header"].append({
+                "key": "X-Automation-Callback-Secret",
+                "value": "{{automation_callback_secret}}",
+            })
         if endpoint["path"].startswith(("/endpoint/entities", "/internal/entities")):
+            request["request"]["url"] = request["request"]["url"].replace(
+                "{{gateway_base_url}}", "{{dynamic_service_base_url}}", 1)
+        if endpoint["path"].startswith("/public/dynamic-flows"):
             request["request"]["url"] = request["request"]["url"].replace(
                 "{{gateway_base_url}}", "{{dynamic_service_base_url}}", 1)
         if endpoint["method"] == "GET" and endpoint["path"] in DEFINITION_LIST_PATHS:
@@ -857,6 +1214,26 @@ def build_postman_collection(endpoints):
                     ],
                 },
             }]
+        response_variable = {
+            "Start Batch Run": ("id", "batch_run_id"),
+            "Start Automation Execution": ("executionId", "execution_id"),
+            "Save Automation Credential": ("id", "credential_id"),
+            "Create Managed Object": ("id", "object_id"),
+            "Create Managed Object Internal": ("id", "object_id"),
+        }.get(endpoint["summary"])
+        if response_variable is not None:
+            response_field, environment_key = response_variable
+            request.setdefault("event", []).append({
+                "listen": "test",
+                "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                        "const json = pm.response.json();",
+                        f"if (json.{response_field}) "
+                        f"pm.environment.set('{environment_key}', json.{response_field});",
+                    ],
+                },
+            })
         folders[endpoint["service"]].append(request)
 
     items = [{"name": service, "item": requests} for service, requests in sorted(folders.items())]
@@ -877,6 +1254,11 @@ def build_postman_collection(endpoints):
             {"key": "definition_page", "value": "0"},
             {"key": "definition_page_size", "value": "20"},
             {"key": "definition_sort", "value": "entityKey,asc"},
+            {"key": "batch_definition_key", "value": "importer-order-projection-v1"},
+            {"key": "batch_run_id", "value": ""},
+            {"key": "automation_flow_key", "value": "customer-credit-score-v1"},
+            {"key": "dead_letter_id", "value": ""},
+            {"key": "credential_id", "value": ""},
         ],
     }
 
@@ -891,6 +1273,20 @@ def build_postman_environment():
         ("definition_page", "0"),
         ("definition_page_size", "20"),
         ("definition_sort", "entityKey,asc"),
+        ("batch_definition_key", "importer-order-projection-v1"),
+        ("batch_run_id", ""),
+        ("automation_flow_key", "customer-credit-score-v1"),
+        ("dead_letter_id", ""),
+        ("credential_id", ""),
+        ("connector_secret", ""),
+        ("automation_webhook_secret", ""),
+        ("automation_callback_secret", ""),
+        ("batch_internal_username", "batch_worker_internal"),
+        ("batch_internal_password", "batch_worker_secret"),
+        ("automation_internal_username", "automation_orchestrator_internal"),
+        ("automation_internal_password", "automation_orchestrator_secret"),
+        ("bpm_internal_username", "bpm_internal"),
+        ("bpm_internal_password", "bpm_secret"),
         ("username", DEFAULT_USERNAME),
         ("password", DEFAULT_PASSWORD),
         ("access_token", ""),
@@ -908,9 +1304,29 @@ def build_postman_environment():
         ("internal_basic_username", "internal"),
         ("internal_basic_password", "internal-secret"),
     ])
+    secret_keys = {
+        "password",
+        "access_token",
+        "refresh_token",
+        "connector_secret",
+        "automation_webhook_secret",
+        "automation_callback_secret",
+        "batch_internal_password",
+        "automation_internal_password",
+        "bpm_internal_password",
+        "internal_basic_password",
+    }
     return {
         "name": "cyan-business-platform-local",
-        "values": [{"key": key, "value": value, "type": "default", "enabled": True} for key, value in values.items()],
+        "values": [
+            {
+                "key": key,
+                "value": value,
+                "type": "secret" if key in secret_keys else "default",
+                "enabled": True,
+            }
+            for key, value in values.items()
+        ],
         "_postman_variable_scope": "environment",
         "_postman_exported_at": "2025-01-01T00:00:00.000Z",
         "_postman_exported_using": "Codex API Docs Generator",
@@ -1058,8 +1474,10 @@ def build_readme(endpoints):
         "2. Run `SSO / Login` first. Its test script stores `access_token`, `refresh_token`, and `session_id` in the environment.",
         "3. Set `dynamic_service_base_url` to the dynamic service under test; it defaults to local `bpm-service` on port `9119`.",
         "4. Definition list requests use `definition_page`, `definition_page_size`, and `definition_sort`; their tests verify the pagination envelope.",
-        "5. Open `docs/swagger/index.html` in a browser, then use Swagger's `Authorize` button with either a bearer token or internal basic credentials.",
-        "6. Use the Swagger spec selector to switch between the full platform inventory and per-service specs.",
+        "5. Batch, automation, and BPM internal folders use their own `*_internal_username` and secret `*_internal_password` variables.",
+        "6. `Start Batch Run`, `Start Automation Execution`, and credential/managed-object creation requests store their returned IDs for later requests.",
+        "7. Open `docs/swagger/index.html` in a browser, then use Swagger's `Authorize` button with either a bearer token or internal basic credentials.",
+        "8. Use the Swagger spec selector to switch between the full platform inventory and per-service specs.",
         "",
         "Coverage tags:",
         *[f"- `{service}`" for service in services],

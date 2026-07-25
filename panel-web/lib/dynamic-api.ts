@@ -30,6 +30,14 @@ type ScopedRequest = {
   siteKey?: string;
 };
 
+export type DynamicPage<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
+
 async function requestJson<T>(serviceKey: DynamicServiceKey, path: string, init?: RequestInit & ScopedRequest): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Content-Type", "application/json");
@@ -58,11 +66,28 @@ export function listTemplates(serviceKey: DynamicServiceKey): Promise<DynamicEnt
   return requestJson<DynamicEntityTemplate[]>(serviceKey, "/endpoint/entities/templates");
 }
 
-export function listDefinitions(
+export async function listDefinitions(
   serviceKey: DynamicServiceKey,
   scope: ScopedRequest
 ): Promise<DynamicEntityDefinition[]> {
-  return requestJson<DynamicEntityDefinition[]>(serviceKey, "/endpoint/entities/definitions", scope);
+  const definitions: DynamicEntityDefinition[] = [];
+  let page = 0;
+
+  while (true) {
+    const response = await requestJson<DynamicPage<DynamicEntityDefinition> | DynamicEntityDefinition[]>(
+      serviceKey,
+      `/endpoint/entities/definitions?page=${page}&size=200&sort=entityKey,asc`,
+      scope
+    );
+    if (Array.isArray(response)) {
+      return response;
+    }
+    definitions.push(...response.content);
+    page += 1;
+    if (page >= response.totalPages) {
+      return definitions;
+    }
+  }
 }
 
 export function createDefinitionFromTemplate(

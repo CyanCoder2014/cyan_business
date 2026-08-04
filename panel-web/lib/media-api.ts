@@ -1,4 +1,4 @@
-const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
+import { platformFetch } from "@/lib/platform-auth";
 
 export type MediaPrepareUploadRequest = {
   assetKey: string;
@@ -25,7 +25,7 @@ export type MediaAssetResponse = {
 };
 
 async function requestJson<T>(path: string, init: RequestInit): Promise<T> {
-  const response = await fetch(`${platformBaseUrl}${path}`, {
+  const response = await platformFetch(path, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -43,7 +43,7 @@ async function requestJson<T>(path: string, init: RequestInit): Promise<T> {
 }
 
 export function prepareMediaUpload(request: MediaPrepareUploadRequest): Promise<MediaAssetResponse> {
-  return requestJson<MediaAssetResponse>("/internal/media/assets/prepare-upload", {
+  return requestJson<MediaAssetResponse>("/api/platform/dynamic/media-service/internal/media/assets/prepare-upload", {
     method: "POST",
     body: JSON.stringify(request)
   });

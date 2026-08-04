@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }
@@ -73,8 +73,8 @@
               },
               "example": {
                 "clientId": "panel.sampv3",
-                "username": "farid",
-                "password": "Passw0rd!",
+                "username": "cyan-admin",
+                "password": "admin123",
                 "captchaChallengeId": null,
                 "captchaAnswer": null,
                 "otpCode": null,
@@ -243,7 +243,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "phoneNumber": "+989121234567"
               }
             }
@@ -284,7 +284,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "deviceId": "chrome-local"
               }
             }
@@ -325,7 +325,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "challengeId": "challenge-1",
                 "credential": "signed-payload"
               }
@@ -486,7 +486,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "destination": "+989121234567",
                 "reason": "LOGIN"
               }
@@ -528,7 +528,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "otpCode": "123456"
               }
             }
@@ -569,7 +569,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "clientId": "panel.sampv3",
                 "deviceId": "chrome-local"
               }
@@ -696,8 +696,8 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
-                "password": "Passw0rd!",
+                "username": "cyan-admin",
+                "password": "admin123",
                 "email": "farid@example.com",
                 "phoneNumber": "+989121234567",
                 "mfaEnabled": false,
@@ -747,7 +747,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "farid"
+            "example": "cyan-admin"
           }
         ]
       }
@@ -785,8 +785,8 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
-                "password": "Passw0rd!"
+                "username": "cyan-admin",
+                "password": "admin123"
               }
             }
           }
@@ -826,7 +826,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "deviceId": "chrome-local"
               }
             }
@@ -867,7 +867,7 @@
                 "additionalProperties": true
               },
               "example": {
-                "username": "farid",
+                "username": "cyan-admin",
                 "challengeId": "challenge-1",
                 "credential": "signed-payload"
               }

@@ -35,7 +35,7 @@ public class PlatformAuthorizationService {
     }
 
     public boolean canManageService(String serviceKey) {
-        return hasAnyPermission("*", "panel:*", "iam:*", "service:*", "service:" + serviceKey + ":manage");
+        return hasAnyPermission("*", "panel:*", "builder:*", "iam:*", "service:*", "service:" + serviceKey + ":manage");
     }
 
     public boolean canUseCapability(String capabilityKey) {

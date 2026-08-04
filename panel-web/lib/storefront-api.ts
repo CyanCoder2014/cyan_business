@@ -1,4 +1,6 @@
-const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
+import { platformFetch } from "@/lib/platform-auth";
+
+const platformBaseUrl = "/api/platform/service/storefront-service";
 
 export type StorefrontResolvedRoute = {
   tenantKey?: string;
@@ -19,7 +21,7 @@ type ScopedRequest = {
 };
 
 async function requestJson<T>(path: string, scope: ScopedRequest): Promise<T> {
-  const response = await fetch(`${platformBaseUrl}${path}`, {
+  const response = await platformFetch(`${platformBaseUrl}${path}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

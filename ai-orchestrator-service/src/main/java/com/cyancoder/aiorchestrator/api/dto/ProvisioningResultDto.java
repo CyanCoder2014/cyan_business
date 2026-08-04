@@ -8,8 +8,17 @@ public record ProvisioningResultDto(
         List<Map<String, Object>> createdDefinitions,
         List<Map<String, Object>> createdRecords,
         List<Map<String, Object>> createdFlows,
+        List<Map<String, Object>> createdResources,
         List<Map<String, Object>> deliveryEndpoints,
         List<String> manualActions
 ) {
+    public ProvisioningResultDto(String status,
+                                 List<Map<String, Object>> createdDefinitions,
+                                 List<Map<String, Object>> createdRecords,
+                                 List<Map<String, Object>> createdFlows,
+                                 List<Map<String, Object>> deliveryEndpoints,
+                                 List<String> manualActions) {
+        this(status, createdDefinitions, createdRecords, createdFlows, List.of(),
+                deliveryEndpoints, manualActions);
+    }
 }
-

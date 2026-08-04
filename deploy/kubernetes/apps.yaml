@@ -1,0 +1,2383 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tax-pay-sys
+  labels:
+    app.kubernetes.io/name: tax-pay-sys
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tax-pay-sys
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tax-pay-sys
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: tax-pay-sys
+          image: ghcr.io/your-org/cyan-business/tax-pay-sys:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8002
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tax-pay-sys
+  labels:
+    app.kubernetes.io/name: tax-pay-sys
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: tax-pay-sys
+  ports:
+    - name: http
+      port: 8002
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: factor-service
+  labels:
+    app.kubernetes.io/name: factor-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: factor-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: factor-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: factor-service
+          image: ghcr.io/your-org/cyan-business/factor-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8003
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: factor-service
+  labels:
+    app.kubernetes.io/name: factor-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: factor-service
+  ports:
+    - name: http
+      port: 8003
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buyer-service
+  labels:
+    app.kubernetes.io/name: buyer-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: buyer-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: buyer-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: buyer-service
+          image: ghcr.io/your-org/cyan-business/buyer-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8004
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: buyer-service
+  labels:
+    app.kubernetes.io/name: buyer-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: buyer-service
+  ports:
+    - name: http
+      port: 8004
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  labels:
+    app.kubernetes.io/name: product-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: product-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: product-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: product-service
+          image: ghcr.io/your-org/cyan-business/product-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8005
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  labels:
+    app.kubernetes.io/name: product-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: product-service
+  ports:
+    - name: http
+      port: 8005
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-service
+  labels:
+    app.kubernetes.io/name: client-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: client-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: client-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: client-service
+          image: ghcr.io/your-org/cyan-business/client-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8010
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-service
+  labels:
+    app.kubernetes.io/name: client-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: client-service
+  ports:
+    - name: http
+      port: 8010
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sso-auth-service
+  labels:
+    app.kubernetes.io/name: sso-auth-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sso-auth-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sso-auth-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: sso-auth-service
+          image: ghcr.io/your-org/cyan-business/sso-auth-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9001
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sso-auth-service
+  labels:
+    app.kubernetes.io/name: sso-auth-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: sso-auth-service
+  ports:
+    - name: http
+      port: 9001
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sso-user-service
+  labels:
+    app.kubernetes.io/name: sso-user-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sso-user-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sso-user-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: sso-user-service
+          image: ghcr.io/your-org/cyan-business/sso-user-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9002
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sso-user-service
+  labels:
+    app.kubernetes.io/name: sso-user-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: sso-user-service
+  ports:
+    - name: http
+      port: 9002
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sso-captcha-service
+  labels:
+    app.kubernetes.io/name: sso-captcha-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sso-captcha-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sso-captcha-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: sso-captcha-service
+          image: ghcr.io/your-org/cyan-business/sso-captcha-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9003
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sso-captcha-service
+  labels:
+    app.kubernetes.io/name: sso-captcha-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: sso-captcha-service
+  ports:
+    - name: http
+      port: 9003
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sso-otp-service
+  labels:
+    app.kubernetes.io/name: sso-otp-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sso-otp-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sso-otp-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: sso-otp-service
+          image: ghcr.io/your-org/cyan-business/sso-otp-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9004
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sso-otp-service
+  labels:
+    app.kubernetes.io/name: sso-otp-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: sso-otp-service
+  ports:
+    - name: http
+      port: 9004
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sso-session-service
+  labels:
+    app.kubernetes.io/name: sso-session-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sso-session-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sso-session-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: sso-session-service
+          image: ghcr.io/your-org/cyan-business/sso-session-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9005
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sso-session-service
+  labels:
+    app.kubernetes.io/name: sso-session-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: sso-session-service
+  ports:
+    - name: http
+      port: 9005
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sso-fido-service
+  labels:
+    app.kubernetes.io/name: sso-fido-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sso-fido-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sso-fido-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: sso-fido-service
+          image: ghcr.io/your-org/cyan-business/sso-fido-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9006
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sso-fido-service
+  labels:
+    app.kubernetes.io/name: sso-fido-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: sso-fido-service
+  ports:
+    - name: http
+      port: 9006
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: content-service
+  labels:
+    app.kubernetes.io/name: content-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: content-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: content-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: content-service
+          image: ghcr.io/your-org/cyan-business/content-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9101
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: content-service
+  labels:
+    app.kubernetes.io/name: content-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: content-service
+  ports:
+    - name: http
+      port: 9101
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-service
+  labels:
+    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: catalog-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: catalog-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: catalog-service
+          image: ghcr.io/your-org/cyan-business/catalog-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9102
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-service
+  labels:
+    app.kubernetes.io/name: catalog-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: catalog-service
+  ports:
+    - name: http
+      port: 9102
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-service
+  labels:
+    app.kubernetes.io/name: crm-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: crm-service
+          image: ghcr.io/your-org/cyan-business/crm-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9103
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crm-service
+  labels:
+    app.kubernetes.io/name: crm-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: crm-service
+  ports:
+    - name: http
+      port: 9103
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: commerce-service
+  labels:
+    app.kubernetes.io/name: commerce-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: commerce-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: commerce-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: commerce-service
+          image: ghcr.io/your-org/cyan-business/commerce-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9104
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: commerce-service
+  labels:
+    app.kubernetes.io/name: commerce-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: commerce-service
+  ports:
+    - name: http
+      port: 9104
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-service
+  labels:
+    app.kubernetes.io/name: finance-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: finance-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: finance-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: finance-service
+          image: ghcr.io/your-org/cyan-business/finance-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9105
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-service
+  labels:
+    app.kubernetes.io/name: finance-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: finance-service
+  ports:
+    - name: http
+      port: 9105
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  labels:
+    app.kubernetes.io/name: inventory-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: inventory-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: inventory-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: inventory-service
+          image: ghcr.io/your-org/cyan-business/inventory-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9106
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  labels:
+    app.kubernetes.io/name: inventory-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: inventory-service
+  ports:
+    - name: http
+      port: 9106
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-service
+  labels:
+    app.kubernetes.io/name: report-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: report-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: report-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: report-service
+          image: ghcr.io/your-org/cyan-business/report-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9107
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: report-service
+  labels:
+    app.kubernetes.io/name: report-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: report-service
+  ports:
+    - name: http
+      port: 9107
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor-service
+  labels:
+    app.kubernetes.io/name: processor-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: processor-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: processor-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: processor-service
+          image: ghcr.io/your-org/cyan-business/processor-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9108
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: processor-service
+  labels:
+    app.kubernetes.io/name: processor-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: processor-service
+  ports:
+    - name: http
+      port: 9108
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-service
+  labels:
+    app.kubernetes.io/name: event-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: event-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: event-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: event-service
+          image: ghcr.io/your-org/cyan-business/event-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9109
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: event-service
+  labels:
+    app.kubernetes.io/name: event-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: event-service
+  ports:
+    - name: http
+      port: 9109
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-automation-service
+  labels:
+    app.kubernetes.io/name: crm-automation-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: crm-automation-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: crm-automation-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: crm-automation-service
+          image: ghcr.io/your-org/cyan-business/crm-automation-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9110
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crm-automation-service
+  labels:
+    app.kubernetes.io/name: crm-automation-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: crm-automation-service
+  ports:
+    - name: http
+      port: 9110
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finance-automation-service
+  labels:
+    app.kubernetes.io/name: finance-automation-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: finance-automation-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: finance-automation-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: finance-automation-service
+          image: ghcr.io/your-org/cyan-business/finance-automation-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9111
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finance-automation-service
+  labels:
+    app.kubernetes.io/name: finance-automation-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: finance-automation-service
+  ports:
+    - name: http
+      port: 9111
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-automation-service
+  labels:
+    app.kubernetes.io/name: inventory-automation-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: inventory-automation-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: inventory-automation-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: inventory-automation-service
+          image: ghcr.io/your-org/cyan-business/inventory-automation-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9112
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-automation-service
+  labels:
+    app.kubernetes.io/name: inventory-automation-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: inventory-automation-service
+  ports:
+    - name: http
+      port: 9112
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-automation-service
+  labels:
+    app.kubernetes.io/name: report-automation-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: report-automation-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: report-automation-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: report-automation-service
+          image: ghcr.io/your-org/cyan-business/report-automation-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9113
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: report-automation-service
+  labels:
+    app.kubernetes.io/name: report-automation-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: report-automation-service
+  ports:
+    - name: http
+      port: 9113
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  labels:
+    app.kubernetes.io/name: payment-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: payment-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: payment-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: payment-service
+          image: ghcr.io/your-org/cyan-business/payment-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9114
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  labels:
+    app.kubernetes.io/name: payment-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: payment-service
+  ports:
+    - name: http
+      port: 9114
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storefront-service
+  labels:
+    app.kubernetes.io/name: storefront-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: storefront-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: storefront-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: storefront-service
+          image: ghcr.io/your-org/cyan-business/storefront-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9115
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storefront-service
+  labels:
+    app.kubernetes.io/name: storefront-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: storefront-service
+  ports:
+    - name: http
+      port: 9115
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-service
+  labels:
+    app.kubernetes.io/name: media-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: media-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: media-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: media-service
+          image: ghcr.io/your-org/cyan-business/media-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9116
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-service
+  labels:
+    app.kubernetes.io/name: media-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: media-service
+  ports:
+    - name: http
+      port: 9116
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-service
+  labels:
+    app.kubernetes.io/name: cart-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cart-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cart-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: cart-service
+          image: ghcr.io/your-org/cyan-business/cart-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9117
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-service
+  labels:
+    app.kubernetes.io/name: cart-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: cart-service
+  ports:
+    - name: http
+      port: 9117
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-service
+  labels:
+    app.kubernetes.io/name: checkout-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: checkout-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: checkout-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: checkout-service
+          image: ghcr.io/your-org/cyan-business/checkout-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9118
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: checkout-service
+  labels:
+    app.kubernetes.io/name: checkout-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: checkout-service
+  ports:
+    - name: http
+      port: 9118
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bpm-service
+  labels:
+    app.kubernetes.io/name: bpm-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bpm-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bpm-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: bpm-service
+          image: ghcr.io/your-org/cyan-business/bpm-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9119
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bpm-service
+  labels:
+    app.kubernetes.io/name: bpm-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: bpm-service
+  ports:
+    - name: http
+      port: 9119
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: automation-orchestrator-service
+  labels:
+    app.kubernetes.io/name: automation-orchestrator-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: automation-orchestrator-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: automation-orchestrator-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: automation-orchestrator-service
+          image: ghcr.io/your-org/cyan-business/automation-orchestrator-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9120
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: automation-orchestrator-service
+  labels:
+    app.kubernetes.io/name: automation-orchestrator-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: automation-orchestrator-service
+  ports:
+    - name: http
+      port: 9120
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-orchestrator-service
+  labels:
+    app.kubernetes.io/name: ai-orchestrator-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ai-orchestrator-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ai-orchestrator-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: ai-orchestrator-service
+          image: ghcr.io/your-org/cyan-business/ai-orchestrator-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9121
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-orchestrator-service
+  labels:
+    app.kubernetes.io/name: ai-orchestrator-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: ai-orchestrator-service
+  ports:
+    - name: http
+      port: 9121
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  labels:
+    app.kubernetes.io/name: notification-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: notification-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: notification-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: notification-service
+          image: ghcr.io/your-org/cyan-business/notification-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9122
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service
+  labels:
+    app.kubernetes.io/name: notification-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: notification-service
+  ports:
+    - name: http
+      port: 9122
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-orchestrator-service
+  labels:
+    app.kubernetes.io/name: payment-orchestrator-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: payment-orchestrator-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: payment-orchestrator-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: payment-orchestrator-service
+          image: ghcr.io/your-org/cyan-business/payment-orchestrator-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9123
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-orchestrator-service
+  labels:
+    app.kubernetes.io/name: payment-orchestrator-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: payment-orchestrator-service
+  ports:
+    - name: http
+      port: 9123
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pricing-promotion-service
+  labels:
+    app.kubernetes.io/name: pricing-promotion-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pricing-promotion-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pricing-promotion-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: pricing-promotion-service
+          image: ghcr.io/your-org/cyan-business/pricing-promotion-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9124
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pricing-promotion-service
+  labels:
+    app.kubernetes.io/name: pricing-promotion-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: pricing-promotion-service
+  ports:
+    - name: http
+      port: 9124
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-index-service
+  labels:
+    app.kubernetes.io/name: search-index-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: search-index-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: search-index-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: search-index-service
+          image: ghcr.io/your-org/cyan-business/search-index-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9125
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: search-index-service
+  labels:
+    app.kubernetes.io/name: search-index-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: search-index-service
+  ports:
+    - name: http
+      port: 9125
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bot-adapter-service
+  labels:
+    app.kubernetes.io/name: bot-adapter-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bot-adapter-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: bot-adapter-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: bot-adapter-service
+          image: ghcr.io/your-org/cyan-business/bot-adapter-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9126
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bot-adapter-service
+  labels:
+    app.kubernetes.io/name: bot-adapter-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: bot-adapter-service
+  ports:
+    - name: http
+      port: 9126
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: batch-worker-service
+  labels:
+    app.kubernetes.io/name: batch-worker-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: batch-worker-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: batch-worker-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: batch-worker-service
+          image: ghcr.io/your-org/cyan-business/batch-worker-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9127
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+            - name: EUREKA_CLIENT_ENABLED
+              value: "false"
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: batch-worker-service
+  labels:
+    app.kubernetes.io/name: batch-worker-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: batch-worker-service
+  ports:
+    - name: http
+      port: 9127
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-docs-service
+  labels:
+    app.kubernetes.io/name: api-docs-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api-docs-service
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api-docs-service
+        app.kubernetes.io/part-of: cyan-business
+    spec:
+      containers:
+        - name: api-docs-service
+          image: ghcr.io/your-org/cyan-business/api-docs-service:develop
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9128
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: server
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75.0
+            - name: PLATFORM_API_DOCS_TARGETS_JSON
+              value: >-
+                [
+                  {"serviceKey":"sso-auth-service","baseUrl":"http://sso-auth-service:9001","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-user-service","baseUrl":"http://sso-user-service:9002","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-captcha-service","baseUrl":"http://sso-captcha-service:9003","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-otp-service","baseUrl":"http://sso-otp-service:9004","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-session-service","baseUrl":"http://sso-session-service:9005","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"sso-fido-service","baseUrl":"http://sso-fido-service:9006","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"content-service","baseUrl":"http://content-service:9101","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"catalog-service","baseUrl":"http://catalog-service:9102","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"crm-service","baseUrl":"http://crm-service:9103","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"commerce-service","baseUrl":"http://commerce-service:9104","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"finance-service","baseUrl":"http://finance-service:9105","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"inventory-service","baseUrl":"http://inventory-service:9106","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"report-service","baseUrl":"http://report-service:9107","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"processor-service","baseUrl":"http://processor-service:9108","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"event-service","baseUrl":"http://event-service:9109","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"crm-automation-service","baseUrl":"http://crm-automation-service:9110","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"finance-automation-service","baseUrl":"http://finance-automation-service:9111","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"inventory-automation-service","baseUrl":"http://inventory-automation-service:9112","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"report-automation-service","baseUrl":"http://report-automation-service:9113","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"payment-service","baseUrl":"http://payment-service:9114","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"storefront-service","baseUrl":"http://storefront-service:9115","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"media-service","baseUrl":"http://media-service:9116","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"cart-service","baseUrl":"http://cart-service:9117","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"checkout-service","baseUrl":"http://checkout-service:9118","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"bpm-service","baseUrl":"http://bpm-service:9119","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"automation-orchestrator-service","baseUrl":"http://automation-orchestrator-service:9120","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"ai-orchestrator-service","baseUrl":"http://ai-orchestrator-service:9121","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"notification-service","baseUrl":"http://notification-service:9122","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"payment-orchestrator-service","baseUrl":"http://payment-orchestrator-service:9123","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"pricing-promotion-service","baseUrl":"http://pricing-promotion-service:9124","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"search-index-service","baseUrl":"http://search-index-service:9125","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"bot-adapter-service","baseUrl":"http://bot-adapter-service:9126","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"batch-worker-service","baseUrl":"http://batch-worker-service:9127","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"tax-pay-sys","baseUrl":"http://tax-pay-sys:8002","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"factor-service","baseUrl":"http://factor-service:8003","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"buyer-service","baseUrl":"http://buyer-service:8004","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"product-service","baseUrl":"http://product-service:8005","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"},
+                  {"serviceKey":"client-service","baseUrl":"http://client-service:8010","username":"platform_docs","passwordEnvironmentVariable":"PLATFORM_OPENAPI_DOCS_PASSWORD"}
+                ]
+          envFrom:
+            - secretRef:
+                name: cyan-platform-secrets
+                optional: true
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-docs-service
+  labels:
+    app.kubernetes.io/name: api-docs-service
+    app.kubernetes.io/part-of: cyan-business
+spec:
+  selector:
+    app.kubernetes.io/name: api-docs-service
+  ports:
+    - name: http
+      port: 9128
+      targetPort: http

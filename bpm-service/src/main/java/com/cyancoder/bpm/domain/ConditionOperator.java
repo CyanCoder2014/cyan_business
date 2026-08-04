@@ -7,6 +7,12 @@ public enum ConditionOperator {
     GTE,
     LT,
     LTE,
+    BEFORE,
+    AFTER,
+    ON_OR_BEFORE,
+    ON_OR_AFTER,
+    BETWEEN,
+    NOT_BETWEEN,
     IN,
     NOT_IN,
     EXISTS,
@@ -15,7 +21,8 @@ public enum ConditionOperator {
     EMPTY,
     NOT_EMPTY,
     CONTAINS,
+    CONTAINS_ANY,
     STARTS_WITH,
-    ENDS_WITH
+    ENDS_WITH,
+    MATCHES
 }
-

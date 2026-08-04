@@ -1,32 +1,6 @@
-import { promises as fs } from "fs";
-import path from "path";
 import type { ClientAppDraft, ProjectDraft } from "@/lib/types";
-import { seedDrafts } from "@/lib/draft-store";
-
-const registryPath = path.join(process.cwd(), "data", "project-drafts.json");
-const platformBaseUrl = process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:8001";
-
-async function ensureDir() {
-  await fs.mkdir(path.dirname(registryPath), { recursive: true });
-}
-
-async function readRegistryFile(): Promise<ProjectDraft[]> {
-  try {
-    const raw = await fs.readFile(registryPath, "utf8");
-    const parsed = JSON.parse(raw) as ProjectDraft[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return [];
-    }
-    throw error;
-  }
-}
-
-async function writeRegistryFile(drafts: ProjectDraft[]) {
-  await ensureDir();
-  await fs.writeFile(registryPath, `${JSON.stringify(drafts, null, 2)}\n`, "utf8");
-}
+import { withServiceInventory } from "@/lib/platform-service-inventory";
+const platformBaseUrl = process.env.AI_ORCHESTRATOR_SERVICE_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:9121";
 
 function mapClientDraft(draft: ClientAppDraft): ProjectDraft {
   return {
@@ -81,21 +55,21 @@ async function upsertBackendDraft(draft: ProjectDraft): Promise<ProjectDraft | n
     if (existing) {
       const updated = await requestPlatformJson<ClientAppDraft>(`/endpoint/ai-orchestrator/drafts/${draft.id}`, {
         method: "PATCH",
-        body: JSON.stringify({
+        body: JSON.stringify(withServiceInventory({
           prompt: draft.prompt,
           title: draft.title,
           answersPatch: {
             generatedDsl: draft.dsl,
             nextQuestions: draft.nextQuestions
           }
-        })
+        }))
       });
       return mapClientDraft(updated);
     }
 
     const created = await requestPlatformJson<ClientAppDraft>("/endpoint/ai-orchestrator/drafts", {
       method: "POST",
-      body: JSON.stringify({
+      body: JSON.stringify(withServiceInventory({
         appType: draft.dsl.app.type,
         tenantKey: draft.tenantKey,
         siteKey: draft.siteKey,
@@ -105,7 +79,7 @@ async function upsertBackendDraft(draft: ProjectDraft): Promise<ProjectDraft | n
           generatedDsl: draft.dsl,
           nextQuestions: draft.nextQuestions
         }
-      })
+      }))
     });
     return mapClientDraft(created);
   } catch {
@@ -114,41 +88,17 @@ async function upsertBackendDraft(draft: ProjectDraft): Promise<ProjectDraft | n
 }
 
 export async function listProjectDrafts(): Promise<ProjectDraft[]> {
-  try {
-    const backendDrafts = await listBackendDrafts();
-    if (backendDrafts.length > 0) {
-      return backendDrafts;
-    }
-  } catch {
-    // Local registry remains a development fallback when the orchestrator is not running.
-  }
-
-  const stored = await readRegistryFile();
-  if (stored.length > 0) {
-    return stored;
-  }
-  const seeded = seedDrafts();
-  await writeRegistryFile(seeded);
-  return seeded;
+  return listBackendDrafts();
 }
 
 export async function getProjectDraft(projectId: string): Promise<ProjectDraft | null> {
-  const backendDraft = await getBackendDraft(projectId);
-  if (backendDraft) {
-    return backendDraft;
-  }
-  const drafts = await listProjectDrafts();
-  return drafts.find((draft) => draft.id === projectId) ?? null;
+  return getBackendDraft(projectId);
 }
 
 export async function upsertProjectDraft(draft: ProjectDraft): Promise<ProjectDraft[]> {
   const backendDraft = await upsertBackendDraft(draft);
-  if (backendDraft) {
-    return listProjectDrafts();
+  if (!backendDraft) {
+    throw new Error("Draft could not be saved in ai-orchestrator-service");
   }
-
-  const drafts = await listProjectDrafts();
-  const nextDrafts = [draft, ...drafts.filter((item) => item.id !== draft.id)];
-  await writeRegistryFile(nextDrafts);
-  return nextDrafts;
+  return listProjectDrafts();
 }

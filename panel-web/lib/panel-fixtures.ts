@@ -5,34 +5,6 @@ export type StatCard = {
   tone?: "blue" | "green" | "violet" | "amber";
 };
 
-export const fallbackStats: StatCard[] = [
-  { label: "Visitors", value: "12,540", delta: "+18%", tone: "blue" },
-  { label: "Orders", value: "2,843", delta: "+12%", tone: "green" },
-  { label: "Publish readiness", value: "92%", delta: "8 checks left", tone: "violet" },
-  { label: "Low-stock alerts", value: "23", delta: "5 urgent", tone: "amber" }
-];
-
-export const dashboardActivities = [
-  {
-    en: "Homepage sections refreshed and republished.",
-    fa: "صفحه اصلی به‌روزرسانی و دوباره منتشر شد.",
-    timeEn: "2 hours ago",
-    timeFa: "۲ ساعت پیش"
-  },
-  {
-    en: "CRM pipeline gained a new follow-up stage.",
-    fa: "به پایپ‌لاین CRM یک مرحله پیگیری جدید اضافه شد.",
-    timeEn: "6 hours ago",
-    timeFa: "۶ ساعت پیش"
-  },
-  {
-    en: "Support bot quick replies were improved.",
-    fa: "پاسخ‌های سریع ربات پشتیبانی بهبود پیدا کرد.",
-    timeEn: "1 day ago",
-    timeFa: "۱ روز پیش"
-  }
-];
-
 export const dashboardCapabilityCards = [
   {
     key: "studio",

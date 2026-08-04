@@ -1,5 +1,6 @@
 import type {
   AutomationExecution,
+  BatchRun,
   ClientSummary,
   IamUserAccessSummary,
   NotificationDispatchResponse,
@@ -13,7 +14,7 @@ import type {
   SearchSuggestionResponse,
   UserSummary
 } from "@/lib/types";
-import { platformAuthHeaders } from "@/lib/platform-auth";
+import { platformFetch } from "@/lib/platform-auth";
 
 type ServiceKey =
   | "sso-user-service"
@@ -22,8 +23,10 @@ type ServiceKey =
   | "notification-service"
   | "search-index-service"
   | "automation-orchestrator-service"
+  | "batch-worker-service"
   | "payment-service"
-  | "payment-orchestrator-service";
+  | "payment-orchestrator-service"
+  | "api-docs-service";
 
 type ScopedRequest = {
   tenantKey?: string;
@@ -33,9 +36,6 @@ type ScopedRequest = {
 async function requestJson<T>(serviceKey: ServiceKey, path: string, init?: RequestInit & ScopedRequest): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set("Content-Type", "application/json");
-  for (const [key, value] of Object.entries(platformAuthHeaders())) {
-    headers.set(key, value);
-  }
   if (init?.tenantKey) {
     headers.set("X-Tenant-Key", init.tenantKey);
   }
@@ -43,7 +43,7 @@ async function requestJson<T>(serviceKey: ServiceKey, path: string, init?: Reque
     headers.set("X-Site-Key", init.siteKey);
   }
 
-  const response = await fetch(`/api/platform/service/${serviceKey}${path}`, {
+  const response = await platformFetch(`/api/platform/service/${serviceKey}${path}`, {
     ...init,
     headers,
     cache: "no-store"
@@ -130,6 +130,106 @@ export function cancelAutomationExecution(executionId: string) {
     method: "POST",
     body: JSON.stringify({})
   });
+}
+
+export function saveAutomationFlow(request: Record<string, unknown>, tenantKey: string, siteKey: string) {
+  return requestJson<Record<string, unknown>>("automation-orchestrator-service", "/endpoint/automation-flows", {
+    method: "POST",
+    body: JSON.stringify(request),
+    tenantKey,
+    siteKey
+  });
+}
+
+export function listAutomationFlows(tenantKey: string, siteKey: string) {
+  return requestJson<Array<Record<string, unknown>>>("automation-orchestrator-service", "/endpoint/automation-flows", {
+    method: "GET",
+    tenantKey,
+    siteKey
+  });
+}
+
+export function transitionAutomationFlow(
+  flowKey: string,
+  version: number,
+  action: "SUBMIT" | "APPROVE" | "ACTIVATE",
+  tenantKey: string,
+  siteKey: string
+) {
+  return requestJson<Record<string, unknown>>(
+    "automation-orchestrator-service",
+    `/endpoint/automation-flows/${encodeURIComponent(flowKey)}/versions/${version}/${action}`,
+    { method: "POST", body: JSON.stringify({}), tenantKey, siteKey }
+  );
+}
+
+export function saveBatchDefinition(request: Record<string, unknown>, tenantKey: string, siteKey: string) {
+  return requestJson<Record<string, unknown>>("batch-worker-service", "/endpoint/batch/definitions", {
+    method: "POST",
+    body: JSON.stringify(request),
+    tenantKey,
+    siteKey
+  });
+}
+
+export function startBatchRun(definitionKey: string, runKey: string, tenantKey: string, siteKey: string) {
+  return requestJson<BatchRun>(
+    "batch-worker-service",
+    `/endpoint/batch/definitions/${encodeURIComponent(definitionKey)}/runs`,
+    { method: "POST", body: JSON.stringify({ runKey }), tenantKey, siteKey }
+  );
+}
+
+export function listBatchRuns(tenantKey: string, siteKey: string) {
+  return requestJson<BatchRun[]>("batch-worker-service", "/endpoint/batch/runs?limit=50", {
+    method: "GET",
+    tenantKey,
+    siteKey
+  });
+}
+
+export type ApiDocsServiceSummary = {
+  serviceKey: string;
+  baseUrl: string;
+  status: "AVAILABLE" | "UNAVAILABLE";
+  title?: string | null;
+  version?: string | null;
+  pathCount: number;
+  fetchedAt: string;
+  error?: string | null;
+};
+
+export type OpenApiDocument = {
+  openapi?: string;
+  info?: {
+    title?: string;
+    description?: string;
+    version?: string;
+  };
+  paths?: Record<string, Record<string, {
+    summary?: string;
+    operationId?: string;
+    description?: string;
+    security?: Array<Record<string, unknown>>;
+    "x-platform-auth"?: "NONE" | "BEARER" | "BASIC";
+  }>>;
+  components?: Record<string, unknown>;
+};
+
+export function listApiDocsServices() {
+  return requestJson<ApiDocsServiceSummary[]>(
+    "api-docs-service",
+    "/endpoint/api-docs/services",
+    { method: "GET" }
+  );
+}
+
+export function getApiDocsService(serviceKey: string, refresh = false) {
+  return requestJson<OpenApiDocument>(
+    "api-docs-service",
+    `/endpoint/api-docs/services/${encodeURIComponent(serviceKey)}?refresh=${refresh}`,
+    { method: "GET" }
+  );
 }
 
 export function listPaymentMethods() {
@@ -264,6 +364,10 @@ export function resolveIamAccess(username: string, clientId?: string) {
 
 export function listIamUsers() {
   return requestJson<UserSummary[]>("sso-user-service", "/api/sso/users", { method: "GET" });
+}
+
+export function getIamUser(username: string) {
+  return requestJson<UserSummary>("sso-user-service", `/api/sso/users/${encodeURIComponent(username)}`, { method: "GET" });
 }
 
 export function createIamUser(request: {

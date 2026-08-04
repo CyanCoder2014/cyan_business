@@ -1,0 +1,444 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8001"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Automation Orchestrator Internal"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/automation-orchestrator/executions/start": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Start Automation Execution",
+        "description": "Start Automation Execution for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "blockKey": "credit-check",
+                "automationFlowKey": "customer-credit-score-v1",
+                "executionMode": "ASYNC",
+                "failurePolicy": "MARK_FAILED",
+                "correlationKey": "corr-1001",
+                "callbackPath": "/public/bpm/async-actions/callbacks/corr-1001",
+                "tenantKey": "{{tenant_key}}",
+                "siteKey": "{{site_key}}",
+                "input": {
+                  "customerKey": "customer-1001"
+                },
+                "context": {
+                  "objectId": "{{object_id}}"
+                },
+                "maxRetries": 2,
+                "timeoutSeconds": 120,
+                "delayMillis": 0,
+                "idempotencyKey": "credit-customer-1001"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Get Automation Execution",
+        "description": "Get Automation Execution for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/cancel": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Cancel Automation Execution",
+        "description": "Cancel Automation Execution for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/steps": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "List Automation Execution Steps",
+        "description": "List Automation Execution Steps for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/dead-letters": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "List Automation Dead Letters",
+        "description": "List Automation Dead Letters for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/dead-letters/{deadLetterId}/requeue": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Requeue Automation Dead Letter",
+        "description": "Requeue Automation Dead Letter for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "deadLetterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{dead_letter_id}}"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/metrics": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Get Automation Metrics",
+        "description": "Get Automation Metrics for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-orchestrator/executions": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "List Automation Executions",
+        "description": "List Automation Executions for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "FAILED"
+          }
+        ]
+      }
+    },
+    "/internal/automation-orchestrator/executions/{executionId}/retry": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator Internal"
+        ],
+        "summary": "Retry Automation Execution",
+        "description": "Retry Automation Execution for Automation Orchestrator Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "fromFailedNode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "true"
+          }
+        ]
+      }
+    }
+  }
+}

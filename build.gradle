@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.0.2'
-	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.springframework.boot' version '4.0.6'
+	id 'io.spring.dependency-management' version '1.1.7'
 
 }
 
@@ -9,7 +9,7 @@ group = 'com.cyancoder'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+	sourceCompatibility = '25'
 }
 
 repositories {
@@ -30,18 +30,26 @@ allprojects {
 
 subprojects {
 	configurations.configureEach {
-		resolutionStrategy.force 'org.projectlombok:lombok:1.18.34'
+		resolutionStrategy.force 'org.projectlombok:lombok:1.18.46'
 	}
 
 	plugins.withId('org.springframework.boot') {
 		dependencies {
 			implementation project(':platform-error-handling')
+			if (project.name != 'generic') {
+				implementation project(':platform-openapi-core')
+				if (project.name == 'api-gateway') {
+					implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:3.0.3'
+				} else {
+					implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
+				}
+			}
 		}
 	}
 }
 
 ext {
-	set('springCloudVersion', "2022.0.4")
+	set('springCloudVersion', "2025.1.1")
 }
 
 dependencies {

@@ -1,0 +1,207 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8001"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Automation Public"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/public/automation-flows/node-structures": {
+      "get": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "List Automation Node Structures",
+        "description": "List Automation Node Structures for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/automation-flows/edge-structures": {
+      "get": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "Get Automation Edge Structures",
+        "description": "Get Automation Edge Structures for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/automation-orchestrator/webhooks/{flowKey}": {
+      "post": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "Trigger Automation Webhook",
+        "description": "Trigger Automation Webhook for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "customerKey": "customer-1001",
+                "event": "CUSTOMER_UPDATED"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/public/automation-orchestrator/executions/{executionId}/nodes/{nodeId}/callback": {
+      "post": {
+        "tags": [
+          "Automation Public"
+        ],
+        "summary": "Complete Automation Node Callback",
+        "description": "Complete Automation Node Callback for Automation Public.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "nodeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "http-callback"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "callbackId": "callback-1001",
+                "payload": {
+                  "status": "SUCCEEDED",
+                  "externalReference": "ext-1001"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

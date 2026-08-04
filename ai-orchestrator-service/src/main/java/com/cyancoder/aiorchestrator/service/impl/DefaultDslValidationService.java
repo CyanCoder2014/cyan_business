@@ -27,7 +27,9 @@ public class DefaultDslValidationService implements DslValidationService {
             throw new IllegalArgumentException("app.siteKey is required");
         }
 
-        Set<String> serviceKeys = platformMetadata.keySet();
+        Set<String> serviceKeys = platformMetadata.keySet().stream()
+                .filter(key -> key.endsWith("-service"))
+                .collect(Collectors.toSet());
         for (EntityBlueprint entity : dsl.getEntities()) {
             if (!serviceKeys.contains(entity.getServiceKey())) {
                 throw new IllegalArgumentException("Unknown serviceKey: " + entity.getServiceKey());
@@ -62,6 +64,9 @@ public class DefaultDslValidationService implements DslValidationService {
         }
 
         for (FlowBlueprint flow : dsl.getFlows()) {
+            if (!serviceKeys.contains("bpm-service")) {
+                throw new IllegalArgumentException("BPM flows require available service: bpm-service");
+            }
             if (!StringUtils.hasText(flow.getFlowKey())) {
                 throw new IllegalArgumentException("Flow flowKey is required");
             }
@@ -69,6 +74,28 @@ public class DefaultDslValidationService implements DslValidationService {
                 throw new IllegalArgumentException("Flow definition body is required");
             }
         }
+
+        Map<String, String> resourceOwners = Map.of(
+                "PROCESSOR_DEFINITION", "processor-service",
+                "AUTOMATION_FLOW", "automation-orchestrator-service",
+                "BATCH_DEFINITION", "batch-worker-service"
+        );
+        for (PlatformResourceBlueprint resource : dsl.getResources()) {
+            if (!StringUtils.hasText(resource.getResourceType())
+                    || !resourceOwners.containsKey(resource.getResourceType())) {
+                throw new IllegalArgumentException("Unsupported resourceType: " + resource.getResourceType());
+            }
+            String expectedService = resourceOwners.get(resource.getResourceType());
+            if (!expectedService.equals(resource.getServiceKey())) {
+                throw new IllegalArgumentException(resource.getResourceType()
+                        + " must use serviceKey " + expectedService);
+            }
+            if (!serviceKeys.contains(resource.getServiceKey())) {
+                throw new IllegalArgumentException("Resource service is not available: " + resource.getServiceKey());
+            }
+            if (!StringUtils.hasText(resource.getResourceKey()) || resource.getBody().isEmpty()) {
+                throw new IllegalArgumentException("Resource key and body are required");
+            }
+        }
     }
 }
-

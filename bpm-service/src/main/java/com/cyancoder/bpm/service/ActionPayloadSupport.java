@@ -19,6 +19,7 @@ final class ActionPayloadSupport {
             return readPath(object.getPayload(), expression.substring("payload.".length()));
         }
         return switch (expression) {
+            case "objectId" -> object.getId();
             case "actorUserId" -> actor;
             case "state" -> object.getState();
             case "assignee" -> object.getAssignee();
@@ -131,4 +132,3 @@ final class ActionPayloadSupport {
         return result;
     }
 }
-

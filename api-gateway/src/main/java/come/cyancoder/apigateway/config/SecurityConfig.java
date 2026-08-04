@@ -4,6 +4,7 @@ package come.cyancoder.apigateway.config;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -20,9 +21,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain springSecurityWebFilterChain(ServerHttpSecurity serverHttpSecurity, GlobalCorsProperties corsProperties){
-        serverHttpSecurity		.cors(cors -> cors.disable())
-                .csrf()
-                .disable()
+        serverHttpSecurity
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(corsSpec -> corsSpec.configurationSource(unused -> corsProperties.getCorsConfigurations().get("/**")))
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/eureka/**")
@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .permitAll()
                         .pathMatchers("/public/payment/**")
                         .permitAll()
+                        .pathMatchers("/public/automation-flows/**", "/public/automation-orchestrator/**")
+                        .permitAll()
                         .pathMatchers("/.well-known/**")
                         .permitAll()
                         .pathMatchers("/realms/cyan/protocol/openid-connect/**")
@@ -38,7 +40,7 @@ public class SecurityConfig {
                         .anyExchange()
                         .authenticated()
                 )
-                .oauth2ResourceServer(ServerHttpSecurity.OAuth2ResourceServerSpec::jwt);
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return serverHttpSecurity.build();
 
     }

@@ -2,12 +2,14 @@ export type PlatformAppType = "WEBSITE" | "BLOG" | "SHOP" | "CRM" | "FORM_FLOW" 
 
 export type GeneratePlatformAppRequest = {
   prompt: string;
+  appType?: PlatformAppType | string;
   tenantKey?: string;
   siteKey?: string;
   clientKey?: string;
   sessionId?: string;
   execute: boolean;
   answers?: Record<string, unknown>;
+  availableServiceKeys?: string[];
 };
 
 export type ProvisioningResult = {
@@ -15,6 +17,7 @@ export type ProvisioningResult = {
   createdDefinitions: Array<Record<string, unknown>>;
   createdRecords: Array<Record<string, unknown>>;
   createdFlows: Array<Record<string, unknown>>;
+  createdResources?: Array<Record<string, unknown>>;
   deliveryEndpoints: Array<Record<string, unknown>>;
   manualActions: string[];
 };
@@ -28,10 +31,12 @@ export type PlatformAppDslDefinition = {
     siteKey?: string;
     desiredDomain?: string;
     capabilities?: string[];
+    availableServiceKeys?: string[];
   };
   entities: Array<Record<string, unknown>>;
   routes: Array<Record<string, unknown>>;
   flows: Array<Record<string, unknown>>;
+  resources?: Array<Record<string, unknown>>;
   delivery: {
     publicApis: string[];
     botApis: string[];
@@ -44,7 +49,16 @@ export type GeneratePlatformAppResponse = {
   sessionId?: string | null;
   dsl: PlatformAppDslDefinition;
   nextQuestions: string[];
+  followUpQuestions?: FollowUpQuestion[];
   provisioningResult: ProvisioningResult | null;
+};
+
+export type FollowUpQuestion = {
+  key: string;
+  prompt: string;
+  required: boolean;
+  reason?: string | null;
+  suggestedAnswers?: string[];
 };
 
 export type AppBlueprint = {
@@ -98,6 +112,34 @@ export type ProvisioningRun = {
   result?: ProvisioningResult | null;
 };
 
+export type AiConversationMessage = {
+  messageId: string;
+  role: string;
+  content: string;
+  createdAt?: string;
+};
+
+export type AiConversationSession = {
+  id?: string;
+  sessionId: string;
+  channelType?: string | null;
+  tenantKey?: string | null;
+  siteKey?: string | null;
+  clientKey?: string | null;
+  draftId?: string | null;
+  appTypeHint?: string | null;
+  status: string;
+  messages: AiConversationMessage[];
+  extractedAnswers: Record<string, unknown>;
+  availableServiceKeys?: string[];
+  pendingQuestionKeys: string[];
+  pendingQuestions: string[];
+  latestPrompt?: string | null;
+  latestQuestion?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type DynamicServiceKey =
   | "content-service"
   | "catalog-service"
@@ -121,7 +163,7 @@ export type DynamicEntityTemplate = {
   entityType?: string;
   title?: string;
   description?: string;
-  definitionJson?: string;
+  definition?: Record<string, unknown>;
 };
 
 export type DynamicEntityDefinition = {
@@ -132,7 +174,7 @@ export type DynamicEntityDefinition = {
   siteKey?: string | null;
   entityType?: string;
   title?: string;
-  definitionJson: string;
+  definition: Record<string, unknown>;
   active?: boolean;
 };
 
@@ -324,10 +366,33 @@ export type SearchSuggestionResponse = {
 export type AutomationExecution = {
   executionId?: string;
   automationKey?: string;
+  blockKey?: string;
+  automationFlowKey?: string;
+  managedObjectId?: string;
+  idempotencyKey?: string;
+  correlationKey?: string;
   status?: string;
   startedAt?: string;
   finishedAt?: string;
+  snapshot?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  error?: Record<string, unknown>;
   [key: string]: unknown;
+};
+
+export type BatchRun = {
+  id: string;
+  definitionKey: string;
+  runKey: string;
+  status: "QUEUED" | "RUNNING" | "COMPLETED" | "FAILED";
+  batchExecutionId?: number;
+  readCount: number;
+  writeCount: number;
+  skipCount: number;
+  errorMessage?: string;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
 };
 
 export type PaymentMethodRequest = {

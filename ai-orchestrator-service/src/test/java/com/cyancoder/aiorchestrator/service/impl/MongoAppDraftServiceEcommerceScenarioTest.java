@@ -7,6 +7,8 @@ import com.cyancoder.aiorchestrator.domain.DraftStatus;
 import com.cyancoder.aiorchestrator.domain.EntityBlueprint;
 import com.cyancoder.aiorchestrator.repo.ClientAppDraftRepository;
 import com.cyancoder.aiorchestrator.service.BlueprintCatalogService;
+import com.cyancoder.aiorchestrator.service.ServiceAvailabilityResolver;
+import com.cyancoder.aiorchestrator.service.ServiceAvailabilitySnapshot;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +48,14 @@ class MongoAppDraftServiceEcommerceScenarioTest {
         )).thenReturn(Optional.empty());
 
         DefaultFollowUpQuestionService followUpQuestionService = new DefaultFollowUpQuestionService(blueprintCatalogService);
-        service = new MongoAppDraftService(repository, blueprintCatalogService, followUpQuestionService, new ObjectMapper());
+        ServiceAvailabilityResolver availabilityResolver = mock(ServiceAvailabilityResolver.class);
+        when(availabilityResolver.resolve(any())).thenReturn(new ServiceAvailabilitySnapshot(
+                List.of("content-service", "catalog-service", "storefront-service", "crm-service",
+                        "commerce-service", "checkout-service", "notification-service",
+                        "payment-orchestrator-service"),
+                "TEST"));
+        service = new MongoAppDraftService(repository, blueprintCatalogService, followUpQuestionService,
+                new ObjectMapper(), availabilityResolver);
     }
 
     @Test

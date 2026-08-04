@@ -3,6 +3,8 @@
 ## Summary
 `START_AUTOMATION_FLOW` has been replaced by `RUN_AUTOMATION_BLOCK`.
 
+The action now accepts either an active saved automation `flowKey` or a complete graph under `inlineFlow`. Execution is synchronous by default; flows containing `WAIT` or `WAIT_FOR_CALLBACK` must set `async: true`.
+
 The new model makes automation a first-class BPM concept instead of a generic async payload entry.
 
 ## Main Features

@@ -1,9 +1,12 @@
 HELP.md
+.DS_Store
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+**/data/*.lock.db
+**/data/*.trace.db
 
 ### STS ###
 .apt_generated

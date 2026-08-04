@@ -17,13 +17,15 @@ import com.cyancoder.aiorchestrator.service.AppDraftService;
 import com.cyancoder.aiorchestrator.service.ConversationSessionService;
 import com.cyancoder.aiorchestrator.service.FollowUpQuestionService;
 import com.cyancoder.aiorchestrator.service.RetrievalService;
+import com.cyancoder.aiorchestrator.service.ServiceAvailabilityResolver;
+import com.cyancoder.aiorchestrator.service.ServiceAvailabilitySnapshot;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -62,44 +64,49 @@ class AiPlatformGenerationControllerIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private JwtDecoder jwtDecoder;
 
-    @MockBean
+    @MockitoBean
     private LlmClient llmClient;
 
-    @MockBean
+    @MockitoBean
     private PlatformMetadataClient metadataClient;
 
-    @MockBean
+    @MockitoBean
     private PlatformProvisioningClient provisioningClient;
 
-    @MockBean
+    @MockitoBean
     private ProvisioningRunRepository provisioningRunRepository;
 
-    @MockBean
+    @MockitoBean
     private RetrievalService retrievalService;
 
-    @MockBean
+    @MockitoBean
     private AiPromptBuilder promptBuilder;
 
-    @MockBean
+    @MockitoBean
     private AppDraftService appDraftService;
 
-    @MockBean
+    @MockitoBean
     private FollowUpQuestionService followUpQuestionService;
 
-    @MockBean
+    @MockitoBean
     private ConversationSessionService conversationSessionService;
 
+    @MockitoBean
+    private ServiceAvailabilityResolver availabilityResolver;
     private static final Map<String, Object> BUILDER_PERMISSIONS = Map.of(
             "permissions", List.of("builder:use")
     );
 
     @BeforeEach
     void setUp() {
-        when(appDraftService.resolveKnownAppDraft(any(), any(), any(), any(), any())).thenReturn(Optional.empty());
-        when(metadataClient.fetchMetadata(anyString(), anyString())).thenReturn(platformMetadata());
+        ServiceAvailabilitySnapshot availability = new ServiceAvailabilitySnapshot(
+                List.of("content-service", "catalog-service", "storefront-service"), "REQUEST");
+        when(availabilityResolver.resolve(any())).thenReturn(availability);
+        when(appDraftService.resolveKnownAppDraft(any(), any(), any(), any(), any(), any())).thenReturn(Optional.empty());
+        when(metadataClient.fetchMetadata(anyString(), anyString(), any())).thenReturn(platformMetadata());
         when(retrievalService.retrieveContext(anyString(), anyMap(), any(), any(), any())).thenReturn(List.of("catalog-product template available"));
         when(promptBuilder.buildPlatformPrompt(anyString(), anyMap(), any(), anyString(), anyString())).thenReturn("compiled-platform-prompt");
     }

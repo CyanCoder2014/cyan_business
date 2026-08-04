@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.oauth2.server.resource.authentication.DelegatingJwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
@@ -30,8 +29,9 @@ public class DirectlyConfiguredJwkSetUri {
                         new KeycloakJwtRolesConverter());
 
         // Set up http security to use the JWT converter defined above
-        httpSecurity.oauth2ResourceServer().jwt().jwtAuthenticationConverter(
-                jwt -> new JwtAuthenticationToken(jwt, authoritiesConverter.convert(jwt)));
+        httpSecurity.oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
+                jwt.jwtAuthenticationConverter(authenticationToken ->
+                        new JwtAuthenticationToken(authenticationToken, authoritiesConverter.convert(authenticationToken)))));
 
         httpSecurity.authorizeHttpRequests(authorize -> authorize
                 // Only users with the role "user" can access the endpoint /user.

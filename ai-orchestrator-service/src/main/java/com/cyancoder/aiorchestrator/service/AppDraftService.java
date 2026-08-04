@@ -13,4 +13,9 @@ public interface AppDraftService {
     ClientAppDraft getDraft(String draftId);
     ClientAppDraft updateDraft(String draftId, UpdateDraftRequest request, String updatedBy);
     Optional<ClientAppDraft> resolveKnownAppDraft(String appType, String tenantKey, String siteKey, String clientKey, String prompt);
+    default Optional<ClientAppDraft> resolveKnownAppDraft(String appType, String tenantKey, String siteKey,
+                                                          String clientKey, String prompt,
+                                                          List<String> availableServiceKeys) {
+        return resolveKnownAppDraft(appType, tenantKey, siteKey, clientKey, prompt);
+    }
 }

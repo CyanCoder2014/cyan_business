@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-//@FeignClient(name = "factor-service")////////// need to consider :lb
-@FeignClient(url = "http://cyancoder.ir:8001", name = "factor")////////// need to consider :lb
+@FeignClient(url = "${factor.service.base-url:http://factor-service:8003}", name = "factor")
 public interface FactorClient {
 
 

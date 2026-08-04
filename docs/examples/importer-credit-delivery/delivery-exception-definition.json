@@ -1,0 +1,57 @@
+{
+  "entityKey": "delivery-exception",
+  "definition": {
+    "entityType": "BPM_FORM",
+    "title": "Loading Delivery Exception",
+    "fields": {
+      "batchRunId": {
+        "id": "batchRunId",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "skipCount": {
+        "id": "skipCount",
+        "type": "number",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "loadingKey": {
+        "id": "loadingKey",
+        "type": "string"
+      },
+      "customerKey": {
+        "id": "customerKey",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "failureCode": {
+        "id": "failureCode",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      },
+      "failureMessage": { "id": "failureMessage", "type": "string" },
+      "retryAfter": { "id": "retryAfter", "type": "string" },
+      "resolution": {
+        "id": "resolution",
+        "type": "string",
+        "validations": [
+          { "validation": "ENUM", "order": 1, "validationParams": { "values": ["RETRY", "RESCHEDULE", "CANCEL"] } }
+        ]
+      },
+      "operatorComment": {
+        "id": "operatorComment",
+        "type": "string",
+        "validations": [
+          { "validation": "REQUIRED", "order": 1 }
+        ]
+      }
+    }
+  }
+}

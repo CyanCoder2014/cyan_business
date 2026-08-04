@@ -3,12 +3,16 @@ import { NextResponse } from "next/server";
 const serviceBaseUrls: Record<string, string> = {
   "sso-user-service": process.env.SSO_USER_SERVICE_BASE_URL ?? "http://localhost:9002",
   "bot-adapter-service": process.env.BOT_ADAPTER_SERVICE_BASE_URL ?? "http://localhost:9126",
+  "ai-orchestrator-service": process.env.AI_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9121",
+  "bpm-service": process.env.BPM_SERVICE_BASE_URL ?? "http://localhost:9119",
   "storefront-service": process.env.STOREFRONT_SERVICE_BASE_URL ?? "http://localhost:9115",
   "notification-service": process.env.NOTIFICATION_SERVICE_BASE_URL ?? "http://localhost:9122",
-  "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9123",
-  "automation-orchestrator-service": process.env.AUTOMATION_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9132",
+  "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9125",
+  "automation-orchestrator-service": process.env.AUTOMATION_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9120",
+  "batch-worker-service": process.env.BATCH_WORKER_SERVICE_BASE_URL ?? "http://localhost:9127",
   "payment-service": process.env.PAYMENT_SERVICE_BASE_URL ?? "http://localhost:9114",
-  "payment-orchestrator-service": process.env.PAYMENT_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9125"
+  "payment-orchestrator-service": process.env.PAYMENT_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9123",
+  "api-docs-service": process.env.API_DOCS_SERVICE_BASE_URL ?? "http://localhost:9128"
 };
 
 type RouteContext = {

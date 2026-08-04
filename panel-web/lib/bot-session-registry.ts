@@ -1,144 +1,153 @@
-import { promises as fs } from "fs";
-import path from "path";
-import { seedDrafts } from "@/lib/draft-store";
-import type { BotConversationSession, BotMessage } from "@/lib/types";
+import type { AiConversationSession, BotConversationSession, BotMessage } from "@/lib/types";
+import { withServiceInventory } from "@/lib/platform-service-inventory";
 
-const registryPath = path.join(process.cwd(), "data", "bot-sessions.json");
+const platformBaseUrl = process.env.AI_ORCHESTRATOR_SERVICE_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:9121";
 
-async function ensureDir() {
-  await fs.mkdir(path.dirname(registryPath), { recursive: true });
+function mapConversationSession(session: AiConversationSession): BotConversationSession {
+  return {
+    id: session.sessionId,
+    channel: normalizeChannel(session.channelType),
+    title: session.latestPrompt ?? session.latestQuestion ?? session.draftId ?? session.sessionId,
+    tenantKey: session.tenantKey ?? "tenant-demo",
+    siteKey: session.siteKey ?? "site-commerce",
+    draftId: session.draftId ?? null,
+    status: normalizeStatus(session.status),
+    appType: normalizeAppType(session.appTypeHint),
+    lastPrompt: session.latestPrompt ?? "",
+    answers: session.extractedAnswers ?? {},
+    messages: (session.messages ?? []).map((message) => ({
+      id: message.messageId,
+      role: normalizeRole(message.role),
+      content: message.content,
+      createdAt: message.createdAt ?? session.updatedAt ?? session.createdAt ?? new Date().toISOString()
+    })),
+    createdAt: session.createdAt ?? new Date().toISOString(),
+    updatedAt: session.updatedAt ?? session.createdAt ?? new Date().toISOString()
+  };
 }
 
-function nowIso() {
-  return new Date().toISOString();
-}
+async function requestPlatformJson<T>(pathName: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`${platformBaseUrl}${pathName}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {})
+    },
+    cache: "no-store"
+  });
 
-function seedSessions(): BotConversationSession[] {
-  const now = "2025-05-08T00:00:00.000Z";
-  const seedDraft = seedDrafts()[0];
-  return [
-    {
-      id: "session-telegram-retail",
-      channel: "telegram",
-      title: "Retail onboarding thread",
-      tenantKey: "tenant-demo",
-      siteKey: "site-retail",
-      draftId: seedDraft.id,
-      status: "WAITING_FOR_ANSWERS",
-      appType: "MIXED_BUSINESS_APP",
-      lastPrompt: "Build a CRM and storefront app for a local retailer.",
-      answers: {
-        businessName: "Retail Demo",
-        preferredDomain: "retail-demo.example.com"
-      },
-      messages: [
-        {
-          id: "msg-1",
-          role: "assistant",
-          content: "What type of app do you want to create?",
-          createdAt: now
-        },
-        {
-          id: "msg-2",
-          role: "user",
-          content: "Build a CRM and storefront app for a local retailer.",
-          createdAt: now
-        }
-      ],
-      createdAt: now,
-      updatedAt: now
-    }
-  ];
-}
-
-async function readRegistryFile(): Promise<BotConversationSession[]> {
-  try {
-    const raw = await fs.readFile(registryPath, "utf8");
-    const parsed = JSON.parse(raw) as BotConversationSession[];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return [];
-    }
-    throw error;
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(body || `Request failed with status ${response.status}`);
   }
-}
 
-async function writeRegistryFile(sessions: BotConversationSession[]) {
-  await ensureDir();
-  await fs.writeFile(registryPath, `${JSON.stringify(sessions, null, 2)}\n`, "utf8");
+  return response.json() as Promise<T>;
 }
 
 export async function listBotSessions(): Promise<BotConversationSession[]> {
-  const stored = await readRegistryFile();
-  if (stored.length > 0) {
-    return stored;
-  }
-  const seeded = seedSessions();
-  await writeRegistryFile(seeded);
-  return seeded;
+  const sessions = await requestPlatformJson<AiConversationSession[]>("/endpoint/ai-orchestrator/sessions");
+  return sessions.map(mapConversationSession);
 }
 
 export async function getBotSession(sessionId: string): Promise<BotConversationSession | null> {
-  const sessions = await listBotSessions();
-  return sessions.find((session) => session.id === sessionId) ?? null;
+  try {
+    const session = await requestPlatformJson<AiConversationSession>(`/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}`);
+    return mapConversationSession(session);
+  } catch {
+    return null;
+  }
 }
 
-export async function upsertBotSession(session: BotConversationSession): Promise<BotConversationSession[]> {
-  const sessions = await listBotSessions();
-  const nextSessions = [session, ...sessions.filter((item) => item.id !== session.id)];
-  await writeRegistryFile(nextSessions);
-  return nextSessions;
+export async function upsertBotSession(_: BotConversationSession): Promise<BotConversationSession[]> {
+  throw new Error("Bot session replacement is not supported; use ai-orchestrator session endpoints directly.");
 }
 
 export async function createBotSession(input: Omit<BotConversationSession, "id" | "createdAt" | "updatedAt" | "messages"> & { messages?: BotMessage[] }): Promise<BotConversationSession> {
-  const session: BotConversationSession = {
-    id: `session-${input.channel}-${input.siteKey}-${Date.now()}`,
-    createdAt: nowIso(),
-    updatedAt: nowIso(),
-    messages: input.messages ?? [],
-    ...input
-  };
-  const sessions = await listBotSessions();
-  await writeRegistryFile([session, ...sessions]);
-  return session;
+  const created = await requestPlatformJson<AiConversationSession>("/endpoint/ai-orchestrator/sessions", {
+    method: "POST",
+    body: JSON.stringify(withServiceInventory({
+      channelType: input.channel.toUpperCase(),
+      tenantKey: input.tenantKey,
+      siteKey: input.siteKey,
+      clientKey: "panel",
+      draftId: input.draftId,
+      appTypeHint: input.appType,
+      title: input.title,
+      extractedAnswers: input.answers
+    }))
+  });
+  return mapConversationSession(created);
 }
 
 export async function appendBotMessage(sessionId: string, message: Omit<BotMessage, "id" | "createdAt">): Promise<BotConversationSession | null> {
-  const sessions = await listBotSessions();
-  const index = sessions.findIndex((session) => session.id === sessionId);
-  if (index === -1) {
+  try {
+    const session = await requestPlatformJson<AiConversationSession>(`/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}/message`, {
+      method: "POST",
+      body: JSON.stringify(withServiceInventory({
+        role: message.role.toUpperCase(),
+        content: message.content,
+        answersPatch: {}
+      }))
+    });
+    return mapConversationSession(session);
+  } catch {
     return null;
   }
-  const nextSession: BotConversationSession = {
-    ...sessions[index],
-    messages: [
-      ...sessions[index].messages,
-      {
-        id: `msg-${Date.now()}`,
-        createdAt: nowIso(),
-        ...message
-      }
-    ],
-    updatedAt: nowIso()
-  };
-  sessions[index] = nextSession;
-  await writeRegistryFile(sessions);
-  return nextSession;
 }
 
 export async function updateBotSession(sessionId: string, patch: Partial<BotConversationSession>): Promise<BotConversationSession | null> {
-  const sessions = await listBotSessions();
-  const index = sessions.findIndex((session) => session.id === sessionId);
-  if (index === -1) {
-    return null;
+  if (patch.answers && Object.keys(patch.answers).length > 0) {
+    try {
+      const session = await requestPlatformJson<AiConversationSession>(`/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}/message`, {
+        method: "POST",
+        body: JSON.stringify(withServiceInventory({
+          role: "SYSTEM",
+          content: patch.lastPrompt ?? patch.title ?? "Session update",
+          answersPatch: patch.answers
+        }))
+      });
+      return mapConversationSession(session);
+    } catch {
+      return null;
+    }
   }
-  const nextSession: BotConversationSession = {
-    ...sessions[index],
-    ...patch,
-    updatedAt: nowIso()
-  };
-  sessions[index] = nextSession;
-  await writeRegistryFile(sessions);
-  return nextSession;
+  return getBotSession(sessionId);
+}
+
+function normalizeChannel(value?: string | null): "telegram" | "bale" {
+  return value?.toLowerCase() === "bale" ? "bale" : "telegram";
+}
+
+function normalizeRole(value?: string | null): "user" | "assistant" | "system" {
+  const normalized = value?.toLowerCase();
+  if (normalized === "assistant" || normalized === "system") {
+    return normalized;
+  }
+  return "user";
+}
+
+function normalizeStatus(value?: string | null): BotConversationSession["status"] {
+  switch (value) {
+    case "WAITING_FOR_ANSWERS":
+    case "RESOLVED":
+    case "FAILED":
+      return value;
+    default:
+      return "OPEN";
+  }
+}
+
+function normalizeAppType(value?: string | null): BotConversationSession["appType"] {
+  switch (value) {
+    case "WEBSITE":
+    case "BLOG":
+    case "SHOP":
+    case "CRM":
+    case "FORM_FLOW":
+    case "BPM_PORTAL":
+    case "MIXED_BUSINESS_APP":
+      return value;
+    default:
+      return "MIXED_BUSINESS_APP";
+  }
 }

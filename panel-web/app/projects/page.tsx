@@ -8,20 +8,30 @@ import { createClientDraft, listBlueprints, listClientDrafts, provisionClientDra
 import type { AppBlueprint, ClientAppDraft } from "@/lib/types";
 
 export default function BlueprintsPage() {
-  const { locale } = usePanel();
+  const { locale, workspaceName, siteName } = usePanel();
   const [blueprints, setBlueprints] = useState<AppBlueprint[]>([]);
   const [drafts, setDrafts] = useState<ClientAppDraft[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([listBlueprints().catch(() => []), listClientDrafts().catch(() => [])]).then(([items, draftItems]) => {
-      setBlueprints(items);
-      setDrafts(draftItems);
+    Promise.allSettled([listBlueprints(), listClientDrafts()]).then(([blueprintsResult, draftsResult]) => {
+      const errors: string[] = [];
+      if (blueprintsResult.status === "fulfilled") {
+        setBlueprints(blueprintsResult.value);
+      } else {
+        errors.push(locale === "fa" ? "قالب‌ها بارگیری نشدند." : "Blueprints could not be loaded.");
+      }
+      if (draftsResult.status === "fulfilled") {
+        setDrafts(draftsResult.value);
+      } else {
+        errors.push(locale === "fa" ? "پیش‌نویس‌ها بارگیری نشدند." : "Drafts could not be loaded.");
+      }
+      setStatus(errors.length ? errors.join(" ") : null);
     });
-  }, []);
+  }, [locale]);
 
-  const cards = blueprints.length ? blueprints : fallbackBlueprints();
+  const cards = blueprints;
   const selected = cards[selectedIndex] ?? cards[0];
 
   async function generateFromBlueprint(blueprint: AppBlueprint) {
@@ -116,6 +126,12 @@ export default function BlueprintsPage() {
                 </div>
               </button>
             ))}
+            {!cards.length ? (
+              <div className="mini-card" style={{ gridColumn: "1 / -1" }}>
+                <strong>{locale === "fa" ? "قالبی از API دریافت نشد" : "No blueprints returned by API"}</strong>
+                <span className="muted-block">{locale === "fa" ? "سرویس ai-orchestrator باید blueprintهای فعال را ارائه کند." : "The ai-orchestrator service must expose active blueprints here."}</span>
+              </div>
+            ) : null}
           </div>
 
           <div className="data-table-shell" style={{ marginTop: 18 }}>
@@ -132,7 +148,7 @@ export default function BlueprintsPage() {
                 </tr>
               </thead>
               <tbody>
-                {(drafts.length ? drafts : fallbackDraftRows(locale)).slice(0, 4).map((draft) => (
+                {drafts.slice(0, 4).map((draft) => (
                   <tr key={draft.title}>
                     <td>{draft.title}</td>
                     <td>{draft.blueprintKey ?? draft.appType}</td>
@@ -140,12 +156,24 @@ export default function BlueprintsPage() {
                     <td>{draft.updatedAt ?? (locale === "fa" ? "همین حالا" : "Just now")}</td>
                   </tr>
                 ))}
+                {!drafts.length ? (
+                  <tr>
+                    <td colSpan={4}>{locale === "fa" ? "پیش‌نویسی از API دریافت نشد." : "No drafts returned by API."}</td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
           </div>
         </section>
 
         <aside className="panel-card">
+          {!selected ? (
+            <div className="mini-card">
+              <strong>{locale === "fa" ? "قالبی برای نمایش وجود ندارد" : "No blueprint to display"}</strong>
+              <span className="muted-block">{locale === "fa" ? "بعد از بارگذاری blueprintها، جزئیات اینجا ظاهر می‌شوند." : "Details appear here once blueprints are available."}</span>
+            </div>
+          ) : (
+            <>
           <div className="card-title-row">
             <h3>{selected.title}</h3>
             <span className="status-pill info">{locale === "fa" ? "پیش‌نویس" : "Draft"}</span>
@@ -175,16 +203,18 @@ ${(selected.capabilities ?? ["website", "shop", "crm"]).map((item) => `- ${item}
           <div className="detail-list" style={{ marginTop: 16 }}>
             <div className="detail-item">
               <strong>{locale === "fa" ? "فضای کاری" : "Workspace"}</strong>
-              <span className="muted-block">Acme Corp</span>
+              <span className="muted-block">{workspaceName}</span>
             </div>
             <div className="detail-item">
               <strong>{locale === "fa" ? "سایت" : "Site"}</strong>
-              <span className="muted-block">acme.cyan.app</span>
+              <span className="muted-block">{siteName}</span>
             </div>
           </div>
           <div className="toolbar-row" style={{ marginTop: 16 }}>
             <button type="button" className="primary-pill wide-pill" onClick={() => generateFromBlueprint(selected)}>{locale === "fa" ? "تولید از روی قالب" : "Generate from blueprint"}</button>
           </div>
+            </>
+          )}
         </aside>
       </div>
 
@@ -218,15 +248,21 @@ ${(selected.capabilities ?? ["website", "shop", "crm"]).map((item) => `- ${item}
               </div>
             </div>
           ))}
+          {!cards.length ? (
+            <div className="mobile-card">
+              <strong>{locale === "fa" ? "قالبی موجود نیست" : "No blueprints available"}</strong>
+              <p className="muted">{locale === "fa" ? "خروجی این صفحه مستقیما از backend می‌آید." : "This page now renders directly from backend output."}</p>
+            </div>
+          ) : null}
         </div>
         <div className="mobile-bottom-sheet">
           <div className="mobile-handle" />
           <div className="toolbar-row">
             <div>
               <strong>{locale === "fa" ? "قالب انتخاب‌شده" : "Selected blueprint"}</strong>
-              <span className="muted-block">{selected.title}</span>
+              <span className="muted-block">{selected?.title ?? (locale === "fa" ? "بدون انتخاب" : "None selected")}</span>
             </div>
-            <button type="button" className="primary-pill">
+            <button type="button" className="primary-pill" disabled={!selected}>
               {locale === "fa" ? "تولید از قالب" : "Generate from blueprint"}
             </button>
           </div>
@@ -234,28 +270,6 @@ ${(selected.capabilities ?? ["website", "shop", "crm"]).map((item) => `- ${item}
       </div>
     </PanelShell>
   );
-}
-
-function fallbackBlueprints(): AppBlueprint[] {
-  return blueprintVisuals.map((item, index) => ({
-    blueprintKey: item.key,
-    appType: item.key.toUpperCase(),
-    version: 1,
-    title: ["Starter Website", "Online Shop", "Sales CRM", "Approval Workflow", "Support Bot", "Portfolio PWA"][index] ?? item.key,
-    description: "Reference-aligned starter configuration with service-owned templates and generated delivery paths.",
-    active: true,
-    capabilities: [item.key, "automation", "analytics"],
-    requiredQuestions: [],
-    defaultAnswers: {},
-    baseDsl: {
-      app: {},
-      entities: [],
-      routes: [],
-      flows: [],
-      delivery: { publicApis: [], botApis: [] },
-      manualActions: []
-    }
-  }));
 }
 
 function backgroundByIndex(index: number) {
@@ -270,23 +284,4 @@ function backgroundByIndex(index: number) {
     return "linear-gradient(135deg, rgba(255,158,55,0.18), rgba(255,214,136,0.18))";
   }
   return "linear-gradient(135deg, rgba(127,72,255,0.18), rgba(215,182,255,0.18))";
-}
-
-function fallbackDraftRows(locale: "en" | "fa") {
-  return [
-    {
-      title: locale === "fa" ? "CRM فروش" : "Sales CRM Custom",
-      blueprintKey: "sales_crm",
-      appType: "CRM",
-      status: "DRAFT",
-      updatedAt: locale === "fa" ? "همین حالا" : "Just now"
-    },
-    {
-      title: locale === "fa" ? "فلو تایید" : "Approval Flow - HR",
-      blueprintKey: "approval_workflow",
-      appType: "BPM",
-      status: "READY",
-      updatedAt: locale === "fa" ? "۲ ساعت پیش" : "2 hours ago"
-    }
-  ] as Array<Pick<ClientAppDraft, "title" | "blueprintKey" | "appType" | "status" | "updatedAt">>;
 }

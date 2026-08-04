@@ -1,13 +1,12 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.0.2'
-	id 'io.spring.dependency-management' version '1.1.0'
+	id 'org.springframework.boot' version '4.0.6'
+	id 'io.spring.dependency-management' version '1.1.7'
 
 }
 
 group = 'com.cyancoder'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
 
 configurations {
 	compileOnly {
@@ -16,7 +15,7 @@ configurations {
 }
 
 java {
-	sourceCompatibility = '17'
+	sourceCompatibility = '25'
 }
 
 repositories {
@@ -34,7 +33,7 @@ repositories {
 
 
 ext {
-	set('springCloudVersion', "2022.0.4")
+	set('springCloudVersion', "2025.1.1")
 }
 
 
@@ -49,14 +48,14 @@ dependencies {
 //	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 //	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	compileOnly 'org.projectlombok:lombok:1.18.34'
+	compileOnly 'org.projectlombok:lombok:1.18.46'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	annotationProcessor 'org.projectlombok:lombok:1.18.34'
+	annotationProcessor 'org.projectlombok:lombok:1.18.46'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	runtimeOnly 'org.postgresql:postgresql'
 //	testImplementation 'io.projectreactor:reactor-test'
-	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2'
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 	implementation 'org.apache.commons:commons-crypto:1.2.0'
 
 	implementation 'org.apache.commons:commons-lang3:3.0'
@@ -67,7 +66,7 @@ dependencies {
 
 	implementation 'org.apache.poi:poi-ooxml:4.1.2'
 
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.0.2'
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 //	implementation 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.0.RELEASE'
@@ -80,7 +79,7 @@ dependencies {
 //	implementation 'com.fasterxml.jackson.core:jackson-core:2.5.2'
 
 
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis:3.2.0'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 //	implementation 'io.github.resilience4j:resilience4j-retry:2.3.0'
 
 

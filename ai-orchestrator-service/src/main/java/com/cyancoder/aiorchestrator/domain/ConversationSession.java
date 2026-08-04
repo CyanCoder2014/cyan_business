@@ -27,6 +27,7 @@ public class ConversationSession {
     private Map<String, Object> extractedAnswers = new LinkedHashMap<>();
     private List<String> pendingQuestionKeys = new ArrayList<>();
     private List<String> pendingQuestions = new ArrayList<>();
+    private List<String> availableServiceKeys = new ArrayList<>();
     private String latestPrompt;
     private String latestQuestion;
     private Instant createdAt;
@@ -58,6 +59,10 @@ public class ConversationSession {
     public void setPendingQuestionKeys(List<String> pendingQuestionKeys) { this.pendingQuestionKeys = pendingQuestionKeys; }
     public List<String> getPendingQuestions() { return pendingQuestions; }
     public void setPendingQuestions(List<String> pendingQuestions) { this.pendingQuestions = pendingQuestions; }
+    public List<String> getAvailableServiceKeys() { return availableServiceKeys; }
+    public void setAvailableServiceKeys(List<String> availableServiceKeys) {
+        this.availableServiceKeys = availableServiceKeys == null ? new ArrayList<>() : new ArrayList<>(availableServiceKeys);
+    }
     public String getLatestPrompt() { return latestPrompt; }
     public void setLatestPrompt(String latestPrompt) { this.latestPrompt = latestPrompt; }
     public String getLatestQuestion() { return latestQuestion; }

@@ -1,13 +1,13 @@
 plugins {
     id 'java-library'
-    id 'io.spring.dependency-management' version '1.1.0'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.cyancoder'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17'
+    sourceCompatibility = '25'
 }
 
 repositories {
@@ -16,11 +16,12 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.boot:spring-boot-dependencies:3.0.2"
+        mavenBom "org.springframework.boot:spring-boot-dependencies:4.0.6"
     }
 }
 
 dependencies {
+    api project(':platform-openapi-core')
     api 'org.springframework.boot:spring-boot-starter'
     api 'org.springframework.boot:spring-boot-starter-security'
     api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
@@ -28,4 +29,10 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-data-mongodb'
     api 'org.springframework.boot:spring-boot-starter-web'
     api 'com.fasterxml.jackson.core:jackson-databind'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }

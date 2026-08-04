@@ -54,6 +54,8 @@ and adds the integration fields:
 - `STATIC`
   BPM posts to the configured `submitUrl` on the target service.
 
+Before either submit mode, BPM runs the active state's `processorKey` through `processor-service`. A processor failure stops persistence. A successful processor can normalize or enrich the form data, after which the target dynamic entity still performs strict schema validation before saving.
+
 ## Managed Object Model
 
 `ManagedObject` is stored in Mongo and tracks:
@@ -65,6 +67,7 @@ and adds the integration fields:
 - `flowKey`
 - `state`
 - `assignee`
+- `assigneeType` (`USER`, `ROLE`, or `GROUP`)
 - `payload`
 - `accessRule`
 - `locked`
@@ -110,7 +113,7 @@ The active-form response includes `rendererDefinition`, which contains:
 - `entityKey`
 - `entityType`
 - `title`
-- `definitionJson`
+- `definition`
 
 That lets frontend or orchestration clients render the current structured entity form the same way they would use a form definition from `Cyan-core`.
 
@@ -129,6 +132,18 @@ Supported action types:
 - `NOTIFY_OWNER`
 
 `CALL_API`, `CALL_OPERATOR`, and `NOTIFY_OWNER` are routed through the same internal service HTTP bridge used elsewhere in this repo.
+
+`RUN_AUTOMATION_BLOCK` supports a synchronous `PIPELINE` inline fragment through `automation-orchestrator-service`. Pipeline steps include `MAP_FIELDS`, nested `FOR_EACH`, read-only SpEL `SCRIPT`/`CODE`, internal `CALL_API`, and `SAVE`. API responses can be mapped into pipeline variables, and a later call can persist the assembled result in another service.
+
+## Collaboration
+
+Managed objects expose scoped comment and attachment APIs under `/endpoint/bpm/managed-objects/{objectId}` and the equivalent internal path.
+
+- comments support visibility by user, role, or group and default to the current assignee
+- attachments reference `media-service` assets by `assetKey` and support the same optional visibility targets
+- `SET_ASSIGNEE` supports explicit `assigneeType` plus `roleAssignee` and `groupAssignee` aliases
+
+See `BPM_THREE_STEP_AUTOMATION_EXAMPLE.md` for a complete three-form flow followed by an automatic verify/map/save state.
 
 ## Example State
 

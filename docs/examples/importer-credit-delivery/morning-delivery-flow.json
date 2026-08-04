@@ -1,0 +1,96 @@
+{
+  "flowKey": "morning-importer-delivery-v1",
+  "version": 1,
+  "name": "Morning due-loading dispatch",
+  "active": false,
+  "entryNodeId": "schedule",
+  "runtimeMode": "VARIABLES",
+  "environment": "production",
+  "lifecycleStatus": "DRAFT",
+  "nodes": [
+    {
+      "id": "schedule",
+      "type": "SCHEDULE_TRIGGER",
+      "name": "Every morning at 08:30 Tehran",
+      "enabled": true,
+      "config": {
+        "cron": "0 30 8 * * *",
+        "timezone": "Asia/Tehran"
+      }
+    },
+    {
+      "id": "dispatch-loadings",
+      "type": "RUN_BATCH_JOB",
+      "name": "Durably dispatch due loadings",
+      "enabled": true,
+      "retryPolicy": {
+        "maxAttempts": 3,
+        "backoffMs": 5000,
+        "strategy": "exponential"
+      },
+      "config": {
+        "definitionKey": "importer-due-loading-dispatch-v1",
+        "runKey": "{{scheduledAt}}",
+        "pollSeconds": 15,
+        "resultPath": "deliveryBatch"
+      }
+    },
+    {
+      "id": "has-rejections",
+      "type": "IF",
+      "name": "Any quarantined delivery items?",
+      "enabled": true,
+      "config": {
+        "field": "deliveryBatch.skipCount",
+        "operator": "GT",
+        "value": 0
+      }
+    },
+    {
+      "id": "open-delivery-exception",
+      "type": "CALL_API",
+      "name": "Open one BPM exception for the rejected batch",
+      "enabled": true,
+      "config": {
+        "serviceKey": "bpm-service",
+        "path": "/internal/bpm/managed-objects",
+        "method": "POST",
+        "headers": {
+          "X-Actor-User": "delivery-automation",
+          "X-Actor-Roles": "ROLE_SYSTEM"
+        },
+        "body": {
+          "flowKey": "delivery-batch-exception-review-v1",
+          "objectType": "DELIVERY_BATCH_EXCEPTION",
+          "objectRef": {
+            "service": "batch-worker-service",
+            "entityKey": "batch-run",
+            "recordKey": "{{deliveryBatch.id}}"
+          },
+          "payload": {
+            "batchRunId": "{{deliveryBatch.id}}",
+            "sourceRunKey": "{{scheduledAt}}",
+            "readCount": "{{deliveryBatch.readCount}}",
+            "writeCount": "{{deliveryBatch.writeCount}}",
+            "skipCount": "{{deliveryBatch.skipCount}}"
+          }
+        },
+        "storeResponseAt": "deliveryException"
+      }
+    },
+    {
+      "id": "end",
+      "type": "END",
+      "name": "Done",
+      "enabled": true,
+      "config": {}
+    }
+  ],
+  "edges": [
+    { "id": "e1", "fromNodeId": "schedule", "toNodeId": "dispatch-loadings" },
+    { "id": "e2", "fromNodeId": "dispatch-loadings", "toNodeId": "has-rejections" },
+    { "id": "e3", "fromNodeId": "has-rejections", "fromPort": "true", "toNodeId": "open-delivery-exception" },
+    { "id": "e4", "fromNodeId": "has-rejections", "fromPort": "false", "toNodeId": "end" },
+    { "id": "e5", "fromNodeId": "open-delivery-exception", "toNodeId": "end" }
+  ]
+}

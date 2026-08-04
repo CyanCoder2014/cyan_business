@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }
@@ -35,7 +35,7 @@
     }
   },
   "paths": {
-    "/internal/automation-orchestrator/executions/start": {
+    "/endpoint/automation-orchestrator/executions/start": {
       "post": {
         "tags": [
           "Automation Orchestrator"
@@ -44,7 +44,7 @@
         "description": "Start Automation Execution for Automation Orchestrator.",
         "security": [
           {
-            "BasicAuth": []
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -73,7 +73,7 @@
               },
               "example": {
                 "blockKey": "credit-check",
-                "automationFlowKey": "credit-screening",
+                "automationFlowKey": "customer-credit-score-v1",
                 "executionMode": "ASYNC",
                 "failurePolicy": "MARK_FAILED",
                 "correlationKey": "corr-1001",
@@ -81,27 +81,22 @@
                 "tenantKey": "{{tenant_key}}",
                 "siteKey": "{{site_key}}",
                 "input": {
-                  "customerKey": "lead-1001"
+                  "customerKey": "customer-1001"
                 },
                 "context": {
                   "objectId": "{{object_id}}"
                 },
-                "inlineFragment": {
-                  "type": "MAP_OUTPUT",
-                  "mappings": {
-                    "riskBucket": "$.riskBucket"
-                  }
-                },
                 "maxRetries": 2,
                 "timeoutSeconds": 120,
-                "delayMillis": 0
+                "delayMillis": 0,
+                "idempotencyKey": "credit-customer-1001"
               }
             }
           }
         }
       }
     },
-    "/internal/automation-orchestrator/executions/{executionId}": {
+    "/endpoint/automation-orchestrator/executions/{executionId}": {
       "get": {
         "tags": [
           "Automation Orchestrator"
@@ -110,7 +105,7 @@
         "description": "Get Automation Execution for Automation Orchestrator.",
         "security": [
           {
-            "BasicAuth": []
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -142,7 +137,7 @@
         ]
       }
     },
-    "/internal/automation-orchestrator/executions/{executionId}/cancel": {
+    "/endpoint/automation-orchestrator/executions/{executionId}/cancel": {
       "post": {
         "tags": [
           "Automation Orchestrator"
@@ -151,7 +146,7 @@
         "description": "Cancel Automation Execution for Automation Orchestrator.",
         "security": [
           {
-            "BasicAuth": []
+            "BearerAuth": []
           }
         ],
         "responses": {
@@ -181,6 +176,336 @@
             "example": "{{execution_id}}"
           }
         ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/steps": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "List Automation Execution Steps",
+        "description": "List Automation Execution Steps for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/dead-letters": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "List Automation Dead Letters",
+        "description": "List Automation Dead Letters for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/dead-letters/{deadLetterId}/requeue": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Requeue Automation Dead Letter",
+        "description": "Requeue Automation Dead Letter for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "deadLetterId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{dead_letter_id}}"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/metrics": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Get Automation Metrics",
+        "description": "Get Automation Metrics for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/endpoint/automation-orchestrator/executions": {
+      "get": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "List Automation Executions",
+        "description": "List Automation Executions for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "FAILED"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/executions/{executionId}/retry": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Retry Automation Execution",
+        "description": "Retry Automation Execution for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "executionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{execution_id}}"
+          },
+          {
+            "name": "fromFailedNode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "true"
+          }
+        ]
+      }
+    },
+    "/endpoint/automation-orchestrator/flows/{flowKey}/manual-run": {
+      "post": {
+        "tags": [
+          "Automation Orchestrator"
+        ],
+        "summary": "Run Automation Flow Manually",
+        "description": "Run Automation Flow Manually for Automation Orchestrator.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "environment": "default",
+                "async": true,
+                "input": {
+                  "customerKey": "customer-1001"
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

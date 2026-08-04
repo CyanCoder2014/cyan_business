@@ -11,6 +11,7 @@ import com.cyancoder.aiorchestrator.domain.SessionStatus;
 import com.cyancoder.aiorchestrator.repo.ConversationSessionRepository;
 import com.cyancoder.aiorchestrator.service.AppDraftService;
 import com.cyancoder.aiorchestrator.service.ConversationSessionService;
+import com.cyancoder.aiorchestrator.service.ServiceAvailabilityResolver;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -25,11 +26,14 @@ import java.util.UUID;
 public class MongoConversationSessionService implements ConversationSessionService {
     private final ConversationSessionRepository repository;
     private final AppDraftService appDraftService;
+    private final ServiceAvailabilityResolver availabilityResolver;
 
     public MongoConversationSessionService(ConversationSessionRepository repository,
-                                           AppDraftService appDraftService) {
+                                           AppDraftService appDraftService,
+                                           ServiceAvailabilityResolver availabilityResolver) {
         this.repository = repository;
         this.appDraftService = appDraftService;
+        this.availabilityResolver = availabilityResolver;
     }
 
     @Override
@@ -44,6 +48,8 @@ public class MongoConversationSessionService implements ConversationSessionServi
         session.setStatus(SessionStatus.OPEN);
         session.setMessages(new ArrayList<>());
         session.setExtractedAnswers(new LinkedHashMap<>(request.extractedAnswers() == null ? Map.of() : request.extractedAnswers()));
+        session.setAvailableServiceKeys(
+                availabilityResolver.resolve(request.availableServiceKeys()).availableServiceKeys());
         session.setCreatedAt(Instant.now());
         session.setUpdatedAt(Instant.now());
 
@@ -57,7 +63,8 @@ public class MongoConversationSessionService implements ConversationSessionServi
                             request.tenantKey(),
                             request.siteKey(),
                             request.clientKey(),
-                            null
+                            null,
+                            session.getAvailableServiceKeys()
                     )
                     .orElseGet(() -> appDraftService.createDraft(new CreateDraftRequest(
                             request.appTypeHint(),
@@ -67,7 +74,8 @@ public class MongoConversationSessionService implements ConversationSessionServi
                             request.clientKey(),
                             request.title(),
                             null,
-                            session.getExtractedAnswers()
+                            session.getExtractedAnswers(),
+                            session.getAvailableServiceKeys()
                     ), "session-create"));
             session.setDraftId(draft.getDraftId());
             syncPendingState(session, draft);
@@ -111,6 +119,10 @@ public class MongoConversationSessionService implements ConversationSessionServi
         if (request.answersPatch() != null) {
             session.getExtractedAnswers().putAll(request.answersPatch());
         }
+        if (request.availableServiceKeys() != null && !request.availableServiceKeys().isEmpty()) {
+            session.setAvailableServiceKeys(
+                    availabilityResolver.resolve(request.availableServiceKeys()).availableServiceKeys());
+        }
         if ("USER".equalsIgnoreCase(message.getRole())) {
             session.setLatestPrompt(message.getContent());
         } else {
@@ -120,7 +132,8 @@ public class MongoConversationSessionService implements ConversationSessionServi
             ClientAppDraft updatedDraft = appDraftService.updateDraft(session.getDraftId(), new UpdateDraftRequest(
                     request.content(),
                     null,
-                    request.answersPatch()
+                    request.answersPatch(),
+                    session.getAvailableServiceKeys()
             ), "session-message");
             syncPendingState(session, updatedDraft);
         }

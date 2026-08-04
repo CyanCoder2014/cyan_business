@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class UserDirectoryService {
@@ -45,10 +46,19 @@ public class UserDirectoryService {
     }
 
     public UserSummary register(UserRegistrationRequest request) {
+        String username = normalizeUsername(required(request.username(), "username"));
+        String email = normalizeEmail(request.email());
+        if (storedUserRepository.existsById(username)) {
+            throw new IllegalArgumentException("User already exists");
+        }
+        if (email != null && storedUserRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+
         StoredUserEntity storedUser = new StoredUserEntity();
-        storedUser.setUsername(request.username());
-        storedUser.setPasswordHash(passwordEncoder.encode(request.password()));
-        storedUser.setEmail(request.email());
+        storedUser.setUsername(username);
+        storedUser.setPasswordHash(passwordEncoder.encode(required(request.password(), "password")));
+        storedUser.setEmail(email);
         storedUser.setPhoneNumber(request.phoneNumber());
         storedUser.setMfaEnabled(request.mfaEnabled());
         storedUser.setRoles(request.roles() == null ? List.of("user") : request.roles());
@@ -57,7 +67,7 @@ public class UserDirectoryService {
     }
 
     public UserSummary getUser(String username) {
-        StoredUserEntity storedUser = storedUserRepository.findById(username).orElse(null);
+        StoredUserEntity storedUser = resolveUser(username);
         return storedUser == null ? null : toSummary(storedUser);
     }
 
@@ -66,7 +76,7 @@ public class UserDirectoryService {
     }
 
     public PasswordVerificationResponse verifyPassword(String username, String password) {
-        StoredUserEntity storedUser = storedUserRepository.findById(username).orElse(null);
+        StoredUserEntity storedUser = resolveUser(username);
         if (storedUser == null || !storedUser.isActive()) {
             return new PasswordVerificationResponse(false, null);
         }
@@ -84,5 +94,36 @@ public class UserDirectoryService {
                 storedUser.getRoles(),
                 storedUser.isActive()
         );
+    }
+
+    private StoredUserEntity resolveUser(String usernameOrEmail) {
+        if (usernameOrEmail == null || usernameOrEmail.isBlank()) {
+            return null;
+        }
+        String normalized = normalizeUsername(usernameOrEmail);
+        StoredUserEntity byUsername = storedUserRepository.findById(normalized).orElse(null);
+        if (byUsername != null) {
+            return byUsername;
+        }
+        return storedUserRepository.findByEmail(normalizeEmail(normalized)).orElse(null);
+    }
+
+    private String normalizeUsername(String value) {
+        String trimmed = value.trim();
+        return trimmed.contains("@") ? trimmed.toLowerCase(Locale.ROOT) : trimmed;
+    }
+
+    private String normalizeEmail(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private String required(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " is required");
+        }
+        return value;
     }
 }

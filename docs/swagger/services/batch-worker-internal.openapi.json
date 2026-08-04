@@ -1,0 +1,388 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8001"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Batch Worker Internal"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/batch/definitions": {
+      "post": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Save Batch Definition",
+        "description": "Save Batch Definition for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "definitionKey": "importer-order-projection-v1",
+                "title": "Copy platform orders into the credit event entity",
+                "active": true,
+                "spec": {
+                  "source": {
+                    "url": "http://commerce-service:9104/internal/entities/records/importer-order",
+                    "itemsPath": "content",
+                    "pageParameter": "page",
+                    "sizeParameter": "size",
+                    "pageSize": 500,
+                    "headers": {
+                      "Accept": "application/json",
+                      "X-Tenant-Key": "demo-tenant",
+                      "X-Site-Key": "main-site"
+                    },
+                    "authentication": {
+                      "type": "BASIC",
+                      "username": "commerce_internal",
+                      "secretEnvironmentVariable": "COMMERCE_SERVICE_INTERNAL_PASSWORD"
+                    }
+                  },
+                  "destination": {
+                    "url": "http://report-service:9107/internal/entities/records/customer-credit-order-event",
+                    "method": "POST",
+                    "itemKeyPath": "recordKey",
+                    "headers": {
+                      "X-Tenant-Key": "demo-tenant",
+                      "X-Site-Key": "main-site"
+                    },
+                    "authentication": {
+                      "type": "BASIC",
+                      "username": "report_internal",
+                      "secretEnvironmentVariable": "REPORT_SERVICE_INTERNAL_PASSWORD"
+                    }
+                  },
+                  "fieldMappings": {
+                    "recordKey": "recordKey",
+                    "data.orderKey": "recordKey",
+                    "data.customerKey": "data.customerKey",
+                    "data.createdAt": "data.createdAt",
+                    "data.totalAmount": "data.totalAmount"
+                  },
+                  "chunkSize": 200,
+                  "retryLimit": 5,
+                  "skipLimit": 100
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/batch/definitions/{definitionKey}": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Get Batch Definition",
+        "description": "Get Batch Definition for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "definitionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{batch_definition_key}}"
+          }
+        ]
+      }
+    },
+    "/internal/batch/definitions/{definitionKey}/runs": {
+      "post": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Start Batch Run",
+        "description": "Start Batch Run for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "definitionKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{batch_definition_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "runKey": "2026-07-25T04:30:00Z"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/batch/runs/{id}": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Get Batch Run",
+        "description": "Get Batch Run for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/internal/batch/runs": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "List Batch Runs",
+        "description": "List Batch Runs for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "50"
+          }
+        ]
+      }
+    },
+    "/internal/batch/runs/{id}/rejected-items": {
+      "get": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "List Rejected Batch Items",
+        "description": "List Rejected Batch Items for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    },
+    "/internal/batch/runs/{id}/retry": {
+      "post": {
+        "tags": [
+          "Batch Worker Internal"
+        ],
+        "summary": "Retry Batch Run",
+        "description": "Retry Batch Run for Batch Worker Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{id}}"
+          }
+        ]
+      }
+    }
+  }
+}

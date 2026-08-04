@@ -22,18 +22,18 @@ public class InternalProvisioningRunController {
     }
 
     @PostMapping("/drafts/{draftId}/provision")
-    public ProvisioningRunDto provisionDraft(@PathVariable String draftId,
+    public ProvisioningRunDto provisionDraft(@PathVariable("draftId") String draftId,
                                              @RequestBody(required = false) ProvisionDraftRequest request) {
         return provisioningRunService.provisionDraft(draftId, request);
     }
 
     @GetMapping("/drafts/{draftId}/runs")
-    public List<ProvisioningRunDto> listRuns(@PathVariable String draftId) {
+    public List<ProvisioningRunDto> listRuns(@PathVariable("draftId") String draftId) {
         return provisioningRunService.listRuns(draftId);
     }
 
     @GetMapping("/runs/{runId}")
-    public ProvisioningRunDto getRun(@PathVariable String runId) {
+    public ProvisioningRunDto getRun(@PathVariable("runId") String runId) {
         return provisioningRunService.getRun(runId);
     }
 }

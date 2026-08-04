@@ -1,5 +1,6 @@
 package com.cyancoder.dynamiccore.security;
 
+import com.cyancoder.dynamiccore.config.DynamicRuntimeProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,13 +34,23 @@ public class DualApiSecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain endpointSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.securityMatcher("/endpoint/**")
+    public SecurityFilterChain endpointSecurityFilterChain(
+            HttpSecurity http,
+            DynamicRuntimeProperties runtimeProperties
+    ) throws Exception {
+        http.securityMatcher(
+                        "/endpoint/**",
+                        qualifiedEndpointPattern(runtimeProperties.getServiceKey())
+                )
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()));
         return http.build();
+    }
+
+    static String qualifiedEndpointPattern(String serviceKey) {
+        return "/api/" + serviceKey + "/endpoint/**";
     }
 
     @Bean

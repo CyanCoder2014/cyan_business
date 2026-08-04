@@ -19,6 +19,11 @@ public record AutomationStartRequest(
         Map<String, Object> inlineFragment,
         Integer maxRetries,
         Long timeoutSeconds,
-        Long delayMillis
+        Long delayMillis,
+        String flowKey,
+        String managedObjectId,
+        String idempotencyKey,
+        Map<String, Object> variables,
+        Map<String, Object> inlineFlow
 ) {
 }

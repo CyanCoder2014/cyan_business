@@ -1,0 +1,73 @@
+{
+  "flowKey": "delivery-batch-exception-review-v1",
+  "version": 1,
+  "name": "Delivery Batch Exception Review",
+  "description": "Operations review for quarantined loading dispatches.",
+  "startState": "operations-review",
+  "active": false,
+  "states": [
+    {
+      "id": "operations-review",
+      "displayName": "Operations Review",
+      "terminal": false,
+      "formKey": "delivery-exception",
+      "reviewCommentRequired": true,
+      "candidateGroups": ["delivery-operators"],
+      "onEnterActions": [
+        {
+          "type": "ADD_AUDIT_ENTRY",
+          "params": { "message": "One or more delivery items were quarantined" }
+        },
+        {
+          "type": "SET_ASSIGNEE",
+          "params": {
+            "assigneeType": "GROUP",
+            "groupAssignee": "delivery-operators"
+          }
+        }
+      ],
+      "accessRule": {
+        "canRead": ["ROLE_OPERATIONS", "ROLE_ADMIN"],
+        "canEdit": ["ROLE_OPERATIONS"],
+        "canApprove": ["ROLE_OPERATIONS"]
+      },
+      "entityService": "bpm-service",
+      "entityKey": "delivery-exception",
+      "rendererService": "bpm-service",
+      "rendererKey": "delivery-exception",
+      "submitMode": "DYNAMIC",
+      "waitForAutomation": false
+    },
+    {
+      "id": "resolved",
+      "displayName": "Resolved",
+      "terminal": true,
+      "reviewCommentRequired": false,
+      "candidateGroups": [],
+      "onEnterActions": [
+        {
+          "type": "ADD_AUDIT_ENTRY",
+          "params": { "message": "Delivery batch exception resolved" }
+        }
+      ],
+      "accessRule": {
+        "canRead": ["ROLE_OPERATIONS", "ROLE_ADMIN"],
+        "canEdit": [],
+        "canApprove": []
+      },
+      "submitMode": "DYNAMIC",
+      "waitForAutomation": false
+    }
+  ],
+  "transitions": [
+    {
+      "id": "resolve",
+      "fromState": "operations-review",
+      "toState": "resolved",
+      "label": "Resolve exception",
+      "allowedGroups": ["delivery-operators"],
+      "allowedRoles": ["ROLE_OPERATIONS"],
+      "conditions": []
+    }
+  ]
+}

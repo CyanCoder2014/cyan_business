@@ -23,6 +23,7 @@ public class ManagedObject {
     private String state;
     private String processInstanceId;
     private String assignee;
+    private AssigneeType assigneeType = AssigneeType.USER;
     private Map<String, Object> payload = new HashMap<>();
     private FlowAccessRule accessRule;
     private boolean locked;
@@ -51,6 +52,8 @@ public class ManagedObject {
     public void setProcessInstanceId(String processInstanceId) { this.processInstanceId = processInstanceId; }
     public String getAssignee() { return assignee; }
     public void setAssignee(String assignee) { this.assignee = assignee; }
+    public AssigneeType getAssigneeType() { return assigneeType == null ? AssigneeType.USER : assigneeType; }
+    public void setAssigneeType(AssigneeType assigneeType) { this.assigneeType = assigneeType == null ? AssigneeType.USER : assigneeType; }
     public Map<String, Object> getPayload() { return payload; }
     public void setPayload(Map<String, Object> payload) { this.payload = payload; }
     public FlowAccessRule getAccessRule() { return accessRule; }

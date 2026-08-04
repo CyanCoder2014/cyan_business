@@ -1,0 +1,53 @@
+{
+  "definitionKey": "importer-order-projection-v1",
+  "title": "Copy platform orders into the credit projection event entity",
+  "active": true,
+  "spec": {
+    "source": {
+      "url": "http://commerce-service:9104/internal/entities/records/importer-order",
+      "itemsPath": "content",
+      "pageParameter": "page",
+      "sizeParameter": "size",
+      "pageSize": 500,
+      "headers": {
+        "Accept": "application/json",
+        "X-Tenant-Key": "importer-demo",
+        "X-Site-Key": "main-site"
+      },
+      "authentication": {
+        "type": "BASIC",
+        "username": "commerce_internal",
+        "secretEnvironmentVariable": "COMMERCE_SERVICE_INTERNAL_PASSWORD"
+      }
+    },
+    "destination": {
+      "url": "http://report-service:9107/internal/entities/records/customer-credit-order-event",
+      "method": "POST",
+      "itemKeyPath": "recordKey",
+      "headers": {
+        "X-Tenant-Key": "importer-demo",
+        "X-Site-Key": "main-site"
+      },
+      "authentication": {
+        "type": "BASIC",
+        "username": "report_internal",
+        "secretEnvironmentVariable": "REPORT_SERVICE_INTERNAL_PASSWORD"
+      }
+    },
+    "fieldMappings": {
+      "recordKey": "recordKey",
+      "data.orderKey": "recordKey",
+      "data.customerKey": "data.customerKey",
+      "data.createdAt": "data.createdAt",
+      "data.totalAmount": "data.totalAmount",
+      "data.currency": "data.currency",
+      "data.maximumOverdueDays": "data.payment.maximumOverdueDays",
+      "data.loadingKey": "data.loading.loadingKey",
+      "data.promisedDeliveryAt": "data.loading.promisedDeliveryAt",
+      "data.deliveryStatus": "data.loading.status"
+    },
+    "chunkSize": 200,
+    "retryLimit": 5,
+    "skipLimit": 100
+  }
+}

@@ -6,6 +6,8 @@ public record AutomationStartResponse(
         String executionId,
         String blockKey,
         String automationFlowKey,
+        String managedObjectId,
+        String idempotencyKey,
         String correlationKey,
         String status,
         Map<String, Object> snapshot,

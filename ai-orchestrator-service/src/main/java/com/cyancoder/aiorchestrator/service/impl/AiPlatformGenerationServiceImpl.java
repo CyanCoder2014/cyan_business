@@ -18,6 +18,8 @@ import com.cyancoder.aiorchestrator.service.ConversationSessionService;
 import com.cyancoder.aiorchestrator.service.DslValidationService;
 import com.cyancoder.aiorchestrator.service.FollowUpQuestionService;
 import com.cyancoder.aiorchestrator.service.RetrievalService;
+import com.cyancoder.aiorchestrator.service.ServiceAvailabilityResolver;
+import com.cyancoder.aiorchestrator.service.ServiceAvailabilitySnapshot;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
     private final AppDraftService appDraftService;
     private final FollowUpQuestionService followUpQuestionService;
     private final ConversationSessionService conversationSessionService;
+    private final ServiceAvailabilityResolver availabilityResolver;
 
     public AiPlatformGenerationServiceImpl(LlmClient llmClient,
                                            PlatformMetadataClient metadataClient,
@@ -45,7 +48,8 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
                                            PlatformProvisioningService provisioningService,
                                            AppDraftService appDraftService,
                                            FollowUpQuestionService followUpQuestionService,
-                                           ConversationSessionService conversationSessionService) {
+                                           ConversationSessionService conversationSessionService,
+                                           ServiceAvailabilityResolver availabilityResolver) {
         this.llmClient = llmClient;
         this.metadataClient = metadataClient;
         this.retrievalService = retrievalService;
@@ -55,25 +59,30 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
         this.appDraftService = appDraftService;
         this.followUpQuestionService = followUpQuestionService;
         this.conversationSessionService = conversationSessionService;
+        this.availabilityResolver = availabilityResolver;
     }
 
     @Override
     public GeneratePlatformAppResponse generate(GeneratePlatformAppRequest request) {
-        var knownDraft = appDraftService.resolveKnownAppDraft(request.appType(), request.tenantKey(), request.siteKey(), request.clientKey(), request.prompt());
+        ServiceAvailabilitySnapshot availability = availabilityResolver.resolve(request.availableServiceKeys());
+        var knownDraft = appDraftService.resolveKnownAppDraft(request.appType(), request.tenantKey(),
+                request.siteKey(), request.clientKey(), request.prompt(), availability.availableServiceKeys());
         if (knownDraft.isPresent()) {
             ClientAppDraft draft = knownDraft.get();
-            if (request.answers() != null && !request.answers().isEmpty()) {
+            if ((request.answers() != null && !request.answers().isEmpty())
+                    || (request.availableServiceKeys() != null && !request.availableServiceKeys().isEmpty())) {
                 draft = appDraftService.updateDraft(draft.getDraftId(), new UpdateDraftRequest(
                         request.prompt(),
                         null,
-                        request.answers()
+                        request.answers(),
+                        availability.availableServiceKeys()
                 ), "generate-request");
             }
             return resolveKnownDraftResponse(request, draft);
         }
         String tenantKey = defaultScope(request.tenantKey(), "tenant-" + slug(request.prompt()));
         String siteKey = defaultScope(request.siteKey(), "site-" + slug(request.prompt()));
-        Map<String, Object> metadata = metadataClient.fetchMetadata(tenantKey, siteKey);
+        Map<String, Object> metadata = metadataClient.fetchMetadata(tenantKey, siteKey, availability);
         Map<String, Object> structuredState = new LinkedHashMap<>();
         structuredState.put("tenantKey", tenantKey);
         structuredState.put("siteKey", siteKey);
@@ -86,6 +95,8 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
         PlatformAppDslDefinition dsl = llmClient.generateDsl(prompt);
         dsl.getApp().setTenantKey(tenantKey);
         dsl.getApp().setSiteKey(siteKey);
+        dsl.getApp().setAvailableServiceKeys(availability.availableServiceKeys());
+        removeUnavailablePlanItems(dsl, availability.availableServiceKeys());
         if (dsl.getApp().getCapabilities().isEmpty()) {
             dsl.getApp().setCapabilities(new ArrayList<>(List.of("website")));
         }
@@ -132,12 +143,41 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
                 draft.getDraftId(),
                 draft.getAppType(),
                 draft.getTitle(),
-                draft.getAnswers()
+                draft.getAnswers(),
+                draft.getAvailableServiceKeys()
         )).getSessionId();
     }
 
     private String defaultScope(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private void removeUnavailablePlanItems(PlatformAppDslDefinition dsl, List<String> services) {
+        var available = new java.util.LinkedHashSet<>(services);
+        if (available.isEmpty()) return;
+        List<String> omitted = new ArrayList<>();
+        dsl.getEntities().removeIf(entity -> {
+            boolean remove = !available.contains(entity.getServiceKey());
+            if (remove) omitted.add(entity.getServiceKey() + " entity " + entity.getEntityKey());
+            return remove;
+        });
+        dsl.getRoutes().removeIf(route -> {
+            boolean remove = !available.contains("storefront-service")
+                    || !available.contains(route.getTargetServiceKey());
+            if (remove) omitted.add("storefront route " + route.getRouteKey());
+            return remove;
+        });
+        if (!available.contains("bpm-service") && !dsl.getFlows().isEmpty()) {
+            omitted.add("BPM flows");
+            dsl.getFlows().clear();
+        }
+        dsl.getResources().removeIf(resource -> {
+            boolean remove = !available.contains(resource.getServiceKey());
+            if (remove) omitted.add(resource.getResourceType() + " " + resource.getResourceKey());
+            return remove;
+        });
+        omitted.forEach(item -> dsl.getManualActions().add(
+                "Skipped because its owning microservice is unavailable: " + item));
     }
 
     private String slug(String prompt) {

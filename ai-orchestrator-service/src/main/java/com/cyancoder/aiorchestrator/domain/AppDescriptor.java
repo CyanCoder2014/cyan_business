@@ -11,6 +11,7 @@ public class AppDescriptor {
     private String siteKey;
     private String desiredDomain;
     private List<String> capabilities = new ArrayList<>();
+    private List<String> availableServiceKeys = new ArrayList<>();
 
     public String getAppKey() { return appKey; }
     public void setAppKey(String appKey) { this.appKey = appKey; }
@@ -26,5 +27,8 @@ public class AppDescriptor {
     public void setDesiredDomain(String desiredDomain) { this.desiredDomain = desiredDomain; }
     public List<String> getCapabilities() { return capabilities; }
     public void setCapabilities(List<String> capabilities) { this.capabilities = capabilities; }
+    public List<String> getAvailableServiceKeys() { return availableServiceKeys; }
+    public void setAvailableServiceKeys(List<String> availableServiceKeys) {
+        this.availableServiceKeys = availableServiceKeys == null ? new ArrayList<>() : new ArrayList<>(availableServiceKeys);
+    }
 }
-

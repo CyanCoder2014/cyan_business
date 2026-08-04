@@ -1,0 +1,496 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Cyan Business Platform API",
+    "version": "1.0.0",
+    "description": "Static OpenAPI inventory for the platform, grouped by microservice. Auth support includes Bearer JWT for endpoint/api routes and Basic Auth for internal routes."
+  },
+  "servers": [
+    {
+      "url": "{gateway_base_url}",
+      "description": "Gateway base URL",
+      "variables": {
+        "gateway_base_url": {
+          "default": "http://localhost:8001"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "Automation Flows Internal"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "paths": {
+    "/internal/automation-flows": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Save Automation Flow",
+        "description": "Save Automation Flow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "flowKey": "customer-credit-score-v1",
+                "version": 1,
+                "name": "Customer credit score",
+                "active": false,
+                "entryNodeId": "manual",
+                "runtimeMode": "VARIABLES",
+                "environment": "default",
+                "lifecycleStatus": "DRAFT",
+                "nodes": [
+                  {
+                    "id": "manual",
+                    "type": "MANUAL_TRIGGER",
+                    "name": "Manual trigger",
+                    "enabled": true,
+                    "config": {}
+                  },
+                  {
+                    "id": "end",
+                    "type": "END",
+                    "name": "Done",
+                    "enabled": true,
+                    "config": {}
+                  }
+                ],
+                "edges": [
+                  {
+                    "id": "edge-1",
+                    "fromNodeId": "manual",
+                    "toNodeId": "end"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "List Automation Flows",
+        "description": "List Automation Flows for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-flows/{flowKey}/versions/{version}": {
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Get Automation Flow Version",
+        "description": "Get Automation Flow Version for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows/{flowKey}/active": {
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Get Active Automation Flow",
+        "description": "Get Active Automation Flow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "environment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "default"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows/{flowKey}/versions/{version}/{action}": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Run Automation Flow Lifecycle Action",
+        "description": "Run Automation Flow Lifecycle Action for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "SUBMIT"
+          },
+          {
+            "name": "targetEnvironment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "production"
+          }
+        ]
+      }
+    },
+    "/internal/automation-flows/n8n/analyze": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Analyze n8n Workflow",
+        "description": "Analyze n8n Workflow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-flows/n8n/import": {
+      "post": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Import n8n Workflow",
+        "description": "Import n8n Workflow for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "{{automation_flow_key}}"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "example": {
+                "name": "Customer credit webhook",
+                "active": false,
+                "nodes": [
+                  {
+                    "id": "webhook-1",
+                    "name": "Webhook",
+                    "type": "n8n-nodes-base.webhook",
+                    "typeVersion": 2,
+                    "position": [
+                      0,
+                      0
+                    ],
+                    "parameters": {
+                      "path": "customer-credit",
+                      "httpMethod": "POST"
+                    }
+                  }
+                ],
+                "connections": {},
+                "settings": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/automation-flows/{flowKey}/versions/{version}/n8n-export": {
+      "get": {
+        "tags": [
+          "Automation Flows Internal"
+        ],
+        "summary": "Export Automation Flow as n8n",
+        "description": "Export Automation Flow as n8n for Automation Flows Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "flowKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "customer-onboarding"
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          }
+        ]
+      }
+    }
+  }
+}

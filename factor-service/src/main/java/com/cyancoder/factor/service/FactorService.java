@@ -17,7 +17,6 @@ import com.cyancoder.factor.repository.ProductRepository;
 import com.cyancoder.factor.repository.UnitRepository;
 import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mysql.cj.x.protobuf.MysqlxCrud;
 import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

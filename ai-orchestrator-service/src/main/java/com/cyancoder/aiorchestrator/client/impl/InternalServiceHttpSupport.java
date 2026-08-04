@@ -37,11 +37,15 @@ public class InternalServiceHttpSupport {
         return exchange(serviceKey, path, HttpMethod.POST, body, tenantKey, siteKey);
     }
 
+    public String put(String serviceKey, String path, Object body, String tenantKey, String siteKey) {
+        return exchange(serviceKey, path, HttpMethod.PUT, body, tenantKey, siteKey);
+    }
+
     private String exchange(String serviceKey, String path, HttpMethod method, Object body, String tenantKey, String siteKey) {
         try {
             ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()
                     .orElseThrow(() -> new DownstreamServiceException(
-                            "Service is not registered in discovery: " + serviceKey,
+                            "No internal route is configured for service: " + serviceKey,
                             serviceKey,
                             path,
                             503,
@@ -88,10 +92,6 @@ public class InternalServiceHttpSupport {
     }
 
     private URI resolveBaseUri(ServiceInstance instance) {
-        String host = instance.getHost();
-        if (host == null || host.isBlank() || "localhost".equalsIgnoreCase(host) || "127.0.0.1".equals(host)) {
-            return instance.getUri();
-        }
-        return URI.create(instance.isSecure() ? "https://localhost:" + instance.getPort() : "http://localhost:" + instance.getPort());
+        return instance.getUri();
     }
 }

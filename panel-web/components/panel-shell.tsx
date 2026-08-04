@@ -2,14 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { BuildingIcon, GlobeIcon } from "@/components/auth-icons";
 import { usePanel } from "@/components/panel-provider";
+import { getPlatformAuthToken, getPlatformUsername, logoutPlatformSession, redirectToAuth } from "@/lib/platform-auth";
 
 type PanelShellProps = {
   title: string;
   titleFa: string;
   subtitle: string;
   subtitleFa: string;
+  kicker?: string;
+  kickerFa?: string;
   activeKey: string;
   children: ReactNode;
 };
@@ -26,12 +30,53 @@ const navigation = [
   { href: "/site-builder", key: "site-builder", icon: "▣", en: "Site Builder", fa: "سایت‌ساز" },
   { href: "/search", key: "search", icon: "⌕", en: "Media", fa: "مدیا" },
   { href: "/automation", key: "automation", icon: "◔", en: "Analytics", fa: "آنالیتیکس" },
+  { href: "/api-docs", key: "api-docs", icon: "{ }", en: "API Docs", fa: "مستندات API" },
   { href: "/iam", key: "iam", icon: "⚙", en: "Settings", fa: "تنظیمات" }
 ];
 
-export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, children }: PanelShellProps) {
+export function PanelShell({ title, titleFa, subtitle, subtitleFa, kicker, kickerFa, activeKey, children }: PanelShellProps) {
   const pathname = usePathname();
   const { locale, theme, toggleLocale, toggleTheme, workspaceName, siteName, isRtl } = usePanel();
+  const [authChecked, setAuthChecked] = useState(false);
+  const [profileName, setProfileName] = useState("");
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    if (!getPlatformAuthToken()) {
+      redirectToAuth(pathname || "/");
+      return;
+    }
+    setProfileName(getPlatformUsername());
+    setAuthChecked(true);
+  }, [pathname]);
+
+  const avatarLabel = useMemo(() => {
+    const source = profileName || workspaceName || "Cyan";
+    return source
+      .split(/[\s@._-]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join("") || "CY";
+  }, [profileName, workspaceName]);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await logoutPlatformSession();
+      redirectToAuth("/");
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
+  if (!authChecked) {
+    return (
+      <main className="auth-check-shell">
+        <div className="brand-badge">C</div>
+      </main>
+    );
+  }
 
   return (
     <div className="panel-app-shell">
@@ -71,7 +116,7 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
         </div>
 
         <div className="sidebar-workspace-badge">
-          <div className="avatar-chip">AC</div>
+          <div className="avatar-chip">{avatarLabel}</div>
           <div>
             <strong>{workspaceName}</strong>
             <span>{locale === "fa" ? "فضای کاری" : "Workspace"}</span>
@@ -83,39 +128,69 @@ export function PanelShell({ title, titleFa, subtitle, subtitleFa, activeKey, ch
         <header className="workspace-header">
           <div className="workspace-switchers">
             <div className="workspace-switcher">
-              <span>{locale === "fa" ? "فضای کاری" : "Workspace"}</span>
-              <strong>{workspaceName}</strong>
+              <span className="workspace-switcher-icon" aria-hidden="true">
+                <BuildingIcon size={20} />
+              </span>
+              <div>
+                <span>{locale === "fa" ? "فضای کاری" : "Workspace"}</span>
+                <strong>{workspaceName}</strong>
+              </div>
+              <span className="workspace-switcher-caret" aria-hidden="true">⌄</span>
             </div>
             <div className="workspace-switcher">
-              <span>{locale === "fa" ? "سایت" : "Site"}</span>
-              <strong>{siteName}</strong>
+              <span className="workspace-switcher-icon" aria-hidden="true">
+                <GlobeIcon size={20} />
+              </span>
+              <div>
+                <span>{locale === "fa" ? "سایت" : "Site"}</span>
+                <strong>{siteName}</strong>
+              </div>
+              <span className="workspace-switcher-caret" aria-hidden="true">⌄</span>
             </div>
           </div>
 
           <div className="header-actions">
-            <button type="button" className="icon-pill" onClick={toggleLocale}>
-              {locale === "fa" ? "EN" : "فا"}
+            <button type="button" className="header-icon-button notification-button" aria-label={isRtl ? "اعلان‌ها" : "Notifications"}>
+              <span className="header-bell" aria-hidden="true" />
             </button>
-            <button type="button" className="icon-pill" onClick={toggleTheme}>
-              {theme === "light" ? "☾" : "☀"}
-            </button>
-            <span className="icon-pill" aria-hidden="true">
-              ⍰
-            </span>
-            <div className="header-profile">
-              <div className="header-avatar">AM</div>
-              <div>
-                <strong>{isRtl ? "علی محمدی" : "Ali Mohammadi"}</strong>
-                <span>{isRtl ? "مدیر ارشد" : "Admin"}</span>
+            <Link href="/iam" className="header-icon-button" aria-label={isRtl ? "راهنما و تنظیمات" : "Help and settings"}>
+              ?
+            </Link>
+            <details className="header-account-menu">
+              <summary aria-label={isRtl ? "منوی حساب" : "Account menu"}>
+                <div className="header-avatar">{avatarLabel}</div>
+                <span className="header-profile-state" aria-hidden="true" />
+                <span className="workspace-switcher-caret" aria-hidden="true">⌄</span>
+              </summary>
+              <div className="header-account-popover">
+                <div className="header-profile">
+                  <div className="header-avatar small">{avatarLabel}</div>
+                  <div>
+                    <strong>{profileName || (isRtl ? "کاربر پنل" : "Panel user")}</strong>
+                    <span>{isRtl ? "حساب فعال" : "Signed in"}</span>
+                  </div>
+                </div>
+                <Link href="/iam" className="account-menu-item">
+                  {isRtl ? "پروفایل" : "Profile"}
+                </Link>
+                <button type="button" className="account-menu-item" onClick={toggleLocale}>
+                  {locale === "fa" ? "English" : "فارسی"}
+                </button>
+                <button type="button" className="account-menu-item" onClick={toggleTheme}>
+                  {theme === "light" ? (isRtl ? "حالت تاریک" : "Dark mode") : isRtl ? "حالت روشن" : "Light mode"}
+                </button>
+                <button type="button" className="account-menu-item danger" onClick={() => handleLogout().catch(() => null)} disabled={loggingOut}>
+                  {loggingOut ? (isRtl ? "خروج..." : "Signing out...") : isRtl ? "خروج" : "Logout"}
+                </button>
               </div>
-            </div>
+            </details>
           </div>
         </header>
 
         <main className="workspace-content">
           <section className="page-intro">
             <div>
-              <p className="page-kicker">{locale === "fa" ? "پلتفرم کسب‌وکار هوشمند" : "AI-native business platform"}</p>
+              <p className="page-kicker">{locale === "fa" ? kickerFa ?? "پلتفرم کسب‌وکار هوشمند" : kicker ?? "AI-native business platform"}</p>
               <h1>{locale === "fa" ? titleFa : title}</h1>
               <p>{locale === "fa" ? subtitleFa : subtitle}</p>
             </div>

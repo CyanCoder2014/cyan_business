@@ -3,12 +3,17 @@ package com.cyancoder.bpm.api;
 import com.cyancoder.bpm.api.dto.CreateManagedObjectRequest;
 import com.cyancoder.bpm.api.dto.FlowScopeResolver;
 import com.cyancoder.bpm.api.dto.ManagedObjectActiveFormResponse;
+import com.cyancoder.bpm.api.dto.ManagedObjectAttachmentRequest;
+import com.cyancoder.bpm.api.dto.ManagedObjectCommentRequest;
 import com.cyancoder.bpm.api.dto.ManagedObjectFormSubmissionResponse;
 import com.cyancoder.bpm.api.dto.SubmitManagedObjectFormRequest;
 import com.cyancoder.bpm.api.dto.TransitionRequest;
 import com.cyancoder.bpm.api.dto.TransitionOptionResponse;
 import com.cyancoder.bpm.domain.ManagedObject;
+import com.cyancoder.bpm.domain.ManagedObjectAttachment;
+import com.cyancoder.bpm.domain.ManagedObjectComment;
 import com.cyancoder.bpm.service.ActorContextResolver;
+import com.cyancoder.bpm.service.ManagedObjectCollaborationService;
 import com.cyancoder.bpm.service.ObjectFlowService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,10 +30,13 @@ import java.util.List;
 public class InternalManagedObjectFlowController {
     private final ObjectFlowService objectFlowService;
     private final ActorContextResolver actorContextResolver;
+    private final ManagedObjectCollaborationService collaborationService;
 
-    public InternalManagedObjectFlowController(ObjectFlowService objectFlowService, ActorContextResolver actorContextResolver) {
+    public InternalManagedObjectFlowController(ObjectFlowService objectFlowService, ActorContextResolver actorContextResolver,
+                                               ManagedObjectCollaborationService collaborationService) {
         this.objectFlowService = objectFlowService;
         this.actorContextResolver = actorContextResolver;
+        this.collaborationService = collaborationService;
     }
 
     @GetMapping
@@ -116,6 +124,60 @@ public class InternalManagedObjectFlowController {
                 request,
                 actorContextResolver.fromInternalHeaders(actorUser, actorRoles, actorGroups)
         );
+    }
+
+    @PostMapping("/{objectId}/comments")
+    public ManagedObjectComment addComment(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @RequestHeader(value = "X-Actor-User", required = false) String actorUser,
+            @RequestHeader(value = "X-Actor-Roles", required = false) String actorRoles,
+            @RequestHeader(value = "X-Actor-Groups", required = false) String actorGroups,
+            @PathVariable String objectId,
+            @RequestBody ManagedObjectCommentRequest request
+    ) {
+        return collaborationService.addComment(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId, request,
+                actorContextResolver.fromInternalHeaders(actorUser, actorRoles, actorGroups));
+    }
+
+    @GetMapping("/{objectId}/comments")
+    public List<ManagedObjectComment> comments(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @RequestHeader(value = "X-Actor-User", required = false) String actorUser,
+            @RequestHeader(value = "X-Actor-Roles", required = false) String actorRoles,
+            @RequestHeader(value = "X-Actor-Groups", required = false) String actorGroups,
+            @PathVariable String objectId
+    ) {
+        return collaborationService.comments(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId,
+                actorContextResolver.fromInternalHeaders(actorUser, actorRoles, actorGroups));
+    }
+
+    @PostMapping("/{objectId}/attachments")
+    public ManagedObjectAttachment addAttachment(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @RequestHeader(value = "X-Actor-User", required = false) String actorUser,
+            @RequestHeader(value = "X-Actor-Roles", required = false) String actorRoles,
+            @RequestHeader(value = "X-Actor-Groups", required = false) String actorGroups,
+            @PathVariable String objectId,
+            @RequestBody ManagedObjectAttachmentRequest request
+    ) {
+        return collaborationService.addAttachment(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId, request,
+                actorContextResolver.fromInternalHeaders(actorUser, actorRoles, actorGroups));
+    }
+
+    @GetMapping("/{objectId}/attachments")
+    public List<ManagedObjectAttachment> attachments(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @RequestHeader(value = "X-Actor-User", required = false) String actorUser,
+            @RequestHeader(value = "X-Actor-Roles", required = false) String actorRoles,
+            @RequestHeader(value = "X-Actor-Groups", required = false) String actorGroups,
+            @PathVariable String objectId
+    ) {
+        return collaborationService.attachments(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId,
+                actorContextResolver.fromInternalHeaders(actorUser, actorRoles, actorGroups));
     }
 
     @GetMapping("/{objectId}")

@@ -1,225 +1,128 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppShell } from "@/components/app-shell";
+import { PanelShell } from "@/components/panel-shell";
+import { usePanel } from "@/components/panel-provider";
 import {
-  assignIamClientRole,
-  assignIamRealmRole,
-  listIamClients,
-  listIamClientRoles,
-  listIamMemberships,
-  listIamRealms,
-  listIamRealmRoles,
-  listIamUsers,
-  provisionManagedIamUser,
+  getIamUser,
   resolveIamAccess,
-  upsertIamClient,
-  upsertIamClientRole,
-  upsertIamMembership,
-  upsertIamRealm,
-  upsertIamRealmRole
 } from "@/lib/service-api";
-import type { ClientSummary, IamUserAccessSummary, RealmSummary, RoleCatalogSummary, UserSummary } from "@/lib/types";
-
-function csv(value: string) {
-  return value.split(",").map((item) => item.trim()).filter(Boolean);
-}
+import { getPlatformSessionId, getPlatformUsername, logoutPlatformSession } from "@/lib/platform-auth";
+import type { IamUserAccessSummary, UserSummary } from "@/lib/types";
 
 export default function IamPage() {
-  const [realmKey, setRealmKey] = useState("cyan");
-  const [realmName, setRealmName] = useState("Cyan Realm");
-  const [realmDescription, setRealmDescription] = useState("Default local realm");
-  const [clientId, setClientId] = useState("cyan-panel");
-  const [clientName, setClientName] = useState("Cyan Panel");
-  const [redirectUris, setRedirectUris] = useState("http://localhost:3000/*");
-  const [realmRoleKey, setRealmRoleKey] = useState("realm-user");
-  const [clientRoleKey, setClientRoleKey] = useState("panel-operator");
-  const [permissions, setPermissions] = useState("panel:read,builder:use");
-  const [username, setUsername] = useState("cyan-user");
-  const [password, setPassword] = useState("user123");
-  const [email, setEmail] = useState("user@cyan.local");
-  const [phoneNumber, setPhoneNumber] = useState("09121111111");
-  const [realms, setRealms] = useState<RealmSummary[]>([]);
-  const [clients, setClients] = useState<ClientSummary[]>([]);
-  const [realmRoles, setRealmRoles] = useState<RoleCatalogSummary[]>([]);
-  const [clientRoles, setClientRoles] = useState<RoleCatalogSummary[]>([]);
-  const [users, setUsers] = useState<UserSummary[]>([]);
-  const [memberships, setMemberships] = useState<Array<{ username: string; realmKey: string; active: boolean; defaultRealm: boolean }>>([]);
+  const { locale, workspaceName, siteName, setWorkspaceName, setSiteName } = usePanel();
+  const [username, setUsername] = useState("");
+  const [profile, setProfile] = useState<UserSummary | null>(null);
   const [access, setAccess] = useState<IamUserAccessSummary | null>(null);
+  const [workspaceDraft, setWorkspaceDraft] = useState(workspaceName);
+  const [siteDraft, setSiteDraft] = useState(siteName);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function refresh() {
-    const [realmItems, clientItems, membershipItems, userItems] = await Promise.all([
-      listIamRealms(),
-      listIamClients(),
-      listIamMemberships(),
-      listIamUsers().catch(() => [])
-    ]);
-    setRealms(realmItems);
-    setClients(clientItems);
-    if (realmKey) {
-      setRealmRoles(await listIamRealmRoles(realmKey).catch(() => []));
-    }
-    if (clientId) {
-      setClientRoles(await listIamClientRoles(clientId).catch(() => []));
-    }
-    setMemberships(membershipItems);
-    setUsers(userItems);
-  }
-
   useEffect(() => {
-    refresh().catch((error) => setStatus(error instanceof Error ? error.message : "Failed to load IAM workspace"));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const currentUsername = getPlatformUsername();
+    setUsername(currentUsername);
+    if (!currentUsername) {
+      return;
+    }
+    Promise.all([
+      getIamUser(currentUsername).catch(() => null),
+      resolveIamAccess(currentUsername, "cyan-panel").catch(() => null)
+    ]).then(([user, resolvedAccess]) => {
+      setProfile(user);
+      setAccess(resolvedAccess);
+    }).catch((error) => {
+      setStatus(error instanceof Error ? error.message : "Failed to load account details");
+    });
   }, []);
 
-  async function run(action: () => Promise<void>, success: string) {
+  useEffect(() => {
+    setWorkspaceDraft(workspaceName);
+    setSiteDraft(siteName);
+  }, [workspaceName, siteName]);
+
+  async function handleLogout() {
     setLoading(true);
     setStatus(null);
     try {
-      await action();
-      await refresh();
-      setStatus(success);
+      await logoutPlatformSession();
+      window.location.assign("/auth");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "IAM action failed");
+      setStatus(error instanceof Error ? error.message : "Logout failed");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <AppShell title="IAM Admin" subtitle="Manage realms, clients, memberships, role catalogs, and per-client access in the custom SSO stack.">
-      <div className="studio-grid">
-        <section className="panel rail">
-          <div className="form-grid">
-            <div className="result-card">
-              <h4>Realm</h4>
-              <div className="field-grid">
-                <div className="field">
-                  <label>Realm key</label>
-                  <input value={realmKey} onChange={(event) => setRealmKey(event.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Display name</label>
-                  <input value={realmName} onChange={(event) => setRealmName(event.target.value)} />
-                </div>
-              </div>
-              <div className="field">
-                <label>Description</label>
-                <textarea value={realmDescription} onChange={(event) => setRealmDescription(event.target.value)} />
-              </div>
-              <button type="button" className="btn" onClick={() => run(() => upsertIamRealm({ realmKey, displayName: realmName, description: realmDescription, active: true }).then(() => undefined), `Realm ${realmKey} saved.`)} disabled={loading}>Save realm</button>
+    <PanelShell
+      activeKey="iam"
+      title="Profile & Settings"
+      titleFa="پروفایل و تنظیمات"
+      subtitle="Review the active account, panel preferences, and current access scopes."
+      subtitleFa="حساب فعال، تنظیمات پنل و سطح دسترسی جاری را بررسی کنید."
+    >
+      <div className="desktop-only two-column-grid">
+        <section className="panel-card">
+          <div className="card-title-row">
+            <h3>{locale === "fa" ? "حساب کاربری" : "Account"}</h3>
+            <span className="status-pill info">{locale === "fa" ? "زنده" : "Live"}</span>
+          </div>
+          <div className="summary-grid" style={{ marginTop: 18 }}>
+            <div className="mini-card"><strong>{profile?.username ?? username ?? "—"}</strong><span className="muted-block">{locale === "fa" ? "نام کاربری" : "Username"}</span></div>
+            <div className="mini-card"><strong>{profile?.email ?? "—"}</strong><span className="muted-block">{locale === "fa" ? "ایمیل" : "Email"}</span></div>
+            <div className="mini-card"><strong>{profile?.phoneNumber ?? "—"}</strong><span className="muted-block">{locale === "fa" ? "تلفن" : "Phone"}</span></div>
+            <div className="mini-card"><strong>{profile?.mfaEnabled ? (locale === "fa" ? "فعال" : "Enabled") : locale === "fa" ? "غیرفعال" : "Disabled"}</strong><span className="muted-block">{locale === "fa" ? "ورود دومرحله‌ای" : "MFA"}</span></div>
+          </div>
+          <div className="panel-card" style={{ marginTop: 18 }}>
+            <strong>{locale === "fa" ? "نشست فعال" : "Active session"}</strong>
+            <div className="muted-block" style={{ marginTop: 8, overflowWrap: "anywhere" }}>{getPlatformSessionId() || "—"}</div>
+            <div className="pill-row" style={{ marginTop: 16 }}>
+              <button type="button" className="primary-pill" onClick={() => handleLogout().catch(() => null)} disabled={loading}>
+                {loading ? (locale === "fa" ? "در حال خروج..." : "Signing out...") : locale === "fa" ? "خروج از حساب" : "Sign out"}
+              </button>
             </div>
-
-            <div className="result-card">
-              <h4>Client</h4>
-              <div className="field-grid">
-                <div className="field">
-                  <label>Client id</label>
-                  <input value={clientId} onChange={(event) => setClientId(event.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Display name</label>
-                  <input value={clientName} onChange={(event) => setClientName(event.target.value)} />
-                </div>
-              </div>
-              <div className="field">
-                <label>Redirect URIs CSV</label>
-                <input value={redirectUris} onChange={(event) => setRedirectUris(event.target.value)} />
-              </div>
-              <button type="button" className="btn" onClick={() => run(() => upsertIamClient({ clientId, realmKey, displayName: clientName, description: `${clientName} client`, active: true, publicClient: true, redirectUris: csv(redirectUris) }).then(() => undefined), `Client ${clientId} saved.`)} disabled={loading}>Save client</button>
-            </div>
-
-            <div className="result-card">
-              <h4>Realm role catalog</h4>
-              <div className="field-grid">
-                <div className="field">
-                  <label>Role key</label>
-                  <input value={realmRoleKey} onChange={(event) => setRealmRoleKey(event.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Permissions CSV</label>
-                  <input value={permissions} onChange={(event) => setPermissions(event.target.value)} />
-                </div>
-              </div>
-              <button type="button" className="btn" onClick={() => run(() => upsertIamRealmRole({ scopeType: "REALM", scopeKey: realmKey, roleKey: realmRoleKey, displayName: realmRoleKey, description: realmRoleKey, active: true, permissions: csv(permissions) }).then(() => undefined), `Realm role ${realmRoleKey} saved.`)} disabled={loading}>Save realm role</button>
-            </div>
-
-            <div className="result-card">
-              <h4>Client role catalog</h4>
-              <div className="field-grid">
-                <div className="field">
-                  <label>Role key</label>
-                  <input value={clientRoleKey} onChange={(event) => setClientRoleKey(event.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Permissions CSV</label>
-                  <input value={permissions} onChange={(event) => setPermissions(event.target.value)} />
-                </div>
-              </div>
-              <button type="button" className="btn" onClick={() => run(() => upsertIamClientRole({ scopeType: "CLIENT", scopeKey: clientId, roleKey: clientRoleKey, displayName: clientRoleKey, description: clientRoleKey, active: true, permissions: csv(permissions) }).then(() => undefined), `Client role ${clientRoleKey} saved.`)} disabled={loading}>Save client role</button>
-            </div>
-
-            <div className="result-card">
-              <h4>User directory</h4>
-              <div className="field-grid">
-                <div className="field">
-                  <label>Username</label>
-                  <input value={username} onChange={(event) => setUsername(event.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Password</label>
-                  <input value={password} onChange={(event) => setPassword(event.target.value)} />
-                </div>
-              </div>
-              <div className="field-grid">
-                <div className="field">
-                  <label>Email</label>
-                  <input value={email} onChange={(event) => setEmail(event.target.value)} />
-                </div>
-                <div className="field">
-                  <label>Phone number</label>
-                  <input value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} />
-                </div>
-              </div>
-              <button type="button" className="btn" onClick={() => run(() => provisionManagedIamUser({
-                username,
-                password,
-                email,
-                phoneNumber,
-                mfaEnabled: false,
-                realmKey,
-                clientId,
-                realmRoles: realmRoleKey ? [realmRoleKey] : [],
-                clientRoles: clientRoleKey ? [clientRoleKey] : []
-              }).then(() => undefined), `User ${username} provisioned.`)} disabled={loading}>Provision user</button>
-            </div>
-
-            <div className="result-card">
-              <h4>User membership and assignments</h4>
-              <div className="field"><label>Username</label><input value={username} onChange={(event) => setUsername(event.target.value)} /></div>
-              <div className="hero-actions">
-                <button type="button" className="btn" onClick={() => run(() => upsertIamMembership({ username, realmKey, active: true, defaultRealm: true }).then(() => undefined), `Membership saved for ${username}.`)} disabled={loading}>Add to realm</button>
-                <button type="button" className="ghost-btn" onClick={() => run(() => assignIamRealmRole(realmKey, { username, roleKey: realmRoleKey }).then(() => undefined), `Assigned realm role ${realmRoleKey}.`)} disabled={loading}>Assign realm role</button>
-                <button type="button" className="ghost-btn" onClick={() => run(() => assignIamClientRole(clientId, { username, roleKey: clientRoleKey }).then(() => undefined), `Assigned client role ${clientRoleKey}.`)} disabled={loading}>Assign client role</button>
-                <button type="button" className="ghost-btn" onClick={() => run(() => resolveIamAccess(username, clientId).then((result) => setAccess(result)), `Resolved access for ${username}.`)} disabled={loading}>Resolve access</button>
-              </div>
-            </div>
-
-            {status ? <div className="ai-banner">{status}</div> : null}
           </div>
         </section>
 
-        <aside className="sidebar">
-          <section className="panel rail"><p className="section-title">Realms</p><pre className="json-view">{JSON.stringify(realms, null, 2)}</pre></section>
-          <section className="panel rail"><p className="section-title">Clients</p><pre className="json-view">{JSON.stringify(clients, null, 2)}</pre></section>
-          <section className="panel rail"><p className="section-title">Realm roles</p><pre className="json-view">{JSON.stringify(realmRoles, null, 2)}</pre></section>
-          <section className="panel rail"><p className="section-title">Client roles</p><pre className="json-view">{JSON.stringify(clientRoles, null, 2)}</pre></section>
-          <section className="panel rail"><p className="section-title">Memberships</p><pre className="json-view">{JSON.stringify(memberships, null, 2)}</pre></section>
-          <section className="panel rail"><p className="section-title">Users</p><pre className="json-view">{JSON.stringify(users, null, 2)}</pre></section>
-          <section className="panel rail"><p className="section-title">Resolved access</p><pre className="json-view">{JSON.stringify(access, null, 2)}</pre></section>
-        </aside>
+        <section className="panel-card">
+          <div className="card-title-row">
+            <h3>{locale === "fa" ? "ترجیحات پنل" : "Panel preferences"}</h3>
+            <span className="muted">{locale === "fa" ? "ذخیره محلی" : "Stored locally"}</span>
+          </div>
+          <div className="form-grid" style={{ marginTop: 18 }}>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>{locale === "fa" ? "نام فضای کاری" : "Workspace name"}</span>
+              <input value={workspaceDraft} onChange={(event) => setWorkspaceDraft(event.target.value)} />
+            </label>
+            <label style={{ display: "grid", gap: 8 }}>
+              <span>{locale === "fa" ? "نام سایت" : "Site name"}</span>
+              <input value={siteDraft} onChange={(event) => setSiteDraft(event.target.value)} />
+            </label>
+            <div className="pill-row">
+              <button
+                type="button"
+                className="primary-pill"
+                onClick={() => {
+                  setWorkspaceName(workspaceDraft.trim() || "tenant-demo");
+                  setSiteName(siteDraft.trim() || "site-commerce");
+                  setStatus(locale === "fa" ? "تنظیمات پنل ذخیره شد." : "Panel settings saved.");
+                }}
+              >
+                {locale === "fa" ? "ذخیره تنظیمات" : "Save settings"}
+              </button>
+            </div>
+          </div>
+
+          <div className="card-title-row" style={{ marginTop: 24 }}>
+            <h3>{locale === "fa" ? "دسترسی جاری" : "Current access"}</h3>
+          </div>
+          <pre className="json-view" style={{ marginTop: 14 }}>{JSON.stringify(access, null, 2)}</pre>
+        </section>
       </div>
-    </AppShell>
+
+      {status ? <div className="status-pill info">{status}</div> : null}
+    </PanelShell>
   );
 }

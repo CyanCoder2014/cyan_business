@@ -1,30 +1,44 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
-import { getBotSession } from "@/lib/bot-session-registry";
+import { getConversationSession } from "@/lib/platform-api";
+import type { AiConversationSession } from "@/lib/types";
 
-type BotSessionPageProps = {
-  params: {
-    sessionId: string;
-  };
-};
+export default function BotSessionPage() {
+  const params = useParams<{ sessionId: string }>();
+  const sessionId = params.sessionId;
+  const [session, setSession] = useState<AiConversationSession | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
-export default async function BotSessionPage({ params }: BotSessionPageProps) {
-  const session = await getBotSession(params.sessionId);
+  useEffect(() => {
+    getConversationSession(sessionId)
+      .then(setSession)
+      .catch((error) => setStatus(error instanceof Error ? error.message : "Session could not be loaded."));
+  }, [sessionId]);
 
   if (!session) {
-    notFound();
+    return (
+      <AppShell title="Bot session" subtitle="Persistent bot conversation thread.">
+        <section className="panel rail">
+          <p className="section-title">Session</p>
+          <p className="muted">{status ?? "Loading session..."}</p>
+        </section>
+      </AppShell>
+    );
   }
 
   return (
-    <AppShell title={session.title} subtitle="Persistent bot conversation thread.">
+    <AppShell title={session.latestPrompt ?? session.sessionId} subtitle="Persistent bot conversation thread.">
       <div className="studio-grid">
         <section className="panel rail">
           <p className="section-title">Session</p>
           <div className="timeline">
             <div className="timeline-step">
               <strong>Channel</strong>
-              <span>{session.channel}</span>
+              <span>{session.channelType ?? "PANEL"}</span>
             </div>
             <div className="timeline-step">
               <strong>Status</strong>
@@ -33,12 +47,16 @@ export default async function BotSessionPage({ params }: BotSessionPageProps) {
             <div className="timeline-step">
               <strong>Scope</strong>
               <span>
-                {session.tenantKey} / {session.siteKey}
+                {session.tenantKey ?? "tenant-demo"} / {session.siteKey ?? "site-commerce"}
               </span>
             </div>
             <div className="timeline-step">
               <strong>Linked draft</strong>
               <span>{session.draftId ?? "none"}</span>
+            </div>
+            <div className="timeline-step">
+              <strong>Pending questions</strong>
+              <span>{session.pendingQuestions.length}</span>
             </div>
           </div>
 
@@ -57,14 +75,15 @@ export default async function BotSessionPage({ params }: BotSessionPageProps) {
             <p className="section-title">Conversation</p>
             <div className="draft-list">
               {session.messages.map((message) => (
-                <div key={message.id} className="draft-item">
+                <div key={message.messageId} className="draft-item">
                   <strong>
                     <span>{message.role}</span>
-                    <span className="muted">{new Date(message.createdAt).toLocaleString()}</span>
+                    <span className="muted">{message.createdAt ? new Date(message.createdAt).toLocaleString() : "—"}</span>
                   </strong>
                   <span className="muted">{message.content}</span>
                 </div>
               ))}
+              {!session.messages.length ? <p className="muted">No messages stored for this session.</p> : null}
             </div>
           </section>
         </aside>
@@ -72,7 +91,20 @@ export default async function BotSessionPage({ params }: BotSessionPageProps) {
 
       <section style={{ padding: "24px" }}>
         <p className="section-title">Answers</p>
-        <pre className="json-view">{JSON.stringify(session.answers, null, 2)}</pre>
+        <pre className="json-view">{JSON.stringify(session.extractedAnswers ?? {}, null, 2)}</pre>
+      </section>
+
+      <section style={{ padding: "24px", paddingTop: 0 }}>
+        <p className="section-title">Pending questions</p>
+        {session.pendingQuestions.length ? (
+          <ul className="result-list">
+            {session.pendingQuestions.map((question) => (
+              <li key={question}>{question}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">This session has no pending follow-up questions.</p>
+        )}
       </section>
     </AppShell>
   );

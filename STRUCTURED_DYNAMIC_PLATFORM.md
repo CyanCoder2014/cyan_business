@@ -45,9 +45,9 @@ Each definition stores:
 - `entityKey`
 - `entityType`
 - `title`
-- `definitionJson`
+- `definitionJson` (internal persistence column)
 
-`definitionJson` is the structured source of truth.
+The persistence column stores serialized JSON internally. API responses expose that value as a structured `definition` object.
 
 ## Record Storage
 
@@ -93,6 +93,43 @@ Shared controllers are exposed by `dynamic-entity-core`:
 - `GET /endpoint/entities/records/{entityKey}`
 - `GET /endpoint/entities/records/{entityKey}/{recordKey}`
 
+Definition listing is paginated for both endpoint and internal APIs:
+
+```http
+GET /endpoint/entities/definitions?page=0&size=20&sort=entityKey,asc
+GET /internal/entities/definitions?page=0&size=20&sort=updatedAt,desc
+```
+
+The default page is `0`, the default size is `20`, and the maximum size is
+`200`. Supported sort fields are `entityKey`, `title`, `entityType`,
+`createdAt`, and `updatedAt`. Non-`entityKey` sorting automatically adds
+`entityKey ASC` as a stable tie-breaker.
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 20,
+  "totalElements": 0,
+  "totalPages": 0
+}
+```
+
+Each dynamic runtime service exposes the same endpoint controller under a second, service-qualified path:
+
+```text
+/api/{dynamic.runtime.service-key}/endpoint/entities/**
+```
+
+For example, `bpm-service` accepts both:
+
+```text
+POST /endpoint/entities/definitions
+POST /api/bpm-service/endpoint/entities/definitions
+```
+
+The first path preserves direct-service compatibility. The second matches the existing `/api/{service-key}/**` gateway routes used by dynamic business services. Both paths use bearer authentication and the same method-level permissions. The service key is resolved from the host service's fixed `dynamic.runtime.service-key`; it is not an unrestricted path variable.
+
 And matching internal surfaces:
 
 - `GET /internal/entities/definitions`
@@ -106,6 +143,39 @@ And matching internal surfaces:
 - `GET /internal/entities/records/{entityKey}/{recordKey}`
 
 `POST .../templates/{templateKey}/definitions` lets the AI orchestrator instantiate a controlled entity definition from a service-owned blueprint instead of inventing a schema from scratch.
+
+Definition create and update requests should send the definition as a structured JSON object:
+
+```json
+{
+  "entityKey": "leave-request-form",
+  "definition": {
+    "entityType": "BPM_FORM",
+    "title": "Leave Request",
+    "fields": {}
+  }
+}
+```
+
+The runtime assigns the owning `serviceKey` and outer `entityKey`, then serializes `definition` internally for the existing `definitionJson` persistence column. The legacy request field `definitionJson` remains accepted during migration. If both fields are supplied, the structured `definition` field takes precedence.
+
+Definition and template responses expose the schema as a structured object:
+
+```json
+{
+  "serviceKey": "bpm-service",
+  "entityKey": "leave-request-form",
+  "definition": {
+    "serviceKey": "bpm-service",
+    "entityKey": "leave-request-form",
+    "entityType": "BPM_FORM",
+    "title": "Leave Request",
+    "fields": {}
+  }
+}
+```
+
+The internal persistence name `definitionJson` is not exposed in API responses.
 
 ## Validation Behavior
 

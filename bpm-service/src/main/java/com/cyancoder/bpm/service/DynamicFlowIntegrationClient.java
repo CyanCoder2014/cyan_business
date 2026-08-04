@@ -3,12 +3,14 @@ package com.cyancoder.bpm.service;
 import com.cyancoder.bpm.api.dto.BpmScope;
 import com.cyancoder.bpm.api.dto.FormSubmissionSyncRequest;
 import com.cyancoder.bpm.api.dto.FormSubmissionSyncResponse;
+import com.cyancoder.bpm.api.dto.ProcessorRunRequest;
+import com.cyancoder.bpm.api.dto.ProcessorRunResponse;
 import com.cyancoder.bpm.domain.FlowActionConfig;
 import com.cyancoder.bpm.domain.FlowState;
 import com.cyancoder.bpm.domain.ManagedObject;
 import com.cyancoder.bpm.domain.SubmitMode;
 import com.cyancoder.dynamiccore.runtime.DynamicRecordRequest;
-import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinition;
+import com.cyancoder.dynamiccore.runtime.DynamicEntityDefinitionResponse;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -30,31 +32,32 @@ public class DynamicFlowIntegrationClient {
         if (serviceKey == null || entityKey == null) {
             return null;
         }
-        StoredEntityDefinition definition = httpSupport.get(
+        DynamicEntityDefinitionResponse definition = httpSupport.get(
                 serviceKey,
                 "/internal/entities/definitions/" + entityKey,
                 scope.tenantKey(),
                 scope.siteKey(),
-                StoredEntityDefinition.class
+                DynamicEntityDefinitionResponse.class
         );
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("serviceKey", definition.getServiceKey());
-        result.put("entityKey", definition.getEntityKey());
-        result.put("entityType", definition.getEntityType());
-        result.put("title", definition.getTitle());
-        result.put("definitionJson", definition.getDefinitionJson());
+        result.put("serviceKey", definition.serviceKey());
+        result.put("entityKey", definition.entityKey());
+        result.put("entityType", definition.entityType());
+        result.put("title", definition.title());
+        result.put("definition", definition.definition());
         return result;
     }
 
     public FormSubmissionSyncResponse submitForm(FlowState state, FormSubmissionSyncRequest request, BpmScope scope) {
         SubmitMode mode = state.submitMode() == null ? SubmitMode.DYNAMIC : state.submitMode();
+        Map<String, Object> processedFormData = applyProcessor(state.processorKey(), request.formData(), scope);
         if (mode == SubmitMode.STATIC) {
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("objectId", request.objectId());
             body.put("objectType", request.objectType());
             body.put("flowKey", request.flowKey());
             body.put("stateId", request.stateId());
-            body.put("formData", request.formData());
+            body.put("formData", processedFormData);
             body.put("objectPayload", request.objectPayload());
             body.put("context", request.context());
             @SuppressWarnings("unchecked")
@@ -76,7 +79,7 @@ public class DynamicFlowIntegrationClient {
         submitRequest.setRecordKey(request.existingSubmissionId());
         submitRequest.setTenantKey(scope.tenantKey());
         submitRequest.setSiteKey(scope.siteKey());
-        submitRequest.setData(request.formData());
+        submitRequest.setData(processedFormData);
         DynamicEntityRecordDocument document = httpSupport.post(
                 state.entityService(),
                 "/internal/entities/records/" + state.entityKey(),
@@ -86,6 +89,25 @@ public class DynamicFlowIntegrationClient {
                 DynamicEntityRecordDocument.class
         );
         return new FormSubmissionSyncResponse(true, "submitted", document.getRecordKey(), document.getData());
+    }
+
+    private Map<String, Object> applyProcessor(String processorKey, Map<String, Object> formData, BpmScope scope) {
+        Map<String, Object> safeFormData = formData == null ? Map.of() : formData;
+        if (processorKey == null || processorKey.isBlank()) {
+            return safeFormData;
+        }
+        ProcessorRunResponse response = httpSupport.post(
+                "processor-service",
+                "/api/processor-service/processors/" + processorKey + "/run",
+                new ProcessorRunRequest(null, safeFormData),
+                scope.tenantKey(),
+                scope.siteKey(),
+                ProcessorRunResponse.class
+        );
+        if (response == null || !response.valid()) {
+            throw new IllegalArgumentException("processor validation failed: " + (response == null ? "no response" : response.errors()));
+        }
+        return response.payload() == null ? Map.of() : response.payload();
     }
 
     public void callAction(FlowActionConfig action, ManagedObject object, BpmScope scope) {

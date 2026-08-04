@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }
@@ -75,7 +75,30 @@
                 "entityKey": "catalog-item",
                 "tenantKey": "demo-tenant",
                 "siteKey": "main-site",
-                "definitionJson": "{\"entityKey\": \"catalog-item\", \"title\": \"Catalog Item\", \"fields\": [{\"key\": \"title\", \"type\": \"text\", \"required\": true}, {\"key\": \"price\", \"type\": \"number\", \"required\": true}, {\"key\": \"status\", \"type\": \"select\", \"options\": [\"DRAFT\", \"PUBLISHED\"]}]}"
+                "definition": {
+                  "entityKey": "catalog-item",
+                  "title": "Catalog Item",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "type": "text",
+                      "required": true
+                    },
+                    {
+                      "key": "price",
+                      "type": "number",
+                      "required": true
+                    },
+                    {
+                      "key": "status",
+                      "type": "select",
+                      "options": [
+                        "DRAFT",
+                        "PUBLISHED"
+                      ]
+                    }
+                  ]
+                }
               }
             }
           }
@@ -86,7 +109,7 @@
           "Dynamic Entity Internal"
         ],
         "summary": "List Definitions",
-        "description": "List Definitions for Dynamic Entity Internal.",
+        "description": "Paginated internal tenant/site-scoped entity definitions using Basic authentication. Default page=0, size=20; maximum size=200.",
         "security": [
           {
             "BasicAuth": []
@@ -107,7 +130,36 @@
               }
             }
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "0"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "20"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "entityKey,asc"
+          }
+        ]
       }
     },
     "/internal/entities/definitions/{entityKey}": {
@@ -161,7 +213,30 @@
                 "entityKey": "catalog-item",
                 "tenantKey": "demo-tenant",
                 "siteKey": "main-site",
-                "definitionJson": "{\"entityKey\": \"catalog-item\", \"title\": \"Catalog Item\", \"fields\": [{\"key\": \"title\", \"type\": \"text\", \"required\": true}, {\"key\": \"price\", \"type\": \"number\", \"required\": true}, {\"key\": \"status\", \"type\": \"select\", \"options\": [\"DRAFT\", \"PUBLISHED\"]}]}"
+                "definition": {
+                  "entityKey": "catalog-item",
+                  "title": "Catalog Item",
+                  "fields": [
+                    {
+                      "key": "title",
+                      "type": "text",
+                      "required": true
+                    },
+                    {
+                      "key": "price",
+                      "type": "number",
+                      "required": true
+                    },
+                    {
+                      "key": "status",
+                      "type": "select",
+                      "options": [
+                        "DRAFT",
+                        "PUBLISHED"
+                      ]
+                    }
+                  ]
+                }
               }
             }
           }
@@ -212,6 +287,47 @@
         ],
         "summary": "Delete Definition",
         "description": "Delete Definition for Dynamic Entity Internal.",
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entityKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "catalog-item"
+          }
+        ]
+      }
+    },
+    "/internal/entities/definitions/{entityKey}/openapi": {
+      "get": {
+        "tags": [
+          "Dynamic Entity Internal"
+        ],
+        "summary": "Get Dynamic Entity OpenAPI",
+        "description": "Generate a strict OpenAPI document from the stored tenant/site entity definition.",
         "security": [
           {
             "BasicAuth": []
@@ -569,7 +685,7 @@
           "Dynamic Entity Internal"
         ],
         "summary": "List Records",
-        "description": "List Records for Dynamic Entity Internal.",
+        "description": "Bounded tenant/site-scoped record page. Supplying page, size, or sort returns {content,page,size,totalElements,totalPages}; maximum size=1000. Omitting all three preserves the legacy array response.",
         "security": [
           {
             "BasicAuth": []
@@ -600,6 +716,33 @@
               "type": "string"
             },
             "example": "catalog-item"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "0"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "500"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "createdAt,asc"
           }
         ]
       }

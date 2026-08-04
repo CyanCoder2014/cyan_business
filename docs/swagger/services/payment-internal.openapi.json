@@ -11,7 +11,7 @@
       "description": "Gateway base URL",
       "variables": {
         "gateway_base_url": {
-          "default": "http://localhost:8080"
+          "default": "http://localhost:8001"
         }
       }
     }
@@ -306,7 +306,7 @@
                 "amount": 1250000,
                 "currency": "IRR",
                 "description": "Order payment for Spiffy checkout",
-                "callbackUrl": "http://localhost:8080/public/payment/callback/ZARINPAL/order-1001",
+                "callbackUrl": "http://localhost:8001/public/payment/callback/ZARINPAL/order-1001",
                 "successUrl": "http://localhost:3000/checkout/success",
                 "failureUrl": "http://localhost:3000/checkout/failure",
                 "metaData": {

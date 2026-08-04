@@ -63,6 +63,10 @@ public class HeuristicLlmClient implements LlmClient {
             lead.setCreateDefinition(true);
             entities.add(lead);
         }
+        if (wantsBpmOrForm(lower)) {
+            entities.add(templateEntity("bpm-service", "screening-intake-form", "screening-intake-form"));
+            entities.add(templateEntity("bpm-service", "screening-review-form", "screening-review-form"));
+        }
         dsl.setEntities(entities);
 
         List<RouteBlueprint> routes = new ArrayList<>();
@@ -75,20 +79,71 @@ public class HeuristicLlmClient implements LlmClient {
         }
         dsl.setRoutes(routes);
 
-        if (lower.contains("approval") || lower.contains("bpm") || lower.contains("review")) {
+        if (wantsBpmOrForm(lower)) {
             FlowBlueprint flowBlueprint = new FlowBlueprint();
-            flowBlueprint.setFlowKey("orchestrated-order-review");
+            flowBlueprint.setFlowKey("ai-assisted-screening-review");
             flowBlueprint.setFlowDefinition(Map.of(
-                    "flowKey", "orchestrated-order-review",
-                    "name", "Orchestrated Order Review",
-                    "startState", "draft-order",
+                    "flowKey", "ai-assisted-screening-review",
+                    "name", "AI Assisted Screening Review",
+                    "startState", "intake",
                     "active", true,
                     "states", List.of(
-                            Map.of("id", "draft-order", "displayName", "Draft Order", "terminal", false, "entityService", "commerce-service", "entityKey", "shop-order", "formKey", "shop-order", "submitMode", "DYNAMIC"),
-                            Map.of("id", "approved-order", "displayName", "Approved Order", "terminal", true)
+                            Map.of(
+                                    "id", "intake",
+                                    "displayName", "Intake",
+                                    "terminal", false,
+                                    "entityService", "bpm-service",
+                                    "entityKey", "screening-intake-form",
+                                    "formKey", "screening-intake-form",
+                                    "submitMode", "DYNAMIC"
+                            ),
+                            Map.of(
+                                    "id", "automation-screening",
+                                    "displayName", "Automation Screening",
+                                    "terminal", false,
+                                    "waitForAutomation", true,
+                                    "onEnterActions", List.of(Map.of(
+                                            "type", "RUN_AUTOMATION_BLOCK",
+                                            "params", Map.ofEntries(
+                                                    Map.entry("actionKey", "screening"),
+                                                    Map.entry("flowKey", "hybrid-screening-automation"),
+                                                    Map.entry("async", true),
+                                                    Map.entry("failurePolicy", "CONTINUE"),
+                                                    Map.entry("variables", Map.of(
+                                                            "fullName", "{{payload.intake.fullName}}",
+                                                            "nationalId", "{{payload.intake.nationalId}}",
+                                                            "requestedAmount", "{{payload.intake.requestedAmount}}"
+                                                    )),
+                                                    Map.entry("storeExecutionIdAt", "payload.automation.screening.executionId"),
+                                                    Map.entry("storeStatusAt", "payload.automation.screening.status"),
+                                                    Map.entry("storeVariablesAt", "payload.automation.screening.output"),
+                                                    Map.entry("resultMappings", Map.of(
+                                                            "payload.currentFormValues.screeningRoute", "screeningRoute",
+                                                            "payload.currentFormValues.riskScore", "riskScore"
+                                                    )),
+                                                    Map.entry("nextStateOnSuccess", "manual-review"),
+                                                    Map.entry("nextStateOnFailure", "manual-review")
+                                            )
+                                    ))
+                            ),
+                            Map.of(
+                                    "id", "manual-review",
+                                    "displayName", "Manual Review",
+                                    "terminal", false,
+                                    "entityService", "bpm-service",
+                                    "entityKey", "screening-review-form",
+                                    "formKey", "screening-review-form",
+                                    "submitMode", "DYNAMIC",
+                                    "reviewCommentRequired", true
+                            ),
+                            Map.of("id", "approved", "displayName", "Approved", "terminal", true),
+                            Map.of("id", "rejected", "displayName", "Rejected", "terminal", true)
                     ),
                     "transitions", List.of(
-                            Map.of("id", "approve", "fromState", "draft-order", "toState", "approved-order", "label", "Approve", "allowedRoles", List.of("ROLE_ADMIN"))
+                            Map.of("id", "submit", "fromState", "intake", "toState", "automation-screening", "label", "Submit"),
+                            Map.of("id", "route-review", "fromState", "automation-screening", "toState", "manual-review", "label", "Route to review"),
+                            Map.of("id", "approve", "fromState", "manual-review", "toState", "approved", "label", "Approve", "allowedRoles", List.of("ROLE_ADMIN")),
+                            Map.of("id", "reject", "fromState", "manual-review", "toState", "rejected", "label", "Reject", "allowedRoles", List.of("ROLE_ADMIN"))
                     )
             ));
             dsl.setFlows(List.of(flowBlueprint));
@@ -137,7 +192,7 @@ public class HeuristicLlmClient implements LlmClient {
         if (lower.contains("blog")) {
             return PlatformAppType.BLOG;
         }
-        if (lower.contains("bpm")) {
+        if (wantsBpmOrForm(lower)) {
             return PlatformAppType.BPM_PORTAL;
         }
         return PlatformAppType.WEBSITE;
@@ -149,8 +204,25 @@ public class HeuristicLlmClient implements LlmClient {
         if (lower.contains("blog")) capabilities.add("blog");
         if (lower.contains("shop") || lower.contains("product")) capabilities.add("shop");
         if (lower.contains("crm") || lower.contains("lead")) capabilities.add("crm");
-        if (lower.contains("bpm") || lower.contains("review")) capabilities.add("bpm");
+        if (wantsBpmOrForm(lower)) capabilities.add("bpm");
         return capabilities;
+    }
+
+    private boolean wantsBpmOrForm(String lower) {
+        return lower.contains("approval")
+                || lower.contains("bpm")
+                || lower.contains("review")
+                || lower.contains("workflow")
+                || lower.contains("form");
+    }
+
+    private EntityBlueprint templateEntity(String serviceKey, String templateKey, String entityKey) {
+        EntityBlueprint entity = new EntityBlueprint();
+        entity.setServiceKey(serviceKey);
+        entity.setTemplateKey(templateKey);
+        entity.setEntityKey(entityKey);
+        entity.setCreateDefinition(true);
+        return entity;
     }
 
     private String deriveTitle(String prompt) {
@@ -165,4 +237,3 @@ public class HeuristicLlmClient implements LlmClient {
         return prompt.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "-").replaceAll("(^-|-$)", "");
     }
 }
-

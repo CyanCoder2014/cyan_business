@@ -43,13 +43,13 @@ public class EndpointConversationSessionController {
 
     @GetMapping("/{sessionId}")
     @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
-    public ConversationSession get(@PathVariable String sessionId) {
+    public ConversationSession get(@PathVariable("sessionId") String sessionId) {
         return conversationSessionService.getSession(sessionId);
     }
 
     @PostMapping("/{sessionId}/message")
     @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
-    public ConversationSession appendMessage(@PathVariable String sessionId, @RequestBody SessionMessageRequest request) {
+    public ConversationSession appendMessage(@PathVariable("sessionId") String sessionId, @RequestBody SessionMessageRequest request) {
         return conversationSessionService.appendMessage(sessionId, request);
     }
 }

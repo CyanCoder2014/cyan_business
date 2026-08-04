@@ -1,36 +1,64 @@
 package com.cyancoder.automationorchestrator.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Document("automation_executions")
 @CompoundIndex(name = "automation_execution_scope_key", def = "{'tenantKey':1,'siteKey':1,'executionId':1}", unique = true)
+@CompoundIndex(
+        name = "automation_execution_idempotency",
+        def = "{'tenantKey':1,'siteKey':1,'idempotencyKey':1}",
+        unique = true,
+        partialFilter = "{'idempotencyKey': {'$type': 'string'}}"
+)
 public class AutomationExecution {
     @Id
     private String id;
+    @Version
+    private Long revision;
     private String executionId;
     private String blockKey;
     private String automationFlowKey;
+    private Integer flowVersion;
+    private String entryType;
+    private String managedObjectId;
+    private String idempotencyKey;
     private AutomationExecutionMode executionMode = AutomationExecutionMode.ASYNC;
-    private AutomationFailurePolicy failurePolicy = AutomationFailurePolicy.MARK_FAILED;
+    private AutomationFailurePolicy failurePolicy = AutomationFailurePolicy.FAIL_FAST;
     private String correlationKey;
     private String tenantKey;
     private String siteKey;
     private String status;
     private Map<String, Object> input = new LinkedHashMap<>();
+    private Map<String, Object> context = new LinkedHashMap<>();
     private Map<String, Object> inlineFragment = new LinkedHashMap<>();
     private Map<String, Object> output = new LinkedHashMap<>();
     private Map<String, Object> snapshot = new LinkedHashMap<>();
     private Map<String, Object> error = new LinkedHashMap<>();
+    private String currentNodeId;
+    private String currentConcurrencyKey;
+    private String resumeNodeId;
+    private Instant resumeAt;
+    private String callbackPath;
+    private List<AutomationExecutionStep> steps = new ArrayList<>();
+    private List<Map<String, Object>> deadLetters = new ArrayList<>();
+    private String parentExecutionId;
     private Integer maxRetries = 0;
     private Integer retryCount = 0;
     private Long timeoutSeconds;
     private Instant timeoutAt;
+    private String workerId;
+    private Instant leaseUntil;
+    private Instant heartbeatAt;
+    private long checkpointSequence;
     private boolean cancelRequested;
     private Instant cancelledAt;
     private Instant createdAt;
@@ -39,12 +67,22 @@ public class AutomationExecution {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+    public Long getRevision() { return revision; }
+    public void setRevision(Long revision) { this.revision = revision; }
     public String getExecutionId() { return executionId; }
     public void setExecutionId(String executionId) { this.executionId = executionId; }
     public String getBlockKey() { return blockKey; }
     public void setBlockKey(String blockKey) { this.blockKey = blockKey; }
     public String getAutomationFlowKey() { return automationFlowKey; }
     public void setAutomationFlowKey(String automationFlowKey) { this.automationFlowKey = automationFlowKey; }
+    public Integer getFlowVersion() { return flowVersion; }
+    public void setFlowVersion(Integer flowVersion) { this.flowVersion = flowVersion; }
+    public String getEntryType() { return entryType; }
+    public void setEntryType(String entryType) { this.entryType = entryType; }
+    public String getManagedObjectId() { return managedObjectId; }
+    public void setManagedObjectId(String managedObjectId) { this.managedObjectId = managedObjectId; }
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
     public AutomationExecutionMode getExecutionMode() { return executionMode; }
     public void setExecutionMode(AutomationExecutionMode executionMode) { this.executionMode = executionMode; }
     public AutomationFailurePolicy getFailurePolicy() { return failurePolicy; }
@@ -59,6 +97,8 @@ public class AutomationExecution {
     public void setStatus(String status) { this.status = status; }
     public Map<String, Object> getInput() { return input; }
     public void setInput(Map<String, Object> input) { this.input = input; }
+    public Map<String, Object> getContext() { return context; }
+    public void setContext(Map<String, Object> context) { this.context = context == null ? new LinkedHashMap<>() : new LinkedHashMap<>(context); }
     public Map<String, Object> getInlineFragment() { return inlineFragment; }
     public void setInlineFragment(Map<String, Object> inlineFragment) { this.inlineFragment = inlineFragment; }
     public Map<String, Object> getOutput() { return output; }
@@ -67,6 +107,22 @@ public class AutomationExecution {
     public void setSnapshot(Map<String, Object> snapshot) { this.snapshot = snapshot; }
     public Map<String, Object> getError() { return error; }
     public void setError(Map<String, Object> error) { this.error = error; }
+    public String getCurrentNodeId() { return currentNodeId; }
+    public void setCurrentNodeId(String currentNodeId) { this.currentNodeId = currentNodeId; }
+    public String getCurrentConcurrencyKey() { return currentConcurrencyKey; }
+    public void setCurrentConcurrencyKey(String currentConcurrencyKey) { this.currentConcurrencyKey = currentConcurrencyKey; }
+    public String getResumeNodeId() { return resumeNodeId; }
+    public void setResumeNodeId(String resumeNodeId) { this.resumeNodeId = resumeNodeId; }
+    public Instant getResumeAt() { return resumeAt; }
+    public void setResumeAt(Instant resumeAt) { this.resumeAt = resumeAt; }
+    public String getCallbackPath() { return callbackPath; }
+    public void setCallbackPath(String callbackPath) { this.callbackPath = callbackPath; }
+    public List<AutomationExecutionStep> getSteps() { return steps; }
+    public void setSteps(List<AutomationExecutionStep> steps) { this.steps = steps == null ? new ArrayList<>() : new ArrayList<>(steps); }
+    public List<Map<String, Object>> getDeadLetters() { return deadLetters; }
+    public void setDeadLetters(List<Map<String, Object>> deadLetters) { this.deadLetters = deadLetters == null ? new ArrayList<>() : new ArrayList<>(deadLetters); }
+    public String getParentExecutionId() { return parentExecutionId; }
+    public void setParentExecutionId(String parentExecutionId) { this.parentExecutionId = parentExecutionId; }
     public Integer getMaxRetries() { return maxRetries; }
     public void setMaxRetries(Integer maxRetries) { this.maxRetries = maxRetries; }
     public Integer getRetryCount() { return retryCount; }
@@ -75,6 +131,14 @@ public class AutomationExecution {
     public void setTimeoutSeconds(Long timeoutSeconds) { this.timeoutSeconds = timeoutSeconds; }
     public Instant getTimeoutAt() { return timeoutAt; }
     public void setTimeoutAt(Instant timeoutAt) { this.timeoutAt = timeoutAt; }
+    public String getWorkerId() { return workerId; }
+    public void setWorkerId(String workerId) { this.workerId = workerId; }
+    public Instant getLeaseUntil() { return leaseUntil; }
+    public void setLeaseUntil(Instant leaseUntil) { this.leaseUntil = leaseUntil; }
+    public Instant getHeartbeatAt() { return heartbeatAt; }
+    public void setHeartbeatAt(Instant heartbeatAt) { this.heartbeatAt = heartbeatAt; }
+    public long getCheckpointSequence() { return checkpointSequence; }
+    public void setCheckpointSequence(long checkpointSequence) { this.checkpointSequence = checkpointSequence; }
     public boolean isCancelRequested() { return cancelRequested; }
     public void setCancelRequested(boolean cancelRequested) { this.cancelRequested = cancelRequested; }
     public Instant getCancelledAt() { return cancelledAt; }

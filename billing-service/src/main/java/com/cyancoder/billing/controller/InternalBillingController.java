@@ -1,0 +1,16 @@
+package com.cyancoder.billing.controller;
+
+import com.cyancoder.billing.api.BillingContracts.BillingEntitlements;
+import com.cyancoder.billing.service.BillingDirectoryService;
+import com.cyancoder.platformopenapi.PlatformApiSecurity;
+import com.cyancoder.platformopenapi.PlatformOpenApiAuth;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/internal/billing")
+@PlatformOpenApiAuth(PlatformApiSecurity.BASIC)
+public class InternalBillingController {
+    private final BillingDirectoryService service;
+    public InternalBillingController(BillingDirectoryService service) { this.service = service; }
+    @GetMapping("/tenants/{tenantKey}/entitlements") public BillingEntitlements entitlements(@PathVariable String tenantKey) { return service.internalEntitlements(tenantKey); }
+}

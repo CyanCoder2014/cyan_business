@@ -1,0 +1,189 @@
+{
+  "$themes": [],
+  "global": {
+    "font": {
+      "family": {
+        "en": {
+          "$type": "fontFamilies",
+          "$value": "Roboto"
+        },
+        "fa": {
+          "$type": "fontFamilies",
+          "$value": "Vazir"
+        },
+        "code": {
+          "$type": "fontFamilies",
+          "$value": "Roboto Mono"
+        }
+      },
+      "size": {
+        "pageTitleDesktop": {
+          "$type": "dimension",
+          "$value": "26px"
+        },
+        "pageTitleMobile": {
+          "$type": "dimension",
+          "$value": "22px"
+        },
+        "sectionTitle": {
+          "$type": "dimension",
+          "$value": "18px"
+        },
+        "body": {
+          "$type": "dimension",
+          "$value": "14px"
+        },
+        "bodySmall": {
+          "$type": "dimension",
+          "$value": "13px"
+        },
+        "label": {
+          "$type": "dimension",
+          "$value": "12px"
+        }
+      }
+    },
+    "color": {
+      "brand": {
+        "cyan": {
+          "$type": "color",
+          "$value": "#11B7F4"
+        },
+        "blue": {
+          "$type": "color",
+          "$value": "#2878FF"
+        },
+        "violet": {
+          "$type": "color",
+          "$value": "#7A42F4"
+        }
+      },
+      "light": {
+        "background": {
+          "$type": "color",
+          "$value": "#F7F9FC"
+        },
+        "surface": {
+          "$type": "color",
+          "$value": "#FFFFFF"
+        },
+        "border": {
+          "$type": "color",
+          "$value": "#E3E8F2"
+        },
+        "textStrong": {
+          "$type": "color",
+          "$value": "#10172A"
+        },
+        "textBody": {
+          "$type": "color",
+          "$value": "#4E5A73"
+        },
+        "textMuted": {
+          "$type": "color",
+          "$value": "#7D889E"
+        }
+      },
+      "dark": {
+        "background": {
+          "$type": "color",
+          "$value": "#07111F"
+        },
+        "surface": {
+          "$type": "color",
+          "$value": "#0C1728"
+        },
+        "surfaceElevated": {
+          "$type": "color",
+          "$value": "#111E31"
+        },
+        "border": {
+          "$type": "color",
+          "$value": "#24324A"
+        },
+        "textStrong": {
+          "$type": "color",
+          "$value": "#F4F7FC"
+        },
+        "textBody": {
+          "$type": "color",
+          "$value": "#B5C0D3"
+        },
+        "textMuted": {
+          "$type": "color",
+          "$value": "#8491A8"
+        }
+      },
+      "status": {
+        "success": {
+          "$type": "color",
+          "$value": "#19B56B"
+        },
+        "warning": {
+          "$type": "color",
+          "$value": "#F5A524"
+        },
+        "danger": {
+          "$type": "color",
+          "$value": "#E5484D"
+        },
+        "info": {
+          "$type": "color",
+          "$value": "#2F80ED"
+        }
+      }
+    },
+    "space": {
+      "1": {
+        "$type": "dimension",
+        "$value": "4px"
+      },
+      "2": {
+        "$type": "dimension",
+        "$value": "8px"
+      },
+      "3": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "4": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "5": {
+        "$type": "dimension",
+        "$value": "20px"
+      },
+      "6": {
+        "$type": "dimension",
+        "$value": "24px"
+      },
+      "8": {
+        "$type": "dimension",
+        "$value": "32px"
+      }
+    },
+    "radius": {
+      "control": {
+        "$type": "dimension",
+        "$value": "10px"
+      },
+      "card": {
+        "$type": "dimension",
+        "$value": "14px"
+      },
+      "panel": {
+        "$type": "dimension",
+        "$value": "18px"
+      },
+      "drawer": {
+        "$type": "dimension",
+        "$value": "20px"
+      },
+      "pill": {
+        "$type": "dimension",
+        "$value": "999px"
+      }
+    }
+  }
+}

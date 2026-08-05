@@ -35,7 +35,7 @@ async function proxy(request: Request, context: RouteContext) {
   const incomingUrl = new URL(request.url);
   const targetPath = context.params.path.map(encodeURIComponent).join("/");
   const targetUrl = `${baseUrl}/${targetPath}${incomingUrl.search}`;
-  const body = request.method === "GET" || request.method === "HEAD" ? undefined : await request.text();
+  const body = request.method === "GET" || request.method === "HEAD" ? undefined : await request.arrayBuffer();
   const response = await fetch(targetUrl, {
     method: request.method,
     headers: {

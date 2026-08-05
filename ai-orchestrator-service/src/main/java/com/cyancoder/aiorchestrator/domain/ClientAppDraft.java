@@ -31,6 +31,7 @@ public class ClientAppDraft {
     private List<String> pendingQuestions = new ArrayList<>();
     private List<String> manualActions = new ArrayList<>();
     private List<String> availableServiceKeys = new ArrayList<>();
+    private List<ProjectAssetReference> attachments = new ArrayList<>();
     private String latestSessionId;
     private Integer revision;
     private Instant createdAt;
@@ -74,6 +75,8 @@ public class ClientAppDraft {
     public void setAvailableServiceKeys(List<String> availableServiceKeys) {
         this.availableServiceKeys = availableServiceKeys == null ? new ArrayList<>() : new ArrayList<>(availableServiceKeys);
     }
+    public List<ProjectAssetReference> getAttachments() { return attachments; }
+    public void setAttachments(List<ProjectAssetReference> attachments) { this.attachments = attachments == null ? new ArrayList<>() : new ArrayList<>(attachments); }
     public String getLatestSessionId() { return latestSessionId; }
     public void setLatestSessionId(String latestSessionId) { this.latestSessionId = latestSessionId; }
     public Integer getRevision() { return revision; }

@@ -35,7 +35,7 @@ public class MediaAssetService {
                 "license", firstNonBlank(request.license(), "")
         ));
         String path = firstNonBlank(request.path(), "assets/" + assetKey + "/" + request.originalFileName());
-        String cdnUrl = "https://cdn.example.com/" + path;
+        String cdnUrl = "/public/media/content/" + assetKey;
         data.put("storage", Map.of(
                 "bucket", firstNonBlank(request.bucket(), "default-public"),
                 "path", path,
@@ -44,8 +44,8 @@ public class MediaAssetService {
                 "height", request.height() == null ? 0 : request.height(),
                 "sizeBytes", request.sizeBytes() == null ? 0 : request.sizeBytes()
         ));
-        data.put("variants", buildVariants(cdnUrl, request.width(), request.height()));
-        data.put("storageStatus", "OPTIMIZED");
+        data.put("variants", List.of());
+        data.put("storageStatus", "UPLOADED");
 
         DynamicEntityRecordDocument saved = dynamicRuntimeService.submitMap("media-asset", assetKey, data, true);
         return toResponse(saved, null);
@@ -87,16 +87,6 @@ public class MediaAssetService {
         } catch (Exception ex) {
             dynamicRuntimeService.createFromTemplate(entityKey, entityKey);
         }
-    }
-
-    private List<Map<String, Object>> buildVariants(String baseUrl, Integer width, Integer height) {
-        int safeWidth = width == null || width <= 0 ? 1200 : width;
-        int safeHeight = height == null || height <= 0 ? 1200 : height;
-        return List.of(
-                Map.of("variantKey", "thumb", "width", 320, "height", Math.min(safeHeight, 320), "format", "webp", "cdnUrl", baseUrl + "?variant=thumb"),
-                Map.of("variantKey", "medium", "width", 768, "height", Math.min(safeHeight, 768), "format", "webp", "cdnUrl", baseUrl + "?variant=medium"),
-                Map.of("variantKey", "original", "width", safeWidth, "height", safeHeight, "format", "original", "cdnUrl", baseUrl)
-        );
     }
 
     @SuppressWarnings("unchecked")

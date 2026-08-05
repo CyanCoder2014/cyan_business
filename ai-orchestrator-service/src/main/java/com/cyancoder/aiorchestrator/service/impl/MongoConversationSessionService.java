@@ -141,6 +141,14 @@ public class MongoConversationSessionService implements ConversationSessionServi
         return repository.save(session);
     }
 
+    @Override
+    public ConversationSession closeSession(String sessionId) {
+        ConversationSession session = getSession(sessionId);
+        session.setStatus(SessionStatus.CLOSED);
+        session.setUpdatedAt(Instant.now());
+        return repository.save(session);
+    }
+
     private void syncPendingState(ConversationSession session, ClientAppDraft draft) {
         session.setPendingQuestionKeys(new ArrayList<>(draft.getPendingQuestionKeys()));
         session.setPendingQuestions(new ArrayList<>(draft.getPendingQuestions()));

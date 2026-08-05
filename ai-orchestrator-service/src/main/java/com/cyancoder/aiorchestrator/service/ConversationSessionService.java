@@ -11,4 +11,5 @@ public interface ConversationSessionService {
     List<ConversationSession> listSessions(String tenantKey, String siteKey, String clientKey, String draftId);
     ConversationSession getSession(String sessionId);
     ConversationSession appendMessage(String sessionId, SessionMessageRequest request);
+    ConversationSession closeSession(String sessionId);
 }

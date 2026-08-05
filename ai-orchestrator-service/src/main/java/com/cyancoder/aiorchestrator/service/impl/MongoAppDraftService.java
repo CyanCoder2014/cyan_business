@@ -8,6 +8,7 @@ import com.cyancoder.aiorchestrator.domain.ClientAppDraft;
 import com.cyancoder.aiorchestrator.domain.DraftStatus;
 import com.cyancoder.aiorchestrator.domain.EntityBlueprint;
 import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
+import com.cyancoder.aiorchestrator.domain.ProjectAssetReference;
 import com.cyancoder.aiorchestrator.repo.ClientAppDraftRepository;
 import com.cyancoder.aiorchestrator.service.AppDraftService;
 import com.cyancoder.aiorchestrator.service.BlueprintCatalogService;
@@ -47,6 +48,9 @@ public class MongoAppDraftService implements AppDraftService {
 
     @Override
     public ClientAppDraft createDraft(CreateDraftRequest request, String createdBy) {
+        if (request.tenantKey() == null || request.tenantKey().isBlank()) {
+            throw new IllegalArgumentException("tenantKey is required");
+        }
         AppBlueprint blueprint = request.blueprintKey() != null && !request.blueprintKey().isBlank()
                 ? blueprintCatalogService.getActiveByBlueprintKey(request.blueprintKey())
                 : blueprintCatalogService.resolveActiveByType(resolveAppType(request.appType(), request.prompt()));
@@ -56,8 +60,8 @@ public class MongoAppDraftService implements AppDraftService {
         }
         ClientAppDraft draft = new ClientAppDraft();
         draft.setDraftId("draft-" + UUID.randomUUID());
-        draft.setTenantKey(defaultScope(request.tenantKey(), "tenant-" + slug(blueprint.getAppType())));
-        draft.setSiteKey(defaultScope(request.siteKey(), "site-" + slug(blueprint.getAppType())));
+        draft.setTenantKey(request.tenantKey().trim());
+        draft.setSiteKey(request.siteKey() == null || request.siteKey().isBlank() ? null : request.siteKey().trim());
         draft.setClientKey(request.clientKey());
         draft.setBlueprintKey(blueprint.getBlueprintKey());
         draft.setBlueprintVersion(blueprint.getVersion());
@@ -117,6 +121,22 @@ public class MongoAppDraftService implements AppDraftService {
         draft.setUpdatedBy(updatedBy);
         applyResolvedDsl(draft, blueprint);
         return repository.save(draft);
+    }
+
+    @Override
+    public ProjectAssetReference attachAsset(String draftId, String tenantKey, String siteKey, ProjectAssetReference asset) {
+        ClientAppDraft draft = getDraft(draftId);
+        if (!draft.getTenantKey().equals(tenantKey) || !java.util.Objects.equals(draft.getSiteKey(), siteKey == null || siteKey.isBlank() ? null : siteKey)) {
+            throw new java.util.NoSuchElementException("Draft not found in active scope");
+        }
+        if (draft.getAttachments().stream().noneMatch(existing -> existing.assetKey().equals(asset.assetKey()))) {
+            draft.getAttachments().add(asset);
+            draft.setRevision((draft.getRevision() == null ? 0 : draft.getRevision()) + 1);
+            draft.setUpdatedAt(Instant.now());
+            draft.setUpdatedBy(asset.attachedBy());
+            repository.save(draft);
+        }
+        return asset;
     }
 
     @Override

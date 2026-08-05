@@ -17,6 +17,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/sso/users/me", "/api/sso/iam/me/**").authenticated()
                         .requestMatchers("/api/sso/users/verify-password", "/api/sso/users/*", "/api/sso/iam/internal/**").permitAll()
                         .requestMatchers("/api/sso/iam/**", "/api/sso/users").authenticated()
                         .anyRequest().permitAll()

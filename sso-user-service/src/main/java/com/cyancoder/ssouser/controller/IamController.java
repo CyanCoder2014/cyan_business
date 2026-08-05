@@ -15,6 +15,7 @@ import com.cyancoder.sso.common.dto.UserRealmMembershipUpsertRequest;
 import com.cyancoder.sso.common.dto.UserRoleAssignmentRequest;
 import com.cyancoder.ssouser.service.IamDirectoryService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -107,6 +108,11 @@ public class IamController {
     @GetMapping("/users/{username}/access")
     public IamUserAccessSummary resolveAccess(@PathVariable("username") String username, @RequestParam(value = "clientId", required = false) String clientId) {
         return iamDirectoryService.resolveAccess(username, clientId);
+    }
+
+    @GetMapping("/me/access")
+    public IamUserAccessSummary resolveMyAccess(Authentication authentication, @RequestParam(value = "clientId", required = false) String clientId) {
+        return iamDirectoryService.resolveAccess(authentication.getName(), clientId);
     }
 
     @GetMapping("/internal/users/{username}/access")

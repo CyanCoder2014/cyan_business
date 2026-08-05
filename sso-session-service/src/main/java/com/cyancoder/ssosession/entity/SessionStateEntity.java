@@ -31,6 +31,12 @@ public class SessionStateEntity {
     @Column(name = "expires_at_epoch_second", nullable = false)
     private long expiresAtEpochSecond;
 
+    @Column(name = "active_tenant_key")
+    private String activeTenantKey;
+
+    @Column(name = "active_site_key")
+    private String activeSiteKey;
+
     public String getSessionId() {
         return sessionId;
     }
@@ -86,4 +92,9 @@ public class SessionStateEntity {
     public void setExpiresAtEpochSecond(long expiresAtEpochSecond) {
         this.expiresAtEpochSecond = expiresAtEpochSecond;
     }
+
+    public String getActiveTenantKey() { return activeTenantKey; }
+    public void setActiveTenantKey(String activeTenantKey) { this.activeTenantKey = activeTenantKey; }
+    public String getActiveSiteKey() { return activeSiteKey; }
+    public void setActiveSiteKey(String activeSiteKey) { this.activeSiteKey = activeSiteKey; }
 }

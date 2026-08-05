@@ -10,6 +10,7 @@ import com.cyancoder.ssouser.service.IamDirectoryService;
 import com.cyancoder.ssouser.service.IamSecurityService;
 import com.cyancoder.ssouser.service.UserDirectoryService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -50,6 +51,12 @@ public class UserController {
     @GetMapping("/{username}")
     public UserSummary getUser(@PathVariable("username") String username) {
         return userDirectoryService.getUser(username);
+    }
+
+    @GetMapping("/me")
+    @PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
+    public UserSummary me(Authentication authentication) {
+        return userDirectoryService.getUser(authentication.getName());
     }
 
     @PostMapping("/verify-password")

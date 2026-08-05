@@ -52,6 +52,13 @@ export class AuthenticationRequiredError extends Error {
 }
 
 let refreshPromise: Promise<string> | null = null;
+let activePanelScope: { tenantKey: string | null; siteKey: string | null } = { tenantKey: null, siteKey: null };
+
+export function setActivePanelScope(tenantKey: string | null, siteKey: string | null) {
+  activePanelScope = { tenantKey, siteKey };
+}
+
+export function getActivePanelScope() { return { ...activePanelScope }; }
 
 function platformBaseUrl() {
   return process.env.NEXT_PUBLIC_PLATFORM_API_BASE_URL?.replace(/\/$/, "") ?? "http://localhost:18001";
@@ -145,6 +152,8 @@ function withAuthorization(init: RequestInit, token: string): RequestInit {
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
+  if (activePanelScope.tenantKey) headers.set("X-Tenant-Key", activePanelScope.tenantKey);
+  if (activePanelScope.siteKey) headers.set("X-Site-Key", activePanelScope.siteKey);
   return {
     ...init,
     headers
@@ -217,7 +226,26 @@ export async function logoutPlatformSession() {
 
 export async function platformFetch(input: RequestInfo | URL, init: RequestInit = {}) {
   const token = await usableAccessToken().catch(() => "");
-  let response = await fetch(input, withAuthorization(init, token));
+  const inputText = String(input);
+  let scopedInput: RequestInfo | URL = input;
+  let scopedInit = init;
+  const isTenantCreation = init.method === "POST" && /tenant-service\/endpoint\/tenants\/?$/.test(inputText);
+  const mayCarryBusinessScope = !inputText.includes("/api/panel/scope") && !isTenantCreation;
+  if (mayCarryBusinessScope && activePanelScope.tenantKey && typeof input === "string") {
+    const parsed = new URL(input, "http://panel.local");
+    if (parsed.searchParams.has("tenantKey")) parsed.searchParams.set("tenantKey", activePanelScope.tenantKey);
+    if (parsed.searchParams.has("siteKey")) activePanelScope.siteKey ? parsed.searchParams.set("siteKey", activePanelScope.siteKey) : parsed.searchParams.delete("siteKey");
+    scopedInput = input.startsWith("http://") || input.startsWith("https://") ? parsed.toString() : `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  }
+  if (mayCarryBusinessScope && activePanelScope.tenantKey && typeof init.body === "string" && new Headers(init.headers).get("Content-Type")?.includes("application/json")) {
+    try {
+      const body = JSON.parse(init.body) as Record<string, unknown>;
+      if ("tenantKey" in body) body.tenantKey = activePanelScope.tenantKey;
+      if ("siteKey" in body) body.siteKey = activePanelScope.siteKey;
+      scopedInit = { ...init, body: JSON.stringify(body) };
+    } catch { /* Non-JSON bodies pass through unchanged. */ }
+  }
+  let response = await fetch(scopedInput, withAuthorization(scopedInit, token));
 
   if (response.status !== 401) {
     return response;
@@ -226,7 +254,7 @@ export async function platformFetch(input: RequestInfo | URL, init: RequestInit 
   if (getRefreshToken()) {
     try {
       const refreshedToken = await refreshPlatformAuthToken();
-      response = await fetch(input, withAuthorization(init, refreshedToken));
+      response = await fetch(scopedInput, withAuthorization(scopedInit, refreshedToken));
       if (response.status !== 401) {
         return response;
       }

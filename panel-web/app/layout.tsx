@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { PanelProvider } from "@/components/panel-provider";
+import { AppProviders } from "@/components/app-providers";
 import "./globals.css";
+import "./phase1-shell.css";
 
 export const metadata: Metadata = {
   title: "Cyan Panel",
@@ -27,9 +28,10 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('cyan.panel.theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.dataset.themePreference=t;var l=localStorage.getItem('cyan.panel.locale')||'en';document.documentElement.lang=l==='fa'?'fa':'en';document.documentElement.dir=l==='fa'?'rtl':'ltr'}catch(e){}})()` }} /></head>
       <body>
-        <PanelProvider>{children}</PanelProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

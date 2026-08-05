@@ -12,7 +12,9 @@ const serviceBaseUrls: Record<string, string> = {
   "batch-worker-service": process.env.BATCH_WORKER_SERVICE_BASE_URL ?? "http://localhost:9127",
   "payment-service": process.env.PAYMENT_SERVICE_BASE_URL ?? "http://localhost:9114",
   "payment-orchestrator-service": process.env.PAYMENT_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9123",
-  "api-docs-service": process.env.API_DOCS_SERVICE_BASE_URL ?? "http://localhost:9128"
+  "api-docs-service": process.env.API_DOCS_SERVICE_BASE_URL ?? "http://localhost:9128",
+  "tenant-service": process.env.TENANT_SERVICE_BASE_URL ?? "http://localhost:9129",
+  "billing-service": process.env.BILLING_SERVICE_BASE_URL ?? "http://localhost:9130"
 };
 
 type RouteContext = {
@@ -38,7 +40,8 @@ async function proxy(request: Request, context: RouteContext) {
       "Content-Type": request.headers.get("Content-Type") ?? "application/json",
       ...(request.headers.get("Authorization") ? { Authorization: request.headers.get("Authorization") as string } : {}),
       ...(request.headers.get("X-Tenant-Key") ? { "X-Tenant-Key": request.headers.get("X-Tenant-Key") as string } : {}),
-      ...(request.headers.get("X-Site-Key") ? { "X-Site-Key": request.headers.get("X-Site-Key") as string } : {})
+      ...(request.headers.get("X-Site-Key") ? { "X-Site-Key": request.headers.get("X-Site-Key") as string } : {}),
+      ...(request.headers.get("Idempotency-Key") ? { "Idempotency-Key": request.headers.get("Idempotency-Key") as string } : {})
     },
     body,
     cache: "no-store"

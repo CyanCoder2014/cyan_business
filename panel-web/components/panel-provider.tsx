@@ -3,14 +3,18 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type PanelLocale = "en" | "fa";
-export type PanelTheme = "light" | "dark";
+export type PanelTheme = "light" | "dark" | "system";
 
 type PanelContextValue = {
   locale: PanelLocale;
   theme: PanelTheme;
+  /** @deprecated Business scope is supplied by ScopeAccessProvider. */
   workspaceName: string;
+  /** @deprecated Business scope is supplied by ScopeAccessProvider. */
   siteName: string;
+  /** @deprecated Use the persisted scope selector. */
   setWorkspaceName: (value: string) => void;
+  /** @deprecated Use the persisted scope selector. */
   setSiteName: (value: string) => void;
   setLocale: (value: PanelLocale) => void;
   setTheme: (value: PanelTheme) => void;
@@ -22,17 +26,14 @@ type PanelContextValue = {
 const STORAGE_KEYS = {
   locale: "cyan.panel.locale",
   theme: "cyan.panel.theme",
-  workspace: "cyan.panel.workspace",
-  site: "cyan.panel.site"
 } as const;
 
 const PanelContext = createContext<PanelContextValue | null>(null);
 
 export function PanelProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<PanelLocale>("en");
-  const [theme, setThemeState] = useState<PanelTheme>("light");
-  const [workspaceName, setWorkspaceNameState] = useState("tenant-demo");
-  const [siteName, setSiteNameState] = useState("site-commerce");
+  const [theme, setThemeState] = useState<PanelTheme>("system");
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -41,50 +42,48 @@ export function PanelProvider({ children }: { children: ReactNode }) {
 
     const storedLocale = window.localStorage.getItem(STORAGE_KEYS.locale) as PanelLocale | null;
     const storedTheme = window.localStorage.getItem(STORAGE_KEYS.theme) as PanelTheme | null;
-    const storedWorkspace = window.localStorage.getItem(STORAGE_KEYS.workspace);
-    const storedSite = window.localStorage.getItem(STORAGE_KEYS.site);
 
     if (storedLocale === "en" || storedLocale === "fa") {
       setLocaleState(storedLocale);
     }
-    if (storedTheme === "light" || storedTheme === "dark") {
+    if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
       setThemeState(storedTheme);
     }
-    if (storedWorkspace) {
-      setWorkspaceNameState(storedWorkspace);
-    }
-    if (storedSite) {
-      setSiteNameState(storedSite);
-    }
+    setPreferencesLoaded(true);
   }, []);
 
   useEffect(() => {
+    if (!preferencesLoaded) return;
     const root = document.documentElement;
     root.lang = locale === "fa" ? "fa" : "en";
     root.dir = locale === "fa" ? "rtl" : "ltr";
-    root.dataset.theme = theme;
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = theme === "system" ? (systemDark ? "dark" : "light") : theme;
+    root.dataset.themePreference = theme;
     root.dataset.locale = locale;
     window.localStorage.setItem(STORAGE_KEYS.locale, locale);
     window.localStorage.setItem(STORAGE_KEYS.theme, theme);
-    window.localStorage.setItem(STORAGE_KEYS.workspace, workspaceName);
-    window.localStorage.setItem(STORAGE_KEYS.site, siteName);
-  }, [locale, theme, workspaceName, siteName]);
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const syncSystem = () => { if (theme === "system") root.dataset.theme = media.matches ? "dark" : "light"; };
+    media.addEventListener("change", syncSystem);
+    return () => media.removeEventListener("change", syncSystem);
+  }, [locale, preferencesLoaded, theme]);
 
   const value = useMemo<PanelContextValue>(
     () => ({
       locale,
       theme,
-      workspaceName,
-      siteName,
-      setWorkspaceName: setWorkspaceNameState,
-      setSiteName: setSiteNameState,
+      workspaceName: "",
+      siteName: "",
+      setWorkspaceName: () => undefined,
+      setSiteName: () => undefined,
       setLocale: setLocaleState,
       setTheme: setThemeState,
       toggleLocale: () => setLocaleState((current) => (current === "en" ? "fa" : "en")),
-      toggleTheme: () => setThemeState((current) => (current === "light" ? "dark" : "light")),
+      toggleTheme: () => setThemeState((current) => (current === "light" ? "dark" : current === "dark" ? "system" : "light")),
       isRtl: locale === "fa"
     }),
-    [locale, siteName, theme, workspaceName]
+    [locale, theme]
   );
 
   return <PanelContext.Provider value={value}>{children}</PanelContext.Provider>;

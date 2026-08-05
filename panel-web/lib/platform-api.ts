@@ -9,6 +9,7 @@ import type {
   GeneratePlatformAppResponse,
   ProvisioningRun
 } from "@/lib/types";
+import type { ProjectRelease } from "@/lib/types";
 import { getPlatformAuthToken, platformFetch } from "@/lib/platform-auth";
 import { withServiceInventory } from "@/lib/platform-service-inventory";
 
@@ -145,12 +146,20 @@ export function createClientDraft(request: {
   });
 }
 
-export function provisionClientDraft(draftId: string): Promise<ProvisioningRun> {
+export function provisionClientDraft(draftId: string, request: { mode?: "PLAN"|"APPLY"; idempotencyKey?: string; triggerType?: string } = {}): Promise<ProvisioningRun> {
   return requestJson<ProvisioningRun>("ai-orchestrator-service", `/endpoint/ai-orchestrator/drafts/${draftId}/provision`, {
     method: "POST",
-    body: JSON.stringify({})
+    body: JSON.stringify(request)
   });
 }
+
+export function updateClientDraft(draftId:string, request:{prompt?:string;title?:string;answersPatch?:Record<string,unknown>}):Promise<ClientAppDraft>{return requestJson<ClientAppDraft>("ai-orchestrator-service",`/endpoint/ai-orchestrator/drafts/${encodeURIComponent(draftId)}`,{method:"PATCH",body:JSON.stringify(request)});}
+export function closeConversationSession(sessionId:string):Promise<AiConversationSession>{return requestJson<AiConversationSession>("ai-orchestrator-service",`/endpoint/ai-orchestrator/sessions/${encodeURIComponent(sessionId)}/close`,{method:"POST",body:"{}"});}
+export function listProjectReleases(draftId:string):Promise<ProjectRelease[]>{return requestJson<ProjectRelease[]>("ai-orchestrator-service",`/endpoint/ai-orchestrator/drafts/${encodeURIComponent(draftId)}/releases`,{method:"GET"});}
+export function createProjectRelease(draftId:string,provisioningRunId:string):Promise<ProjectRelease>{return requestJson<ProjectRelease>("ai-orchestrator-service",`/endpoint/ai-orchestrator/drafts/${encodeURIComponent(draftId)}/releases`,{method:"POST",body:JSON.stringify({provisioningRunId})});}
+export function publishProjectRelease(releaseId:string):Promise<ProjectRelease>{return requestJson<ProjectRelease>("ai-orchestrator-service",`/endpoint/ai-orchestrator/releases/${encodeURIComponent(releaseId)}/publish`,{method:"POST",body:"{}"});}
+export function rollbackProjectRelease(releaseId:string):Promise<ProjectRelease>{return requestJson<ProjectRelease>("ai-orchestrator-service",`/endpoint/ai-orchestrator/releases/${encodeURIComponent(releaseId)}/rollback`,{method:"POST",body:"{}"});}
+export function attachProjectAsset(draftId:string,asset:{assetKey:string;fileName:string;mimeType:string;sizeBytes:number},scope:{tenantKey:string;siteKey?:string}):Promise<{assetKey:string}>{return requestJson<{assetKey:string}>("ai-orchestrator-service",`/endpoint/ai-orchestrator/drafts/${encodeURIComponent(draftId)}/attachments`,{method:"POST",headers:{"X-Tenant-Key":scope.tenantKey,...(scope.siteKey?{"X-Site-Key":scope.siteKey}:{})},body:JSON.stringify(asset)});}
 
 export function listProvisioningRuns(draftId: string): Promise<ProvisioningRun[]> {
   return requestJson<ProvisioningRun[]>("ai-orchestrator-service", `/endpoint/ai-orchestrator/drafts/${draftId}/runs`, {

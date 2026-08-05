@@ -92,6 +92,7 @@ export type ClientAppDraft = {
   pendingQuestionKeys: string[];
   pendingQuestions: string[];
   manualActions: string[];
+  attachments?: Array<{ assetKey: string; fileName: string; mimeType: string; sizeBytes: number; attachedBy: string; attachedAt: string }>;
   latestSessionId?: string | null;
   revision?: number | null;
   createdAt?: string;
@@ -111,6 +112,8 @@ export type ProvisioningRun = {
   stepResults: Array<Record<string, unknown>>;
   result?: ProvisioningResult | null;
 };
+
+export type ProjectRelease = { releaseId:string; draftId:string; tenantKey:string; siteKey?:string|null; sourceRevision:number; provisioningRunId:string; status:string; snapshot:PlatformAppDslDefinition; createdBy:string; createdAt:string; activatedAt?:string|null };
 
 export type AiConversationMessage = {
   messageId: string;
@@ -176,6 +179,9 @@ export type DynamicEntityDefinition = {
   title?: string;
   definition: Record<string, unknown>;
   active?: boolean;
+  revision?: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type UserSummary = {

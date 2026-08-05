@@ -15,6 +15,7 @@ import com.cyancoder.dynamiccore.service.DynamicDefinitionParser;
 import com.cyancoder.dynamiccore.service.DynamicOperatorEngine;
 import com.cyancoder.dynamiccore.service.DynamicValidationEngine;
 import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinitionRepository;
+import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinitionVersionRepository;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordRepository;
 import com.cyancoder.dynamiccore.template.DynamicTemplateProvider;
 import com.cyancoder.dynamiccore.template.DynamicTemplateRegistry;
@@ -82,6 +83,7 @@ public class DynamicCoreConfig {
     @Bean
     public DynamicRuntimeService dynamicRuntimeService(
             StoredEntityDefinitionRepository definitionRepository,
+            StoredEntityDefinitionVersionRepository definitionVersionRepository,
             DynamicEntityRecordRepository recordRepository,
             DynamicDefinitionParser definitionParser,
             DynamicValidationEngine validationEngine,
@@ -89,7 +91,7 @@ public class DynamicCoreConfig {
             DynamicRuntimeProperties properties,
             DynamicTemplateRegistry templateRegistry
     ) {
-        return new DynamicRuntimeService(definitionRepository, recordRepository, definitionParser, validationEngine, operatorEngine, properties, templateRegistry);
+        return new DynamicRuntimeService(definitionRepository, definitionVersionRepository, recordRepository, definitionParser, validationEngine, operatorEngine, properties, templateRegistry);
     }
 
     @Bean

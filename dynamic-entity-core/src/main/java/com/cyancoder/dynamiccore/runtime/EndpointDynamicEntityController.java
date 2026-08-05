@@ -84,6 +84,14 @@ public class EndpointDynamicEntityController {
         return responseMapper.toDefinitionResponse(runtimeService.getDefinition(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey)));
     }
 
+    @GetMapping("/definitions/{entityKey}/versions")
+    @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityController.serviceKey())")
+    public List<Map<String,Object>> versions(@RequestHeader(value="X-Tenant-Key",required=false) String tenant,@RequestHeader(value="X-Site-Key",required=false) String site,@PathVariable String entityKey){return runtimeService.listDefinitionVersions(entityKey,DynamicScopeResolver.fromHeaders(tenant,site)).stream().map(v->Map.<String,Object>of("revision",v.getRevision(),"status",v.getStatus(),"definition",v.getDefinitionJson(),"createdAt",v.getCreatedAt())).toList();}
+
+    @PostMapping("/definitions/{entityKey}/publish")
+    @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
+    public DynamicEntityDefinitionResponse publish(@RequestHeader(value="X-Tenant-Key",required=false) String tenant,@RequestHeader(value="X-Site-Key",required=false) String site,@PathVariable String entityKey){return responseMapper.toDefinitionResponse(runtimeService.publishDefinition(entityKey,DynamicScopeResolver.fromHeaders(tenant,site)));}
+
     @DeleteMapping("/definitions/{entityKey}")
     @PreAuthorize("@platformAuthorizationService.canManageService(@endpointDynamicEntityController.serviceKey())")
     public void deleteDefinition(

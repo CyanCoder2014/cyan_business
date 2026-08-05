@@ -8,6 +8,7 @@ public class DynamicEntityDefinitionRequest {
     private String siteKey;
     private EntityDefinitionModel definition;
     private String definitionJson;
+    private Long expectedRevision;
 
     public String getEntityKey() { return entityKey; }
     public void setEntityKey(String entityKey) { this.entityKey = entityKey; }
@@ -19,4 +20,6 @@ public class DynamicEntityDefinitionRequest {
     public void setDefinition(EntityDefinitionModel definition) { this.definition = definition; }
     public String getDefinitionJson() { return definitionJson; }
     public void setDefinitionJson(String definitionJson) { this.definitionJson = definitionJson; }
+    public Long getExpectedRevision() { return expectedRevision; }
+    public void setExpectedRevision(Long expectedRevision) { this.expectedRevision = expectedRevision; }
 }

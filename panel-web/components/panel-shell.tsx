@@ -6,18 +6,19 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
 import { getPlatformAuthToken, logoutPlatformSession, redirectToAuth } from "@/lib/platform-auth";
+import { NotificationCenter } from "@/components/notifications/notification-center";
 
 type PanelShellProps = { title: string; titleFa: string; subtitle: string; subtitleFa: string; kicker?: string; kickerFa?: string; activeKey: string; children: ReactNode };
 type NavItem = { href: string; key: string; icon: string; en: string; fa: string; capability?: string; permission?: string };
 
 const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
   { en: "Workspace", fa: "فضای کار", items: [
-    { href: "/", key: "dashboard", icon: "⌂", en: "Home", fa: "خانه" },
-    { href: "/projects/new", key: "studio", icon: "✦", en: "AI Studio", fa: "استودیوی هوش", capability: "ai-orchestrator", permission: "project.create" },
+    { href: "/dashboard", key: "dashboard", icon: "⌂", en: "Home", fa: "خانه" },
+    { href: "/ai", key: "studio", icon: "✦", en: "AI Studio", fa: "استودیوی هوش", capability: "ai-orchestrator", permission: "project.create" },
     { href: "/projects", key: "blueprints", icon: "▦", en: "Projects", fa: "پروژه‌ها", capability: "ai-orchestrator", permission: "project.read" }
   ]},
   { en: "Build", fa: "ساخت", items: [
-    { href: "/maker", key: "maker", icon: "✎", en: "Maker", fa: "سازنده", capability: "dynamic-entities", permission: "definition.read" },
+    { href: "/definitions", key: "maker", icon: "✎", en: "Definitions", fa: "تعریف‌ها", capability: "dynamic-entities", permission: "definition.read" },
     { href: "/data", key: "data", icon: "◫", en: "Data", fa: "داده‌ها", capability: "dynamic-entities", permission: "record.read" },
     { href: "/flows", key: "flows", icon: "⌁", en: "Flows", fa: "فلوها", capability: "bpm", permission: "bpm.read" },
     { href: "/automation", key: "automation", icon: "↯", en: "Automation", fa: "اتوماسیون", capability: "automation", permission: "automation.read" },
@@ -25,6 +26,7 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
     { href: "/site-builder", key: "site-builder", icon: "▣", en: "Site builder", fa: "سایت‌ساز", capability: "site-builder", permission: "site.read" }
   ]},
   { en: "Operate", fa: "عملیات", items: [
+    { href: "/notifications", key: "notifications", icon: "◉", en: "Notifications", fa: "اعلان‌ها" },
     { href: "/search", key: "search", icon: "⌕", en: "Search & media", fa: "جستجو و رسانه", capability: "search", permission: "search.read" },
     { href: "/api-docs", key: "api-docs", icon: "{·}", en: "API docs", fa: "مستندات API" },
     { href: "/iam", key: "iam", icon: "⚙", en: "Settings", fa: "تنظیمات", permission: "settings.read" }
@@ -67,7 +69,7 @@ export function PanelShell(props: PanelShellProps) {
   return (
     <div className="panel-app-shell">
       <aside className="workspace-sidebar">
-        <Link href="/" className="brand-lockup" aria-label="Cyan home"><div className="brand-badge">C</div><div><strong>Cyan</strong><span>{locale === "fa" ? "فضای کار هوشمند" : "Business workspace"}</span></div></Link>
+        <Link href="/dashboard" className="brand-lockup" aria-label="Cyan home"><div className="brand-badge">C</div><div><strong>Cyan</strong><span>{locale === "fa" ? "فضای کار هوشمند" : "Business workspace"}</span></div></Link>
         <nav className="workspace-nav" aria-label={locale === "fa" ? "ناوبری اصلی" : "Primary navigation"}>
           {groups.map((group) => <section className="nav-group" key={group.en}><p>{locale === "fa" ? group.fa : group.en}</p>{group.items.map((item) => {
             const active = item.key === props.activeKey || pathname === item.href;
@@ -86,7 +88,7 @@ export function PanelShell(props: PanelShellProps) {
             {!loading && bootstrap && !bootstrap.tenants.length ? <span className="scope-unavailable">{locale === "fa" ? "فضای کاری در دسترس نیست" : "No workspace available"}</span> : null}
           </div>
           <div className="header-actions">
-            <button type="button" className="header-icon-button" disabled title={locale === "fa" ? "صندوق اعلان هنوز ارائه نشده است" : "Notification inbox is unavailable"} aria-label={locale === "fa" ? "اعلان‌ها در دسترس نیست" : "Notifications unavailable"}>♢</button>
+            <NotificationCenter />
             <details className="header-account-menu"><summary aria-label={locale === "fa" ? "منوی حساب" : "Account menu"}><div className="header-avatar">{avatarLabel}</div><span className="workspace-switcher-caret">⌄</span></summary><div className="header-account-popover"><div className="header-profile"><div className="header-avatar small">{avatarLabel}</div><div><strong>{profileName || "—"}</strong><span>{locale === "fa" ? "حساب فعال" : "Signed in"}</span></div></div><Link href="/iam" className="account-menu-item">{locale === "fa" ? "پروفایل" : "Profile"}</Link><button className="account-menu-item" onClick={toggleLocale}>{locale === "fa" ? "English" : "فارسی"}</button><label className="menu-select"><span>{locale === "fa" ? "پوسته" : "Theme"}</span><select value={theme} onChange={(event) => setTheme(event.target.value as "light" | "dark" | "system")}><option value="system">{locale === "fa" ? "سیستم" : "System"}</option><option value="light">{locale === "fa" ? "روشن" : "Light"}</option><option value="dark">{locale === "fa" ? "تاریک" : "Dark"}</option></select></label><button className="account-menu-item danger" onClick={() => logoutPlatformSession().then(() => redirectToAuth("/"))}>{locale === "fa" ? "خروج" : "Logout"}</button></div></details>
           </div>
         </header>
@@ -98,7 +100,7 @@ export function PanelShell(props: PanelShellProps) {
           {props.children}
         </main>
       </div>
-      <nav className="mobile-bottom-nav" aria-label={locale === "fa" ? "ناوبری موبایل" : "Mobile navigation"}><Link href="/"><span>⌂</span><span>{locale === "fa" ? "خانه" : "Home"}</span></Link><Link href="/projects/new"><span>✦</span><span>{locale === "fa" ? "هوش" : "AI"}</span></Link><button onClick={() => setSheet("build")}><span>＋</span><span>{locale === "fa" ? "ساخت" : "Build"}</span></button><Link href="/flows"><span>⌁</span><span>{locale === "fa" ? "کار" : "Work"}</span></Link><button onClick={() => setSheet("more")}><span>•••</span><span>{locale === "fa" ? "بیشتر" : "More"}</span></button></nav>
+      <nav className="mobile-bottom-nav" aria-label={locale === "fa" ? "ناوبری موبایل" : "Mobile navigation"}><Link href="/dashboard"><span>⌂</span><span>{locale === "fa" ? "خانه" : "Home"}</span></Link><Link href="/ai"><span>✦</span><span>{locale === "fa" ? "هوش" : "AI"}</span></Link><button onClick={() => setSheet("build")}><span>＋</span><span>{locale === "fa" ? "ساخت" : "Build"}</span></button><Link href="/flows"><span>⌁</span><span>{locale === "fa" ? "کار" : "Work"}</span></Link><button onClick={() => setSheet("more")}><span>•••</span><span>{locale === "fa" ? "بیشتر" : "More"}</span></button></nav>
       {sheet ? <div className="sheet-backdrop" onClick={() => setSheet(null)}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={sheet === "build" ? "Build navigation" : "More navigation"} onClick={(event) => event.stopPropagation()}><div className="sheet-handle"/><div className="sheet-grid">{groups.slice(sheet === "build" ? 1 : 2, sheet === "build" ? 2 : 3).flatMap((group) => group.items).map((item) => navEnabled(item) ? <Link key={item.key} href={item.href} onClick={() => setSheet(null)}><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</Link> : <span key={item.key} aria-disabled="true"><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</span>)}</div><button className="secondary-pill" onClick={() => setSheet(null)}>{locale === "fa" ? "بستن" : "Close"}</button></section></div> : null}
     </div>
   );

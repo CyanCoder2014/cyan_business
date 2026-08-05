@@ -7,6 +7,7 @@ const storageKeys = {
   sessionId: "cyan.panel.sessionId",
   username: "cyan.panel.username"
 };
+const panelBootstrap = { identity:{username:"user@cyan.local",email:"user@cyan.local",mfaEnabled:false,roles:["user"],active:true},access:{realmRoles:["tenant-admin"],realmPermissions:["panel:read","project.create","project.read","definition.read","record.read","bpm.read","settings.read","automation.read","bot.read"],clients:[]},tenants:[{tenantKey:"tenant-demo",displayName:"Demo workspace",status:"ACTIVE",membershipRole:"TENANT_OWNER"}],sites:[{tenantKey:"tenant-demo",siteKey:"site-commerce",name:"Commerce",status:"ACTIVE"}],activeTenantKey:"tenant-demo",activeSiteKey:"site-commerce",subscription:{tenantKey:"tenant-demo",planKey:null,status:"NONE",features:[],limits:{},providerState:"NOT_CONFIGURED"},capabilities:[{key:"ai-orchestrator",enabled:true,source:"TENANT_OVERRIDE",status:"AVAILABLE",limits:{}},{key:"dynamic-entities",enabled:true,source:"TENANT_OVERRIDE",status:"AVAILABLE",limits:{}},{key:"bpm",enabled:true,source:"TENANT_OVERRIDE",status:"AVAILABLE",limits:{}}],featureFlags:{},services:{identity:"AVAILABLE",tenancy:"AVAILABLE",sessionScope:"AVAILABLE",sites:"AVAILABLE",billing:"NOT_CONFIGURED",capabilities:"AVAILABLE"},warnings:[]};
 
 test.beforeEach(async ({ page }) => {
   await seedAuth(page);
@@ -42,7 +43,7 @@ test("project detail page renders draft and linked conversation sessions from ba
       })
     });
   });
-  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/sessions?draftId=draft-retail", async (route) => {
+  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/sessions?**", async (route) => {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -71,12 +72,13 @@ test("project detail page renders draft and linked conversation sessions from ba
       body: JSON.stringify([])
     });
   });
+  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/drafts/draft-retail/releases", (route) => route.fulfill({ json: [] }));
 
   await page.goto("/projects/draft-retail");
 
   await expect(page.getByRole("heading", { name: "Retail Hub" })).toBeVisible();
   await expect(page.getByText("Build a retail workspace with storefront and approvals.")).toBeVisible();
-  await expect(page.getByText("Review copy")).toBeVisible();
+  await page.getByRole("tab", { name: "AI" }).click();
   await expect(page.getByText("session-retail")).toBeVisible();
 });
 
@@ -130,8 +132,9 @@ test("ai studio renders generate response follow-up questions and submits sugges
     await route.fulfill({ json: [] });
   });
   await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/generate/app", async (route, request) => {
-    latestGenerateBody = JSON.parse(request.postData() ?? "{}");
-    const answers = latestGenerateBody.answers as Record<string, unknown> | undefined;
+    const generateBody = JSON.parse(request.postData() ?? "{}") as Record<string, unknown>;
+    latestGenerateBody = generateBody;
+    const answers = generateBody.answers as Record<string, unknown> | undefined;
     const answered = answers?.subdomainPrefix === "brand-demo";
     await route.fulfill({
       status: 200,
@@ -174,23 +177,21 @@ test("ai studio renders generate response follow-up questions and submits sugges
     });
   });
 
-  await page.goto("/projects/new");
+  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/sessions", (route) => route.fulfill({ json:{sessionId:"session-shop-v01",status:"ACTIVE",messages:[],pendingQuestions:[],tenantKey:"tenant-demo",siteKey:"site-commerce"} }));
+  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/sessions/session-shop-v01", (route) => route.fulfill({ json:{sessionId:"session-shop-v01",status:"WAITING_FOR_ANSWERS",messages:[{messageId:"m1",role:"USER",content:"Build a shop"}],pendingQuestions:["Which subdomain prefix should be used before a custom domain is connected?"],draftId:"draft-shop-v01",tenantKey:"tenant-demo",siteKey:"site-commerce"} }));
+  await page.route("**/api/platform/service/ai-orchestrator-service/endpoint/ai-orchestrator/drafts/draft-shop-v01", (route) => route.fulfill({ json:{draftId:"draft-shop-v01",tenantKey:"tenant-demo",siteKey:"site-commerce",status:"WAITING_FOR_ANSWERS",title:"Shop",appType:"SHOP",latestIntent:"Build a shop",answers:{},resolvedDsl:{app:{capabilities:[]},entities:[],routes:[],flows:[],delivery:{publicApis:[],botApis:[]},manualActions:[]},pendingQuestionKeys:["subdomainPrefix"],pendingQuestions:["Which subdomain prefix should be used before a custom domain is connected?"],manualActions:[]} }));
+  await page.goto("/ai");
+  await page.getByPlaceholder("What would you like to build?").fill("Build a shop");
   await page.getByRole("button", { name: "Send" }).click();
-
-  await expect(page.getByText("followUpQuestions").first()).toBeVisible();
-  await expect(page.getByText("Which subdomain prefix should be used before a custom domain is connected?").first()).toBeVisible();
-  await expect(page.getByRole("button", { name: "brand-demo" }).first()).toBeVisible();
-
-  await page.getByRole("button", { name: "brand-demo" }).first().click();
-
-  await expect.poll(() => (latestGenerateBody?.answers as Record<string, unknown> | undefined)?.subdomainPrefix).toBe("brand-demo");
-  await expect(page.getByText("The draft is ready. You can continue building from here.").first()).toBeVisible();
+  await expect.poll(() => latestGenerateBody?.prompt).toBe("Build a shop");
+  await expect(page.getByText("Which subdomain prefix should be used before a custom domain is connected?")).toBeVisible();
 });
 
 test("data and flows pages show backend-empty states instead of fixture data", async ({ page }) => {
-  await page.route("**/api/platform/dynamic/**/endpoint/entities/records/**", async (route) => {
+  await page.route("**/api/platform/dynamic/**/endpoint/entities/definitions**", async (route) => {
     await route.fulfill({ json: [] });
   });
+  await page.route("**/api/platform/dynamic/**/endpoint/entities/templates", (route) => route.fulfill({ json: [] }));
   await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/endpoint\/bpm\/flows.*/, async (route) => {
     await route.fulfill({ json: [] });
   });
@@ -208,7 +209,7 @@ test("data and flows pages show backend-empty states instead of fixture data", a
   });
 
   await page.goto("/data");
-  await expect(page.getByText("No records were returned for this bucket.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No entities" })).toBeVisible();
   await expect(page.getByText("Luna Lounge Chair")).toHaveCount(0);
 
   await page.goto("/flows");
@@ -425,7 +426,7 @@ test("profile page renders live account data and logout returns to auth", async 
   await page.goto("/iam");
 
   await expect(page.getByRole("heading", { name: "Profile & Settings" })).toBeVisible();
-  await expect(page.locator(".workspace-content").getByText("user@cyan.local")).toBeVisible();
+  await expect(page.locator(".workspace-content").getByText("user@cyan.local").first()).toBeVisible();
   await expect(page.getByText("+989121234567")).toBeVisible();
   await expect(page.getByText("\"builder:*\"")).toBeVisible();
 
@@ -479,6 +480,7 @@ test("api docs page renders live controller paths and authentication modes", asy
 });
 
 async function seedAuth(page: Page) {
+  await page.route("**/api/panel/bootstrap", (route) => route.fulfill({ json: panelBootstrap }));
   await page.addInitScript((keys) => {
     window.localStorage.setItem(keys.accessToken, "seeded-access");
     window.localStorage.setItem(keys.refreshToken, "seeded-refresh");

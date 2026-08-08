@@ -34,6 +34,15 @@ public class OllamaLlmClient implements LlmClient {
     @Override
     public PlatformAppDslDefinition generateDsl(String prompt) {
         try {
+            return objectMapper.readValue(generateContent(prompt + "\nReturn strict JSON only."), PlatformAppDslDefinition.class);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Failed to generate DSL from Ollama", ex);
+        }
+    }
+
+    @Override
+    public String generateContent(String prompt) {
+        try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             ResponseEntity<String> entity = restTemplate.exchange(
@@ -43,16 +52,15 @@ public class OllamaLlmClient implements LlmClient {
                             "model", properties.getOllama().getModel(),
                             "stream", false,
                             "format", "json",
-                            "messages", java.util.List.of(Map.of("role", "user", "content", prompt + "\nReturn strict JSON only."))
+                            "messages", java.util.List.of(Map.of("role", "user", "content", prompt))
                     ), headers),
                     String.class
             );
             String response = entity.getBody();
             JsonNode root = objectMapper.readTree(response == null ? "{}" : response);
-            String content = root.path("message").path("content").asText();
-            return objectMapper.readValue(content, PlatformAppDslDefinition.class);
+            return root.path("message").path("content").asText();
         } catch (Exception ex) {
-            throw new IllegalStateException("Failed to generate DSL from Ollama", ex);
+            throw new IllegalStateException("Failed to generate content from Ollama", ex);
         }
     }
 }

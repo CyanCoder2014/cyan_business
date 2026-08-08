@@ -209,6 +209,7 @@ public class N8nAutomationRuntime {
             case MERGE -> merge(definition, state, node, work, items);
             case LOOP_OVER_ITEMS, FOR_EACH -> loopOverItems(state, node, config, items);
             case CALL_API, HTTP_REQUEST, N8N_WORKFLOW -> NodeOutcome.output("0", request(execution, definition, state, node, config, items));
+            case AI_OPERATION -> NodeOutcome.output("0", aiOperation(execution, definition, state, config, items));
             case CODE -> NodeOutcome.output("0", code(execution, definition, state, node, config, items));
             case WAIT -> waitForTime(execution, config, items);
             case WAIT_FOR_CALLBACK -> NodeOutcome.callback(items);
@@ -487,6 +488,30 @@ public class N8nAutomationRuntime {
             Map<String, Object> target = copyItem(source);
             String responsePath = Objects.toString(resolved.getOrDefault("responsePath", resolved.getOrDefault("storeResponseAt", "response")));
             AutomationDataSupport.setPath(json(target), responsePath, response);
+            output.add(target);
+        }
+        return output;
+    }
+
+    private List<Map<String,Object>> aiOperation(AutomationExecution execution, AutomationFlowDefinition definition,
+                                                  Map<String,Object> state, Map<String,Object> config,
+                                                  List<Map<String,Object>> items) {
+        List<Map<String,Object>> output = new ArrayList<>();
+        for (int index = 0; index < items.size(); index++) {
+            Map<String,Object> source = items.get(index);
+            Map<String,Object> resolved = AutomationDataSupport.map(expressions.materialize(config,
+                    evaluation(execution, definition, state, items, source, index)));
+            Map<String,Object> request = new LinkedHashMap<>();
+            request.put("operation", Objects.toString(resolved.get("operation"), ""));
+            request.put("instructions", Objects.toString(resolved.get("instructions"), ""));
+            request.put("input", resolved.getOrDefault("input", json(source)));
+            if (resolved.get("outputSchema") != null) request.put("outputSchema", resolved.get("outputSchema"));
+            if (resolved.get("locale") != null) request.put("locale", resolved.get("locale"));
+            Map<String,Object> response = AutomationDataSupport.map(http.exchange("ai-orchestrator-service",
+                    "/internal/ai-orchestrator/operations", HttpMethod.POST, request,
+                    http.internalHeaders("ai-orchestrator-service", execution.getTenantKey(), execution.getSiteKey()), Object.class));
+            Map<String,Object> target = copyItem(source);
+            AutomationDataSupport.setPath(json(target), Objects.toString(resolved.getOrDefault("resultPath", "aiResult")), response.get("output"));
             output.add(target);
         }
         return output;

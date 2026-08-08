@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class AutomationMetadataService {
@@ -23,6 +24,7 @@ public class AutomationMetadataService {
         configs.put(AutomationNodeType.HTTP_REQUEST, List.of("url|serviceKey+path", "method", "headers", "body", "responsePath", "executeOnce"));
         configs.put(AutomationNodeType.PAGINATED_CALL_API, List.of("url|serviceKey+path", "method", "headers", "body", "pageStart", "pageEnd|pageCount", "pageParamPath", "size", "sizeParamPath", "itemsPath", "targetPath", "pageResponsesPath", "stopOnEmpty", "responseMappings"));
         configs.put(AutomationNodeType.RUN_BATCH_JOB, List.of("definitionKey", "runKey", "pollSeconds", "resultPath"));
+        configs.put(AutomationNodeType.AI_OPERATION, List.of("operation", "instructions", "input", "outputSchema", "locale", "resultPath"));
         configs.put(AutomationNodeType.IF, List.of("field", "operator", "value"));
         configs.put(AutomationNodeType.SWITCH, List.of("field", "cases"));
         configs.put(AutomationNodeType.MERGE, List.of());
@@ -49,11 +51,37 @@ public class AutomationMetadataService {
         configs.put(AutomationNodeType.NO_OP, List.of());
         configs.put(AutomationNodeType.N8N_WORKFLOW, List.of("webhookUrl", "method", "headers", "body", "responseMappings", "storeResponseAt"));
         configs.put(AutomationNodeType.END, List.of());
-        return configs.entrySet().stream().map(entry -> Map.<String, Object>of(
-                "type", entry.getKey().name(),
-                "commonFields", COMMON,
-                "configFields", entry.getValue()
-        )).toList();
+        return configs.entrySet().stream().map(entry -> {
+            Map<String,Object> properties = new LinkedHashMap<>();
+            entry.getValue().forEach(field -> properties.put(field.split("\\|")[0], Map.of("type", "string")));
+            return Map.<String,Object>ofEntries(
+                    Map.entry("type", entry.getKey().name()),
+                    Map.entry("labelKey", "automation.node." + entry.getKey().name().toLowerCase()),
+                    Map.entry("category", category(entry.getKey())),
+                    Map.entry("commonFields", COMMON),
+                    Map.entry("configFields", entry.getValue()),
+                    Map.entry("configSchema", Map.of("type", "object", "properties", properties)),
+                    Map.entry("runtimeModes", runtimeModes(entry.getKey())),
+                    Map.entry("credentialReferenceOnly", true)
+            );
+        }).toList();
+    }
+
+    private String category(AutomationNodeType type) {
+        if (type.name().endsWith("TRIGGER")) return "TRIGGERS";
+        if (type == AutomationNodeType.AI_OPERATION) return "AI";
+        if (Set.of(AutomationNodeType.CALL_API, AutomationNodeType.HTTP_REQUEST, AutomationNodeType.N8N_WORKFLOW).contains(type)) return "INTEGRATIONS";
+        if (Set.of(AutomationNodeType.IF, AutomationNodeType.SWITCH, AutomationNodeType.MERGE).contains(type)) return "LOGIC";
+        return "DATA_FLOW";
+    }
+
+    private List<String> runtimeModes(AutomationNodeType type) {
+        return switch (type) {
+            case HTTP_REQUEST, LOOP_OVER_ITEMS, EXECUTE_WORKFLOW, EDIT_FIELDS, FILTER, SPLIT_OUT, AGGREGATE, SORT, LIMIT,
+                    REMOVE_DUPLICATES, EXECUTION_DATA, RESPOND_TO_WEBHOOK, STOP_AND_ERROR, NO_OP -> List.of("N8N_ITEMS");
+            case JDM_DECISION, PAGINATED_CALL_API, RUN_BATCH_JOB -> List.of("VARIABLES");
+            default -> List.of("VARIABLES", "N8N_ITEMS");
+        };
     }
 
     public Map<String, Object> edges() {

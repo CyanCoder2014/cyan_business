@@ -108,6 +108,20 @@ public class MongoConversationSessionService implements ConversationSessionServi
     }
 
     @Override
+    public ConversationSession linkDraft(String sessionId, String draftId) {
+        ConversationSession session = getSession(sessionId);
+        ClientAppDraft draft = appDraftService.getDraft(draftId);
+        if (!java.util.Objects.equals(session.getTenantKey(), draft.getTenantKey())
+                || !java.util.Objects.equals(session.getSiteKey(), draft.getSiteKey())) {
+            throw new IllegalArgumentException("Conversation and draft scope must match");
+        }
+        session.setDraftId(draft.getDraftId());
+        syncPendingState(session, draft);
+        session.setUpdatedAt(Instant.now());
+        return repository.save(session);
+    }
+
+    @Override
     public ConversationSession appendMessage(String sessionId, SessionMessageRequest request) {
         ConversationSession session = getSession(sessionId);
         SessionMessage message = new SessionMessage();

@@ -4,6 +4,8 @@ import type {
   BotChannelIntegration,
   BotMiniAppBuild,
   BotOutboundMessage,
+  BotProcessBinding,
+  BotProcessDispatch,
   ClientAppDraft,
   GeneratePlatformAppRequest,
   GeneratePlatformAppResponse,
@@ -242,6 +244,7 @@ export function upsertBotIntegration(request: {
   botToken?: string;
   tokenSecretRef?: string;
   webhookSecret?: string;
+  webhookSecretRef?: string;
   miniAppUrl?: string;
   miniAppEnabled?: boolean;
   miniAppStartParam?: string;
@@ -280,6 +283,7 @@ export function sendBotMessage(request: {
 }> {
   return requestJson("bot-adapter-service", "/endpoint/bot-adapter/messages", {
     method: "POST",
+    headers: { "Idempotency-Key": crypto.randomUUID() },
     body: JSON.stringify(request)
   });
 }
@@ -343,3 +347,7 @@ export function publishMiniAppBuild(channel: "TELEGRAM" | "BALE", integrationKey
     body: JSON.stringify({})
   });
 }
+
+export function listBotProcessBindings(channel:"TELEGRAM"|"BALE",integrationKey:string,scope:{tenantKey:string;siteKey:string}):Promise<BotProcessBinding[]>{return requestJson("bot-adapter-service",`/endpoint/bot-adapter/integrations/${channel}/${encodeURIComponent(integrationKey)}/process-bindings`,{method:"GET",headers:{"X-Tenant-Key":scope.tenantKey,"X-Site-Key":scope.siteKey}})}
+export function saveBotProcessBinding(channel:"TELEGRAM"|"BALE",integrationKey:string,scope:{tenantKey:string;siteKey:string},request:{bindingKey:string;triggerType:"EVERY_MESSAGE"|"COMMAND";commandPrefix?:string;targetType:"AUTOMATION"|"BPM";targetKey:string;inputTemplate?:Record<string,unknown>;enabled?:boolean}):Promise<BotProcessBinding>{return requestJson("bot-adapter-service",`/endpoint/bot-adapter/integrations/${channel}/${encodeURIComponent(integrationKey)}/process-bindings`,{method:"POST",headers:{"X-Tenant-Key":scope.tenantKey,"X-Site-Key":scope.siteKey},body:JSON.stringify(request)})}
+export function listBotProcessDispatches(channel:"TELEGRAM"|"BALE",integrationKey:string,bindingKey:string,scope:{tenantKey:string;siteKey:string}):Promise<BotProcessDispatch[]>{return requestJson("bot-adapter-service",`/endpoint/bot-adapter/integrations/${channel}/${encodeURIComponent(integrationKey)}/process-bindings/${encodeURIComponent(bindingKey)}/dispatches`,{method:"GET",headers:{"X-Tenant-Key":scope.tenantKey,"X-Site-Key":scope.siteKey}})}

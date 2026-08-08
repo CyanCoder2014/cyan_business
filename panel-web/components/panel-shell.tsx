@@ -23,8 +23,9 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
     { href: "/data", key: "data", icon: "◫", en: "Data", fa: "داده‌ها", capability: "dynamic-entities", permission: "record.read" },
     { href: "/bpm", key: "flows", icon: "⌁", en: "BPM", fa: "فرایندها", capability: "bpm", permission: "bpm.read" },
     { href: "/automations", key: "automation", icon: "↯", en: "Automation", fa: "اتوماسیون", capability: "automation", permission: "automation.read" },
-    { href: "/integrations", key: "integrations", icon: "⬡", en: "Integrations", fa: "یکپارچه‌سازی", capability: "bot-adapter", permission: "bot.read" },
-    { href: "/site-builder", key: "site-builder", icon: "▣", en: "Site builder", fa: "سایت‌ساز", capability: "site-builder", permission: "site.read" }
+    { href: "/bots", key: "bots", icon: "⬡", en: "Bots", fa: "ربات‌ها", capability: "bot-adapter", permission: "bot.read" },
+    { href: "/sites", key: "sites", icon: "▣", en: "Sites", fa: "سایت‌ها", capability: "site-builder", permission: "site.read" },
+    { href: "/domains", key: "domains", icon: "◎", en: "Domains", fa: "دامنه‌ها", capability: "site-builder", permission: "site.read" }
   ]},
   { en: "Operate", fa: "عملیات", items: [
     { href: "/notifications", key: "notifications", icon: "◉", en: "Notifications", fa: "اعلان‌ها" },

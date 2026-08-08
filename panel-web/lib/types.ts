@@ -141,6 +141,9 @@ export type AiConversationSession = {
   latestQuestion?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  /** Legacy bot adapter response aliases; absent on current AI session DTOs. */
+  channel?: string;
+  title?: string;
 };
 
 export type DynamicServiceKey =
@@ -258,6 +261,7 @@ export type BotChannelIntegration = {
   tokenSecretRef?: string | null;
   tokenFingerprint?: string | null;
   webhookSecret?: string | null;
+  webhookSecretRef?: string | null;
   miniAppUrl?: string | null;
   miniAppEnabled?: boolean;
   miniAppStartParam?: string | null;
@@ -266,6 +270,9 @@ export type BotChannelIntegration = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type BotProcessBinding = {id?:string;channel:"TELEGRAM"|"BALE";integrationKey:string;bindingKey:string;tenantKey:string;siteKey:string;triggerType:"EVERY_MESSAGE"|"COMMAND";commandPrefix?:string|null;targetType:"AUTOMATION"|"BPM";targetKey:string;inputTemplate?:Record<string,unknown>;enabled:boolean;createdAt?:string;updatedAt?:string};
+export type BotProcessDispatch = {id:string;bindingKey:string;inboundMessageId:string;targetType:"AUTOMATION"|"BPM";targetKey:string;targetReference?:string;status:string;errorCode?:string;errorMessage?:string;createdAt:string};
 
 export type BotOutboundMessage = {
   id?: string;

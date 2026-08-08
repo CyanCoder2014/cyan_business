@@ -27,8 +27,9 @@ function resolveActiveKey(pathname: string) {
   if (pathname.startsWith("/maker")) return "maker";
   if (pathname.startsWith("/data")) return "data";
   if (pathname.startsWith("/flows")) return "flows";
-  if (pathname.startsWith("/integrations") || pathname.startsWith("/bot")) return "integrations";
-  if (pathname.startsWith("/site-builder")) return "site-builder";
+  if (pathname.startsWith("/integrations") || pathname.startsWith("/bot")) return "bots";
+  if (pathname.startsWith("/sites") || pathname.startsWith("/site-builder")) return "sites";
+  if (pathname.startsWith("/domains")) return "domains";
   if (pathname.startsWith("/search")) return "search";
   if (pathname.startsWith("/automation")) return "automation";
   if (pathname.startsWith("/iam")) return "iam";

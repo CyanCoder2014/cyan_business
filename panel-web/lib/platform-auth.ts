@@ -21,6 +21,13 @@ type CaptchaChallengeResponse = {
   expiresAtEpochSecond: number;
 };
 
+export type LoginOtpResponse = {
+  codeId: string;
+  sent: boolean;
+  deliveryTarget: string;
+  devCode?: string;
+};
+
 type UserSummary = {
   username: string;
   email?: string;
@@ -292,6 +299,15 @@ export async function loginWithPassword(input: LoginInput) {
   });
   setTokenResponse(response, username);
   return response;
+}
+
+export async function sendLoginOtp(usernameInput: string) {
+  const username = normalizeUsername(usernameInput);
+  if (!username) throw new Error("Username is required before requesting a login code");
+  return authRequestJson<LoginOtpResponse>("/api/sso/otp/send", {
+    method: "POST",
+    body: JSON.stringify({ username, clientId: PLATFORM_AUTH_CLIENT_ID, purpose: "LOGIN" })
+  });
 }
 
 export async function registerPanelUser(input: RegisterInput) {

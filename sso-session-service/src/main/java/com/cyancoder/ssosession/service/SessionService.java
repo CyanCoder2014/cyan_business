@@ -2,11 +2,13 @@ package com.cyancoder.ssosession.service;
 
 import com.cyancoder.sso.common.dto.SessionCreateRequest;
 import com.cyancoder.sso.common.dto.SessionResponse;
+import com.cyancoder.sso.common.dto.SessionRenewRequest;
 import com.cyancoder.sso.common.dto.SessionScopeRequest;
 import com.cyancoder.sso.common.dto.SessionScopeResponse;
 import com.cyancoder.ssosession.entity.SessionStateEntity;
 import com.cyancoder.ssosession.repository.SessionStateRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -16,15 +18,18 @@ public class SessionService {
 
     private final SessionStateRepository sessionStateRepository;
     private final ScopeBoundaryClient scopeBoundaryClient;
+    private final long sessionTtlSeconds;
 
-    public SessionService(SessionStateRepository sessionStateRepository, ScopeBoundaryClient scopeBoundaryClient) {
+    public SessionService(SessionStateRepository sessionStateRepository, ScopeBoundaryClient scopeBoundaryClient,
+                          @Value("${sso.session.ttl-seconds:86400}") long sessionTtlSeconds) {
         this.sessionStateRepository = sessionStateRepository;
         this.scopeBoundaryClient = scopeBoundaryClient;
+        this.sessionTtlSeconds = sessionTtlSeconds;
     }
 
     public SessionResponse create(SessionCreateRequest request) {
         long issuedAt = Instant.now().getEpochSecond();
-        long expiresAt = Instant.now().plusSeconds(3600).getEpochSecond();
+        long expiresAt = Instant.now().plusSeconds(sessionTtlSeconds).getEpochSecond();
         String sessionId = UUID.randomUUID().toString();
         SessionStateEntity sessionState = new SessionStateEntity();
         sessionState.setSessionId(sessionId);
@@ -39,7 +44,23 @@ public class SessionService {
 
     public SessionResponse get(String sessionId) {
         SessionStateEntity sessionState = sessionStateRepository.findById(sessionId).orElse(null);
+        if (sessionState != null && sessionState.isActive()
+                && sessionState.getExpiresAtEpochSecond() <= Instant.now().getEpochSecond()) {
+            sessionState.setActive(false);
+            sessionStateRepository.save(sessionState);
+        }
         return sessionState == null ? null : toResponse(sessionState);
+    }
+
+    public SessionResponse renew(String sessionId, SessionRenewRequest request) {
+        SessionStateEntity session = sessionStateRepository.findById(sessionId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "Session not found"));
+        if (!session.isActive())
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNAUTHORIZED, "Session is inactive");
+        if (!session.getUsername().equals(request.username()) || !session.getClientId().equals(request.clientId()))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN, "Session binding mismatch");
+        session.setExpiresAtEpochSecond(Instant.now().plusSeconds(sessionTtlSeconds).getEpochSecond());
+        return toResponse(sessionStateRepository.save(session));
     }
 
     public SessionResponse revoke(String sessionId) {

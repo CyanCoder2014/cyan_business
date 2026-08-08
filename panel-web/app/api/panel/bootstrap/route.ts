@@ -9,9 +9,10 @@ const urls = {
   billing: process.env.BILLING_SERVICE_BASE_URL ?? "http://localhost:9130"
 };
 
+class UpstreamError extends Error { constructor(public status:number, public url:string){super(`${status}:${url}`)} }
 async function getJson<T>(url: string, authorization: string, headers: Record<string, string> = {}): Promise<T> {
   const response = await fetch(url, { headers: { Authorization: authorization, ...headers }, cache: "no-store" });
-  if (!response.ok) throw new Error(`${response.status}:${url}`);
+  if (!response.ok) throw new UpstreamError(response.status,url);
   return response.json() as Promise<T>;
 }
 
@@ -38,9 +39,12 @@ export async function GET(request: Request) {
         activeTenantKey = scope.tenantKey;
         activeSiteKey = scope.siteKey;
         services.sessionScope = "AVAILABLE";
-      } catch {
+      } catch (reason) {
+        if (reason instanceof UpstreamError && (reason.status === 401 || reason.status === 403 || reason.status === 404)) {
+          return NextResponse.json({ code: "SESSION_SCOPE_INVALID", message: "The authenticated session has expired or is no longer available." }, { status: 401 });
+        }
         services.sessionScope = "UNAVAILABLE";
-        warnings.push("The persisted session scope could not be loaded.");
+        warnings.push("Session scope is temporarily unavailable. Retry before making scoped changes.");
       }
     } else {
       services.sessionScope = "NOT_CONFIGURED";

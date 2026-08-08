@@ -25,7 +25,7 @@ import {
   UsersIcon
 } from "@/components/auth-icons";
 import { usePanel } from "@/components/panel-provider";
-import { createCaptchaChallenge, loginWithPassword, registerPanelUser } from "@/lib/platform-auth";
+import { createCaptchaChallenge, loginWithPassword, registerPanelUser, sendLoginOtp } from "@/lib/platform-auth";
 
 type AuthMode = "signin" | "signup";
 type CaptchaState = {
@@ -111,6 +111,8 @@ function AuthScreen() {
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
   const [captcha, setCaptcha] = useState<CaptchaState | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -175,7 +177,8 @@ function AuthScreen() {
         username: email,
         password,
         captchaChallengeId: captcha.challengeId,
-        captchaAnswer
+        captchaAnswer,
+        otpCode: otpCode.trim() || undefined
       });
       router.replace(returnTo);
     } catch (error) {
@@ -183,6 +186,21 @@ function AuthScreen() {
       await loadCaptcha().catch(() => null);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSendOtp() {
+    setOtpLoading(true);
+    setStatus(null);
+    try {
+      const response = await sendLoginOtp(email);
+      setStatus(response.devCode
+        ? (locale === "fa" ? `کد توسعه: ${response.devCode}` : `Development login code: ${response.devCode}`)
+        : (locale === "fa" ? "کد ورود ارسال شد." : "Login code sent."));
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Failed to send login code.");
+    } finally {
+      setOtpLoading(false);
     }
   }
 
@@ -333,10 +351,13 @@ function AuthScreen() {
               loading={loading}
               locale={locale}
               mode={mode}
+              otpCode={otpCode}
+              otpLoading={otpLoading}
               password={password}
               phone={phone}
               setCaptchaAnswer={setCaptchaAnswer}
               setEmail={setEmail}
+              setOtpCode={setOtpCode}
               setPassword={setPassword}
               setPhone={setPhone}
               setShowPassword={setShowPassword}
@@ -346,6 +367,7 @@ function AuthScreen() {
               submitLabel={submitLabel}
               workspace={workspace}
               onMagicLink={handleMagicLink}
+              onSendOtp={handleSendOtp}
               onRefreshCaptcha={loadCaptcha}
               onSocialLogin={handleSocialLogin}
               onSubmit={handleSubmit}
@@ -378,10 +400,13 @@ function AuthScreen() {
                 loading={loading}
                 locale={locale}
                 mode={mode}
+                otpCode={otpCode}
+                otpLoading={otpLoading}
                 password={password}
                 phone={phone}
                 setCaptchaAnswer={setCaptchaAnswer}
                 setEmail={setEmail}
+                setOtpCode={setOtpCode}
                 setPassword={setPassword}
                 setPhone={setPhone}
                 setShowPassword={setShowPassword}
@@ -391,6 +416,7 @@ function AuthScreen() {
                 submitLabel={submitLabel}
                 workspace={workspace}
                 onMagicLink={handleMagicLink}
+                onSendOtp={handleSendOtp}
                 onRefreshCaptcha={loadCaptcha}
                 onSocialLogin={handleSocialLogin}
                 onSubmit={handleSubmit}
@@ -443,10 +469,13 @@ function AuthForm({
   loading,
   locale,
   mode,
+  otpCode,
+  otpLoading,
   password,
   phone,
   setCaptchaAnswer,
   setEmail,
+  setOtpCode,
   setPassword,
   setPhone,
   setShowPassword,
@@ -456,6 +485,7 @@ function AuthForm({
   submitLabel,
   workspace,
   onMagicLink,
+  onSendOtp,
   onRefreshCaptcha,
   onSocialLogin,
   onSubmit
@@ -467,10 +497,13 @@ function AuthForm({
   loading: boolean;
   locale: "en" | "fa";
   mode: AuthMode;
+  otpCode: string;
+  otpLoading: boolean;
   password: string;
   phone: string;
   setCaptchaAnswer: (value: string) => void;
   setEmail: (value: string) => void;
+  setOtpCode: (value: string) => void;
   setPassword: (value: string) => void;
   setPhone: (value: string) => void;
   setShowPassword: (value: boolean) => void;
@@ -480,6 +513,7 @@ function AuthForm({
   submitLabel: string;
   workspace: string;
   onMagicLink: () => void;
+  onSendOtp: () => Promise<void>;
   onRefreshCaptcha: () => Promise<void>;
   onSocialLogin: (provider: "google" | "github") => void;
   onSubmit: () => Promise<void>;
@@ -597,6 +631,24 @@ function AuthForm({
           </button>
         </div>
       </label>
+
+      {mode === "signin" ? (
+        <label className="auth-field">
+          <span>{locale === "fa" ? "کد ورود دومرحله‌ای (در صورت فعال بودن)" : "Two-factor login code (if enabled)"}</span>
+          <div className="auth-captcha-row">
+            <input
+              aria-label={locale === "fa" ? "کد ورود دومرحله‌ای" : "Two-factor login code"}
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              value={otpCode}
+              onChange={(event) => setOtpCode(event.target.value)}
+            />
+            <button type="button" className="secondary-pill auth-refresh-btn" onClick={() => onSendOtp()} disabled={loading || otpLoading || !email.trim()}>
+              {otpLoading ? (locale === "fa" ? "در حال ارسال…" : "Sending…") : (locale === "fa" ? "ارسال کد" : "Send code")}
+            </button>
+          </div>
+        </label>
+      ) : null}
 
       {status ? <div className="status-pill danger">{status}</div> : null}
 

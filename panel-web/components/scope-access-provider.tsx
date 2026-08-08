@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, Fragment, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { getPlatformAuthToken, getPlatformSessionId, platformFetch, setActivePanelScope } from "@/lib/platform-auth";
+import { AuthenticationRequiredError, getPlatformAuthToken, getPlatformSessionId, platformFetch, setActivePanelScope } from "@/lib/platform-auth";
 import type { PanelBootstrap } from "@/lib/panel-contracts";
 
 type ScopeAccessContextValue = {
@@ -18,6 +18,13 @@ type ScopeAccessContextValue = {
 };
 
 const ScopeAccessContext = createContext<ScopeAccessContextValue | null>(null);
+
+function grantsPermission(grants: Set<string>, permission: string) {
+  if (grants.has("*") || grants.has(permission)) return true;
+  const separator = permission.includes(":") ? ":" : ".";
+  const namespace = permission.split(separator)[0];
+  return grants.has(`${namespace}${separator}*`);
+}
 
 export function ScopeAccessProvider({ children }: { children: ReactNode }) {
   const [bootstrap, setBootstrap] = useState<PanelBootstrap | null>(null);
@@ -37,7 +44,7 @@ export function ScopeAccessProvider({ children }: { children: ReactNode }) {
     } catch (reason) {
       setBootstrap(null);
       setActivePanelScope(null, null);
-      setError(reason instanceof Error ? reason.message : "The panel context could not be loaded.");
+      if (!(reason instanceof AuthenticationRequiredError)) setError(reason instanceof Error ? reason.message : "The panel context could not be loaded.");
     } finally { setLoading(false); }
   }, []);
 
@@ -62,7 +69,7 @@ export function ScopeAccessProvider({ children }: { children: ReactNode }) {
       tenantKey: bootstrap?.activeTenantKey ?? null,
       siteKey: bootstrap?.activeSiteKey ?? null,
       queryVersion, refresh, selectScope,
-      can: (permission) => permissions.has(permission),
+      can: (permission) => grantsPermission(permissions, permission),
       hasCapability: (capability) => bootstrap?.capabilities.some((item) => item.key === capability && item.enabled) ?? false
     };
   }, [bootstrap, error, loading, queryVersion, refresh, selectScope]);

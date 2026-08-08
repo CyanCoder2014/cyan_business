@@ -88,7 +88,7 @@ public class AuthService {
         }
 
         SessionResponse sessionResponse = sessionClient.create(
-                new SessionCreateRequest(request.username(), request.clientId(), request.deviceId())
+                new SessionCreateRequest(user.username(), request.clientId(), request.deviceId())
         );
         IamUserAccessSummary access = userClient.resolveAccess(user.username(), request.clientId());
         return jwtTokenService.issue(request.clientId(), user, access, sessionResponse);
@@ -111,7 +111,7 @@ public class AuthService {
         if (user == null || !user.active()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found");
         }
-        SessionResponse sessionResponse = sessionClient.get(state.sessionId());
+        SessionResponse sessionResponse = sessionClient.renew(state.sessionId(), new SessionRenewRequest(state.subject(), state.clientId()));
         if (sessionResponse == null || !sessionResponse.active()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session inactive");
         }

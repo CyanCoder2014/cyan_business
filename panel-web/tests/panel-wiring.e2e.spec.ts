@@ -7,7 +7,7 @@ const storageKeys = {
   sessionId: "cyan.panel.sessionId",
   username: "cyan.panel.username"
 };
-const panelBootstrap = { identity:{username:"user@cyan.local",email:"user@cyan.local",mfaEnabled:false,roles:["user"],active:true},access:{realmRoles:["tenant-admin"],realmPermissions:["panel:read","project.create","project.read","definition.read","record.read","bpm.read","settings.read","automation.read","bot.read"],clients:[]},tenants:[{tenantKey:"tenant-demo",displayName:"Demo workspace",status:"ACTIVE",membershipRole:"TENANT_OWNER"}],sites:[{tenantKey:"tenant-demo",siteKey:"site-commerce",name:"Commerce",status:"ACTIVE"}],activeTenantKey:"tenant-demo",activeSiteKey:"site-commerce",subscription:{tenantKey:"tenant-demo",planKey:null,status:"NONE",features:[],limits:{},providerState:"NOT_CONFIGURED"},capabilities:[{key:"ai-orchestrator",enabled:true,source:"TENANT_OVERRIDE",status:"AVAILABLE",limits:{}},{key:"dynamic-entities",enabled:true,source:"TENANT_OVERRIDE",status:"AVAILABLE",limits:{}},{key:"bpm",enabled:true,source:"TENANT_OVERRIDE",status:"AVAILABLE",limits:{}}],featureFlags:{},services:{identity:"AVAILABLE",tenancy:"AVAILABLE",sessionScope:"AVAILABLE",sites:"AVAILABLE",billing:"NOT_CONFIGURED",capabilities:"AVAILABLE"},warnings:[]};
+const panelBootstrap = { identity:{username:"user@cyan.local",email:"user@cyan.local",mfaEnabled:false,roles:["user"],active:true},access:{realmRoles:["tenant-admin"],realmPermissions:["panel:read","project.create","project.read","definition.read","record.read","bpm.read","settings.read","automation.read","bot.read"],clients:[]},tenants:[{tenantKey:"tenant-demo",displayName:"Demo workspace",status:"ACTIVE",membershipRole:"TENANT_OWNER"}],sites:[{tenantKey:"tenant-demo",siteKey:"site-commerce",name:"Commerce",status:"ACTIVE"}],activeTenantKey:"tenant-demo",activeSiteKey:"site-commerce",subscription:{tenantKey:"tenant-demo",planKey:"growth",status:"ACTIVE",features:["ai-orchestrator","dynamic-entities","bpm","automation","bot-adapter","site-builder"],limits:{},providerState:"CONFIGURED"},capabilities:["ai-orchestrator","dynamic-entities","bpm","automation","bot-adapter","site-builder"].map(key=>({key,enabled:true,source:"PLAN",status:"AVAILABLE",limits:{}})),featureFlags:{},services:{identity:"AVAILABLE",tenancy:"AVAILABLE",sessionScope:"AVAILABLE",sites:"AVAILABLE",billing:"AVAILABLE",capabilities:"AVAILABLE"},warnings:[]};
 
 test.beforeEach(async ({ page }) => {
   await seedAuth(page);
@@ -192,13 +192,13 @@ test("data and flows pages show backend-empty states instead of fixture data", a
     await route.fulfill({ json: [] });
   });
   await page.route("**/api/platform/dynamic/**/endpoint/entities/templates", (route) => route.fulfill({ json: [] }));
-  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/endpoint\/bpm\/flows.*/, async (route) => {
+  await page.route("**/api/platform/service/bpm-service/endpoint/bpm/flows**", async (route) => {
     await route.fulfill({ json: [] });
   });
-  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/endpoint\/bpm\/metadata\/state-actions.*/, async (route) => {
+  await page.route("**/api/platform/service/bpm-service/endpoint/bpm/metadata/state-actions**", async (route) => {
     await route.fulfill({ json: [] });
   });
-  await page.route(/http:\/\/(?:localhost|127\.0\.0\.1):(?:8001|18001)\/endpoint\/bpm\/metadata\/transition-conditions.*/, async (route) => {
+  await page.route("**/api/platform/service/bpm-service/endpoint/bpm/metadata/transition-conditions**", async (route) => {
     await route.fulfill({
       json: {
         operators: ["EQ"],
@@ -212,8 +212,9 @@ test("data and flows pages show backend-empty states instead of fixture data", a
   await expect(page.getByRole("heading", { name: "No entities" })).toBeVisible();
   await expect(page.getByText("Luna Lounge Chair")).toHaveCount(0);
 
-  await page.goto("/flows");
-  await expect(page.getByText("No flow was returned by the API")).toBeVisible();
+  await page.goto("/flows").catch(() => null);
+  await expect(page).toHaveURL(/\/bpm$/);
+  await expect(page.getByRole("heading", { name: "No processes" })).toBeVisible();
   await expect(page.getByText("Route to review")).toHaveCount(0);
 });
 
@@ -481,6 +482,7 @@ test("api docs page renders live controller paths and authentication modes", asy
 
 async function seedAuth(page: Page) {
   await page.route("**/api/panel/bootstrap", (route) => route.fulfill({ json: panelBootstrap }));
+  await page.route("**/api/platform/**", (route) => route.fulfill({ json: [] }));
   await page.addInitScript((keys) => {
     window.localStorage.setItem(keys.accessToken, "seeded-access");
     window.localStorage.setItem(keys.refreshToken, "seeded-refresh");

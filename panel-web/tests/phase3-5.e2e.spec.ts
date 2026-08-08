@@ -37,7 +37,7 @@ async function fulfillPlatform(route:Route) {
   if(url.includes("media/uploads/prepare")) return route.fulfill({json:{uploadId:"upload-1",assetKey:"asset-1",uploadUrl:"/endpoint/media/uploads/upload-1",method:"PUT",status:"PREPARED",expectedSizeBytes:4,uploadedSizeBytes:0,expiresAt:"2026-08-05T09:00:00Z"}});
   if(url.includes("media/uploads/upload-1")) return route.fulfill({json:{uploadId:"upload-1",assetKey:"asset-1",uploadUrl:"/endpoint/media/uploads/upload-1",method:"PUT",status:"UPLOADED",expectedSizeBytes:4,uploadedSizeBytes:4,expiresAt:"2026-08-05T09:00:00Z"}});
   if(url.includes("managed-objects/assigned-to-me")) return route.fulfill({json:[{id:"work-1",objectType:"Approval",state:"REVIEW"}]});
-  if(url.includes("automation/executions")) return route.fulfill({json:[{executionId:"execution-1",automationKey:"sync",status:"FAILED"}]});
+  if(url.includes("automation-orchestrator/executions")) return route.fulfill({json:[{executionId:"execution-1",automationKey:"sync",status:"FAILED"}]});
   if(url.includes("bot-adapter/integrations")) return route.fulfill({json:[]});
   if(url.includes("definitions/customer/versions")) return route.fulfill({json:[{revision:2,status:"DRAFT",definition:JSON.stringify(definition.definition),createdAt:"2026-08-05T08:00:00Z"}]});
   if(url.includes("definitions/customer")) return route.fulfill({json:{...definition,revision:method==="PUT"?3:2}});

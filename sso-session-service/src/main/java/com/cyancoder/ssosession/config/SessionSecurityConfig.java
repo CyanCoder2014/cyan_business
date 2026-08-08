@@ -30,6 +30,14 @@ public class SessionSecurityConfig {
         return http.build();
     }
     @Bean @Order(2)
+    SecurityFilterChain accountSecurity(HttpSecurity http) throws Exception {
+        http.securityMatcher("/api/sso/sessions/me", "/api/sso/sessions/me/**").csrf(c -> c.disable())
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(a -> a.anyRequest().authenticated())
+                .oauth2ResourceServer(o -> o.jwt(Customizer.withDefaults()));
+        return http.build();
+    }
+    @Bean @Order(3)
     SecurityFilterChain legacySecurity(HttpSecurity http) throws Exception {
         http.csrf(c -> c.disable()).authorizeHttpRequests(a -> a.anyRequest().permitAll());
         return http.build();

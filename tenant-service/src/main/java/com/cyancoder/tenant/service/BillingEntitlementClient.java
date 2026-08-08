@@ -28,4 +28,11 @@ public class BillingEntitlementClient {
                 .header(HttpHeaders.AUTHORIZATION, "Basic " + java.util.Base64.getEncoder().encodeToString((username + ":" + password).getBytes(java.nio.charset.StandardCharsets.UTF_8)))
                 .retrieve().body(BillingEntitlements.class);
     }
+
+    public void activateFreePlan(String tenantKey, String planKey, String idempotencyKey) {
+        client.post().uri("/internal/billing/tenants/{tenantKey}/subscription/change", tenantKey)
+                .header(HttpHeaders.AUTHORIZATION, "Basic " + java.util.Base64.getEncoder().encodeToString((username + ":" + password).getBytes(java.nio.charset.StandardCharsets.UTF_8)))
+                .header("Idempotency-Key", idempotencyKey)
+                .body(java.util.Map.of("planKey", planKey)).retrieve().toBodilessEntity();
+    }
 }

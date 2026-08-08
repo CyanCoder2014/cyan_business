@@ -23,6 +23,8 @@ public class TenantMembershipEntity {
     private boolean active;
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
     public String getMembershipId() { return membershipId; }
     public void setMembershipId(String membershipId) { this.membershipId = membershipId; }
@@ -36,4 +38,6 @@ public class TenantMembershipEntity {
     public void setActive(boolean active) { this.active = active; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

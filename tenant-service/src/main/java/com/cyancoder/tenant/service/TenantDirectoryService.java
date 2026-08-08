@@ -70,6 +70,7 @@ public class TenantDirectoryService {
         membership.setRoleKey("TENANT_OWNER");
         membership.setActive(true);
         membership.setCreatedAt(now);
+        membership.setUpdatedAt(now);
         membershipRepository.save(membership);
 
         IdempotencyRecordEntity record = new IdempotencyRecordEntity();

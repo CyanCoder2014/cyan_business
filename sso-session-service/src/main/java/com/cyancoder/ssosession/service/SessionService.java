@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
 
 @Service
 public class SessionService {
@@ -70,6 +71,24 @@ public class SessionService {
         }
         sessionState.setActive(false);
         return toResponse(sessionStateRepository.save(sessionState));
+    }
+
+    public List<SessionResponse> listOwned(String subject) {
+        long now=Instant.now().getEpochSecond();
+        return sessionStateRepository.findByUsernameOrderByIssuedAtEpochSecondDesc(subject).stream().map(session->{
+            if(session.isActive()&&session.getExpiresAtEpochSecond()<=now){session.setActive(false);sessionStateRepository.save(session);}
+            return toResponse(session);
+        }).toList();
+    }
+
+    public SessionResponse revokeOwned(String sessionId,String subject) {
+        SessionStateEntity session=sessionStateRepository.findById(sessionId).orElseThrow(()->new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND,"Session not found"));
+        if(!session.getUsername().equals(subject))throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.FORBIDDEN,"Session ownership required");
+        session.setActive(false);return toResponse(sessionStateRepository.save(session));
+    }
+
+    public void revokeAllOwned(String subject) {
+        sessionStateRepository.findByUsernameOrderByIssuedAtEpochSecondDesc(subject).forEach(session->{if(session.isActive()){session.setActive(false);sessionStateRepository.save(session);}});
     }
 
     public SessionScopeResponse getScope(String sessionId, String subject) {

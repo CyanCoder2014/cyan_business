@@ -59,6 +59,17 @@ public class UserController {
         return userDirectoryService.getUser(authentication.getName());
     }
 
+    public record UpdateProfileRequest(String email,String phoneNumber){}
+    public record ChangePasswordRequest(String currentPassword,String newPassword){}
+
+    @PatchMapping("/me")
+    @PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
+    public UserSummary updateMe(@RequestBody UpdateProfileRequest request,Authentication authentication){return userDirectoryService.updateProfile(authentication.getName(),request.email(),request.phoneNumber());}
+
+    @PostMapping("/me/password/change") @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
+    public void changePassword(@RequestBody ChangePasswordRequest request,Authentication authentication){userDirectoryService.changePassword(authentication.getName(),request.currentPassword(),request.newPassword());}
+
     @PostMapping("/verify-password")
     public PasswordVerificationResponse verifyPassword(@RequestBody PasswordVerificationRequest request) {
         return userDirectoryService.verifyPassword(request.username(), request.password());

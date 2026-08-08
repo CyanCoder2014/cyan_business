@@ -58,8 +58,17 @@ public class BillingDirectoryService {
     @Transactional
     public SubscriptionSummary change(String tenantKey, ChangeSubscriptionRequest request, String idempotencyKey) {
         memberships.require(tenantKey, security.username());
+        return changeOwned(tenantKey, request, idempotencyKey, security.username());
+    }
+
+    @Transactional
+    public SubscriptionSummary internalChange(String tenantKey, ChangeSubscriptionRequest request, String idempotencyKey) {
+        return changeOwned(tenantKey, request, idempotencyKey, "internal-provisioning");
+    }
+
+    private SubscriptionSummary changeOwned(String tenantKey, ChangeSubscriptionRequest request, String idempotencyKey, String actor) {
         if (idempotencyKey == null || idempotencyKey.isBlank()) throw new IllegalArgumentException("Idempotency-Key is required");
-        String recordId = security.username() + "|subscription-change|" + idempotencyKey.trim();
+        String recordId = actor + "|subscription-change|" + idempotencyKey.trim();
         if (idempotency.existsById(recordId)) return subscription(tenantKey);
         PlanEntity plan = plans.findById(request.planKey()).filter(PlanEntity::isActive).orElseThrow(NoSuchElementException::new);
         if (!"FREE".equals(plan.getBillingMode())) throw new IllegalStateException("External billing provider is not configured");

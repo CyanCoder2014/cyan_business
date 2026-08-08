@@ -46,4 +46,13 @@ public class SessionController {
     public SessionScopeResponse updateScope(@PathVariable String sessionId, @Valid @RequestBody SessionScopeRequest request, Authentication authentication) {
         return sessionService.updateScope(sessionId, authentication.getName(), request);
     }
+
+    @GetMapping("/me")
+    public java.util.List<SessionResponse> mine(Authentication authentication){return sessionService.listOwned(authentication.getName());}
+
+    @DeleteMapping("/me/{sessionId}")
+    public SessionResponse revokeMine(@PathVariable String sessionId,Authentication authentication){return sessionService.revokeOwned(sessionId,authentication.getName());}
+
+    @DeleteMapping("/me") @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void revokeAllMine(Authentication authentication){sessionService.revokeAllOwned(authentication.getName());}
 }

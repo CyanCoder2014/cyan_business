@@ -73,4 +73,7 @@ public class TenantCapabilityService {
             );
         }).toList();
     }
+
+    public static boolean isKnownCapability(String key) { return CAPABILITY_SERVICES.containsKey(key); }
+    public static List<String> catalog() { return CAPABILITY_SERVICES.keySet().stream().sorted().toList(); }
 }

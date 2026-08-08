@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
+import { useScopeAccess } from "@/components/scope-access-provider";
 import {
   listBotIntegrations,
   listBotMessages,
@@ -15,10 +16,10 @@ import {
 } from "@/lib/platform-api";
 import type { BotChannelIntegration, BotMiniAppBuild, BotOutboundMessage } from "@/lib/types";
 
-const scope = { tenantKey: "tenant-demo", siteKey: "site-commerce" };
-
 export default function IntegrationsPage() {
   const { locale } = usePanel();
+  const { tenantKey, siteKey, queryVersion } = useScopeAccess();
+  const scope = useMemo(() => ({ tenantKey: tenantKey ?? "", siteKey: siteKey ?? "" }), [siteKey, tenantKey]);
   const [integrations, setIntegrations] = useState<BotChannelIntegration[]>([]);
   const [messages, setMessages] = useState<BotOutboundMessage[]>([]);
   const [miniApps, setMiniApps] = useState<BotMiniAppBuild[]>([]);
@@ -26,6 +27,7 @@ export default function IntegrationsPage() {
   const [status, setStatus] = useState<string | null>(null);
 
   async function refresh() {
+    if (!tenantKey) return;
     const [integrationItems, messageItems, miniAppItems] = await Promise.all([
       listBotIntegrations(scope),
       listBotMessages(scope),
@@ -44,7 +46,7 @@ export default function IntegrationsPage() {
       setMiniApps([]);
       setStatus(error instanceof Error ? error.message : locale === "fa" ? "یکپارچه‌سازی‌ها بارگیری نشدند." : "Integrations could not be loaded.");
     });
-  }, [locale]);
+  }, [locale, queryVersion, siteKey, tenantKey]);
 
   const selected = useMemo(
     () =>

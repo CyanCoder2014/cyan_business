@@ -4,18 +4,21 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
+import { useScopeAccess } from "@/components/scope-access-provider";
 import { listBotIntegrations, listBotMessages, listMiniAppBuilds } from "@/lib/platform-api";
 import type { BotChannelIntegration, BotMiniAppBuild, BotOutboundMessage } from "@/lib/types";
 
 export default function BotExperiencePage() {
   const { locale } = usePanel();
+  const { tenantKey, siteKey, queryVersion } = useScopeAccess();
   const [integrations, setIntegrations] = useState<BotChannelIntegration[]>([]);
   const [messages, setMessages] = useState<BotOutboundMessage[]>([]);
   const [builds, setBuilds] = useState<BotMiniAppBuild[]>([]);
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    const scope = { tenantKey: "tenant-demo", siteKey: "site-commerce" };
+    if (!tenantKey) return;
+    const scope = { tenantKey, siteKey: siteKey ?? undefined };
     Promise.allSettled([
       listBotIntegrations(scope),
       listBotMessages(scope),
@@ -39,7 +42,7 @@ export default function BotExperiencePage() {
       }
       setStatus(errors.length ? errors.join(" ") : null);
     });
-  }, [locale]);
+  }, [locale, queryVersion, siteKey, tenantKey]);
 
   const telegramIntegration = integrations.find((item) => item.channel === "TELEGRAM") ?? null;
   const baleIntegration = integrations.find((item) => item.channel === "BALE") ?? null;

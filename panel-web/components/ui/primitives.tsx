@@ -3,6 +3,9 @@
 import { useId, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
 
 export function Button(props: ButtonHTMLAttributes<HTMLButtonElement>) { return <button {...props} className={`primary-pill ${props.className ?? ""}`} />; }
+export function AsyncButton({ pending=false, pendingLabel="Working…", children, disabled, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { pending?:boolean; pendingLabel?:string }) {
+  return <button {...props} disabled={disabled||pending} aria-busy={pending} className={`primary-pill async-button ${props.className??""}`}>{pending?<span className="button-spinner" aria-hidden/>:null}<span>{pending?pendingLabel:children}</span></button>;
+}
 export function IconButton({ label, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string }) { return <button {...props} aria-label={label} className={`header-icon-button ${props.className ?? ""}`} />; }
 export function Field({ label, hint, error, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string; error?: string }) { const id = useId(); return <label className="ui-field" htmlFor={id}><span>{label}</span><input {...props} id={id}/>{error ? <small className="field-error">{error}</small> : hint ? <small>{hint}</small> : null}</label>; }
 export function Select({ label, children, ...props }: SelectHTMLAttributes<HTMLSelectElement> & { label: string; children: ReactNode }) { const id = useId(); return <label className="ui-field" htmlFor={id}><span>{label}</span><select {...props} id={id}>{children}</select></label>; }

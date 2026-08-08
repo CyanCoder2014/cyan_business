@@ -5,8 +5,9 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
-import { getPlatformAuthToken, logoutPlatformSession, redirectToAuth } from "@/lib/platform-auth";
+import { getPlatformAuthToken, logoutPlatformSession, platformFetch, redirectToAuth } from "@/lib/platform-auth";
 import { NotificationCenter } from "@/components/notifications/notification-center";
+import { AsyncButton } from "@/components/ui/primitives";
 
 type PanelShellProps = { title: string; titleFa: string; subtitle: string; subtitleFa: string; kicker?: string; kickerFa?: string; activeKey: string; children: ReactNode };
 type NavItem = { href: string; key: string; icon: string; en: string; fa: string; capability?: string; permission?: string };
@@ -20,8 +21,8 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
   { en: "Build", fa: "ساخت", items: [
     { href: "/definitions", key: "maker", icon: "✎", en: "Definitions", fa: "تعریف‌ها", capability: "dynamic-entities", permission: "definition.read" },
     { href: "/data", key: "data", icon: "◫", en: "Data", fa: "داده‌ها", capability: "dynamic-entities", permission: "record.read" },
-    { href: "/flows", key: "flows", icon: "⌁", en: "Flows", fa: "فلوها", capability: "bpm", permission: "bpm.read" },
-    { href: "/automation", key: "automation", icon: "↯", en: "Automation", fa: "اتوماسیون", capability: "automation", permission: "automation.read" },
+    { href: "/bpm", key: "flows", icon: "⌁", en: "BPM", fa: "فرایندها", capability: "bpm", permission: "bpm.read" },
+    { href: "/automations", key: "automation", icon: "↯", en: "Automation", fa: "اتوماسیون", capability: "automation", permission: "automation.read" },
     { href: "/integrations", key: "integrations", icon: "⬡", en: "Integrations", fa: "یکپارچه‌سازی", capability: "bot-adapter", permission: "bot.read" },
     { href: "/site-builder", key: "site-builder", icon: "▣", en: "Site builder", fa: "سایت‌ساز", capability: "site-builder", permission: "site.read" }
   ]},
@@ -97,11 +98,52 @@ export function PanelShell(props: PanelShellProps) {
           {bootstrap?.warnings.length ? <div className="operational-banner" role="status">{bootstrap.warnings.join(" ")}</div> : null}
           {actionError ? <div className="operational-banner error" role="alert">{actionError}<button onClick={() => setActionError(null)}>×</button></div> : null}
           <section className="page-intro"><div><p className="page-kicker">{locale === "fa" ? props.kickerFa ?? "فضای کار" : props.kicker ?? "Workspace"}</p><h1>{locale === "fa" ? props.titleFa : props.title}</h1><p>{locale === "fa" ? props.subtitleFa : props.subtitle}</p></div></section>
-          {props.children}
+          {bootstrap && !bootstrap.tenants.length
+            ? <WorkspaceOnboarding locale={locale} refresh={refresh} selectScope={selectScope} />
+            : bootstrap?.activeTenantKey && bootstrap.subscription?.status === "NONE"
+              ? <PlanOnboarding locale={locale} tenantKey={bootstrap.activeTenantKey} refresh={refresh} />
+            : props.children}
         </main>
       </div>
-      <nav className="mobile-bottom-nav" aria-label={locale === "fa" ? "ناوبری موبایل" : "Mobile navigation"}><Link href="/dashboard"><span>⌂</span><span>{locale === "fa" ? "خانه" : "Home"}</span></Link><Link href="/ai"><span>✦</span><span>{locale === "fa" ? "هوش" : "AI"}</span></Link><button onClick={() => setSheet("build")}><span>＋</span><span>{locale === "fa" ? "ساخت" : "Build"}</span></button><Link href="/flows"><span>⌁</span><span>{locale === "fa" ? "کار" : "Work"}</span></Link><button onClick={() => setSheet("more")}><span>•••</span><span>{locale === "fa" ? "بیشتر" : "More"}</span></button></nav>
+      <nav className="mobile-bottom-nav" aria-label={locale === "fa" ? "ناوبری موبایل" : "Mobile navigation"}><Link href="/dashboard"><span>⌂</span><span>{locale === "fa" ? "خانه" : "Home"}</span></Link><Link href="/ai"><span>✦</span><span>{locale === "fa" ? "هوش" : "AI"}</span></Link><button onClick={() => setSheet("build")}><span>＋</span><span>{locale === "fa" ? "ساخت" : "Build"}</span></button><Link href="/work"><span>⌁</span><span>{locale === "fa" ? "کار" : "Work"}</span></Link><button onClick={() => setSheet("more")}><span>•••</span><span>{locale === "fa" ? "بیشتر" : "More"}</span></button></nav>
       {sheet ? <div className="sheet-backdrop" onClick={() => setSheet(null)}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={sheet === "build" ? "Build navigation" : "More navigation"} onClick={(event) => event.stopPropagation()}><div className="sheet-handle"/><div className="sheet-grid">{groups.slice(sheet === "build" ? 1 : 2, sheet === "build" ? 2 : 3).flatMap((group) => group.items).map((item) => navEnabled(item) ? <Link key={item.key} href={item.href} onClick={() => setSheet(null)}><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</Link> : <span key={item.key} aria-disabled="true"><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</span>)}</div><button className="secondary-pill" onClick={() => setSheet(null)}>{locale === "fa" ? "بستن" : "Close"}</button></section></div> : null}
     </div>
   );
+}
+
+function WorkspaceOnboarding({locale,refresh,selectScope}:{locale:"en"|"fa";refresh:()=>Promise<void>;selectScope:(tenantKey:string,siteKey?:string|null)=>Promise<void>}) {
+  const [name,setName]=useState("");
+  const [key,setKey]=useState("");
+  const [pending,setPending]=useState(false);
+  const [error,setError]=useState<string|null>(null);
+  const updateName=(value:string)=>{
+    setName(value);
+    setKey((current)=>current ? current : value.toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,48));
+  };
+  const create=async()=>{
+    if(pending)return;
+    setPending(true);setError(null);
+    try{
+      const response=await platformFetch("/api/platform/service/tenant-service/endpoint/tenants",{method:"POST",headers:{"Content-Type":"application/json","Idempotency-Key":crypto.randomUUID()},body:JSON.stringify({tenantKey:key,displayName:name})});
+      if(!response.ok)throw new Error((await response.json().catch(()=>null))?.message??`Workspace creation failed (${response.status})`);
+      await refresh();
+      await selectScope(key,null);
+    }catch(reason){setError(reason instanceof Error?reason.message:String(reason))}
+    finally{setPending(false)}
+  };
+  return <section className="workspace-onboarding panel-card">
+    <div><p className="page-kicker">{locale==="fa"?"شروع کار":"Get started"}</p><h2>{locale==="fa"?"اولین فضای کاری را بسازید":"Create your first workspace"}</h2><p>{locale==="fa"?"فضای کاری محدوده واقعی داده‌ها، سایت‌ها و دسترسی تیم شماست.":"A workspace is the real tenant boundary for your data, sites, and team access."}</p></div>
+    <label><span>{locale==="fa"?"نام فضای کاری":"Workspace name"}</span><input value={name} onChange={event=>updateName(event.target.value)} /></label>
+    <label><span>{locale==="fa"?"کلید فضای کاری":"Workspace key"}</span><input dir="ltr" value={key} onChange={event=>setKey(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g,""))} /></label>
+    {error?<p className="field-error" role="alert">{error}</p>:null}
+    <AsyncButton pending={pending} pendingLabel={locale==="fa"?"در حال ساخت…":"Creating…"} disabled={name.trim().length<2||!/^[a-z0-9][a-z0-9-]{2,79}$/.test(key)} onClick={create}>{locale==="fa"?"ساخت فضای کاری":"Create workspace"}</AsyncButton>
+  </section>;
+}
+
+type AvailablePlan={planKey:string;displayName:string;description?:string;billingMode:"FREE"|"EXTERNAL";active:boolean;features:string[];limits:Record<string,unknown>};
+function PlanOnboarding({locale,tenantKey,refresh}:{locale:"en"|"fa";tenantKey:string;refresh:()=>Promise<void>}){
+  const [plans,setPlans]=useState<AvailablePlan[]>([]);const [loading,setLoading]=useState(true);const [pending,setPending]=useState<string|null>(null);const [error,setError]=useState<string|null>(null);
+  useEffect(()=>{platformFetch("/api/platform/service/billing-service/endpoint/billing/plans").then(async response=>{if(!response.ok)throw new Error(`Plans could not be loaded (${response.status})`);setPlans(await response.json())}).catch(reason=>setError(reason instanceof Error?reason.message:String(reason))).finally(()=>setLoading(false))},[]);
+  const choose=async(plan:AvailablePlan)=>{if(pending||plan.billingMode!=="FREE")return;setPending(plan.planKey);setError(null);try{const response=await platformFetch(`/api/platform/service/billing-service/endpoint/billing/tenants/${encodeURIComponent(tenantKey)}/subscription/change`,{method:"POST",headers:{"Content-Type":"application/json","Idempotency-Key":crypto.randomUUID()},body:JSON.stringify({planKey:plan.planKey})});if(!response.ok)throw new Error((await response.json().catch(()=>null))?.message??`Plan activation failed (${response.status})`);await refresh()}catch(reason){setError(reason instanceof Error?reason.message:String(reason))}finally{setPending(null)}};
+  return <section className="plan-onboarding"><div><p className="page-kicker">{locale==="fa"?"دسترسی":"Workspace access"}</p><h2>{locale==="fa"?"یک پلن واقعی انتخاب کنید":"Choose an available plan"}</h2><p>{locale==="fa"?"پلن‌های نیازمند ارائه‌دهنده پرداخت تا زمان پیکربندی قفل می‌مانند.":"Plans requiring an external billing provider remain locked until configured."}</p></div>{loading?<p>{locale==="fa"?"در حال بارگذاری…":"Loading plans…"}</p>:plans.length?<div className="plan-onboarding-grid">{plans.map(plan=><article className="panel-card" key={plan.planKey}><h3>{plan.displayName}</h3><p>{plan.description}</p><small>{plan.features.join(" · ")}</small><AsyncButton pending={pending===plan.planKey} disabled={plan.billingMode!=="FREE"||Boolean(pending)} onClick={()=>choose(plan)}>{plan.billingMode==="FREE"?(locale==="fa"?"فعال‌سازی":"Activate"):(locale==="fa"?"پیکربندی نشده":"Not configured")}</AsyncButton></article>)}</div>:<p>{locale==="fa"?"مدیر پلتفرم هنوز پلنی منتشر نکرده است.":"No plan has been published by the platform administrator."}</p>}{error?<p className="field-error" role="alert">{error}</p>:null}</section>
 }

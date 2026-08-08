@@ -68,6 +68,9 @@ export type DynamicFlowDefinition = {
   states: FlowStateDraft[];
   transitions: FlowTransitionDraft[];
   active?: boolean;
+  lifecycleStatus?: string;
+  revision?: number;
+  layout?: Record<string, { x?: number; y?: number }>;
   updatedAt?: string;
 };
 
@@ -115,6 +118,10 @@ export type ManagedObject = {
     canApprove?: string[];
   };
   locked?: boolean;
+  lockedBy?: string;
+  priority?: string;
+  dueAt?: string;
+  completedAt?: string;
   auditLog?: string[];
   transitionHistory?: Array<Record<string, unknown>>;
   asyncActionRegistry?: Array<Record<string, unknown>>;
@@ -149,12 +156,16 @@ export type ManagedObjectFormSubmissionResponse = {
 };
 
 export type TransitionOptionResponse = {
-  nextState: string;
+  transitionId: string;
+  fromState: string;
+  toState: string;
   label: string;
   conditionExpression?: string;
   allowedGroups?: string[];
   allowedRoles?: string[];
 };
+export type ManagedObjectComment={id:string;objectId:string;body:string;authorUserId?:string;createdAt?:string};
+export type ManagedObjectAttachment={id:string;objectId:string;assetKey:string;fileName?:string;contentType?:string;sizeBytes?:number;authorUserId?:string;createdAt?:string};
 
 async function requestJson<T>(path: string, init?: RequestInit & { tenantKey?: string; siteKey?: string }): Promise<T> {
   const response = await platformFetch(`${platformBaseUrl}${path}`, {
@@ -328,3 +339,11 @@ export function transitionManagedObject(
     body: JSON.stringify(request)
   });
 }
+
+export function getManagedObject(objectId:string,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObject>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}`,{method:"GET",...scope})}
+export function listComments(objectId:string,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObjectComment[]>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/comments`,{method:"GET",...scope})}
+export function addComment(objectId:string,body:string,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObjectComment>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/comments`,{method:"POST",body:JSON.stringify({body}),...scope})}
+export function listAttachments(objectId:string,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObjectAttachment[]>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/attachments`,{method:"GET",...scope})}
+export function addAttachment(objectId:string,request:{assetKey:string;fileName?:string;contentType?:string;sizeBytes?:number;downloadUrl?:string|null},scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObjectAttachment>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/attachments`,{method:"POST",body:JSON.stringify(request),...scope})}
+export function assignManagedObject(objectId:string,assignee:string,assigneeType:"USER"|"GROUP"|"ROLE",scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObject>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/assignment`,{method:"PUT",body:JSON.stringify({assignee,assigneeType}),...scope})}
+export function setManagedObjectLock(objectId:string,locked:boolean,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObject>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/${locked?"lock":"unlock"}`,{method:"POST",body:"{}",...scope})}

@@ -47,7 +47,7 @@ export default function BotSessionPage() {
             <div className="timeline-step">
               <strong>Scope</strong>
               <span>
-                {session.tenantKey ?? "tenant-demo"} / {session.siteKey ?? "site-commerce"}
+                {session.tenantKey ?? "—"} / {session.siteKey ?? "—"}
               </span>
             </div>
             <div className="timeline-step">

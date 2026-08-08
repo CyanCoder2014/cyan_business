@@ -3,14 +3,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
+import { useScopeAccess } from "@/components/scope-access-provider";
 import { createDefinitionFromTemplate, listRecords, submitRecord } from "@/lib/dynamic-api";
 import { renderStorefrontRoute, resolveStorefrontRoute, type StorefrontRenderedPage, type StorefrontResolvedRoute } from "@/lib/storefront-api";
 import type { DynamicEntityRecord } from "@/lib/types";
 
-const scope = { tenantKey: "tenant-demo", siteKey: "site-commerce" };
-
 export default function SiteBuilderPage() {
   const { locale } = usePanel();
+  const { tenantKey, siteKey, queryVersion } = useScopeAccess();
+  const scope = useMemo(() => ({ tenantKey: tenantKey ?? "", siteKey: siteKey ?? undefined }), [siteKey, tenantKey]);
   const [routes, setRoutes] = useState<DynamicEntityRecord[]>([]);
   const [selectedRouteKey, setSelectedRouteKey] = useState<string>("home");
   const [routePath, setRoutePath] = useState("/");
@@ -20,6 +21,7 @@ export default function SiteBuilderPage() {
   const [rendered, setRendered] = useState<StorefrontRenderedPage | null>(null);
 
   const refresh = useCallback(async (path: string, preferredRouteKey: string | null) => {
+    if (!tenantKey) return;
     const [routeItems, resolveResult, renderResult] = await Promise.all([
       listRecords("storefront-service", "site-route", scope).catch(() => []),
       resolveStorefrontRoute(path, scope).catch(() => null),
@@ -34,7 +36,7 @@ export default function SiteBuilderPage() {
       setRoutePath(recordPath(selected));
       setRouteTitle(recordLabel(selected));
     }
-  }, []);
+  }, [scope, tenantKey]);
 
   useEffect(() => {
     refresh(routePath, selectedRouteKey).catch((error) => {
@@ -45,7 +47,7 @@ export default function SiteBuilderPage() {
     });
     // Initial route load should not retrigger while the user edits the local route form.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locale, refresh]);
+  }, [locale, queryVersion, refresh]);
 
   const selectedRoute = useMemo(
     () => routes.find((route) => route.recordKey === selectedRouteKey) ?? routes[0] ?? null,

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/app-shell";
+import { useScopeAccess } from "@/components/scope-access-provider";
 import { listFlows } from "@/lib/bpm-api";
 import { listDefinitions } from "@/lib/dynamic-api";
 import { listBotIntegrations, listClientDrafts, listMiniAppBuilds } from "@/lib/platform-api";
@@ -16,6 +17,7 @@ const statusLabels = {
 } as const;
 
 export default function RoadmapPage() {
+  const { tenantKey, siteKey, queryVersion } = useScopeAccess();
   const [signals, setSignals] = useState({
     drafts: 0,
     flows: 0,
@@ -26,13 +28,15 @@ export default function RoadmapPage() {
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!tenantKey) return;
+    const scope = { tenantKey, siteKey: siteKey ?? undefined };
     Promise.allSettled([
-      listClientDrafts({ tenantKey: "tenant-demo", siteKey: "site-commerce" }),
-      listFlows({ tenantKey: "tenant-demo", siteKey: "site-commerce" }),
-      listDefinitions("storefront-service", { tenantKey: "tenant-demo", siteKey: "site-commerce" }),
-      listDefinitions("catalog-service", { tenantKey: "tenant-demo", siteKey: "site-commerce" }),
-      listBotIntegrations({ tenantKey: "tenant-demo", siteKey: "site-commerce" }),
-      listMiniAppBuilds({ tenantKey: "tenant-demo", siteKey: "site-commerce" })
+      listClientDrafts(scope),
+      listFlows(scope),
+      listDefinitions("storefront-service", scope),
+      listDefinitions("catalog-service", scope),
+      listBotIntegrations(scope),
+      listMiniAppBuilds(scope)
     ]).then(([drafts, flows, storefrontDefs, catalogDefs, integrations, miniApps]) => {
       const errors: string[] = [];
       if (drafts.status === "rejected") errors.push("Drafts");
@@ -51,7 +55,7 @@ export default function RoadmapPage() {
       });
       setStatus(errors.length ? `Live signals unavailable for: ${errors.join(", ")}` : null);
     });
-  }, []);
+  }, [queryVersion, siteKey, tenantKey]);
 
   const liveTracks = useMemo(() => {
     return productRoadmap.map((track) => ({

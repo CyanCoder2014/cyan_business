@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
+import { useScopeAccess } from "@/components/scope-access-provider";
 import { createDefinitionFromTemplate, listRecords, submitRecord } from "@/lib/dynamic-api";
 import { searchIndex, suggestIndex, syncSearchIndex } from "@/lib/service-api";
 import type { DynamicEntityRecord, SearchQueryResponse, SearchSuggestionResponse } from "@/lib/types";
 
 export default function SearchPage() {
-  const [tenantKey, setTenantKey] = useState("tenant-demo");
-  const [siteKey, setSiteKey] = useState("site-commerce");
+  const { tenantKey: activeTenantKey, siteKey: activeSiteKey } = useScopeAccess();
+  const [tenantKey, setTenantKey] = useState("");
+  const [siteKey, setSiteKey] = useState("");
   const [indexKey, setIndexKey] = useState("content-index");
   const [query, setQuery] = useState("cyan");
   const [sourceServiceKey, setSourceServiceKey] = useState("content-service");
@@ -19,7 +21,13 @@ export default function SearchPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setTenantKey(activeTenantKey ?? "");
+    setSiteKey(activeSiteKey ?? "");
+  }, [activeSiteKey, activeTenantKey]);
+
   async function refreshDefinitions() {
+    if (!tenantKey) return;
     await createDefinitionFromTemplate("search-index-service", "index-definition", "index-definition", { tenantKey, siteKey }).catch(() => null);
     await createDefinitionFromTemplate("search-index-service", "search-document", "search-document", { tenantKey, siteKey }).catch(() => null);
     const items = await listRecords("search-index-service", "index-definition", { tenantKey, siteKey }).catch(() => []);

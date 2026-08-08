@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
+import { useScopeAccess } from "@/components/scope-access-provider";
 import { createDefinitionFromTemplate, listRecords, submitRecord } from "@/lib/dynamic-api";
 import { createPaymentMethod, initiatePaymentSession, listPaymentMethods } from "@/lib/service-api";
 import type { DynamicEntityRecord, PaymentMethodAdmin, PaymentSessionResponse } from "@/lib/types";
 
 export default function CommercePage() {
-  const [tenantKey, setTenantKey] = useState("tenant-demo");
-  const [siteKey, setSiteKey] = useState("site-commerce");
+  const { tenantKey: activeTenantKey, siteKey: activeSiteKey } = useScopeAccess();
+  const [tenantKey, setTenantKey] = useState("");
+  const [siteKey, setSiteKey] = useState("");
   const [cartKey, setCartKey] = useState("default-cart");
   const [checkoutKey, setCheckoutKey] = useState("default-checkout");
   const [promotionKey, setPromotionKey] = useState("launch10");
@@ -23,7 +25,13 @@ export default function CommercePage() {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setTenantKey(activeTenantKey ?? "");
+    setSiteKey(activeSiteKey ?? "");
+  }, [activeSiteKey, activeTenantKey]);
+
   async function refresh() {
+    if (!tenantKey) return;
     await Promise.all([
       createDefinitionFromTemplate("cart-service", "shopping-cart", "shopping-cart", { tenantKey, siteKey }).catch(() => null),
       createDefinitionFromTemplate("checkout-service", "checkout-session", "checkout-session", { tenantKey, siteKey }).catch(() => null),

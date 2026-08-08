@@ -105,8 +105,8 @@ export default function IamPage() {
                 type="button"
                 className="primary-pill"
                 onClick={() => {
-                  setWorkspaceName(workspaceDraft.trim() || "tenant-demo");
-                  setSiteName(siteDraft.trim() || "site-commerce");
+                  setWorkspaceName(workspaceDraft.trim());
+                  setSiteName(siteDraft.trim());
                   setStatus(locale === "fa" ? "تنظیمات پنل ذخیره شد." : "Panel settings saved.");
                 }}
               >

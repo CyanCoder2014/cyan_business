@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/app-shell";
+import { useScopeAccess } from "@/components/scope-access-provider";
 import { listBotIntegrations, listBotMessages, listClientDrafts } from "@/lib/platform-api";
 import { listActionMetadata, listFlows, listManagedObjects } from "@/lib/bpm-api";
 import { renderStorefrontRoute, resolveStorefrontRoute } from "@/lib/storefront-api";
@@ -26,11 +27,17 @@ const initialChecks: HarnessCheck[] = [
 ];
 
 export default function QaPage() {
-  const [tenantKey, setTenantKey] = useState("tenant-demo");
-  const [siteKey, setSiteKey] = useState("site-commerce");
+  const { tenantKey: activeTenantKey, siteKey: activeSiteKey } = useScopeAccess();
+  const [tenantKey, setTenantKey] = useState(activeTenantKey ?? "");
+  const [siteKey, setSiteKey] = useState(activeSiteKey ?? "");
   const [path, setPath] = useState("/");
   const [checks, setChecks] = useState<HarnessCheck[]>(initialChecks);
   const [running, setRunning] = useState(false);
+
+  useEffect(() => {
+    setTenantKey(activeTenantKey ?? "");
+    setSiteKey(activeSiteKey ?? "");
+  }, [activeSiteKey, activeTenantKey]);
 
   function updateCheck(key: string, patch: Partial<HarnessCheck>) {
     setChecks((current) => current.map((item) => (item.key === key ? { ...item, ...patch } : item)));

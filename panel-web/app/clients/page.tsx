@@ -1,0 +1,2 @@
+import {PanelShell} from "@/components/panel-shell";import{ClientConsole}from"@/components/iam/client-console";
+export default function ClientsPage(){return <PanelShell activeKey="clients" kicker="Platform administration" kickerFa="مدیریت پلتفرم" title="Business clients" titleFa="مشتریان کسب‌وکار" subtitle="Provision an isolated tenant, head user, plan, and service access in one operation." subtitleFa="فضای مستقل، مدیر مشتری، پلن و خدمات مجاز را یکپارچه ایجاد کنید."><ClientConsole/></PanelShell>}

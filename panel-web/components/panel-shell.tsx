@@ -30,7 +30,13 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
     { href: "/notifications", key: "notifications", icon: "◉", en: "Notifications", fa: "اعلان‌ها" },
     { href: "/search", key: "search", icon: "⌕", en: "Search & media", fa: "جستجو و رسانه", capability: "search", permission: "search.read" },
     { href: "/api-docs", key: "api-docs", icon: "{·}", en: "API docs", fa: "مستندات API" },
-    { href: "/iam", key: "iam", icon: "⚙", en: "Settings", fa: "تنظیمات", permission: "settings.read" }
+  ]},
+  { en: "Manage", fa: "مدیریت", items: [
+    { href: "/team/users", key: "team-users", icon: "♙", en: "Team members", fa: "اعضای تیم", permission: "team.read" },
+    { href: "/team/roles", key: "team-roles", icon: "◇", en: "Roles & permissions", fa: "نقش‌ها و مجوزها", permission: "team.read" },
+    { href: "/clients", key: "clients", icon: "▤", en: "Clients", fa: "مشتریان", permission: "realm:manage" },
+    { href: "/billing", key: "billing", icon: "◈", en: "Billing", fa: "صورتحساب", permission: "billing.read" },
+    { href: "/settings", key: "settings", icon: "⚙", en: "Settings", fa: "تنظیمات", permission: "settings.read" }
   ]}
 ];
 
@@ -90,7 +96,7 @@ export function PanelShell(props: PanelShellProps) {
           </div>
           <div className="header-actions">
             <NotificationCenter />
-            <details className="header-account-menu"><summary aria-label={locale === "fa" ? "منوی حساب" : "Account menu"}><div className="header-avatar">{avatarLabel}</div><span className="workspace-switcher-caret">⌄</span></summary><div className="header-account-popover"><div className="header-profile"><div className="header-avatar small">{avatarLabel}</div><div><strong>{profileName || "—"}</strong><span>{locale === "fa" ? "حساب فعال" : "Signed in"}</span></div></div><Link href="/iam" className="account-menu-item">{locale === "fa" ? "پروفایل" : "Profile"}</Link><button className="account-menu-item" onClick={toggleLocale}>{locale === "fa" ? "English" : "فارسی"}</button><label className="menu-select"><span>{locale === "fa" ? "پوسته" : "Theme"}</span><select value={theme} onChange={(event) => setTheme(event.target.value as "light" | "dark" | "system")}><option value="system">{locale === "fa" ? "سیستم" : "System"}</option><option value="light">{locale === "fa" ? "روشن" : "Light"}</option><option value="dark">{locale === "fa" ? "تاریک" : "Dark"}</option></select></label><button className="account-menu-item danger" onClick={() => logoutPlatformSession().then(() => redirectToAuth("/"))}>{locale === "fa" ? "خروج" : "Logout"}</button></div></details>
+            <details className="header-account-menu"><summary aria-label={locale === "fa" ? "منوی حساب" : "Account menu"}><div className="header-avatar">{avatarLabel}</div><span className="workspace-switcher-caret">⌄</span></summary><div className="header-account-popover"><div className="header-profile"><div className="header-avatar small">{avatarLabel}</div><div><strong>{profileName || "—"}</strong><span>{locale === "fa" ? "حساب فعال" : "Signed in"}</span></div></div><Link href="/profile" className="account-menu-item">{locale === "fa" ? "پروفایل" : "Profile"}</Link><button className="account-menu-item" onClick={toggleLocale}>{locale === "fa" ? "English" : "فارسی"}</button><label className="menu-select"><span>{locale === "fa" ? "پوسته" : "Theme"}</span><select value={theme} onChange={(event) => setTheme(event.target.value as "light" | "dark" | "system")}><option value="system">{locale === "fa" ? "سیستم" : "System"}</option><option value="light">{locale === "fa" ? "روشن" : "Light"}</option><option value="dark">{locale === "fa" ? "تاریک" : "Dark"}</option></select></label><button className="account-menu-item danger" onClick={() => logoutPlatformSession().then(() => redirectToAuth("/"))}>{locale === "fa" ? "خروج" : "Logout"}</button></div></details>
           </div>
         </header>
         <main className="workspace-content">

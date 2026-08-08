@@ -6,10 +6,12 @@ export type Capability = { key: string; enabled: boolean; source: string; status
 export type Subscription = { tenantKey: string; planKey: string | null; status: string; features: string[]; limits: Record<string, unknown>; providerState: string };
 export type PanelIdentity = { username: string; email?: string; phoneNumber?: string; mfaEnabled: boolean; roles: string[]; active: boolean };
 export type PanelAccess = { realmRoles: string[]; realmPermissions: string[]; clients: Array<{ clientId: string; clientRoles: string[]; clientPermissions: string[] }> };
+export type TenantAccess = { tenantKey: string; username: string; roleKey: string; permissions: string[]; active: boolean };
 
 export type PanelBootstrap = {
   identity: PanelIdentity;
   access: PanelAccess;
+  tenantAccess: TenantAccess | null;
   tenants: TenantSummary[];
   sites: SiteSummary[];
   activeTenantKey: string | null;

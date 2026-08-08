@@ -40,11 +40,10 @@ export async function GET(request: Request) {
         activeSiteKey = scope.siteKey;
         services.sessionScope = "AVAILABLE";
       } catch (reason) {
-        if (reason instanceof UpstreamError && (reason.status === 401 || reason.status === 403 || reason.status === 404)) {
-          return NextResponse.json({ code: "SESSION_SCOPE_INVALID", message: "The authenticated session has expired or is no longer available." }, { status: 401 });
-        }
-        services.sessionScope = "UNAVAILABLE";
-        warnings.push("Session scope is temporarily unavailable. Retry before making scoped changes.");
+        services.sessionScope = reason instanceof UpstreamError && reason.status === 404 ? "NOT_CONFIGURED" : "UNAVAILABLE";
+        warnings.push(reason instanceof UpstreamError && reason.status === 404
+          ? "The previous session scope was not found. Select a workspace to save a new scope."
+          : "Session scope is temporarily unavailable. Select a workspace before making scoped changes.");
       }
     } else {
       services.sessionScope = "NOT_CONFIGURED";
@@ -58,21 +57,24 @@ export async function GET(request: Request) {
     let subscription: PanelBootstrap["subscription"] = null;
     let capabilities: PanelBootstrap["capabilities"] = [];
     let featureFlags: Record<string, unknown> = {};
+    let tenantAccess: PanelBootstrap["tenantAccess"] = null;
     if (activeTenantKey) {
       const scoped = { "X-Tenant-Key": activeTenantKey };
       const results = await Promise.allSettled([
         getJson<PanelBootstrap["sites"]>(`${urls.storefront}/endpoint/sites`, authorization, scoped),
         getJson<NonNullable<PanelBootstrap["subscription"]>>(`${urls.billing}/endpoint/billing/tenants/${encodeURIComponent(activeTenantKey)}/subscription`, authorization, scoped),
         getJson<PanelBootstrap["capabilities"]>(`${urls.tenants}/endpoint/tenants/${encodeURIComponent(activeTenantKey)}/capabilities`, authorization),
-        getJson<Record<string, unknown>>(`${urls.tenants}/endpoint/tenants/${encodeURIComponent(activeTenantKey)}/feature-flags`, authorization)
+        getJson<Record<string, unknown>>(`${urls.tenants}/endpoint/tenants/${encodeURIComponent(activeTenantKey)}/feature-flags`, authorization),
+        getJson<NonNullable<PanelBootstrap["tenantAccess"]>>(`${urls.tenants}/endpoint/tenants/${encodeURIComponent(activeTenantKey)}/users/${encodeURIComponent(identity.username)}/effective-access`, authorization)
       ]);
       if (results[0].status === "fulfilled") { sites = results[0].value; services.sites = "AVAILABLE"; } else { services.sites = "UNAVAILABLE"; warnings.push("Sites are temporarily unavailable."); }
       if (results[1].status === "fulfilled") { subscription = results[1].value; services.billing = subscription.providerState === "NOT_CONFIGURED" ? "NOT_CONFIGURED" : "AVAILABLE"; } else { services.billing = "UNAVAILABLE"; warnings.push("Billing state is temporarily unavailable."); }
       if (results[2].status === "fulfilled") { capabilities = results[2].value; services.capabilities = "AVAILABLE"; } else { services.capabilities = "UNAVAILABLE"; warnings.push("Capabilities are temporarily unavailable."); }
       if (results[3].status === "fulfilled") featureFlags = results[3].value;
+      if (results[4].status === "fulfilled") tenantAccess = results[4].value;
       if (activeSiteKey && !sites.some((site) => site.siteKey === activeSiteKey)) activeSiteKey = null;
     }
-    return NextResponse.json({ identity, access, tenants, sites, activeTenantKey, activeSiteKey, subscription, capabilities, featureFlags, services, warnings } satisfies PanelBootstrap);
+    return NextResponse.json({ identity, access, tenantAccess, tenants, sites, activeTenantKey, activeSiteKey, subscription, capabilities, featureFlags, services, warnings } satisfies PanelBootstrap);
   } catch {
     return NextResponse.json({ code: "BOOTSTRAP_UNAVAILABLE", message: "The authenticated panel context could not be loaded." }, { status: 503 });
   }

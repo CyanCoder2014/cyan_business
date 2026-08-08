@@ -63,7 +63,7 @@ export function ScopeAccessProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const value = useMemo<ScopeAccessContextValue>(() => {
-    const permissions = new Set([...(bootstrap?.access.realmPermissions ?? []), ...(bootstrap?.access.clients.flatMap((client) => client.clientPermissions) ?? [])]);
+    const permissions = new Set([...(bootstrap?.access.realmPermissions ?? []), ...(bootstrap?.access.clients.flatMap((client) => client.clientPermissions) ?? []), ...(bootstrap?.tenantAccess?.permissions ?? [])]);
     return {
       bootstrap, loading, error,
       tenantKey: bootstrap?.activeTenantKey ?? null,

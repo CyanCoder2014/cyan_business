@@ -13,6 +13,6 @@ public class MqttNotificationSender implements NotificationSender {
 
     @Override
     public NotificationSendResult send(NotificationDispatchRequest request, String subject, String body) {
-        return new NotificationSendResult(true, request.provider() == null || request.provider().isBlank() ? "mqtt-default" : request.provider(), "mqtt-" + request.messageKey(), "SENT", "");
+        return new NotificationSendResult(false, request.provider() == null || request.provider().isBlank() ? "mqtt-default" : request.provider(), "", "NOT_CONFIGURED", "MQTT provider is not configured");
     }
 }

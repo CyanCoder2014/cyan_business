@@ -1,0 +1,21 @@
+package com.cyancoder.storefront.service;
+
+import com.cyancoder.storefront.api.DomainContracts.*; import com.cyancoder.storefront.model.*; import com.cyancoder.storefront.repository.*;
+import java.time.Instant; import java.util.*; import javax.naming.directory.*; import javax.naming.*;
+import org.springframework.http.HttpStatus; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import org.springframework.web.server.ResponseStatusException;
+
+@Service
+public class DomainRegistryService {
+ private final DomainBindingRepository domains; private final DomainEventRepository events; private final SiteRepository sites; private final TenantMembershipClient memberships;
+ public DomainRegistryService(DomainBindingRepository d,DomainEventRepository e,SiteRepository s,TenantMembershipClient m){domains=d;events=e;sites=s;memberships=m;}
+ public List<DomainBindingEntity> list(String tenant,String site,String actor){scope(tenant,site,actor);return domains.findAllByTenantKeyAndSiteKeyOrderByCreatedAtDesc(tenant,site);}
+ @Transactional public DomainBindingEntity create(String tenant,String site,String actor,CreateDomainRequest request){scope(tenant,site,actor);String name=normalize(request.domainName());if(domains.existsByDomainName(name))throw new ResponseStatusException(HttpStatus.CONFLICT,"Domain is already registered");String env=blank(request.environment())?"PRODUCTION":request.environment().trim().toUpperCase(Locale.ROOT);DomainBindingEntity saved=domains.save(new DomainBindingEntity(tenant,site,name,env,"cyan-verification="+UUID.randomUUID(),request.redirectTarget()));events.save(new DomainEventEntity(saved.getId(),"CREATED","PENDING","Awaiting DNS ownership verification"));return saved;}
+ public List<DnsInstruction> instructions(Long id,String tenant,String site,String actor){DomainBindingEntity d=get(id,tenant,site,actor);return List.of(new DnsInstruction("TXT","_cyan-verification."+d.getDomainName(),d.getVerificationToken()));}
+ @Transactional public DomainBindingEntity verify(Long id,String tenant,String site,String actor){DomainBindingEntity d=get(id,tenant,site,actor);boolean found=lookupTxt("_cyan-verification."+d.getDomainName()).stream().map(v->v.replace("\"","")).anyMatch(d.getVerificationToken()::equals);d.setVerificationStatus(found?"VERIFIED":"PENDING");d.setLastCheckedAt(Instant.now());d.setUpdatedAt(Instant.now());domains.save(d);events.save(new DomainEventEntity(id,"DNS_CHECK",d.getVerificationStatus(),found?"Ownership TXT record matched":"Ownership TXT record was not observed"));return d;}
+ public List<DomainEventEntity> history(Long id,String tenant,String site,String actor){get(id,tenant,site,actor);return events.findAllByDomainIdOrderByCreatedAtDesc(id);}
+ @Transactional public void remove(Long id,String tenant,String site,String actor){DomainBindingEntity d=get(id,tenant,site,actor);events.deleteAll(events.findAllByDomainIdOrderByCreatedAtDesc(id));domains.delete(d);}
+ private DomainBindingEntity get(Long id,String tenant,String site,String actor){scope(tenant,site,actor);return domains.findByIdAndTenantKeyAndSiteKey(id,tenant,site).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Domain not found"));}
+ private void scope(String tenant,String site,String actor){memberships.requireMembership(tenant,actor);if(!sites.existsByTenantKeyAndSiteKey(tenant,site))throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Site not found");}
+ private List<String> lookupTxt(String name){try{DirContext ctx=new InitialDirContext(new Hashtable<>(Map.of(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.dns.DnsContextFactory")));Attributes a=ctx.getAttributes(name,new String[]{"TXT"});Attribute values=a.get("TXT");List<String> out=new ArrayList<>();if(values!=null)for(int i=0;i<values.size();i++)out.add(String.valueOf(values.get(i)));ctx.close();return out;}catch(NamingException ex){return List.of();}}
+ private String normalize(String value){String n=value==null?"":value.trim().toLowerCase(Locale.ROOT).replaceAll("^https?://","").replaceAll("/.*$","");if(!n.matches("(?=.{4,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}"))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid domain name");return n;} private boolean blank(String v){return v==null||v.isBlank();}
+}

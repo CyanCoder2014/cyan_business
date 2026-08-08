@@ -40,6 +40,17 @@ public class BotTokenSecretResolver {
         throw new IllegalStateException("No bot token or secret reference is configured for integration " + integration.getIntegrationKey());
     }
 
+    public String resolveReference(String secretRef, String purpose) {
+        if (secretRef == null || secretRef.isBlank()) {
+            throw new IllegalStateException("NOT_CONFIGURED: " + purpose + " secret reference is required");
+        }
+        String resolved = resolveByReference(secretRef.trim());
+        if (resolved == null || resolved.isBlank()) {
+            throw new IllegalStateException("NOT_CONFIGURED: unable to resolve " + purpose + " secret reference");
+        }
+        return resolved.trim();
+    }
+
     private String resolveByReference(String secretRef) {
         String inline = properties.getBotSecretValues().get(secretRef);
         if (inline != null && !inline.isBlank()) {

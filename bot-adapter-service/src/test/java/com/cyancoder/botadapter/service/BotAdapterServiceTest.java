@@ -13,6 +13,8 @@ import com.cyancoder.botadapter.repo.BotChatSessionMappingRepository;
 import com.cyancoder.botadapter.repo.BotInboundMessageRepository;
 import com.cyancoder.botadapter.repo.BotMiniAppBuildRepository;
 import com.cyancoder.botadapter.repo.BotOutboundMessageRepository;
+import com.cyancoder.botadapter.repo.BotProcessBindingRepository;
+import com.cyancoder.botadapter.repo.BotProcessDispatchRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -35,6 +37,9 @@ class BotAdapterServiceTest {
     private final BotWebhookParser parser = new BotWebhookParser();
     private final AiConversationClient aiClient = mock(AiConversationClient.class);
     private final BotProviderClient providerClient = mock(BotProviderClient.class);
+    private final BotProcessBindingRepository processBindingRepository = mock(BotProcessBindingRepository.class);
+    private final BotProcessDispatchRepository processDispatchRepository = mock(BotProcessDispatchRepository.class);
+    private final BotProcessClient processClient = mock(BotProcessClient.class);
     private final BotAdapterService service = new BotAdapterService(
             integrationRepository,
             mappingRepository,
@@ -43,7 +48,10 @@ class BotAdapterServiceTest {
             miniAppBuildRepository,
             parser,
             aiClient,
-            providerClient
+            providerClient,
+            processBindingRepository,
+            processDispatchRepository,
+            processClient
     );
 
     @Test
@@ -58,9 +66,10 @@ class BotAdapterServiceTest {
         when(aiClient.createSession(eq("TELEGRAM"), eq("tenant-demo"), eq("site-demo"), eq("client-demo"), eq("MIXED_BUSINESS_APP"), any()))
                 .thenReturn("session-1");
         when(mappingRepository.save(any(BotChatSessionMapping.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(inboundRepository.save(any(BotInboundMessage.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(inboundRepository.save(any(BotInboundMessage.class))).thenAnswer(invocation -> { BotInboundMessage value=invocation.getArgument(0); value.setId("inbound-1"); return value; });
+        when(processBindingRepository.findByChannelAndIntegrationKeyAndEnabledTrueOrderByUpdatedAtDesc(any(), any())).thenReturn(java.util.List.of());
 
-        WebhookResult result = service.handleWebhook("telegram", "retail-bot", Map.of(
+        WebhookResult result = service.handleWebhook("telegram", "retail-bot", "secret", Map.of(
                 "message", Map.of(
                         "message_id", 100,
                         "chat", Map.of("id", 200),
@@ -85,7 +94,7 @@ class BotAdapterServiceTest {
         when(inboundRepository.findByChannelAndIntegrationKeyAndExternalMessageId(BotChannel.TELEGRAM, "retail-bot", "100"))
                 .thenReturn(Optional.of(inbound));
 
-        WebhookResult result = service.handleWebhook("telegram", "retail-bot", Map.of(
+        WebhookResult result = service.handleWebhook("telegram", "retail-bot", "secret", Map.of(
                 "message", Map.of(
                         "message_id", 100,
                         "chat", Map.of("id", 200),
@@ -112,9 +121,10 @@ class BotAdapterServiceTest {
                 "CRM",
                 "123456789",
                 "support",
-                "123456789:test-token",
+                null,
                 "vault://bot/support",
-                "webhook-secret",
+                null,
+                "vault://bot/support-webhook",
                 "https://example.com/miniapp",
                 true,
                 "tenant-demo",
@@ -137,6 +147,7 @@ class BotAdapterServiceTest {
         integration.setAppTypeHint("MIXED_BUSINESS_APP");
         integration.setActive(true);
         integration.setManagedBotToken("123:test-token");
+        integration.setWebhookSecretRef("vault://bot/test-webhook");
         return integration;
     }
 

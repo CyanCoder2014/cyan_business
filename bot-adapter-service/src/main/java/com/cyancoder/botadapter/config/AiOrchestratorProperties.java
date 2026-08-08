@@ -16,6 +16,12 @@ public class AiOrchestratorProperties {
     private String botSecretHttpBaseUrl;
     private String botSecretHttpAuthToken;
     private Map<String, String> botSecretValues = new LinkedHashMap<>();
+    private String automationBaseUrl = "http://localhost:9120";
+    private String automationInternalUsername = "automation_orchestrator_internal";
+    private String automationInternalPassword = "automation_orchestrator_secret";
+    private String bpmBaseUrl = "http://localhost:9119";
+    private String bpmInternalUsername = "bpm_internal";
+    private String bpmInternalPassword = "bpm_secret";
 
     public String getBaseUrl() {
         return baseUrl;
@@ -88,4 +94,17 @@ public class AiOrchestratorProperties {
     public void setBotSecretValues(Map<String, String> botSecretValues) {
         this.botSecretValues = botSecretValues;
     }
+
+    public String getAutomationBaseUrl() { return automationBaseUrl; }
+    public void setAutomationBaseUrl(String automationBaseUrl) { this.automationBaseUrl = automationBaseUrl; }
+    public String getAutomationInternalUsername() { return automationInternalUsername; }
+    public void setAutomationInternalUsername(String value) { this.automationInternalUsername = value; }
+    public String getAutomationInternalPassword() { return automationInternalPassword; }
+    public void setAutomationInternalPassword(String value) { this.automationInternalPassword = value; }
+    public String getBpmBaseUrl() { return bpmBaseUrl; }
+    public void setBpmBaseUrl(String bpmBaseUrl) { this.bpmBaseUrl = bpmBaseUrl; }
+    public String getBpmInternalUsername() { return bpmInternalUsername; }
+    public void setBpmInternalUsername(String value) { this.bpmInternalUsername = value; }
+    public String getBpmInternalPassword() { return bpmInternalPassword; }
+    public void setBpmInternalPassword(String value) { this.bpmInternalPassword = value; }
 }

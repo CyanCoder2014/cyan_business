@@ -13,6 +13,6 @@ public class SmsKavenegarNotificationSender implements NotificationSender {
 
     @Override
     public NotificationSendResult send(NotificationDispatchRequest request, String subject, String body) {
-        return new NotificationSendResult(true, "kavenegar", "sms-" + request.messageKey(), "SENT", "");
+        return new NotificationSendResult(false, "kavenegar", "", "NOT_CONFIGURED", "Kavenegar provider is not configured");
     }
 }

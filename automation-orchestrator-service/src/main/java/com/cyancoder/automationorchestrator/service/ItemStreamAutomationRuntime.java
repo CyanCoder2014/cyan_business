@@ -30,7 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-public class N8nAutomationRuntime {
+public class ItemStreamAutomationRuntime {
     private static final String STATE_KEY = "n8nState";
     private static final String CALLBACKS_KEY = "processedCallbacks";
     private static final int MAX_NODE_RUNS = 10_000;
@@ -44,7 +44,7 @@ public class N8nAutomationRuntime {
     private final String defaultScriptRunnerUrl;
     private final AutomationExecutionCheckpointService checkpoints;
 
-    public N8nAutomationRuntime(InternalServiceHttpSupport http,
+    public ItemStreamAutomationRuntime(InternalServiceHttpSupport http,
                                 ConnectorCredentialService credentials,
                                 AutomationFlowDefinitionService flows,
                                 AutomationExecutionRepository executions,
@@ -55,7 +55,7 @@ public class N8nAutomationRuntime {
     }
 
     @org.springframework.beans.factory.annotation.Autowired
-    public N8nAutomationRuntime(InternalServiceHttpSupport http,
+    public ItemStreamAutomationRuntime(InternalServiceHttpSupport http,
                                 ConnectorCredentialService credentials,
                                 AutomationFlowDefinitionService flows,
                                 AutomationExecutionRepository executions,

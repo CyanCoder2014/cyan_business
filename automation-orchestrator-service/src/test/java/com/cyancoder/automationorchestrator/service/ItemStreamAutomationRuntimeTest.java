@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-class N8nAutomationRuntimeTest {
+class ItemStreamAutomationRuntimeTest {
     private final InternalServiceHttpSupport http = mock(InternalServiceHttpSupport.class);
-    private final N8nAutomationRuntime runtime = new N8nAutomationRuntime(
+    private final ItemStreamAutomationRuntime runtime = new ItemStreamAutomationRuntime(
             http, mock(ConnectorCredentialService.class), mock(AutomationFlowDefinitionService.class),
             mock(AutomationExecutionRepository.class), new ObjectMapper().findAndRegisterModules(),
             new N8nExpressionService(), ""

@@ -176,7 +176,7 @@ class AutomationExecutionServiceTest {
                 new ObjectMapper(),
                 mock(AutomationFlowDefinitionService.class),
                 graphRuntime,
-                mock(N8nAutomationRuntime.class),
+                mock(ItemStreamAutomationRuntime.class),
                 workers
         );
 

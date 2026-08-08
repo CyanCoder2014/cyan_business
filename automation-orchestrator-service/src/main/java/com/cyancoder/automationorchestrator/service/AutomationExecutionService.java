@@ -43,7 +43,7 @@ public class AutomationExecutionService {
     private final PipelineAutomationRuntime pipelineRuntime;
     private final AutomationFlowDefinitionService flowDefinitionService;
     private final GraphAutomationRuntime graphRuntime;
-    private final N8nAutomationRuntime n8nRuntime;
+    private final ItemStreamAutomationRuntime itemStreamRuntime;
     private final AutomationWorkerProperties workerProperties;
 
     public AutomationExecutionService(AutomationExecutionRepository repository,
@@ -60,7 +60,7 @@ public class AutomationExecutionService {
                                       ObjectMapper objectMapper,
                                       AutomationFlowDefinitionService flowDefinitionService,
                                       GraphAutomationRuntime graphRuntime,
-                                      N8nAutomationRuntime n8nRuntime,
+                                      ItemStreamAutomationRuntime itemStreamRuntime,
                                       AutomationWorkerProperties workerProperties) {
         this.repository = repository;
         this.httpSupport = httpSupport;
@@ -69,7 +69,7 @@ public class AutomationExecutionService {
         this.pipelineRuntime = new PipelineAutomationRuntime(httpSupport);
         this.flowDefinitionService = flowDefinitionService;
         this.graphRuntime = graphRuntime;
-        this.n8nRuntime = n8nRuntime;
+        this.itemStreamRuntime = itemStreamRuntime;
         this.workerProperties = workerProperties;
     }
 
@@ -337,7 +337,7 @@ public class AutomationExecutionService {
         }
         try {
             AutomationFlowDefinition definition = graphDefinition(execution);
-            if (isN8nItems(definition)) n8nRuntime.callback(execution, definition, nodeId, callbackId, payload == null ? Map.of() : payload);
+            if (isN8nItems(definition)) itemStreamRuntime.callback(execution, definition, nodeId, callbackId, payload == null ? Map.of() : payload);
             else graphRuntime.callback(execution, definition, nodeId, callbackId, payload == null ? Map.of() : payload);
         }
         catch (RuntimeException ex) { execution.setStatus("FAILED"); execution.setError(Map.of("message", Objects.toString(ex.getMessage(), "callback resume failed"))); execution.setCompletedAt(Instant.now()); }
@@ -376,7 +376,7 @@ public class AutomationExecutionService {
         execution.getDeadLetters().remove(letter);execution.setCurrentNodeId(Objects.toString(letter.get("nodeId"),null));execution.setStatus("RUNNING");execution.setError(new LinkedHashMap<>());execution.setCompletedAt(null);
         try {
             AutomationFlowDefinition definition = graphDefinition(execution);
-            if (isN8nItems(definition)) n8nRuntime.requeueDeadLetter(execution, definition, letter);
+            if (isN8nItems(definition)) itemStreamRuntime.requeueDeadLetter(execution, definition, letter);
             else graphRuntime.run(execution, definition);
         }
         catch(RuntimeException ex){execution.setStatus("FAILED");execution.setError(Map.of("message",Objects.toString(ex.getMessage(),"requeue failed")));execution.setCompletedAt(Instant.now());}
@@ -400,7 +400,7 @@ public class AutomationExecutionService {
 
     @Scheduled(fixedDelayString = "${automation.worker.recovery-poll-ms:1000}")
     public void resumeDueExecutions() {
-        if (graphRuntime == null && n8nRuntime == null) return;
+        if (graphRuntime == null && itemStreamRuntime == null) return;
         int claimed = 0;
         while (claimed++ < Math.max(1, workerProperties.getRecoveryBatchSize())) {
             Instant now = Instant.now();
@@ -490,7 +490,7 @@ public class AutomationExecutionService {
     }
 
     private AutomationFlowDefinition resolveRequestedGraph(AutomationStartRequest request, Map<String, Object> inline) {
-        if (flowDefinitionService == null || (graphRuntime == null && n8nRuntime == null)) return null;
+        if (flowDefinitionService == null || (graphRuntime == null && itemStreamRuntime == null)) return null;
         if (inline.containsKey("nodes")) {
             AutomationFlowDefinition definition = objectMapper.convertValue(inline, AutomationFlowDefinition.class);
             if (definition.getFlowKey() == null || definition.getFlowKey().isBlank()) definition.setFlowKey(firstNonBlank(request.flowKey(), request.automationFlowKey(), "inline-flow"));
@@ -517,8 +517,8 @@ public class AutomationExecutionService {
 
     private void runGraph(AutomationExecution execution, AutomationFlowDefinition definition) {
         if (isN8nItems(definition)) {
-            if (n8nRuntime == null) throw new IllegalStateException("N8N_ITEMS runtime is unavailable");
-            n8nRuntime.run(execution, definition);
+            if (itemStreamRuntime == null) throw new IllegalStateException("N8N_ITEMS runtime is unavailable");
+            itemStreamRuntime.run(execution, definition);
         } else {
             if (graphRuntime == null) throw new IllegalStateException("VARIABLES runtime is unavailable");
             graphRuntime.run(execution, definition);

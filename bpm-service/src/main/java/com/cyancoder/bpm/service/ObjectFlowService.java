@@ -204,6 +204,25 @@ public class ObjectFlowService {
         return findAll(scope).stream().filter(object -> canRead(object, actorContext)).toList();
     }
 
+    public ManagedObject assign(BpmScope scope, String objectId, String assignee, com.cyancoder.bpm.domain.AssigneeType type, TransitionActorContext actor) {
+        ManagedObject object = findById(scope, objectId);
+        assertCanRead(object, actor);
+        if (assignee == null || assignee.isBlank()) throw new IllegalArgumentException("assignee is required");
+        object.setAssignee(assignee.trim()); object.setAssigneeType(type); object.setUpdatedAt(Instant.now());
+        object.getAuditLog().add("assigned to " + assignee + " by " + actor.userId() + " at=" + Instant.now());
+        return managedObjectRepository.save(object);
+    }
+
+    public ManagedObject lock(BpmScope scope, String objectId, boolean lock, TransitionActorContext actor) {
+        ManagedObject object = findById(scope, objectId);
+        assertCanRead(object, actor);
+        if (lock && object.isLocked() && !java.util.Objects.equals(object.getLockedBy(), actor.userId())) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Work item is locked by another user");
+        if (!lock && object.isLocked() && !java.util.Objects.equals(object.getLockedBy(), actor.userId())) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Only the lock owner can unlock this work item");
+        object.setLocked(lock); object.setLockedBy(lock ? actor.userId() : null); object.setUpdatedAt(Instant.now());
+        object.getAuditLog().add((lock ? "locked" : "unlocked") + " by " + actor.userId() + " at=" + Instant.now());
+        return managedObjectRepository.save(object);
+    }
+
     public void assertCanRead(ManagedObject object, TransitionActorContext actorContext) {
         if (!canRead(object, actorContext)) {
             throw new IllegalArgumentException("actor cannot read managed object");

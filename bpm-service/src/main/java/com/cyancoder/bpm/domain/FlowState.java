@@ -15,7 +15,7 @@ public record FlowState(
         boolean terminal,
         @JsonAlias("formId") String formKey,
         @JsonAlias("processorId") String processorKey,
-        boolean reviewCommentRequired,
+        Boolean reviewCommentRequired,
         Set<String> candidateGroups,
         List<FlowActionConfig> onEnterActions,
         FlowAccessRule accessRule,
@@ -25,6 +25,10 @@ public record FlowState(
         String rendererKey,
         SubmitMode submitMode,
         String submitUrl,
-        boolean waitForAutomation
+        Boolean waitForAutomation
 ) {
+    public FlowState {
+        reviewCommentRequired = Boolean.TRUE.equals(reviewCommentRequired);
+        waitForAutomation = Boolean.TRUE.equals(waitForAutomation);
+    }
 }

@@ -23,9 +23,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/endpoint/bpm/managed-objects")
@@ -191,4 +193,16 @@ public class EndpointManagedObjectFlowController {
     ) {
         return objectFlowService.findById(FlowScopeResolver.fromHeaders(tenantKey, siteKey), objectId);
     }
+
+    @PutMapping("/{objectId}/assignment")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public ManagedObject assign(@RequestHeader(value="X-Tenant-Key",required=false) String tenantKey,@RequestHeader(value="X-Site-Key",required=false) String siteKey,@PathVariable String objectId,@Valid @RequestBody com.cyancoder.bpm.api.dto.AssignManagedObjectRequest request,Authentication authentication){return objectFlowService.assign(FlowScopeResolver.fromHeaders(tenantKey,siteKey),objectId,request.assignee(),request.assigneeType(),actorContextResolver.fromAuthentication(authentication));}
+
+    @PostMapping("/{objectId}/lock")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public ManagedObject lock(@RequestHeader(value="X-Tenant-Key",required=false) String tenantKey,@RequestHeader(value="X-Site-Key",required=false) String siteKey,@PathVariable String objectId,Authentication authentication){return objectFlowService.lock(FlowScopeResolver.fromHeaders(tenantKey,siteKey),objectId,true,actorContextResolver.fromAuthentication(authentication));}
+
+    @PostMapping("/{objectId}/unlock")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public ManagedObject unlock(@RequestHeader(value="X-Tenant-Key",required=false) String tenantKey,@RequestHeader(value="X-Site-Key",required=false) String siteKey,@PathVariable String objectId,Authentication authentication){return objectFlowService.lock(FlowScopeResolver.fromHeaders(tenantKey,siteKey),objectId,false,actorContextResolver.fromAuthentication(authentication));}
 }

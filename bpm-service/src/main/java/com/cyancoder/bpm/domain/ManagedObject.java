@@ -1,6 +1,7 @@
 package com.cyancoder.bpm.domain;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -15,6 +16,8 @@ import java.util.Map;
 public class ManagedObject {
     @Id
     private String id;
+    @Version
+    private Long revision;
     private String tenantKey;
     private String siteKey;
     private String objectType;
@@ -27,6 +30,10 @@ public class ManagedObject {
     private Map<String, Object> payload = new HashMap<>();
     private FlowAccessRule accessRule;
     private boolean locked;
+    private String lockedBy;
+    private String priority = "NORMAL";
+    private Instant dueAt;
+    private Instant completedAt;
     private List<String> auditLog = new ArrayList<>();
     private List<TransitionHistoryEntry> transitionHistory = new ArrayList<>();
     private List<AsyncActionRegistration> asyncActionRegistry = new ArrayList<>();
@@ -36,6 +43,8 @@ public class ManagedObject {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+    public Long getRevision() { return revision; }
+    public void setRevision(Long revision) { this.revision = revision; }
     public String getTenantKey() { return tenantKey; }
     public void setTenantKey(String tenantKey) { this.tenantKey = tenantKey; }
     public String getSiteKey() { return siteKey; }
@@ -60,6 +69,14 @@ public class ManagedObject {
     public void setAccessRule(FlowAccessRule accessRule) { this.accessRule = accessRule; }
     public boolean isLocked() { return locked; }
     public void setLocked(boolean locked) { this.locked = locked; }
+    public String getLockedBy() { return lockedBy; }
+    public void setLockedBy(String lockedBy) { this.lockedBy = lockedBy; }
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority == null || priority.isBlank() ? "NORMAL" : priority; }
+    public Instant getDueAt() { return dueAt; }
+    public void setDueAt(Instant dueAt) { this.dueAt = dueAt; }
+    public Instant getCompletedAt() { return completedAt; }
+    public void setCompletedAt(Instant completedAt) { this.completedAt = completedAt; }
     public List<String> getAuditLog() { return auditLog; }
     public void setAuditLog(List<String> auditLog) { this.auditLog = auditLog; }
     public List<TransitionHistoryEntry> getTransitionHistory() { return transitionHistory; }

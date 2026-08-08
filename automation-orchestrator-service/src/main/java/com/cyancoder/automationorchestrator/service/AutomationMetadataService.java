@@ -38,7 +38,10 @@ public class AutomationMetadataService {
         configs.put(AutomationNodeType.JSON_TRANSFORM, List.of("sourcePath", "template", "targetPath"));
         configs.put(AutomationNodeType.FILTER, List.of("field", "operator", "value"));
         configs.put(AutomationNodeType.SPLIT_OUT, List.of("field", "targetField"));
-        configs.put(AutomationNodeType.AGGREGATE, List.of("field", "targetField"));
+        configs.put(AutomationNodeType.AGGREGATE, List.of(
+                "field", "targetField", "groupByField", "groupKeyField", "skipBlankKeys",
+                "operation", "sortByField", "direction", "aggregations"
+        ));
         configs.put(AutomationNodeType.SORT, List.of("field", "direction"));
         configs.put(AutomationNodeType.LIMIT, List.of("maxItems", "keep"));
         configs.put(AutomationNodeType.FILE_METADATA, List.of("sourcePath", "targetPath"));

@@ -50,6 +50,54 @@ class N8nAutomationRuntimeTest {
     }
 
     @Test
+    void aggregatesOneItemPerGroupWithSortedLastSumAndCount() {
+        AutomationFlowDefinition definition = definition(List.of(
+                node("trigger", AutomationNodeType.MANUAL_TRIGGER, Map.of()),
+                node("split", AutomationNodeType.SPLIT_OUT, Map.of("field", "rows", "targetField", "row")),
+                node("aggregate", AutomationNodeType.AGGREGATE, Map.of(
+                        "groupByField", "row.organ-id",
+                        "groupKeyField", "organId",
+                        "skipBlankKeys", true,
+                        "aggregations", Map.of(
+                                "records", Map.of(
+                                        "operation", "COLLECT", "field", "row",
+                                        "sortByField", "row.createdAt", "direction", "ASC"
+                                ),
+                                "lastRecord", Map.of(
+                                        "operation", "LAST", "field", "row",
+                                        "sortByField", "row.createdAt"
+                                ),
+                                "totalAmount", Map.of("operation", "SUM", "field", "row.amount"),
+                                "recordCount", Map.of("operation", "COUNT")
+                        )
+                )),
+                node("end", AutomationNodeType.END, Map.of())
+        ), List.of(
+                edge("trigger", "0", "split", "0"),
+                edge("split", "0", "aggregate", "0"),
+                edge("aggregate", "0", "end", "0")
+        ));
+        AutomationExecution execution = execution(Map.of("rows", List.of(
+                Map.of("organ-id", "organ-1", "amount", 10, "createdAt", "2026-08-02"),
+                Map.of("organ-id", "organ-2", "amount", 20, "createdAt", "2026-08-03"),
+                Map.of("organ-id", "organ-1", "amount", 30, "createdAt", "2026-08-01"),
+                Map.of("organ-id", "", "amount", 40, "createdAt", "2026-08-04")
+        )));
+
+        runtime.run(execution, definition);
+
+        assertEquals("COMPLETED", execution.getStatus());
+        List<Object> groups = AutomationDataSupport.list(execution.getOutput().get("items"));
+        assertEquals(2, groups.size());
+        assertEquals("organ-1", AutomationDataSupport.readPath(groups.getFirst(), "json.organId"));
+        assertEquals(30, AutomationDataSupport.readPath(groups.getFirst(), "json.records.0.amount"));
+        assertEquals(10, AutomationDataSupport.readPath(groups.getFirst(), "json.lastRecord.amount"));
+        assertEquals(40D, AutomationDataSupport.readPath(groups.getFirst(), "json.totalAmount"));
+        assertEquals(2, AutomationDataSupport.readPath(groups.getFirst(), "json.recordCount"));
+        assertEquals("organ-2", AutomationDataSupport.readPath(groups.get(1), "json.organId"));
+    }
+
+    @Test
     void retriesHttpNodeAndPreservesItemShape() {
         when(http.exchangeUrl(eq("https://example.test"), eq(HttpMethod.GET), any(), any(), any(), any(), eq(Object.class)))
                 .thenThrow(new IllegalStateException("temporary"))

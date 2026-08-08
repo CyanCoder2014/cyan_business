@@ -342,6 +342,10 @@ public class N8nAutomationRuntime {
     private List<Map<String, Object>> aggregate(Map<String, Object> config, List<Map<String, Object>> items) {
         String field = AutomationDataSupport.string(config.get("field"));
         String target = Objects.toString(config.getOrDefault("targetField", "data"));
+        String groupByField = AutomationDataSupport.string(config.get("groupByField"));
+        if (groupByField != null && !groupByField.isBlank()) {
+            return aggregateByField(config, items, field, target, groupByField);
+        }
         List<Object> values = items.stream().map(item -> field == null ? json(item) : AutomationDataSupport.readPath(json(item), field)).toList();
         Map<String, Object> result = item(Map.of());
         AutomationDataSupport.setPath(json(result), target, values);
@@ -349,6 +353,89 @@ public class N8nAutomationRuntime {
         for (int index = 0; index < items.size(); index++) links.add(Map.of("item", index, "input", 0));
         result.put("pairedItem", links);
         return List.of(result);
+    }
+
+    private List<Map<String, Object>> aggregateByField(Map<String, Object> config,
+                                                        List<Map<String, Object>> items,
+                                                        String field,
+                                                        String target,
+                                                        String groupByField) {
+        String groupKeyField = Objects.toString(config.getOrDefault("groupKeyField", groupByField));
+        boolean skipBlankKeys = AutomationDataSupport.bool(config.get("skipBlankKeys"), false);
+        Map<Object, List<Integer>> groupedIndexes = new LinkedHashMap<>();
+        for (int index = 0; index < items.size(); index++) {
+            Object key = AutomationDataSupport.readPath(json(items.get(index)), groupByField);
+            if (skipBlankKeys && (key == null || key.toString().isBlank())) continue;
+            groupedIndexes.computeIfAbsent(key, ignored -> new ArrayList<>()).add(index);
+        }
+
+        List<Map<String, Object>> output = new ArrayList<>();
+        groupedIndexes.forEach((key, indexes) -> {
+            Map<String, Object> result = item(Map.of());
+            AutomationDataSupport.setPath(json(result), groupKeyField, key);
+            Map<String, Object> aggregations = AutomationDataSupport.map(config.get("aggregations"));
+            if (aggregations.isEmpty()) {
+                AutomationDataSupport.setPath(json(result), target, aggregateGroupValue(items, indexes, config, field));
+            } else {
+                aggregations.forEach((targetPath, rawSpec) -> {
+                    Map<String, Object> spec = AutomationDataSupport.map(rawSpec);
+                    AutomationDataSupport.setPath(
+                            json(result), targetPath,
+                            aggregateGroupValue(items, indexes, spec, AutomationDataSupport.string(spec.get("field")))
+                    );
+                });
+            }
+            result.put("pairedItem", indexes.stream()
+                    .map(index -> Map.<String, Object>of("item", index, "input", 0)).toList());
+            output.add(result);
+        });
+        return output;
+    }
+
+    private Object aggregateGroupValue(List<Map<String, Object>> items, List<Integer> indexes,
+                                       Map<String, Object> spec, String field) {
+        List<Integer> orderedIndexes = new ArrayList<>(indexes);
+        String sortByField = AutomationDataSupport.string(spec.get("sortByField"));
+        if (sortByField != null && !sortByField.isBlank()) {
+            Comparator<Integer> comparator = (left, right) -> compareSortValues(
+                    AutomationDataSupport.readPath(json(items.get(left)), sortByField),
+                    AutomationDataSupport.readPath(json(items.get(right)), sortByField));
+            if ("DESC".equalsIgnoreCase(Objects.toString(spec.getOrDefault("direction", "ASC")))) comparator = comparator.reversed();
+            orderedIndexes.sort(comparator);
+        }
+        List<Object> values = orderedIndexes.stream()
+                .map(index -> field == null ? json(items.get(index)) : AutomationDataSupport.readPath(json(items.get(index)), field))
+                .toList();
+        String operation = Objects.toString(spec.getOrDefault("operation", "COLLECT")).toUpperCase(Locale.ROOT);
+        return switch (operation) {
+            case "COLLECT", "LIST", "SORTED_LIST" -> values;
+            case "FIRST" -> values.isEmpty() ? null : values.getFirst();
+            case "LAST" -> values.isEmpty() ? null : values.getLast();
+            case "COUNT" -> values.size();
+            case "SUM" -> values.stream().mapToDouble(this::numericValue).sum();
+            case "MIN" -> values.stream().filter(Objects::nonNull).min(this::compareSortValues).orElse(null);
+            case "MAX" -> values.stream().filter(Objects::nonNull).max(this::compareSortValues).orElse(null);
+            default -> throw new IllegalArgumentException("unsupported AGGREGATE operation: " + operation);
+        };
+    }
+
+    private double numericValue(Object value) {
+        if (value instanceof Number number) return number.doubleValue();
+        try {
+            return value == null ? 0D : Double.parseDouble(value.toString());
+        } catch (NumberFormatException ignored) {
+            throw new IllegalArgumentException("AGGREGATE SUM requires numeric values");
+        }
+    }
+
+    private int compareSortValues(Object left, Object right) {
+        if (left == right) return 0;
+        if (left == null) return -1;
+        if (right == null) return 1;
+        if (left instanceof Number leftNumber && right instanceof Number rightNumber) {
+            return Double.compare(leftNumber.doubleValue(), rightNumber.doubleValue());
+        }
+        return Objects.toString(left).compareTo(Objects.toString(right));
     }
 
     private List<Map<String, Object>> sort(Map<String, Object> config, List<Map<String, Object>> items) {

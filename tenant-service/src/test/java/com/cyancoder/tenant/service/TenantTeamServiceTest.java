@@ -17,6 +17,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class TenantTeamServiceTest {
+    @Test void publishesCanonicalAiPermissions() {
+        TenantSecurity security=mock(TenantSecurity.class);when(security.isPlatformAdmin()).thenReturn(true);
+        TenantTeamService service=new TenantTeamService(mock(TenantMembershipRepository.class),mock(TenantRoleRepository.class),mock(TenantDirectoryService.class),security,mock(IdentityDirectoryClient.class));
+        var keys=service.permissionCatalog("acme").stream().map(com.cyancoder.tenant.api.TenantContracts.PermissionDescriptor::key).collect(java.util.stream.Collectors.toSet());
+        org.junit.jupiter.api.Assertions.assertTrue(keys.containsAll(Set.of("ai.read","ai.execute","automation.execute")));
+    }
+
     @Test void protectsLastTenantOwnerFromDemotion() {
         TenantMembershipRepository memberships=mock(TenantMembershipRepository.class);
         TenantRoleRepository roles=mock(TenantRoleRepository.class);

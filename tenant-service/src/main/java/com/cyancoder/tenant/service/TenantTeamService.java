@@ -38,6 +38,9 @@ public class TenantTeamService {
             permission("bpm.manage", "Operate", "Manage BPM", "Create and publish workflows"),
             permission("automation.read", "Operate", "View automation", "View automation definitions and runs"),
             permission("automation.manage", "Operate", "Manage automation", "Create and publish automations"),
+            permission("automation.execute", "Operate", "Execute automation", "Start and retry tenant automations"),
+            permission("ai.read", "Build", "View AI", "View AI sessions, drafts, and operation status"),
+            permission("ai.execute", "Build", "Execute AI", "Run AI generation and automation AI operations"),
             permission("report.read", "Operate", "View reports", "View report definitions and runs"),
             permission("report.manage", "Operate", "Manage reports", "Create definitions and execute reports"),
             permission("media.read", "Operate", "View media", "View tenant media assets"),
@@ -170,7 +173,7 @@ public class TenantTeamService {
         Instant now = Instant.now();
         upsertSystemRole(tenantKey, "TENANT_OWNER", "Owner", Set.of("*"), now);
         upsertSystemRole(tenantKey, "TENANT_ADMIN", "Administrator", KEYS, now);
-        upsertSystemRole(tenantKey, "TENANT_MEMBER", "Member", Set.of("project.read", "definition.read", "record.read", "bpm.read", "automation.read", "report.read", "media.read", "search.read", "site.read", "settings.read"), now);
+        upsertSystemRole(tenantKey, "TENANT_MEMBER", "Member", Set.of("project.read", "definition.read", "record.read", "bpm.read", "automation.read", "ai.read", "report.read", "media.read", "search.read", "site.read", "settings.read"), now);
     }
     private void upsertSystemRole(String tenantKey,String key,String name,Set<String> permissions,Instant now){TenantRoleEntity role=roles.findByTenantKeyAndRoleKey(tenantKey,key).orElseGet(()->systemRole(tenantKey,key,name,permissions,now));if(!role.getPermissions().equals(permissions)){role.setPermissions(new LinkedHashSet<>(permissions));role.setUpdatedAt(now);roles.save(role);}else if(role.getRoleId()!=null&&!roles.existsById(role.getRoleId()))roles.save(role);}
     private TenantRoleEntity systemRole(String tenantKey, String key, String name, Set<String> permissions, Instant now) {

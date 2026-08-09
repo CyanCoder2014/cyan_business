@@ -93,7 +93,9 @@ public class AutomationExecutionService {
         execution.setIdempotencyKey(idempotencyKey);
         execution.setExecutionMode(request.executionMode() == null ? AutomationExecutionMode.SYNC : request.executionMode());
         execution.setFailurePolicy(request.failurePolicy() == null ? AutomationFailurePolicy.FAIL_FAST : request.failurePolicy());
-        execution.setCorrelationKey(request.correlationKey());
+        execution.setCorrelationKey(firstNonBlank(request.correlationKey(), "corr-" + UUID.randomUUID()));
+        execution.setInitiatedBy(Objects.toString(request.context() == null ? null : request.context().get("initiatedBy"), null));
+        execution.setAuthorizationMode(Objects.toString(request.context() == null ? null : request.context().get("authorizationMode"), "SERVICE"));
         execution.setTenantKey(tenantKey);
         execution.setSiteKey(siteKey);
         execution.setStatus("RUNNING");
@@ -151,16 +153,35 @@ public class AutomationExecutionService {
     }
 
     public AutomationStartResponse startAuthorized(AutomationStartRequest request, Set<String> roles, String tenantKey, String siteKey) {
+        return startAuthorized(request, roles, tenantKey, siteKey, null);
+    }
+
+    public AutomationStartResponse startAuthorized(AutomationStartRequest request, Set<String> roles, String tenantKey, String siteKey, String actor) {
         request = withScope(request, tenantKey, siteKey);
         Map<String,Object> inline = firstMap(request.inlineFragment(), request.inlineFlow());
         AutomationFlowDefinition definition = resolveRequestedGraph(request, inline);
         if (definition != null) flowDefinitionService.requireRoles(definition, roles);
         Map<String,Object> context = new LinkedHashMap<>(request.context() == null ? Map.of() : request.context());
         context.put("actorRoles", roles == null ? List.of() : roles);
+        context.put("initiatedBy", actor == null || actor.isBlank() ? "authenticated-user" : actor);
+        context.put("authorizationMode", "USER_EFFECTIVE_ACCESS");
         return start(new AutomationStartRequest(request.blockKey(), request.automationFlowKey(), request.executionMode(), request.failurePolicy(),
                 request.correlationKey(), request.callbackPath(), request.tenantKey(), request.siteKey(), request.input(), context,
                 request.inlineFragment(), request.maxRetries(), request.timeoutSeconds(), request.delayMillis(), request.flowKey(),
                 request.managedObjectId(), request.idempotencyKey(), request.variables(), request.inlineFlow()));
+    }
+
+    public boolean requiresAi(AutomationStartRequest request, String tenantKey, String siteKey) {
+        request = withScope(request, tenantKey, siteKey);
+        AutomationFlowDefinition definition = resolveRequestedGraph(request, firstMap(request.inlineFragment(), request.inlineFlow()));
+        return definition != null && definition.getNodes().stream().anyMatch(node -> node.type() == com.cyancoder.automationorchestrator.domain.AutomationNodeType.AI_OPERATION);
+    }
+
+    public boolean requiresAiFlow(String tenantKey, String siteKey, String flowKey, Integer version, Map<String,Object> request) {
+        AutomationFlowDefinition definition = version == null
+                ? flowDefinitionService.active(tenantKey, siteKey, flowKey, Objects.toString(request.getOrDefault("environment", "default")))
+                : flowDefinitionService.get(tenantKey, siteKey, flowKey, version);
+        return definition.getNodes().stream().anyMatch(node -> node.type() == com.cyancoder.automationorchestrator.domain.AutomationNodeType.AI_OPERATION);
     }
 
     public AutomationStartResponse get(String executionId) {
@@ -183,6 +204,11 @@ public class AutomationExecutionService {
 
     public AutomationStartResponse manualRun(String tenantKey, String siteKey, String flowKey, Integer version,
                                               Map<String, Object> request, Set<String> roles) {
+        return manualRun(tenantKey, siteKey, flowKey, version, request, roles, null);
+    }
+
+    public AutomationStartResponse manualRun(String tenantKey, String siteKey, String flowKey, Integer version,
+                                              Map<String, Object> request, Set<String> roles, String actor) {
         AutomationFlowDefinition definition = version == null
                 ? flowDefinitionService.active(tenantKey, siteKey, flowKey, Objects.toString(request.getOrDefault("environment", "default")))
                 : flowDefinitionService.get(tenantKey, siteKey, flowKey, version);
@@ -190,6 +216,8 @@ public class AutomationExecutionService {
         Map<String, Object> context = new LinkedHashMap<>(firstMap(AutomationDataSupport.map(request.get("context")), Map.of()));
         context.put("runMode", "MANUAL");
         context.put("actorRoles", roles == null ? List.of() : roles);
+        context.put("initiatedBy", actor == null || actor.isBlank() ? "authenticated-user" : actor);
+        context.put("authorizationMode", "USER_EFFECTIVE_ACCESS");
         if (request.get("startNodeId") != null) context.put("startNodeId", request.get("startNodeId"));
         Map<String, Object> input = new LinkedHashMap<>(AutomationDataSupport.map(request.get("input")));
         if (request.get("items") != null) input.put("items", request.get("items"));

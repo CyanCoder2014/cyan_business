@@ -34,6 +34,8 @@ public class AutomationExecution {
     private AutomationExecutionMode executionMode = AutomationExecutionMode.ASYNC;
     private AutomationFailurePolicy failurePolicy = AutomationFailurePolicy.FAIL_FAST;
     private String correlationKey;
+    private String initiatedBy;
+    private String authorizationMode;
     private String tenantKey;
     private String siteKey;
     private String status;
@@ -89,6 +91,10 @@ public class AutomationExecution {
     public void setFailurePolicy(AutomationFailurePolicy failurePolicy) { this.failurePolicy = failurePolicy; }
     public String getCorrelationKey() { return correlationKey; }
     public void setCorrelationKey(String correlationKey) { this.correlationKey = correlationKey; }
+    public String getInitiatedBy() { return initiatedBy; }
+    public void setInitiatedBy(String initiatedBy) { this.initiatedBy = initiatedBy; }
+    public String getAuthorizationMode() { return authorizationMode; }
+    public void setAuthorizationMode(String authorizationMode) { this.authorizationMode = authorizationMode; }
     public String getTenantKey() { return tenantKey; }
     public void setTenantKey(String tenantKey) { this.tenantKey = tenantKey; }
     public String getSiteKey() { return siteKey; }

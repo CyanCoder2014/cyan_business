@@ -38,6 +38,12 @@ public class TenantTeamService {
             permission("bpm.manage", "Operate", "Manage BPM", "Create and publish workflows"),
             permission("automation.read", "Operate", "View automation", "View automation definitions and runs"),
             permission("automation.manage", "Operate", "Manage automation", "Create and publish automations"),
+            permission("report.read", "Operate", "View reports", "View report definitions and runs"),
+            permission("report.manage", "Operate", "Manage reports", "Create definitions and execute reports"),
+            permission("media.read", "Operate", "View media", "View tenant media assets"),
+            permission("media.manage", "Operate", "Manage media", "Upload and update tenant media"),
+            permission("search.read", "Operate", "View search", "View indexes and test search"),
+            permission("search.manage", "Operate", "Manage search", "Create indexes and run synchronization"),
             permission("site.read", "Experience", "View sites", "View tenant sites"),
             permission("site.manage", "Experience", "Manage sites", "Create and publish tenant sites")
     );
@@ -161,12 +167,12 @@ public class TenantTeamService {
     private TenantRoleEntity requireRole(String tenantKey, String roleKey) { return roles.findByTenantKeyAndRoleKey(tenantKey, roleKey).orElseThrow(NoSuchElementException::new); }
 
     private void ensureSystemRoles(String tenantKey) {
-        if (!roles.findByTenantKeyOrderBySystemRoleDescDisplayNameAsc(tenantKey).isEmpty()) return;
         Instant now = Instant.now();
-        roles.save(systemRole(tenantKey, "TENANT_OWNER", "Owner", Set.of("*"), now));
-        roles.save(systemRole(tenantKey, "TENANT_ADMIN", "Administrator", KEYS, now));
-        roles.save(systemRole(tenantKey, "TENANT_MEMBER", "Member", Set.of("project.read", "definition.read", "record.read", "bpm.read", "automation.read", "site.read", "settings.read"), now));
+        upsertSystemRole(tenantKey, "TENANT_OWNER", "Owner", Set.of("*"), now);
+        upsertSystemRole(tenantKey, "TENANT_ADMIN", "Administrator", KEYS, now);
+        upsertSystemRole(tenantKey, "TENANT_MEMBER", "Member", Set.of("project.read", "definition.read", "record.read", "bpm.read", "automation.read", "report.read", "media.read", "search.read", "site.read", "settings.read"), now);
     }
+    private void upsertSystemRole(String tenantKey,String key,String name,Set<String> permissions,Instant now){TenantRoleEntity role=roles.findByTenantKeyAndRoleKey(tenantKey,key).orElseGet(()->systemRole(tenantKey,key,name,permissions,now));if(!role.getPermissions().equals(permissions)){role.setPermissions(new LinkedHashSet<>(permissions));role.setUpdatedAt(now);roles.save(role);}else if(role.getRoleId()!=null&&!roles.existsById(role.getRoleId()))roles.save(role);}
     private TenantRoleEntity systemRole(String tenantKey, String key, String name, Set<String> permissions, Instant now) {
         TenantRoleEntity role = new TenantRoleEntity(); role.setRoleId(tenantKey + "|" + key); role.setTenantKey(tenantKey);
         role.setRoleKey(key); role.setDisplayName(name); role.setDescription("Platform-managed tenant role"); role.setSystemRole(true);

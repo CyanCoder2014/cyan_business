@@ -25,6 +25,6 @@ class MediaByteUploadServiceTest {
         var completed=service.upload(prepared.uploadId(),"tenant","site","actor",new ByteArrayInputStream("test".getBytes()),4);
         assertThat(completed.status()).isEqualTo("UPLOADED");
         assertThat(completed.uploadedSizeBytes()).isEqualTo(4);
-        verify(assets).prepareUpload(any());
+        verify(assets).prepareUpload(any(), any());
     }
 }

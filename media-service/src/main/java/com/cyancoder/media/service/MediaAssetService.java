@@ -1,6 +1,8 @@
 package com.cyancoder.media.service;
 
 import com.cyancoder.dynamiccore.runtime.DynamicRuntimeService;
+import com.cyancoder.dynamiccore.runtime.DynamicScope;
+import com.cyancoder.dynamiccore.runtime.DynamicRecordRequest;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.media.model.MediaAssetResponse;
 import com.cyancoder.media.model.MediaUploadPrepareRequest;
@@ -19,8 +21,8 @@ public class MediaAssetService {
         this.dynamicRuntimeService = dynamicRuntimeService;
     }
 
-    public MediaAssetResponse prepareUpload(MediaUploadPrepareRequest request) {
-        ensureDefinition("media-asset");
+    public MediaAssetResponse prepareUpload(MediaUploadPrepareRequest request, DynamicScope scope) {
+        ensureDefinition("media-asset", scope);
         String assetKey = request.assetKey();
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("assetKey", assetKey);
@@ -34,7 +36,7 @@ public class MediaAssetService {
                 "title", firstNonBlank(request.title(), request.originalFileName()),
                 "license", firstNonBlank(request.license(), "")
         ));
-        String path = firstNonBlank(request.path(), "assets/" + assetKey + "/" + request.originalFileName());
+        String path = "assets/" + assetKey + "/" + request.originalFileName();
         String cdnUrl = "/public/media/content/" + assetKey;
         data.put("storage", Map.of(
                 "bucket", firstNonBlank(request.bucket(), "default-public"),
@@ -47,13 +49,18 @@ public class MediaAssetService {
         data.put("variants", List.of());
         data.put("storageStatus", "UPLOADED");
 
-        DynamicEntityRecordDocument saved = dynamicRuntimeService.submitMap("media-asset", assetKey, data, true);
+        data.put("tags", List.of());
+        data.put("folderKey", "");
+        DynamicEntityRecordDocument saved = dynamicRuntimeService.submitMap("media-asset", assetKey, data, true, scope);
         return toResponse(saved, null);
     }
 
     public MediaAssetResponse get(String assetKey) {
         return toResponse(dynamicRuntimeService.getRecord("media-asset", assetKey), null);
     }
+
+    public MediaAssetResponse get(String assetKey, DynamicScope scope) { return toResponse(dynamicRuntimeService.getRecord("media-asset",assetKey,scope),null); }
+    public Map<String,Object> update(String assetKey, Map<String,Object> changes, DynamicScope scope){DynamicRecordRequest r=new DynamicRecordRequest();r.setData(changes);return dynamicRuntimeService.update("media-asset",assetKey,r,false,scope).getData();}
 
     @SuppressWarnings("unchecked")
     public MediaAssetResponse getVariant(String assetKey, String variantKey) {
@@ -81,11 +88,11 @@ public class MediaAssetService {
         return new MediaAssetResponse(record.getRecordKey(), deliveryUrl, Objects.toString(data.get("storageStatus"), "UPLOADED"), data);
     }
 
-    private void ensureDefinition(String entityKey) {
+    private void ensureDefinition(String entityKey, DynamicScope scope) {
         try {
-            dynamicRuntimeService.getDefinition(entityKey);
+            dynamicRuntimeService.getDefinition(entityKey, scope);
         } catch (Exception ex) {
-            dynamicRuntimeService.createFromTemplate(entityKey, entityKey);
+            dynamicRuntimeService.createFromTemplate(entityKey, entityKey, scope);
         }
     }
 

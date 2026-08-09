@@ -18,6 +18,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
+import com.cyancoder.dynamiccore.runtime.DynamicScope;
 
 @Service
 public class MediaByteUploadService {
@@ -78,7 +79,7 @@ public class MediaByteUploadService {
             upload.setStatus("UPLOADED");
             upload.setCompletedAt(Instant.now());
             repository.save(upload);
-            assetService.prepareUpload(new MediaUploadPrepareRequest(upload.getAssetKey(), mediaType(upload.getMimeType()), upload.getOriginalFileName(), upload.getMimeType(), upload.getVisibility(), upload.getOriginalFileName(), "", upload.getOriginalFileName(), "", "filesystem", destination.toString(), null, null, copied));
+            assetService.prepareUpload(new MediaUploadPrepareRequest(upload.getAssetKey(), mediaType(upload.getMimeType()), upload.getOriginalFileName(), upload.getMimeType(), upload.getVisibility(), upload.getOriginalFileName(), "", upload.getOriginalFileName(), "", "filesystem", "", null, null, copied), new DynamicScope(upload.getTenantKey(),upload.getSiteKey()));
             return response(upload);
         } catch (IOException exception) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Media bytes could not be stored", exception);
@@ -99,7 +100,7 @@ public class MediaByteUploadService {
         if (!upload.getTenantKey().equals(tenant) || !equalsNullable(upload.getSiteKey(), blankToNull(site)) || !upload.getCreatedBy().equals(actor)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Upload not found");
         return upload;
     }
-    private UploadResponse response(MediaUploadEntity value) { return new UploadResponse(value.getUploadId(), value.getAssetKey(), "/endpoint/media/uploads/" + value.getUploadId(), "PUT", value.getStatus(), value.getExpectedSizeBytes(), value.getUploadedSizeBytes(), value.getExpiresAt(), "UPLOADED".equals(value.getStatus()) ? "/public/media/assets/" + value.getAssetKey() : null); }
+    private UploadResponse response(MediaUploadEntity value) { return new UploadResponse(value.getUploadId(), value.getAssetKey(), "/endpoint/media/uploads/" + value.getUploadId(), "PUT", value.getStatus(), value.getExpectedSizeBytes(), value.getUploadedSizeBytes(), value.getExpiresAt(), "UPLOADED".equals(value.getStatus()) ? ("PUBLIC".equals(value.getVisibility())?"/public/media/content/":"/endpoint/media/assets/") + value.getAssetKey() + ("PUBLIC".equals(value.getVisibility())?"":"/content") : null); }
     private void requireTenant(String value) { if (value == null || value.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "X-Tenant-Key is required"); }
     private String safeFileName(String value) { String safe = Path.of(value).getFileName().toString(); if (safe.isBlank()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file name"); return safe; }
     private String normalizeVisibility(String value) { String result = value == null ? "PRIVATE" : value.toUpperCase(Locale.ROOT); if (!result.equals("PRIVATE") && !result.equals("PUBLIC")) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "visibility must be PRIVATE or PUBLIC"); return result; }

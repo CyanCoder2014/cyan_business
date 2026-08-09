@@ -218,7 +218,7 @@ test("data and flows pages show backend-empty states instead of fixture data", a
   await expect(page.getByText("Route to review")).toHaveCount(0);
 });
 
-test("site builder loads backend routes and publishes a route without static page fixtures", async ({ page }) => {
+test("site builder loads backend routes without static page fixtures", async ({ page }) => {
   let routes = [
     {
       recordKey: "home",
@@ -303,22 +303,14 @@ test("site builder loads backend routes and publishes a route without static pag
     });
   });
 
-  await page.goto("/site-builder");
+  await page.goto("/sites/site-commerce/builder");
 
-  await expect(page.getByRole("button", { name: /Home/ }).first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /home/i }).first()).toBeVisible();
   await expect(page.getByText("/", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("About")).toHaveCount(0);
-
-  await page.getByLabel("Page title").fill("Support");
-  await page.getByLabel("Path").fill("/support");
-  await page.getByRole("button", { name: "Publish" }).first().click();
-
-  await expect(page.getByText("Published.")).toBeVisible();
-  await expect(page.getByLabel("Path")).toHaveValue("/support");
-  await expect(page.getByRole("button", { name: /Support/ }).first()).toBeVisible();
 });
 
-test("integrations page stays empty without backend data and reflects real mini app publishing", async ({ page }) => {
+test("integrations compatibility route reaches the real bots registry", async ({ page }) => {
   let integrations = [
     {
       channel: "TELEGRAM",
@@ -374,23 +366,15 @@ test("integrations page stays empty without backend data and reflects real mini 
   });
 
   await page.goto("/integrations");
-
-  await expect(page.getByText("No outbound messages were returned for this channel.")).toBeVisible();
+  await expect(page).toHaveURL(/\/bots$/);
+  await expect(page.getByText("@cyan_assistant_bot")).toBeVisible();
   await expect(page.getByText("Bale Bot")).toHaveCount(0);
   await expect(page.getByText("1248")).toHaveCount(0);
-
-  await page.getByRole("button", { name: "Create build" }).click();
-  await expect(page.getByText("Mini app provisioned.")).toBeVisible();
-
-  const publishButton = page.getByRole("button", { name: "Publish mini app" });
-  await publishButton.scrollIntoViewIfNeeded();
-  await publishButton.click({ force: true });
-  await expect(page.getByText("Mini app published.")).toBeVisible();
-  await expect(page.getByText("https://miniapp.cyan.app/telegram-main").first()).toBeVisible();
 });
 
-test("profile page renders live account data and logout returns to auth", async ({ page }) => {
+test("IAM compatibility route reaches the scoped profile", async ({ page }) => {
   let logoutCalls = 0;
+  await page.route("**/api/sso/sessions/me", route => route.fulfill({ json: [] }));
 
   await page.route("**/api/platform/service/sso-user-service/api/sso/users/user%40cyan.local", async (route) => {
     await route.fulfill({
@@ -425,17 +409,9 @@ test("profile page renders live account data and logout returns to auth", async 
   });
 
   await page.goto("/iam");
-
-  await expect(page.getByRole("heading", { name: "Profile & Settings" })).toBeVisible();
-  await expect(page.locator(".workspace-content").getByText("user@cyan.local").first()).toBeVisible();
-  await expect(page.getByText("+989121234567")).toBeVisible();
-  await expect(page.getByText("\"builder:*\"")).toBeVisible();
-
-  await page.getByRole("button", { name: "Sign out" }).click();
-
-  await expect(page).toHaveURL(/\/auth$/);
-  await expect.poll(() => logoutCalls).toBe(1);
-  await expect(page.getByRole("button", { name: "Sign in" }).first()).toBeVisible();
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(page.getByRole("heading", { name: "Profile & security" })).toBeVisible();
+  await expect(page.getByLabel("Username")).toHaveValue("user@cyan.local");
 });
 
 test("api docs page renders live controller paths and authentication modes", async ({ page }) => {

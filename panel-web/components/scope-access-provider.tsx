@@ -2,6 +2,7 @@
 
 import { createContext, Fragment, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { AuthenticationRequiredError, getPlatformAuthToken, getPlatformSessionId, platformFetch, setActivePanelScope } from "@/lib/platform-auth";
+import { platformErrorFromResponse } from "@/lib/api-error";
 import type { PanelBootstrap } from "@/lib/panel-contracts";
 
 type ScopeAccessContextValue = {
@@ -37,7 +38,7 @@ export function ScopeAccessProvider({ children }: { children: ReactNode }) {
     setLoading(true); setError(null);
     try {
       const response = await platformFetch("/api/panel/bootstrap", { headers: { "X-Session-Id": getPlatformSessionId() }, cache: "no-store" });
-      if (!response.ok) throw new Error((await response.json().catch(() => null))?.message ?? `Bootstrap failed (${response.status})`);
+      if (!response.ok) throw await platformErrorFromResponse(response);
       const value = await response.json() as PanelBootstrap;
       setBootstrap(value);
       setActivePanelScope(value.activeTenantKey, value.activeSiteKey);
@@ -56,7 +57,7 @@ export function ScopeAccessProvider({ children }: { children: ReactNode }) {
       headers: { "Content-Type": "application/json", "X-Session-Id": getPlatformSessionId() },
       body: JSON.stringify({ tenantKey, siteKey: siteKey || null })
     });
-    if (!response.ok) throw new Error((await response.json().catch(() => null))?.message ?? `Scope update failed (${response.status})`);
+    if (!response.ok) throw await platformErrorFromResponse(response);
     setActivePanelScope(tenantKey, siteKey || null);
     setQueryVersion((current) => current + 1);
     await refresh();

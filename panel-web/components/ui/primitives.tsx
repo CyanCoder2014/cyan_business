@@ -1,10 +1,10 @@
 "use client";
 
-import { useId, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
+import { useEffect, useId, useRef, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from "react";
 
 export function Button(props: ButtonHTMLAttributes<HTMLButtonElement>) { return <button {...props} className={`primary-pill ${props.className ?? ""}`} />; }
 export function AsyncButton({ pending=false, pendingLabel="Working…", children, disabled, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { pending?:boolean; pendingLabel?:string }) {
-  return <button {...props} disabled={disabled||pending} aria-busy={pending} className={`primary-pill async-button ${props.className??""}`}>{pending?<span className="button-spinner" aria-hidden/>:null}<span>{pending?pendingLabel:children}</span></button>;
+  return <button {...props} disabled={disabled||pending} aria-disabled={disabled||pending} aria-busy={pending} className={`primary-pill async-button ${props.className??""}`}>{pending?<span className="button-spinner" aria-hidden/>:null}<span>{pending?pendingLabel:children}</span></button>;
 }
 export function IconButton({ label, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { label: string }) { return <button {...props} aria-label={label} className={`header-icon-button ${props.className ?? ""}`} />; }
 export function Field({ label, hint, error, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string; hint?: string; error?: string }) { const id = useId(); return <label className="ui-field" htmlFor={id}><span>{label}</span><input {...props} id={id}/>{error ? <small className="field-error">{error}</small> : hint ? <small>{hint}</small> : null}</label>; }
@@ -15,14 +15,35 @@ export const SegmentedControl = Tabs;
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: string }) { return <span className={`status-pill ${tone}`}>{children}</span>; }
 export const StatusBadge = Badge;
 export function Card(props: HTMLAttributes<HTMLElement>) { return <section {...props} className={`panel-card ${props.className ?? ""}`} />; }
-export function Dialog({ open, title, children, onClose }: { open: boolean; title: string; children: ReactNode; onClose: () => void }) { return open ? <div className="dialog-backdrop" onMouseDown={onClose}><section role="dialog" aria-modal="true" aria-label={title} className="scope-dialog" onMouseDown={(event) => event.stopPropagation()}><h2>{title}</h2>{children}</section></div> : null; }
+export function Dialog({ open, title, children, onClose }: { open: boolean; title: string; children: ReactNode; onClose: () => void }) {
+  const dialogRef = useRef<HTMLElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    returnFocusRef.current = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])') ?? []);
+    (focusable()[0] ?? dialog)?.focus();
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); const target=returnFocusRef.current; onClose(); window.setTimeout(()=>target?.focus(),0); return; }
+      if (event.key !== "Tab") return;
+      const items = focusable(); if (!items.length) { event.preventDefault(); dialog?.focus(); return; }
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => { document.removeEventListener("keydown", keydown); returnFocusRef.current?.focus(); };
+  }, [open, onClose]);
+  return open ? <div className="dialog-backdrop" onMouseDown={()=>{const target=returnFocusRef.current;onClose();window.setTimeout(()=>target?.focus(),0)}}><section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title} className="scope-dialog" onMouseDown={(event) => event.stopPropagation()}><h2>{title}</h2>{children}</section></div> : null;
+}
 export function Drawer(props: Parameters<typeof Dialog>[0]) { return <Dialog {...props}/>; }
 export function BottomSheet(props: Parameters<typeof Dialog>[0]) { return <Dialog {...props}/>; }
 export function Toast({ children, tone = "info" }: { children: ReactNode; tone?: string }) { return <div role="status" className={`operational-banner ${tone}`}>{children}</div>; }
-export function ConfirmDialog({ open, title, body, confirmLabel, onConfirm, onClose }: { open: boolean; title: string; body: ReactNode; confirmLabel: string; onConfirm: () => void; onClose: () => void }) { return <Dialog open={open} title={title} onClose={onClose}><div>{body}</div><div className="dialog-actions"><button className="secondary-pill" onClick={onClose}>Cancel</button><button className="primary-pill" onClick={onConfirm}>{confirmLabel}</button></div></Dialog>; }
+export function ConfirmDialog({ open, title, body, confirmLabel, cancelLabel="Cancel", pending=false, onConfirm, onClose }: { open: boolean; title: string; body: ReactNode; confirmLabel: string; cancelLabel?:string; pending?:boolean; onConfirm: () => void; onClose: () => void }) { return <Dialog open={open} title={title} onClose={onClose}><div>{body}</div><div className="dialog-actions"><button className="secondary-pill" disabled={pending} onClick={onClose}>{cancelLabel}</button><AsyncButton pending={pending} onClick={onConfirm}>{confirmLabel}</AsyncButton></div></Dialog>; }
 export function Skeleton({ width = "100%", height = 16 }: { width?: string; height?: number }) { return <span className="ui-skeleton" style={{ width, height }} aria-hidden/>; }
 export function EmptyState({ title, description, action }: { title: string; description: string; action?: ReactNode }) { return <section className="ui-state"><h3>{title}</h3><p>{description}</p>{action}</section>; }
-export function ErrorState({ title, description, retry }: { title: string; description: string; retry?: () => void }) { return <section className="ui-state" role="alert"><h3>{title}</h3><p>{description}</p>{retry ? <Button onClick={retry}>Retry</Button> : null}</section>; }
+export function ErrorState({ title, description, retry, retryLabel="Retry", correlationId }: { title: string; description: string; retry?: () => void; retryLabel?:string; correlationId?:string }) { return <section className="ui-state" role="alert"><h3>{title}</h3><p>{description}</p>{correlationId?<small className="correlation-id" dir="ltr">{correlationId}</small>:null}{retry ? <Button onClick={retry}>{retryLabel}</Button> : null}</section>; }
 export const PermissionState = EmptyState;
 export function PlanGate({ allowed, children, fallback }: { allowed: boolean; children: ReactNode; fallback: ReactNode }) { return <>{allowed ? children : fallback}</>; }
 export function OfflineIndicator({ offline, stale }: { offline: boolean; stale?: boolean }) { return offline || stale ? <Badge tone="warning">{offline ? "Offline" : "Stale"}</Badge> : null; }

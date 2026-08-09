@@ -1,4 +1,5 @@
 import { platformFetch } from "@/lib/platform-auth";
+import { platformErrorFromResponse } from "@/lib/api-error";
 
 const platformBaseUrl = "/api/platform/service/bpm-service";
 
@@ -111,6 +112,7 @@ export type ManagedObject = {
   state: string;
   processInstanceId?: string;
   assignee?: string;
+  assigneeType?: "USER" | "GROUP" | "ROLE";
   payload: Record<string, unknown>;
   accessRule?: {
     canRead?: string[];
@@ -180,8 +182,7 @@ async function requestJson<T>(path: string, init?: RequestInit & { tenantKey?: s
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(body || `Request failed with status ${response.status}`);
+    throw await platformErrorFromResponse(response);
   }
 
   return response.json() as Promise<T>;

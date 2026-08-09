@@ -1,4 +1,5 @@
 import { platformFetch } from "@/lib/platform-auth";
+import { platformErrorFromResponse } from "@/lib/api-error";
 
 const base = "/api/platform/service/automation-orchestrator-service";
 export type AutomationNodeType = string;
@@ -11,7 +12,7 @@ export type CredentialReference = { id:string; name:string; type:string; active:
 
 async function json<T>(path:string, init:RequestInit = {}):Promise<T>{
   const response=await platformFetch(`${base}${path}`,{...init,headers:{"Content-Type":"application/json",...(init.headers??{})},cache:"no-store"});
-  if(!response.ok) throw new Error((await response.json().catch(()=>null))?.message ?? `Request failed (${response.status})`);
+  if(!response.ok) throw await platformErrorFromResponse(response);
   return response.json() as Promise<T>;
 }
 export const listAutomationFlows=()=>json<AutomationFlow[]>("/endpoint/automation-flows");

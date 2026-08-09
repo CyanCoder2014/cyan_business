@@ -42,8 +42,7 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
     { href: "/settings", key: "settings", icon: "⚙", en: "Settings", fa: "تنظیمات", permission: "settings.read" }
   ]},
   { en: "Platform", fa: "پلتفرم", items: [
-    { href: "/platform/health", key: "platform-health", icon: "✣", en: "Health checks", fa: "بررسی سلامت", platformOnly: true },
-    { href: "/platform/roadmap", key: "platform-roadmap", icon: "◫", en: "Roadmap", fa: "نقشه راه", platformOnly: true }
+    { href: "/platform/health", key: "platform-health", icon: "✣", en: "Health checks", fa: "بررسی سلامت", platformOnly: true }
   ]}
 ];
 

@@ -8,6 +8,8 @@ const serviceBaseUrls: Record<string, string> = {
   "storefront-service": process.env.STOREFRONT_SERVICE_BASE_URL ?? "http://localhost:9115",
   "notification-service": process.env.NOTIFICATION_SERVICE_BASE_URL ?? "http://localhost:9122",
   "search-index-service": process.env.SEARCH_INDEX_SERVICE_BASE_URL ?? "http://localhost:9125",
+  "report-service": process.env.REPORT_SERVICE_BASE_URL ?? "http://localhost:9107",
+  "media-service": process.env.MEDIA_SERVICE_BASE_URL ?? "http://localhost:9116",
   "automation-orchestrator-service": process.env.AUTOMATION_ORCHESTRATOR_SERVICE_BASE_URL ?? "http://localhost:9120",
   "batch-worker-service": process.env.BATCH_WORKER_SERVICE_BASE_URL ?? "http://localhost:9127",
   "payment-service": process.env.PAYMENT_SERVICE_BASE_URL ?? "http://localhost:9114",
@@ -46,11 +48,13 @@ async function proxy(request: Request, context: RouteContext) {
     body,
     cache: "no-store"
   });
-  const text = await response.text();
-  return new NextResponse(text, {
+  const bodyBytes = await response.arrayBuffer();
+  return new NextResponse(bodyBytes, {
     status: response.status,
     headers: {
-      "Content-Type": response.headers.get("Content-Type") ?? "application/json"
+      "Content-Type": response.headers.get("Content-Type") ?? "application/json",
+      ...(response.headers.get("Content-Disposition") ? { "Content-Disposition": response.headers.get("Content-Disposition") as string } : {}),
+      ...(response.headers.get("Cache-Control") ? { "Cache-Control": response.headers.get("Cache-Control") as string } : {})
     }
   });
 }

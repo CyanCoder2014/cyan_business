@@ -10,7 +10,7 @@ import { NotificationCenter } from "@/components/notifications/notification-cent
 import { AsyncButton } from "@/components/ui/primitives";
 
 type PanelShellProps = { title: string; titleFa: string; subtitle: string; subtitleFa: string; kicker?: string; kickerFa?: string; activeKey: string; children: ReactNode };
-type NavItem = { href: string; key: string; icon: string; en: string; fa: string; capability?: string; permission?: string };
+type NavItem = { href: string; key: string; icon: string; en: string; fa: string; capability?: string; permission?: string; platformOnly?: boolean };
 
 const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
   { en: "Workspace", fa: "فضای کار", items: [
@@ -29,7 +29,9 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
   ]},
   { en: "Operate", fa: "عملیات", items: [
     { href: "/notifications", key: "notifications", icon: "◉", en: "Notifications", fa: "اعلان‌ها" },
-    { href: "/search", key: "search", icon: "⌕", en: "Search & media", fa: "جستجو و رسانه", capability: "search", permission: "search.read" },
+    { href: "/reports", key: "reports", icon: "▥", en: "Reports", fa: "گزارش‌ها", capability: "report", permission: "report.read" },
+    { href: "/media", key: "media", icon: "▧", en: "Media", fa: "رسانه", capability: "media", permission: "media.read" },
+    { href: "/search", key: "search", icon: "⌕", en: "Search", fa: "جستجو", capability: "search", permission: "search.read" },
     { href: "/api-docs", key: "api-docs", icon: "{·}", en: "API docs", fa: "مستندات API" },
   ]},
   { en: "Manage", fa: "مدیریت", items: [
@@ -38,6 +40,10 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
     { href: "/clients", key: "clients", icon: "▤", en: "Clients", fa: "مشتریان", permission: "realm:manage" },
     { href: "/billing", key: "billing", icon: "◈", en: "Billing", fa: "صورتحساب", permission: "billing.read" },
     { href: "/settings", key: "settings", icon: "⚙", en: "Settings", fa: "تنظیمات", permission: "settings.read" }
+  ]},
+  { en: "Platform", fa: "پلتفرم", items: [
+    { href: "/platform/health", key: "platform-health", icon: "✣", en: "Health checks", fa: "بررسی سلامت", platformOnly: true },
+    { href: "/platform/roadmap", key: "platform-roadmap", icon: "◫", en: "Roadmap", fa: "نقشه راه", platformOnly: true }
   ]}
 ];
 
@@ -71,7 +77,8 @@ export function PanelShell(props: PanelShellProps) {
   const site = bootstrap?.sites.find((item) => item.siteKey === siteKey);
   const profileName = bootstrap?.identity.username ?? "";
   const avatarLabel = useMemo(() => (profileName || "Cyan").split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("") || "CY", [profileName]);
-  const navEnabled = (item: NavItem) => (!item.permission || can(item.permission)) && (!item.capability || Boolean(bootstrap?.capabilities.some((capability) => capability.key === item.capability && capability.enabled && capability.status === "AVAILABLE")));
+  const isPlatformAdmin = Boolean(bootstrap?.access.realmRoles.some((role) => ["platform-admin","realm-admin","admin"].includes(role.toLowerCase())));
+  const navEnabled = (item: NavItem) => (!item.platformOnly || isPlatformAdmin) && (!item.permission || can(item.permission)) && (!item.capability || Boolean(bootstrap?.capabilities.some((capability) => capability.key === item.capability && capability.enabled && capability.status === "AVAILABLE")));
 
   if (!authChecked) return <main className="auth-check-shell" aria-label="Checking authentication"><div className="brand-badge">C</div></main>;
   return (
@@ -113,7 +120,7 @@ export function PanelShell(props: PanelShellProps) {
         </main>
       </div>
       <nav className="mobile-bottom-nav" aria-label={locale === "fa" ? "ناوبری موبایل" : "Mobile navigation"}><Link href="/dashboard"><span>⌂</span><span>{locale === "fa" ? "خانه" : "Home"}</span></Link><Link href="/ai"><span>✦</span><span>{locale === "fa" ? "هوش" : "AI"}</span></Link><button onClick={() => setSheet("build")}><span>＋</span><span>{locale === "fa" ? "ساخت" : "Build"}</span></button><Link href="/work"><span>⌁</span><span>{locale === "fa" ? "کار" : "Work"}</span></Link><button onClick={() => setSheet("more")}><span>•••</span><span>{locale === "fa" ? "بیشتر" : "More"}</span></button></nav>
-      {sheet ? <div className="sheet-backdrop" onClick={() => setSheet(null)}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={sheet === "build" ? "Build navigation" : "More navigation"} onClick={(event) => event.stopPropagation()}><div className="sheet-handle"/><div className="sheet-grid">{groups.slice(sheet === "build" ? 1 : 2, sheet === "build" ? 2 : 3).flatMap((group) => group.items).map((item) => navEnabled(item) ? <Link key={item.key} href={item.href} onClick={() => setSheet(null)}><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</Link> : <span key={item.key} aria-disabled="true"><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</span>)}</div><button className="secondary-pill" onClick={() => setSheet(null)}>{locale === "fa" ? "بستن" : "Close"}</button></section></div> : null}
+      {sheet ? <div className="sheet-backdrop" onClick={() => setSheet(null)}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={sheet === "build" ? "Build navigation" : "More navigation"} onClick={(event) => event.stopPropagation()}><div className="sheet-handle"/><div className="sheet-grid">{groups.slice(sheet === "build" ? 1 : 2, sheet === "build" ? 2 : groups.length).flatMap((group) => group.items).filter(item=>!item.platformOnly||isPlatformAdmin).map((item) => navEnabled(item) ? <Link key={item.key} href={item.href} onClick={() => setSheet(null)}><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</Link> : <span key={item.key} aria-disabled="true"><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</span>)}</div><button className="secondary-pill" onClick={() => setSheet(null)}>{locale === "fa" ? "بستن" : "Close"}</button></section></div> : null}
     </div>
   );
 }

@@ -367,6 +367,8 @@ export type SearchQueryResponse = {
   page?: number;
   size?: number;
   results?: Array<Record<string, unknown>>;
+  items?: Array<Record<string, unknown>>;
+  facetCounts?: Record<string, number>;
   [key: string]: unknown;
 };
 

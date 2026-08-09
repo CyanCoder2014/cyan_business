@@ -2,6 +2,7 @@ import { getPlatformAuthToken, platformFetch } from "@/lib/platform-auth";
 
 export type PreparedUpload = { uploadId: string; assetKey: string; uploadUrl: string; method: "PUT"; status: string; expectedSizeBytes: number; uploadedSizeBytes: number; expiresAt: string; deliveryUrl?: string | null };
 export type MediaScope = { tenantKey: string; siteKey?: string };
+export type MediaAsset={assetKey:string;originalFileName:string;mimeType:string;assetType:string;visibility:string;sizeBytes:number;status:string;deliveryUrl?:string;createdAt:string;completedAt?:string;metadata:Record<string,unknown>};export type MediaPage={items:MediaAsset[];page:number;size:number;total:number};export type MediaUsage={assetKey:string;status:string;referenceCount:number;references:Array<Record<string,unknown>>;reason?:string};
 
 async function responseJson<T>(response: Response): Promise<T> {
   if (!response.ok) throw new Error(await response.text().catch(() => `Media request failed (${response.status})`));
@@ -38,3 +39,4 @@ export async function cancelMediaUpload(prepared: PreparedUpload, scope: MediaSc
   const response = await platformFetch(`/api/platform/dynamic/media-service${prepared.uploadUrl}`, { method: "DELETE", headers: { "X-Tenant-Key": scope.tenantKey, ...(scope.siteKey ? { "X-Site-Key": scope.siteKey } : {}) } });
   if (!response.ok && response.status !== 204) throw new Error(await response.text());
 }
+const assetBase="/api/platform/service/media-service/endpoint/media/assets";const scopeHeaders=(s:MediaScope)=>({"X-Tenant-Key":s.tenantKey,...(s.siteKey?{"X-Site-Key":s.siteKey}:{})});async function assetJson<T>(path:string,s:MediaScope,init:RequestInit={}){const r=await platformFetch(`${assetBase}${path}`,{...init,headers:{"Content-Type":"application/json",...scopeHeaders(s),...(init.headers??{})},cache:"no-store"});if(!r.ok){const b=await r.json().catch(()=>null);throw new Error(b?.message??b?.detail??`Media request failed (${r.status})`)}return r.json()as Promise<T>}export const listMediaAssets=(s:MediaScope,q="",type="")=>assetJson<MediaPage>(`?q=${encodeURIComponent(q)}&type=${encodeURIComponent(type)}`,s);export const getMediaAsset=(s:MediaScope,k:string)=>assetJson<MediaAsset>(`/${encodeURIComponent(k)}`,s);export const getMediaUsage=(s:MediaScope,k:string)=>assetJson<MediaUsage>(`/${encodeURIComponent(k)}/usage`,s);export const mediaPreviewUrl=(a:MediaAsset)=>a.visibility==="PUBLIC"?`/api/platform/service/media-service/public/media/content/${encodeURIComponent(a.assetKey)}`:null;

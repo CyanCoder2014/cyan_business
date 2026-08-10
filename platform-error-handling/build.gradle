@@ -26,6 +26,7 @@ dependencies {
     implementation 'org.springframework.security:spring-security-core'
     implementation 'jakarta.servlet:jakarta.servlet-api'
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {

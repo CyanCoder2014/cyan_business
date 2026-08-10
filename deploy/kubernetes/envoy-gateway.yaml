@@ -1,31 +1,15 @@
 apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: cyan-envoy
-spec:
-  controllerName: gateway.envoyproxy.io/gatewayclass-controller
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: cyan-gateway
-spec:
-  gatewayClassName: cyan-envoy
-  listeners:
-    - name: http
-      protocol: HTTP
-      port: 80
-      allowedRoutes:
-        namespaces:
-          from: Same
----
-apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: cyan-platform-routes
+  namespace: cyan-staging
 spec:
   parentRefs:
     - name: cyan-gateway
+      namespace: cyan-staging
+      sectionName: api-cyancoder-https
+  hostnames:
+    - api.cyancoder.com
   rules:
     - matches:
         - path:
@@ -151,21 +135,19 @@ spec:
       backendRefs:
         - name: finance-service
           port: 9105
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /api/inventory-service/
-      backendRefs:
-        - name: inventory-service
-          port: 9106
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: cyan-platform-routes-2
+  namespace: cyan-staging
 spec:
   parentRefs:
     - name: cyan-gateway
+      namespace: cyan-staging
+      sectionName: api-cyancoder-https
+  hostnames:
+    - api.cyancoder.com
   rules:
     - matches:
         - path:
@@ -326,9 +308,14 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: cyan-platform-routes-3
+  namespace: cyan-staging
 spec:
   parentRefs:
     - name: cyan-gateway
+      namespace: cyan-staging
+      sectionName: api-cyancoder-https
+  hostnames:
+    - api.cyancoder.com
   rules:
     - matches:
         - path:

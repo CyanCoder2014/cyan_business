@@ -2,7 +2,12 @@ package com.cyancoder.aiorchestrator.api;
 
 import com.cyancoder.aiorchestrator.api.dto.CreateDraftRequest;
 import com.cyancoder.aiorchestrator.api.dto.UpdateDraftRequest;
+import com.cyancoder.aiorchestrator.api.dto.AttachProjectAssetRequest;
 import com.cyancoder.aiorchestrator.domain.ClientAppDraft;
+import com.cyancoder.aiorchestrator.domain.ProjectAssetReference;
+import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.RequestHeader;
 import com.cyancoder.aiorchestrator.service.AppDraftService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.time.Instant;
 
 @RestController
 @RequestMapping("/endpoint/ai-orchestrator/drafts")
@@ -51,5 +57,14 @@ public class EndpointDraftController {
     @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
     public ClientAppDraft update(@PathVariable("draftId") String draftId, @RequestBody UpdateDraftRequest request) {
         return appDraftService.updateDraft(draftId, request, "endpoint-user");
+    }
+
+    @PostMapping("/{draftId}/attachments")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
+    public ProjectAssetReference attach(@PathVariable String draftId, @RequestHeader("X-Tenant-Key") String tenantKey,
+                                        @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+                                        @Valid @RequestBody AttachProjectAssetRequest request, Authentication authentication) {
+        return appDraftService.attachAsset(draftId, tenantKey, siteKey,
+                new ProjectAssetReference(request.assetKey(), request.fileName(), request.mimeType(), request.sizeBytes(), authentication.getName(), Instant.now()));
     }
 }

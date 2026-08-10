@@ -2,6 +2,7 @@ package com.cyancoder.searchindex.service;
 
 import com.cyancoder.dynamiccore.runtime.DynamicEntityDefinitionRequest;
 import com.cyancoder.dynamiccore.runtime.DynamicRuntimeService;
+import com.cyancoder.dynamiccore.runtime.DynamicScope;
 import com.cyancoder.searchindex.model.SearchIndexSyncResponse;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,11 @@ public class SearchIndexSyncService {
     }
 
     public SearchIndexSyncResponse sync(String sourceServiceKey, String sourceEntityKey) {
-        ensureSearchDocumentDefinition();
-        List<Map<String, Object>> rows = httpSupport.getList(sourceServiceKey, "/internal/entities/records/" + sourceEntityKey);
+        return sync(sourceServiceKey,sourceEntityKey,new DynamicScope(null,null));
+    }
+    public SearchIndexSyncResponse sync(String sourceServiceKey, String sourceEntityKey, DynamicScope scope) {
+        dynamicRuntimeService.getDefinition("search-document",scope);
+        List<Map<String, Object>> rows = httpSupport.getList(sourceServiceKey, "/internal/entities/records/" + sourceEntityKey,scope.tenantKey(),scope.siteKey());
         int synced = 0;
         for (Map<String, Object> row : rows) {
             Map<String, Object> data = objectMap(row.get("data"));
@@ -60,18 +64,10 @@ public class SearchIndexSyncService {
                     "metaDescription", firstNonBlank(nestedValue(data, "seo", "description"), data.get("summary"), nestedValue(data, "details", "shortDescription"), ""),
                     "schemaType", firstNonBlank(nestedValue(data, "seo", "schemaType"), defaultSchemaType(sourceEntityKey), "Thing")
             ));
-            dynamicRuntimeService.submitMap("search-document", (String) projection.get("documentKey"), projection, true);
+            dynamicRuntimeService.submitMap("search-document", (String) projection.get("documentKey"), projection, true,scope);
             synced++;
         }
         return new SearchIndexSyncResponse(sourceServiceKey, sourceEntityKey, synced);
-    }
-
-    private void ensureSearchDocumentDefinition() {
-        try {
-            dynamicRuntimeService.getDefinition("search-document");
-        } catch (Exception ex) {
-            dynamicRuntimeService.createFromTemplate("search-document", "search-document");
-        }
     }
 
     @SuppressWarnings("unchecked")

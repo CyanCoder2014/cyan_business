@@ -10,6 +10,7 @@ import java.util.Map;
 
 @Document("bot_outbound_messages")
 @CompoundIndex(name = "bot_outbound_scope_idx", def = "{'tenantKey':1,'siteKey':1,'integrationKey':1,'updatedAt':-1}")
+@CompoundIndex(name = "uk_bot_outbound_idempotency", def = "{'integrationKey':1,'idempotencyKey':1}", unique = true, sparse = true)
 public class BotOutboundMessage {
     @Id
     private String id;
@@ -20,6 +21,7 @@ public class BotOutboundMessage {
     private String clientKey;
     private String externalChatId;
     private String sessionId;
+    private String idempotencyKey;
     private String text;
     private String status;
     private int attemptCount;
@@ -46,6 +48,8 @@ public class BotOutboundMessage {
     public void setExternalChatId(String externalChatId) { this.externalChatId = externalChatId; }
     public String getSessionId() { return sessionId; }
     public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
     public String getText() { return text; }
     public void setText(String text) { this.text = text; }
     public String getStatus() { return status; }

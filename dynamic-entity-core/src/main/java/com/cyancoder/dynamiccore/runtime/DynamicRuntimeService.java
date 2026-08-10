@@ -8,6 +8,8 @@ import com.cyancoder.dynamiccore.service.DynamicOperatorEngine;
 import com.cyancoder.dynamiccore.service.DynamicValidationEngine;
 import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinition;
 import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinitionRepository;
+import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinitionVersion;
+import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinitionVersionRepository;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordRepository;
 import com.cyancoder.dynamiccore.template.DynamicEntityTemplate;
@@ -15,6 +17,7 @@ import com.cyancoder.dynamiccore.template.DynamicTemplateRegistry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -29,6 +32,7 @@ public class DynamicRuntimeService {
     private static final int MAX_RECORD_PAGE_SIZE = 1000;
 
     private final StoredEntityDefinitionRepository definitionRepository;
+    private final StoredEntityDefinitionVersionRepository definitionVersionRepository;
     private final DynamicEntityRecordRepository recordRepository;
     private final DynamicDefinitionParser definitionParser;
     private final DynamicValidationEngine validationEngine;
@@ -38,6 +42,7 @@ public class DynamicRuntimeService {
 
     public DynamicRuntimeService(
             StoredEntityDefinitionRepository definitionRepository,
+            StoredEntityDefinitionVersionRepository definitionVersionRepository,
             DynamicEntityRecordRepository recordRepository,
             DynamicDefinitionParser definitionParser,
             DynamicValidationEngine validationEngine,
@@ -46,6 +51,7 @@ public class DynamicRuntimeService {
             DynamicTemplateRegistry templateRegistry
     ) {
         this.definitionRepository = definitionRepository;
+        this.definitionVersionRepository = definitionVersionRepository;
         this.recordRepository = recordRepository;
         this.definitionParser = definitionParser;
         this.validationEngine = validationEngine;
@@ -61,6 +67,10 @@ public class DynamicRuntimeService {
         StoredEntityDefinition definition = definitionRepository
                 .findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), request.getEntityKey())
                 .orElseGet(StoredEntityDefinition::new);
+        if (request.getExpectedRevision() != null && definition.getId() != null
+                && request.getExpectedRevision() != definition.getRevision()) {
+            throw new OptimisticLockingFailureException("Definition revision is stale; reload before saving");
+        }
         definition.setServiceKey(properties.getServiceKey());
         definition.setTenantKey(scope.tenantKey());
         definition.setSiteKey(scope.siteKey());
@@ -69,7 +79,12 @@ public class DynamicRuntimeService {
         definition.setTitle(model.getTitle());
         definition.setDefinitionJson(resolvedDefinition.json());
         definition.setActive(true);
-        return definitionRepository.save(definition);
+        definition.setRevision(definition.getRevision() + 1);
+        StoredEntityDefinition saved = definitionRepository.save(definition);
+        StoredEntityDefinitionVersion version = new StoredEntityDefinitionVersion();
+        version.setServiceKey(saved.getServiceKey()); version.setTenantKey(saved.getTenantKey()); version.setSiteKey(saved.getSiteKey()); version.setEntityKey(saved.getEntityKey());
+        version.setRevision(saved.getRevision()); version.setStatus("DRAFT"); version.setDefinitionJson(saved.getDefinitionJson()); version.setCreatedAt(Instant.now()); definitionVersionRepository.save(version);
+        return saved;
     }
 
     private ResolvedDefinition resolveDefinition(DynamicEntityDefinitionRequest request) {
@@ -129,6 +144,16 @@ public class DynamicRuntimeService {
 
     public StoredEntityDefinition getDefinition(String entityKey, DynamicScope scope) {
         return definitionRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKey(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey).orElseThrow();
+    }
+
+    public List<StoredEntityDefinitionVersion> listDefinitionVersions(String entityKey, DynamicScope scope) {
+        getDefinition(entityKey, scope);
+        return definitionVersionRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyOrderByRevisionDesc(properties.getServiceKey(), scope.tenantKey(), scope.siteKey(), entityKey);
+    }
+
+    public StoredEntityDefinition publishDefinition(String entityKey, DynamicScope scope) {
+        StoredEntityDefinition value=getDefinition(entityKey,scope); value.setActive(true); StoredEntityDefinition saved=definitionRepository.save(value);
+        definitionVersionRepository.findByServiceKeyAndTenantKeyAndSiteKeyAndEntityKeyAndRevision(properties.getServiceKey(),scope.tenantKey(),scope.siteKey(),entityKey,saved.getRevision()).ifPresent(v->{v.setStatus("PUBLISHED");definitionVersionRepository.save(v);}); return saved;
     }
 
     public void deleteDefinition(String entityKey) {

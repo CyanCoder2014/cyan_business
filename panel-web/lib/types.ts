@@ -92,6 +92,7 @@ export type ClientAppDraft = {
   pendingQuestionKeys: string[];
   pendingQuestions: string[];
   manualActions: string[];
+  attachments?: Array<{ assetKey: string; fileName: string; mimeType: string; sizeBytes: number; attachedBy: string; attachedAt: string }>;
   latestSessionId?: string | null;
   revision?: number | null;
   createdAt?: string;
@@ -111,6 +112,8 @@ export type ProvisioningRun = {
   stepResults: Array<Record<string, unknown>>;
   result?: ProvisioningResult | null;
 };
+
+export type ProjectRelease = { releaseId:string; draftId:string; tenantKey:string; siteKey?:string|null; sourceRevision:number; provisioningRunId:string; status:string; snapshot:PlatformAppDslDefinition; createdBy:string; createdAt:string; activatedAt?:string|null };
 
 export type AiConversationMessage = {
   messageId: string;
@@ -138,6 +141,9 @@ export type AiConversationSession = {
   latestQuestion?: string | null;
   createdAt?: string;
   updatedAt?: string;
+  /** Legacy bot adapter response aliases; absent on current AI session DTOs. */
+  channel?: string;
+  title?: string;
 };
 
 export type DynamicServiceKey =
@@ -176,6 +182,9 @@ export type DynamicEntityDefinition = {
   title?: string;
   definition: Record<string, unknown>;
   active?: boolean;
+  revision?: number;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type UserSummary = {
@@ -252,6 +261,7 @@ export type BotChannelIntegration = {
   tokenSecretRef?: string | null;
   tokenFingerprint?: string | null;
   webhookSecret?: string | null;
+  webhookSecretRef?: string | null;
   miniAppUrl?: string | null;
   miniAppEnabled?: boolean;
   miniAppStartParam?: string | null;
@@ -260,6 +270,9 @@ export type BotChannelIntegration = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type BotProcessBinding = {id?:string;channel:"TELEGRAM"|"BALE";integrationKey:string;bindingKey:string;tenantKey:string;siteKey:string;triggerType:"EVERY_MESSAGE"|"COMMAND";commandPrefix?:string|null;targetType:"AUTOMATION"|"BPM";targetKey:string;inputTemplate?:Record<string,unknown>;enabled:boolean;createdAt?:string;updatedAt?:string};
+export type BotProcessDispatch = {id:string;bindingKey:string;inboundMessageId:string;targetType:"AUTOMATION"|"BPM";targetKey:string;targetReference?:string;status:string;errorCode?:string;errorMessage?:string;createdAt:string};
 
 export type BotOutboundMessage = {
   id?: string;
@@ -354,6 +367,8 @@ export type SearchQueryResponse = {
   page?: number;
   size?: number;
   results?: Array<Record<string, unknown>>;
+  items?: Array<Record<string, unknown>>;
+  facetCounts?: Record<string, number>;
   [key: string]: unknown;
 };
 

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 
 @Component
 public class BotProviderClient {
@@ -23,21 +25,37 @@ public class BotProviderClient {
     public Map<String, Object> registerWebhook(BotChannelIntegration integration) {
         String token = resolveToken(integration);
         String baseUrl = baseUrl(integration.getChannel());
-        String webhookUrl = properties.getPublicBaseUrl().replaceAll("/$", "")
+        String webhookUrl = webhookUrl(integration);
+        String webhookSecret = botTokenSecretResolver.resolveReference(integration.getWebhookSecretRef(), "webhook");
+        Object response = restTemplate.postForObject(
+                baseUrl + "/bot" + token + "/setWebhook",
+                Map.of(
+                        "url", webhookUrl,
+                        "secret_token", webhookSecret
+                ),
+                Map.class
+        );
+        return asMap(response);
+    }
+
+    public String webhookUrl(BotChannelIntegration integration) {
+        if (properties.getPublicBaseUrl() == null || properties.getPublicBaseUrl().isBlank()) {
+            throw new IllegalStateException("NOT_CONFIGURED: public bot webhook base URL is required");
+        }
+        return properties.getPublicBaseUrl().replaceAll("/$", "")
                 + "/public/bot-adapter/"
                 + integration.getChannel().name().toLowerCase()
                 + "/"
                 + integration.getIntegrationKey()
                 + "/webhook";
-        Object response = restTemplate.postForObject(
-                baseUrl + "/bot" + token + "/setWebhook",
-                Map.of(
-                        "url", webhookUrl,
-                        "secret_token", integration.getWebhookSecret() == null ? "" : integration.getWebhookSecret()
-                ),
-                Map.class
-        );
-        return asMap(response);
+    }
+
+    public void verifyWebhookSecret(BotChannelIntegration integration, String suppliedSecret) {
+        String expected = botTokenSecretResolver.resolveReference(integration.getWebhookSecretRef(), "webhook");
+        if (suppliedSecret == null || !MessageDigest.isEqual(
+                expected.getBytes(StandardCharsets.UTF_8), suppliedSecret.getBytes(StandardCharsets.UTF_8))) {
+            throw new IllegalArgumentException("Invalid webhook signature");
+        }
     }
 
     public Map<String, Object> sendMessage(BotChannelIntegration integration, String externalChatId, String text) {

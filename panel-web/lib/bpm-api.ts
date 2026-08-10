@@ -1,4 +1,5 @@
 import { platformFetch } from "@/lib/platform-auth";
+import { platformErrorFromResponse } from "@/lib/api-error";
 
 const platformBaseUrl = "/api/platform/service/bpm-service";
 
@@ -68,6 +69,9 @@ export type DynamicFlowDefinition = {
   states: FlowStateDraft[];
   transitions: FlowTransitionDraft[];
   active?: boolean;
+  lifecycleStatus?: string;
+  revision?: number;
+  layout?: Record<string, { x?: number; y?: number }>;
   updatedAt?: string;
 };
 
@@ -108,6 +112,7 @@ export type ManagedObject = {
   state: string;
   processInstanceId?: string;
   assignee?: string;
+  assigneeType?: "USER" | "GROUP" | "ROLE";
   payload: Record<string, unknown>;
   accessRule?: {
     canRead?: string[];
@@ -115,6 +120,10 @@ export type ManagedObject = {
     canApprove?: string[];
   };
   locked?: boolean;
+  lockedBy?: string;
+  priority?: string;
+  dueAt?: string;
+  completedAt?: string;
   auditLog?: string[];
   transitionHistory?: Array<Record<string, unknown>>;
   asyncActionRegistry?: Array<Record<string, unknown>>;
@@ -122,6 +131,9 @@ export type ManagedObject = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type ManagedObjectQueue = { content: ManagedObject[]; totalElements: number; page: number; size: number };
+export type AssignmentTarget = { type: "USER" | "ROLE" | "GROUP"; key: string; displayName: string; active: boolean };
 
 export type ManagedObjectActiveFormResponse = {
   objectId: string;
@@ -149,12 +161,16 @@ export type ManagedObjectFormSubmissionResponse = {
 };
 
 export type TransitionOptionResponse = {
-  nextState: string;
+  transitionId: string;
+  fromState: string;
+  toState: string;
   label: string;
   conditionExpression?: string;
   allowedGroups?: string[];
   allowedRoles?: string[];
 };
+export type ManagedObjectComment={id:string;objectId:string;body:string;authorUserId?:string;createdAt?:string};
+export type ManagedObjectAttachment={id:string;objectId:string;assetKey:string;fileName?:string;contentType?:string;sizeBytes?:number;authorUserId?:string;createdAt?:string};
 
 async function requestJson<T>(path: string, init?: RequestInit & { tenantKey?: string; siteKey?: string }): Promise<T> {
   const response = await platformFetch(`${platformBaseUrl}${path}`, {
@@ -169,8 +185,7 @@ async function requestJson<T>(path: string, init?: RequestInit & { tenantKey?: s
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(body || `Request failed with status ${response.status}`);
+    throw await platformErrorFromResponse(response);
   }
 
   return response.json() as Promise<T>;
@@ -257,6 +272,31 @@ export function listVisibleManagedObjects(scope: { tenantKey?: string; siteKey?:
   });
 }
 
+export function listCartable(params: {
+  tenantKey?: string; siteKey?: string; view?: string; state?: string; priority?: string;
+  overdue?: boolean; query?: string; page?: number; size?: number;
+}): Promise<ManagedObjectQueue> {
+  const query = new URLSearchParams({ view: params.view ?? "ASSIGNED", page: String(params.page ?? 0), size: String(params.size ?? 20) });
+  if (params.state) query.set("state", params.state);
+  if (params.priority) query.set("priority", params.priority);
+  if (params.overdue !== undefined) query.set("overdue", String(params.overdue));
+  if (params.query) query.set("query", params.query);
+  return requestJson<ManagedObjectQueue>(`/endpoint/bpm/managed-objects/cartable?${query}`, { method: "GET", tenantKey: params.tenantKey, siteKey: params.siteKey });
+}
+
+export function listAssignmentTargets(type: "USER" | "ROLE" | "GROUP", query: string, scope: { tenantKey?: string; siteKey?: string }) {
+  const search = new URLSearchParams({ type });
+  if (query.trim()) search.set("query", query.trim());
+  return requestJson<AssignmentTarget[]>(`/endpoint/bpm/managed-objects/assignment-targets?${search}`, { method: "GET", tenantKey: scope.tenantKey, siteKey: scope.siteKey });
+}
+
+export async function listSiteWorkPortal(params: { tenantKey: string; siteKey: string; view?: string; page?: number; size?: number }) {
+  const query = new URLSearchParams({ view: params.view ?? "VISIBLE", page: String(params.page ?? 0), size: String(params.size ?? 20) });
+  const response = await platformFetch(`/api/platform/service/storefront-service/endpoint/sites/${encodeURIComponent(params.siteKey)}/portal/work?${query}`, { method: "GET", headers: { "X-Tenant-Key": params.tenantKey, "X-Site-Key": params.siteKey }, cache: "no-store" });
+  if (!response.ok) throw await platformErrorFromResponse(response);
+  return response.json() as Promise<ManagedObjectQueue>;
+}
+
 export function createManagedObject(
   request: {
     flowKey: string;
@@ -328,3 +368,11 @@ export function transitionManagedObject(
     body: JSON.stringify(request)
   });
 }
+
+export function getManagedObject(objectId:string,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObject>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}`,{method:"GET",...scope})}
+export function listComments(objectId:string,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObjectComment[]>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/comments`,{method:"GET",...scope})}
+export function addComment(objectId:string,body:string,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObjectComment>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/comments`,{method:"POST",body:JSON.stringify({body}),...scope})}
+export function listAttachments(objectId:string,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObjectAttachment[]>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/attachments`,{method:"GET",...scope})}
+export function addAttachment(objectId:string,request:{assetKey:string;fileName?:string;contentType?:string;sizeBytes?:number;downloadUrl?:string|null},scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObjectAttachment>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/attachments`,{method:"POST",body:JSON.stringify(request),...scope})}
+export function assignManagedObject(objectId:string,assignee:string,assigneeType:"USER"|"GROUP"|"ROLE",scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObject>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/assignment`,{method:"PUT",body:JSON.stringify({assignee,assigneeType}),...scope})}
+export function setManagedObjectLock(objectId:string,locked:boolean,scope:{tenantKey?:string;siteKey?:string}){return requestJson<ManagedObject>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/${locked?"lock":"unlock"}`,{method:"POST",body:"{}",...scope})}

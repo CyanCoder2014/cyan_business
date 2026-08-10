@@ -10,5 +10,7 @@ public interface ConversationSessionService {
     ConversationSession createSession(CreateConversationSessionRequest request);
     List<ConversationSession> listSessions(String tenantKey, String siteKey, String clientKey, String draftId);
     ConversationSession getSession(String sessionId);
+    ConversationSession linkDraft(String sessionId, String draftId);
     ConversationSession appendMessage(String sessionId, SessionMessageRequest request);
+    ConversationSession closeSession(String sessionId);
 }

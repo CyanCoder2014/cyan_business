@@ -25,7 +25,7 @@ class DynamicEntityDefinitionPaginationTest {
         DynamicEntityDefinitionResponse response = new DynamicEntityDefinitionResponse(
                 1L, "report-service", "demo-tenant", "main-site",
                 "customer-credit-report", "REPORT", "Customer Credit Report",
-                null, true, null, null);
+                null, true, null, null, 1L);
         when(runtime.listDefinitions(
                 new DynamicScope("demo-tenant", "main-site"), 1, 2, "title,desc"))
                 .thenReturn(new PageImpl<>(List.of(stored), PageRequest.of(1, 2), 5));

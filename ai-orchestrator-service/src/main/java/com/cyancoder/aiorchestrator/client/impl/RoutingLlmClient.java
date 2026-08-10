@@ -59,6 +59,28 @@ public class RoutingLlmClient implements LlmClient {
         throw new LlmGenerationException("No configured LLM provider produced a valid DSL", failures);
     }
 
+    @Override
+    public String generateContent(String prompt) {
+        Map<AiProvider, String> failures = new LinkedHashMap<>();
+        for (AiProvider provider : LlmProviderSelector.selectCandidates(llmProperties)) {
+            if (provider == AiProvider.HEURISTIC) {
+                failures.put(provider, "Heuristic generation cannot perform data or content operations");
+                continue;
+            }
+            if (!LlmProviderSelector.isAvailable(llmProperties, provider)) {
+                failures.put(provider, LlmProviderSelector.unavailabilityReason(llmProperties, provider));
+                continue;
+            }
+            try {
+                return getClient(provider).generateContent(prompt);
+            } catch (RuntimeException ex) {
+                failures.put(provider, summarizeFailure(ex));
+                log.warn("Provider {} failed content generation: {}", provider, failures.get(provider));
+            }
+        }
+        throw new LlmGenerationException("No configured LLM provider produced content", failures);
+    }
+
     private LlmClient getClient(AiProvider provider) {
         return switch (provider) {
             case OPENAI, OPENROUTER, GAPGPT -> openAiCompatibleClients.computeIfAbsent(provider, this::buildCompatibleClient);

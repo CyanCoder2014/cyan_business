@@ -130,6 +130,7 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
 
     private String resolveSessionId(GeneratePlatformAppRequest request, ClientAppDraft draft, boolean resolved) {
         if (request.sessionId() != null && !request.sessionId().isBlank()) {
+            conversationSessionService.linkDraft(request.sessionId(), draft.getDraftId());
             return request.sessionId();
         }
         if (resolved) {

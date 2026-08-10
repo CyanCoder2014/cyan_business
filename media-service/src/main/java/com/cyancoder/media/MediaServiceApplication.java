@@ -11,8 +11,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"com.cyancoder.dynamiccore.store.jpa"})
-@EnableJpaRepositories(basePackages = {"com.cyancoder.dynamiccore.store.jpa"})
+@EntityScan(basePackages = {"com.cyancoder.dynamiccore.store.jpa", "com.cyancoder.media.model"})
+@EnableJpaRepositories(basePackages = {"com.cyancoder.dynamiccore.store.jpa", "com.cyancoder.media.repository"})
 @EnableMongoRepositories(basePackages = {"com.cyancoder.dynamiccore.store.mongo"})
 @Import({DynamicCoreConfig.class, DynamicPersistenceConfig.class, DualApiSecurityConfig.class})
 public class MediaServiceApplication {

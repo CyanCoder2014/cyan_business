@@ -12,6 +12,7 @@ public record BotIntegrationRequest(
         String botToken,
         String tokenSecretRef,
         String webhookSecret,
+        String webhookSecretRef,
         String miniAppUrl,
         Boolean miniAppEnabled,
         String miniAppStartParam,

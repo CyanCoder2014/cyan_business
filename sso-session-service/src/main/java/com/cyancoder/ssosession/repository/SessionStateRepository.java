@@ -4,4 +4,5 @@ import com.cyancoder.ssosession.entity.SessionStateEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SessionStateRepository extends JpaRepository<SessionStateEntity, String> {
+    java.util.List<SessionStateEntity> findByUsernameOrderByIssuedAtEpochSecondDesc(String username);
 }

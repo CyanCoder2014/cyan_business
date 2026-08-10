@@ -17,14 +17,17 @@ import java.util.Map;
 import com.cyancoder.automationorchestrator.domain.AutomationExecutionStep;
 import org.springframework.security.core.Authentication;
 import java.util.stream.Collectors;
+import com.cyancoder.automationorchestrator.service.AutomationAiAuthorizationService;
 
 @RestController
 @RequestMapping("/endpoint/automation-orchestrator")
 public class EndpointAutomationExecutionController {
     private final AutomationExecutionService automationExecutionService;
+    private final AutomationAiAuthorizationService aiAuthorization;
 
-    public EndpointAutomationExecutionController(AutomationExecutionService automationExecutionService) {
+    public EndpointAutomationExecutionController(AutomationExecutionService automationExecutionService, AutomationAiAuthorizationService aiAuthorization) {
         this.automationExecutionService = automationExecutionService;
+        this.aiAuthorization = aiAuthorization;
     }
 
     @PostMapping("/executions/start")
@@ -33,7 +36,8 @@ public class EndpointAutomationExecutionController {
                                          @RequestHeader(value="X-Tenant-Key", required=false) String tenant,
                                          @RequestHeader(value="X-Site-Key", required=false) String site,
                                          Authentication authentication) {
-        return automationExecutionService.startAuthorized(request, authentication == null ? java.util.Set.of() : authentication.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toSet()), tenant, site);
+        if (automationExecutionService.requiresAi(request, tenant, site)) aiAuthorization.requireExecution(tenant, site, authentication == null ? null : authentication.getName());
+        return automationExecutionService.startAuthorized(request, authentication == null ? java.util.Set.of() : authentication.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toSet()), tenant, site, authentication == null ? null : authentication.getName());
     }
 
     @GetMapping("/executions/{executionId}")
@@ -63,5 +67,5 @@ public class EndpointAutomationExecutionController {
     @GetMapping("/metrics") @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')") public Map<String,Object> metrics(@RequestHeader(value="X-Tenant-Key", required=false) String tenant,@RequestHeader(value="X-Site-Key", required=false) String site){return automationExecutionService.metrics(tenant,site);}
     @GetMapping("/executions") @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')") public List<AutomationStartResponse> history(@RequestHeader(value="X-Tenant-Key", required=false) String tenant,@RequestHeader(value="X-Site-Key", required=false) String site,@RequestParam(required=false) String flowKey,@RequestParam(required=false) String status){return automationExecutionService.history(tenant,site,flowKey,status);}
     @PostMapping("/executions/{executionId}/retry") @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')") public AutomationStartResponse retry(@PathVariable String executionId,@RequestHeader(value="X-Tenant-Key", required=false) String tenant,@RequestHeader(value="X-Site-Key", required=false) String site,@RequestParam(defaultValue="false") boolean fromFailedNode){return automationExecutionService.retry(executionId,tenant,site,fromFailedNode);}
-    @PostMapping("/flows/{flowKey}/manual-run") @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')") public AutomationStartResponse manualRun(@PathVariable String flowKey,@RequestParam(required=false) Integer version,@RequestHeader(value="X-Tenant-Key", required=false) String tenant,@RequestHeader(value="X-Site-Key", required=false) String site,@RequestBody(required=false) Map<String,Object> request,Authentication authentication){return automationExecutionService.manualRun(tenant,site,flowKey,version,request==null?Map.of():request,authentication==null?java.util.Set.of():authentication.getAuthorities().stream().map(item->item.getAuthority()).collect(Collectors.toSet()));}
+    @PostMapping("/flows/{flowKey}/manual-run") @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')") public AutomationStartResponse manualRun(@PathVariable String flowKey,@RequestParam(required=false) Integer version,@RequestHeader(value="X-Tenant-Key", required=false) String tenant,@RequestHeader(value="X-Site-Key", required=false) String site,@RequestBody(required=false) Map<String,Object> request,Authentication authentication){Map<String,Object> body=request==null?Map.of():request;if(automationExecutionService.requiresAiFlow(tenant,site,flowKey,version,body))aiAuthorization.requireExecution(tenant,site,authentication==null?null:authentication.getName());return automationExecutionService.manualRun(tenant,site,flowKey,version,body,authentication==null?java.util.Set.of():authentication.getAuthorities().stream().map(item->item.getAuthority()).collect(Collectors.toSet()),authentication==null?null:authentication.getName());}
 }

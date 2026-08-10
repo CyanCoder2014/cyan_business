@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @SpringBootApplication
-@EntityScan(basePackages = {"com.cyancoder.notification.entity", "com.cyancoder.dynamiccore.store.jpa"})
+@EntityScan(basePackages = {"com.cyancoder.notification.model", "com.cyancoder.dynamiccore.store.jpa"})
 @EnableJpaRepositories(basePackages = {"com.cyancoder.notification.repository", "com.cyancoder.dynamiccore.store.jpa"})
 @EnableMongoRepositories(basePackages = {"com.cyancoder.dynamiccore.store.mongo"})
 @Import({DynamicCoreConfig.class, DynamicPersistenceConfig.class, DualApiSecurityConfig.class})

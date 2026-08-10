@@ -43,7 +43,7 @@ public class AutomationExecutionService {
     private final PipelineAutomationRuntime pipelineRuntime;
     private final AutomationFlowDefinitionService flowDefinitionService;
     private final GraphAutomationRuntime graphRuntime;
-    private final N8nAutomationRuntime n8nRuntime;
+    private final ItemStreamAutomationRuntime itemStreamRuntime;
     private final AutomationWorkerProperties workerProperties;
 
     public AutomationExecutionService(AutomationExecutionRepository repository,
@@ -60,7 +60,7 @@ public class AutomationExecutionService {
                                       ObjectMapper objectMapper,
                                       AutomationFlowDefinitionService flowDefinitionService,
                                       GraphAutomationRuntime graphRuntime,
-                                      N8nAutomationRuntime n8nRuntime,
+                                      ItemStreamAutomationRuntime itemStreamRuntime,
                                       AutomationWorkerProperties workerProperties) {
         this.repository = repository;
         this.httpSupport = httpSupport;
@@ -69,7 +69,7 @@ public class AutomationExecutionService {
         this.pipelineRuntime = new PipelineAutomationRuntime(httpSupport);
         this.flowDefinitionService = flowDefinitionService;
         this.graphRuntime = graphRuntime;
-        this.n8nRuntime = n8nRuntime;
+        this.itemStreamRuntime = itemStreamRuntime;
         this.workerProperties = workerProperties;
     }
 
@@ -93,7 +93,9 @@ public class AutomationExecutionService {
         execution.setIdempotencyKey(idempotencyKey);
         execution.setExecutionMode(request.executionMode() == null ? AutomationExecutionMode.SYNC : request.executionMode());
         execution.setFailurePolicy(request.failurePolicy() == null ? AutomationFailurePolicy.FAIL_FAST : request.failurePolicy());
-        execution.setCorrelationKey(request.correlationKey());
+        execution.setCorrelationKey(firstNonBlank(request.correlationKey(), "corr-" + UUID.randomUUID()));
+        execution.setInitiatedBy(Objects.toString(request.context() == null ? null : request.context().get("initiatedBy"), null));
+        execution.setAuthorizationMode(Objects.toString(request.context() == null ? null : request.context().get("authorizationMode"), "SERVICE"));
         execution.setTenantKey(tenantKey);
         execution.setSiteKey(siteKey);
         execution.setStatus("RUNNING");
@@ -151,16 +153,35 @@ public class AutomationExecutionService {
     }
 
     public AutomationStartResponse startAuthorized(AutomationStartRequest request, Set<String> roles, String tenantKey, String siteKey) {
+        return startAuthorized(request, roles, tenantKey, siteKey, null);
+    }
+
+    public AutomationStartResponse startAuthorized(AutomationStartRequest request, Set<String> roles, String tenantKey, String siteKey, String actor) {
         request = withScope(request, tenantKey, siteKey);
         Map<String,Object> inline = firstMap(request.inlineFragment(), request.inlineFlow());
         AutomationFlowDefinition definition = resolveRequestedGraph(request, inline);
         if (definition != null) flowDefinitionService.requireRoles(definition, roles);
         Map<String,Object> context = new LinkedHashMap<>(request.context() == null ? Map.of() : request.context());
         context.put("actorRoles", roles == null ? List.of() : roles);
+        context.put("initiatedBy", actor == null || actor.isBlank() ? "authenticated-user" : actor);
+        context.put("authorizationMode", "USER_EFFECTIVE_ACCESS");
         return start(new AutomationStartRequest(request.blockKey(), request.automationFlowKey(), request.executionMode(), request.failurePolicy(),
                 request.correlationKey(), request.callbackPath(), request.tenantKey(), request.siteKey(), request.input(), context,
                 request.inlineFragment(), request.maxRetries(), request.timeoutSeconds(), request.delayMillis(), request.flowKey(),
                 request.managedObjectId(), request.idempotencyKey(), request.variables(), request.inlineFlow()));
+    }
+
+    public boolean requiresAi(AutomationStartRequest request, String tenantKey, String siteKey) {
+        request = withScope(request, tenantKey, siteKey);
+        AutomationFlowDefinition definition = resolveRequestedGraph(request, firstMap(request.inlineFragment(), request.inlineFlow()));
+        return definition != null && definition.getNodes().stream().anyMatch(node -> node.type() == com.cyancoder.automationorchestrator.domain.AutomationNodeType.AI_OPERATION);
+    }
+
+    public boolean requiresAiFlow(String tenantKey, String siteKey, String flowKey, Integer version, Map<String,Object> request) {
+        AutomationFlowDefinition definition = version == null
+                ? flowDefinitionService.active(tenantKey, siteKey, flowKey, Objects.toString(request.getOrDefault("environment", "default")))
+                : flowDefinitionService.get(tenantKey, siteKey, flowKey, version);
+        return definition.getNodes().stream().anyMatch(node -> node.type() == com.cyancoder.automationorchestrator.domain.AutomationNodeType.AI_OPERATION);
     }
 
     public AutomationStartResponse get(String executionId) {
@@ -183,6 +204,11 @@ public class AutomationExecutionService {
 
     public AutomationStartResponse manualRun(String tenantKey, String siteKey, String flowKey, Integer version,
                                               Map<String, Object> request, Set<String> roles) {
+        return manualRun(tenantKey, siteKey, flowKey, version, request, roles, null);
+    }
+
+    public AutomationStartResponse manualRun(String tenantKey, String siteKey, String flowKey, Integer version,
+                                              Map<String, Object> request, Set<String> roles, String actor) {
         AutomationFlowDefinition definition = version == null
                 ? flowDefinitionService.active(tenantKey, siteKey, flowKey, Objects.toString(request.getOrDefault("environment", "default")))
                 : flowDefinitionService.get(tenantKey, siteKey, flowKey, version);
@@ -190,6 +216,8 @@ public class AutomationExecutionService {
         Map<String, Object> context = new LinkedHashMap<>(firstMap(AutomationDataSupport.map(request.get("context")), Map.of()));
         context.put("runMode", "MANUAL");
         context.put("actorRoles", roles == null ? List.of() : roles);
+        context.put("initiatedBy", actor == null || actor.isBlank() ? "authenticated-user" : actor);
+        context.put("authorizationMode", "USER_EFFECTIVE_ACCESS");
         if (request.get("startNodeId") != null) context.put("startNodeId", request.get("startNodeId"));
         Map<String, Object> input = new LinkedHashMap<>(AutomationDataSupport.map(request.get("input")));
         if (request.get("items") != null) input.put("items", request.get("items"));
@@ -337,7 +365,7 @@ public class AutomationExecutionService {
         }
         try {
             AutomationFlowDefinition definition = graphDefinition(execution);
-            if (isN8nItems(definition)) n8nRuntime.callback(execution, definition, nodeId, callbackId, payload == null ? Map.of() : payload);
+            if (isN8nItems(definition)) itemStreamRuntime.callback(execution, definition, nodeId, callbackId, payload == null ? Map.of() : payload);
             else graphRuntime.callback(execution, definition, nodeId, callbackId, payload == null ? Map.of() : payload);
         }
         catch (RuntimeException ex) { execution.setStatus("FAILED"); execution.setError(Map.of("message", Objects.toString(ex.getMessage(), "callback resume failed"))); execution.setCompletedAt(Instant.now()); }
@@ -376,7 +404,7 @@ public class AutomationExecutionService {
         execution.getDeadLetters().remove(letter);execution.setCurrentNodeId(Objects.toString(letter.get("nodeId"),null));execution.setStatus("RUNNING");execution.setError(new LinkedHashMap<>());execution.setCompletedAt(null);
         try {
             AutomationFlowDefinition definition = graphDefinition(execution);
-            if (isN8nItems(definition)) n8nRuntime.requeueDeadLetter(execution, definition, letter);
+            if (isN8nItems(definition)) itemStreamRuntime.requeueDeadLetter(execution, definition, letter);
             else graphRuntime.run(execution, definition);
         }
         catch(RuntimeException ex){execution.setStatus("FAILED");execution.setError(Map.of("message",Objects.toString(ex.getMessage(),"requeue failed")));execution.setCompletedAt(Instant.now());}
@@ -400,7 +428,7 @@ public class AutomationExecutionService {
 
     @Scheduled(fixedDelayString = "${automation.worker.recovery-poll-ms:1000}")
     public void resumeDueExecutions() {
-        if (graphRuntime == null && n8nRuntime == null) return;
+        if (graphRuntime == null && itemStreamRuntime == null) return;
         int claimed = 0;
         while (claimed++ < Math.max(1, workerProperties.getRecoveryBatchSize())) {
             Instant now = Instant.now();
@@ -490,7 +518,7 @@ public class AutomationExecutionService {
     }
 
     private AutomationFlowDefinition resolveRequestedGraph(AutomationStartRequest request, Map<String, Object> inline) {
-        if (flowDefinitionService == null || (graphRuntime == null && n8nRuntime == null)) return null;
+        if (flowDefinitionService == null || (graphRuntime == null && itemStreamRuntime == null)) return null;
         if (inline.containsKey("nodes")) {
             AutomationFlowDefinition definition = objectMapper.convertValue(inline, AutomationFlowDefinition.class);
             if (definition.getFlowKey() == null || definition.getFlowKey().isBlank()) definition.setFlowKey(firstNonBlank(request.flowKey(), request.automationFlowKey(), "inline-flow"));
@@ -517,8 +545,8 @@ public class AutomationExecutionService {
 
     private void runGraph(AutomationExecution execution, AutomationFlowDefinition definition) {
         if (isN8nItems(definition)) {
-            if (n8nRuntime == null) throw new IllegalStateException("N8N_ITEMS runtime is unavailable");
-            n8nRuntime.run(execution, definition);
+            if (itemStreamRuntime == null) throw new IllegalStateException("N8N_ITEMS runtime is unavailable");
+            itemStreamRuntime.run(execution, definition);
         } else {
             if (graphRuntime == null) throw new IllegalStateException("VARIABLES runtime is unavailable");
             graphRuntime.run(execution, definition);

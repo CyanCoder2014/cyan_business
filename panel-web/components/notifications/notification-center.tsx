@@ -1,0 +1,15 @@
+"use client";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePanel } from "@/components/panel-provider";
+import { useScopeAccess } from "@/components/scope-access-provider";
+import { BottomSheet, EmptyState, ErrorState, Skeleton } from "@/components/ui/primitives";
+import { getUnreadCount, listInbox, markAllNotificationsRead, markNotificationRead, type InboxNotification } from "@/lib/notification-api";
+
+export function NotificationCenter(){
+ const {locale}=usePanel(); const {queryVersion,tenantKey}=useScopeAccess(); const [open,setOpen]=useState(false); const [items,setItems]=useState<InboxNotification[]>([]); const [unread,setUnread]=useState(0); const [loading,setLoading]=useState(false); const [error,setError]=useState<string|null>(null);
+ async function load(withItems=false){if(!tenantKey)return; setError(null); try{const count=await getUnreadCount();setUnread(count.unreadCount);if(withItems){setLoading(true);const page=await listInbox();setItems(page.content);}}catch(e){setError(e instanceof Error?e.message:"Notifications could not be loaded.");}finally{setLoading(false);}}
+ useEffect(()=>{void load(false);},[queryVersion,tenantKey]);
+ async function show(){setOpen(true);await load(true);} async function read(item:InboxNotification){if(!item.readAt){await markNotificationRead(item.notificationId);setItems(v=>v.map(x=>x.notificationId===item.notificationId?{...x,readAt:new Date().toISOString()}:x));setUnread(v=>Math.max(0,v-1));}}
+ return <><button type="button" className="header-icon-button notification-trigger" onClick={show} aria-label={locale==="fa"?`اعلان‌ها، ${unread} خوانده‌نشده`:`Notifications, ${unread} unread`}>♢{unread>0?<span>{unread>99?"99+":unread}</span>:null}</button><BottomSheet open={open} title={locale==="fa"?"اعلان‌ها":"Notifications"} onClose={()=>setOpen(false)}><div className="inbox-heading"><Link href="/notifications" onClick={()=>setOpen(false)}>{locale==="fa"?"مشاهده همه":"View all"}</Link>{unread>0?<button className="secondary-pill" onClick={async()=>{await markAllNotificationsRead();setUnread(0);setItems(v=>v.map(x=>({...x,readAt:x.readAt??new Date().toISOString()})));}}>{locale==="fa"?"خواندن همه":"Mark all read"}</button>:null}</div>{loading?<><Skeleton height={64}/><Skeleton height={64}/></>:error?<ErrorState title={locale==="fa"?"اعلان‌ها در دسترس نیست":"Notifications unavailable"} description={error} retry={()=>load(true)}/>:items.length?<div className="inbox-list">{items.map(item=><Link href={item.deepLink||"/notifications"} key={item.notificationId} className={item.readAt?"inbox-item":"inbox-item unread"} onClick={()=>{void read(item);setOpen(false);}}><strong>{item.title}</strong>{item.body?<span>{item.body}</span>:null}<time>{new Date(item.createdAt).toLocaleString(locale)}</time></Link>)}</div>:<EmptyState title={locale==="fa"?"اعلانی ندارید":"No notifications"} description={locale==="fa"?"اعلان‌های واقعی شما اینجا ظاهر می‌شوند.":"Your service notifications will appear here."}/>}</BottomSheet></>;
+}

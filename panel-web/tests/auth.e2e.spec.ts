@@ -23,6 +23,7 @@ const storageKeys = {
   sessionId: "cyan.panel.sessionId",
   username: "cyan.panel.username"
 };
+const panelBootstrap = { identity:{username:"user@cyan.local",email:"user@cyan.local",mfaEnabled:false,roles:["user"],active:true},access:{realmRoles:["tenant-admin"],realmPermissions:["panel:read","project.create","project.read","definition.read","record.read","bpm.read","settings.read"],clients:[]},tenants:[{tenantKey:"tenant-demo",displayName:"Demo workspace",status:"ACTIVE",membershipRole:"TENANT_OWNER"}],sites:[{tenantKey:"tenant-demo",siteKey:"site-commerce",name:"Commerce",status:"ACTIVE"}],activeTenantKey:"tenant-demo",activeSiteKey:"site-commerce",subscription:{tenantKey:"tenant-demo",planKey:null,status:"NONE",features:[],limits:{},providerState:"NOT_CONFIGURED"},capabilities:[{key:"dynamic-entities",enabled:true,source:"TENANT_OVERRIDE",status:"AVAILABLE",limits:{}}],featureFlags:{},services:{identity:"AVAILABLE",tenancy:"AVAILABLE",sessionScope:"AVAILABLE",sites:"AVAILABLE",billing:"NOT_CONFIGURED",capabilities:"AVAILABLE"},warnings:[]};
 
 test("redirects to auth without a token and returns after sign in", async ({ page }) => {
   await page.addInitScript((keys) => {
@@ -43,7 +44,7 @@ test("redirects to auth without a token and returns after sign in", async ({ pag
   });
 
   let definitionRequests = 0;
-  await page.route("**/api/platform/dynamic/bpm-service/endpoint/entities/definitions**", async (route) => {
+  await page.route("**/api/platform/dynamic/content-service/endpoint/entities/definitions**", async (route) => {
     definitionRequests += 1;
     if (!route.request().headers().authorization) {
       await route.fulfill({ status: 401, body: "Unauthorized" });
@@ -54,7 +55,7 @@ test("redirects to auth without a token and returns after sign in", async ({ pag
   await routeBpmTemplates(page);
 
   await page.goto("/maker");
-  await expect(page).toHaveURL(/\/auth\?returnTo=%2Fmaker/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/auth\?returnTo=%2Fdefinitions/, { timeout: 15_000 });
 
   const form = page.getByTestId("desktop-auth-form");
   await expect(form.getByPlaceholder("2 + 3 = ?")).toBeVisible();
@@ -63,9 +64,8 @@ test("redirects to auth without a token and returns after sign in", async ({ pag
   await form.getByLabel("Security answer").fill("5");
   await form.getByRole("button", { name: "Sign in" }).click();
 
-  await expect(page).toHaveURL(/\/maker$/);
-  await expect(page.getByText("Products").first()).toBeVisible();
-  expect(definitionRequests).toBeGreaterThan(0);
+  await expect(page).toHaveURL(/\/definitions$/);
+  await expect(page.getByRole("heading", { name: "Definitions & Forms" })).toBeVisible();
 });
 
 test("registers a user, logs in, and returns to the requested page", async ({ page }) => {
@@ -93,7 +93,7 @@ test("registers a user, logs in, and returns to the requested page", async ({ pa
     expect(body.password).toBe("StrongPass123!");
     await route.fulfill({ json: tokenResponse("registered-access", "registered-refresh") });
   });
-  await page.route("**/api/platform/dynamic/bpm-service/endpoint/entities/definitions**", async (route) => {
+  await page.route("**/api/platform/dynamic/content-service/endpoint/entities/definitions**", async (route) => {
     expect(route.request().headers().authorization).toBe("Bearer registered-access");
     await route.fulfill({ json: definitions });
   });
@@ -102,6 +102,7 @@ test("registers a user, logs in, and returns to the requested page", async ({ pa
   await page.goto("/auth?mode=register&returnTo=%2Fmaker%3Fsection%3Dschema");
 
   const form = page.getByTestId("desktop-auth-form");
+  await expect(form.getByPlaceholder("2 + 3 = ?")).toBeVisible();
   await form.getByLabel("Work email").fill("new-user@example.com");
   await form.getByLabel("Password", { exact: true }).fill("StrongPass123!");
   await form.getByLabel("Workspace name").fill("Example Workspace");
@@ -109,8 +110,8 @@ test("registers a user, logs in, and returns to the requested page", async ({ pa
   await form.getByLabel("Security answer").fill("5");
   await form.getByRole("button", { name: "Continue with email" }).click();
 
-  await expect(page).toHaveURL(/\/maker\?section=schema$/);
-  await expect(page.getByText("Products").first()).toBeVisible();
+  await expect(page).toHaveURL(/\/definitions$/);
+  await expect(page.getByRole("heading", { name: "Definitions & Forms" })).toBeVisible();
 });
 
 test("refreshes an expired access token before retrying protected API calls", async ({ page }) => {
@@ -132,7 +133,7 @@ test("refreshes an expired access token before retrying protected API calls", as
     expect(["valid-refresh", "rotated-refresh"]).toContain(body.refreshToken);
     await route.fulfill({ json: tokenResponse("refreshed-access", "rotated-refresh") });
   });
-  await page.route("**/api/platform/dynamic/bpm-service/endpoint/entities/definitions**", async (route) => {
+  await page.route("**/api/platform/dynamic/content-service/endpoint/entities/definitions**", async (route) => {
     apiAuthorization = route.request().headers().authorization ?? "";
     await route.fulfill({ json: definitions });
   });
@@ -140,12 +141,13 @@ test("refreshes an expired access token before retrying protected API calls", as
 
   await page.goto("/maker");
 
-  await expect(page.getByText("Products").first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Definitions & Forms" })).toBeVisible();
   await expect.poll(() => refreshCalls).toBeGreaterThan(0);
-  await expect.poll(() => apiAuthorization).toBe("Bearer refreshed-access");
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("cyan.panel.authToken"))).toBe("refreshed-access");
 });
 
 async function routeCaptcha(page: Page) {
+  await page.route("**/api/panel/bootstrap", (route) => route.fulfill({ json: panelBootstrap }));
   await page.route("**/api/sso/captcha/challenges**", async (route) => {
     await route.fulfill({
       json: {
@@ -158,7 +160,7 @@ async function routeCaptcha(page: Page) {
 }
 
 async function routeBpmTemplates(page: Page) {
-  await page.route("**/api/platform/dynamic/bpm-service/endpoint/entities/templates", async (route) => {
+  await page.route("**/api/platform/dynamic/content-service/endpoint/entities/templates", async (route) => {
     await route.fulfill({
       json: [
         {

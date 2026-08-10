@@ -108,11 +108,19 @@ export function createDefinitionFromTemplate(
   });
 }
 
+export function getDefinition(serviceKey:DynamicServiceKey,entityKey:string,scope:ScopedRequest):Promise<DynamicEntityDefinition>{return requestJson(serviceKey,`/endpoint/entities/definitions/${encodeURIComponent(entityKey)}`,scope);}
+export function createDefinition(serviceKey:DynamicServiceKey,entityKey:string,definition:Record<string,unknown>,scope:ScopedRequest):Promise<DynamicEntityDefinition>{return requestJson(serviceKey,"/endpoint/entities/definitions",{method:"POST",tenantKey:scope.tenantKey,siteKey:scope.siteKey,body:JSON.stringify({entityKey,definition})});}
+export function listDefinitionVersions(serviceKey:DynamicServiceKey,entityKey:string,scope:ScopedRequest):Promise<Array<{revision:number;status:string;definition:string;createdAt:string}>>{return requestJson(serviceKey,`/endpoint/entities/definitions/${encodeURIComponent(entityKey)}/versions`,scope);}
+export function publishDefinition(serviceKey:DynamicServiceKey,entityKey:string,scope:ScopedRequest):Promise<DynamicEntityDefinition>{return requestJson(serviceKey,`/endpoint/entities/definitions/${encodeURIComponent(entityKey)}/publish`,{method:"POST",tenantKey:scope.tenantKey,siteKey:scope.siteKey,body:"{}"});}
+export function getRecord(serviceKey:DynamicServiceKey,entityKey:string,recordKey:string,scope:ScopedRequest):Promise<DynamicEntityRecord>{return requestJson(serviceKey,`/endpoint/entities/records/${encodeURIComponent(entityKey)}/${encodeURIComponent(recordKey)}`,scope);}
+export function listRecordsPage(serviceKey:DynamicServiceKey,entityKey:string,scope:ScopedRequest,page=0,size=25,sort="createdAt,desc"):Promise<DynamicPage<DynamicEntityRecord>>{return requestJson(serviceKey,`/endpoint/entities/records/${encodeURIComponent(entityKey)}?page=${page}&size=${size}&sort=${encodeURIComponent(sort)}`,scope);}
+
 export function saveDefinition(
   serviceKey: DynamicServiceKey,
   entityKey: string,
   definitionText: string,
-  scope: ScopedRequest
+  scope: ScopedRequest,
+  expectedRevision?: number
 ): Promise<DynamicEntityDefinition> {
   const definition = JSON.parse(definitionText) as Record<string, unknown>;
   return requestJson<DynamicEntityDefinition>(serviceKey, `/endpoint/entities/definitions/${entityKey}`, {
@@ -124,6 +132,7 @@ export function saveDefinition(
       tenantKey: scope.tenantKey,
       siteKey: scope.siteKey,
       definition
+      , expectedRevision
     })
   });
 }

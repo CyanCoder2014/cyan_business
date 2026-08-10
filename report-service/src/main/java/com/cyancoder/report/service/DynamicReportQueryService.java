@@ -1,6 +1,7 @@
 package com.cyancoder.report.service;
 
 import com.cyancoder.dynamiccore.runtime.DynamicRuntimeService;
+import com.cyancoder.dynamiccore.runtime.DynamicScope;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.report.model.ReportFilter;
 import com.cyancoder.report.model.ReportRunRequest;
@@ -42,7 +43,11 @@ public class DynamicReportQueryService {
     }
 
     public ReportRunResponse run(String reportEntityKey, String recordKey, ReportRunRequest request) {
-        DynamicEntityRecordDocument reportRecord = dynamicRuntimeService.getRecord(reportEntityKey, recordKey);
+        return run(reportEntityKey, recordKey, request, new DynamicScope(null, null));
+    }
+
+    public ReportRunResponse run(String reportEntityKey, String recordKey, ReportRunRequest request, DynamicScope scope) {
+        DynamicEntityRecordDocument reportRecord = dynamicRuntimeService.getRecord(reportEntityKey, recordKey, scope);
         Map<String, Object> config = reportRecord.getData() == null ? Map.of() : reportRecord.getData();
         String sourceType = Objects.toString(config.get("sourceType"), "DYNAMIC");
         if (!"DYNAMIC".equalsIgnoreCase(sourceType)) {
@@ -53,7 +58,7 @@ public class DynamicReportQueryService {
         String targetEntityKey = require(config, "entityKey");
         String resolvedReportKey = Objects.toString(config.getOrDefault("reportKey", recordKey), recordKey);
 
-        List<Map<String, Object>> rows = fetchRows(targetServiceKey, targetEntityKey);
+        List<Map<String, Object>> rows = fetchRows(targetServiceKey, targetEntityKey, scope);
         List<ReportFilter> filters = request != null && request.filters() != null
                 ? request.filters()
                 : convertFilters(config.get("filters"));
@@ -83,13 +88,15 @@ public class DynamicReportQueryService {
         return new ReportRunResponse(resolvedReportKey, filtered.size(), sum, groups, filtered);
     }
 
-    private List<Map<String, Object>> fetchRows(String serviceKey, String entityKey) {
+    private List<Map<String, Object>> fetchRows(String serviceKey, String entityKey, DynamicScope scope) {
         ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("service not found: " + serviceKey));
 
         HttpHeaders headers = new HttpHeaders();
         String prefix = serviceKey.split("-")[0];
         headers.setBasicAuth(prefix + "_internal", prefix + "_secret", StandardCharsets.UTF_8);
+        if (scope.tenantKey() != null) headers.set("X-Tenant-Key", scope.tenantKey());
+        if (scope.siteKey() != null) headers.set("X-Site-Key", scope.siteKey());
 
         String url = resolveBaseUri(instance) + "/internal/entities/records/" + entityKey;
         ResponseEntity<List> response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), List.class);

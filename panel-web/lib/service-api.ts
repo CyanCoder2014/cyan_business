@@ -125,6 +125,13 @@ export function getAutomationExecution(executionId: string) {
   });
 }
 
+export function listAutomationExecutions(scope: { tenantKey?: string; siteKey?: string }, status?: string) {
+  const query = status ? `?status=${encodeURIComponent(status)}` : "";
+  return requestJson<AutomationExecution[]>("automation-orchestrator-service", `/endpoint/automation-orchestrator/executions${query}`, {
+    method: "GET", tenantKey: scope.tenantKey, siteKey: scope.siteKey
+  });
+}
+
 export function cancelAutomationExecution(executionId: string) {
   return requestJson<AutomationExecution>("automation-orchestrator-service", `/endpoint/automation-orchestrator/executions/${encodeURIComponent(executionId)}/cancel`, {
     method: "POST",

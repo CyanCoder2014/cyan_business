@@ -13,6 +13,6 @@ public class EmailNotificationSender implements NotificationSender {
 
     @Override
     public NotificationSendResult send(NotificationDispatchRequest request, String subject, String body) {
-        return new NotificationSendResult(true, "smtp", "smtp-" + request.messageKey(), "SENT", "");
+        return new NotificationSendResult(false, "smtp", "", "NOT_CONFIGURED", "SMTP provider is not configured");
     }
 }

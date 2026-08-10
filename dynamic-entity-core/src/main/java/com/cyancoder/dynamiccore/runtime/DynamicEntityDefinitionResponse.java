@@ -15,6 +15,7 @@ public record DynamicEntityDefinitionResponse(
         EntityDefinitionModel definition,
         boolean active,
         Instant createdAt,
-        Instant updatedAt
+        Instant updatedAt,
+        long revision
 ) {
 }

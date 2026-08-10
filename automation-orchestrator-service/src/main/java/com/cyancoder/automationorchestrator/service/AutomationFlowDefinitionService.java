@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -116,6 +117,33 @@ public class AutomationFlowDefinitionService {
         }
     }
 
+    public Map<String,Object> readiness(String tenantKey, String siteKey, String flowKey, Integer version) {
+        AutomationFlowDefinition definition = get(tenantKey, siteKey, flowKey, version);
+        List<String> errors = new java.util.ArrayList<>();
+        try { validate(definition); } catch (IllegalArgumentException failure) { errors.add(failure.getMessage()); }
+        String status = Objects.toString(definition.getLifecycleStatus(), "DRAFT").toUpperCase(Locale.ROOT);
+        List<String> allowed = switch (status) {
+            case "DRAFT" -> List.of("SUBMIT");
+            case "PENDING_APPROVAL", "SUBMITTED" -> List.of("APPROVE");
+            case "APPROVED" -> List.of("ACTIVATE", "PROMOTE");
+            case "ACTIVE" -> List.of("PROMOTE");
+            default -> List.of();
+        };
+        AutomationFlowDefinition active = repository.findFirstByTenantKeyAndSiteKeyAndFlowKeyAndEnvironmentAndActiveTrueOrderByVersionDesc(
+                definition.getTenantKey(), definition.getSiteKey(), definition.getFlowKey(), definition.getEnvironment()).map(this::decoded).orElse(null);
+        Map<String,Object> impact = new LinkedHashMap<>();
+        impact.put("scheduleChanged", active != null && !Objects.equals(scheduleNode(active), scheduleNode(definition)));
+        impact.put("webhookChanged", active != null && !Objects.equals(nodesOfType(active, AutomationNodeType.WEBHOOK_TRIGGER), nodesOfType(definition, AutomationNodeType.WEBHOOK_TRIGGER)));
+        Map<String,Object> result = new LinkedHashMap<>();
+        result.put("valid", errors.isEmpty()); result.put("errors", errors); result.put("allowedActions", errors.isEmpty() ? allowed : List.of());
+        result.put("activeVersion", active == null ? null : active.getVersion()); result.put("impact", impact);
+        result.put("changed", active == null || !Objects.equals(objectMapper.convertValue(active, Map.class), objectMapper.convertValue(definition, Map.class)));
+        return result;
+    }
+
+    private AutomationNode scheduleNode(AutomationFlowDefinition definition) { return definition.getNodes().stream().filter(n -> n.type() == AutomationNodeType.SCHEDULE_TRIGGER).findFirst().orElse(null); }
+    private List<AutomationNode> nodesOfType(AutomationFlowDefinition definition, AutomationNodeType type) { return definition.getNodes().stream().filter(n -> n.type() == type).toList(); }
+
     public void validate(AutomationFlowDefinition definition) {
         if (blank(definition.getFlowKey())) throw new IllegalArgumentException("flowKey is required");
         if (!Set.of("VARIABLES", "N8N_ITEMS").contains(Objects.toString(definition.getRuntimeMode(), "VARIABLES").toUpperCase(Locale.ROOT))) {
@@ -176,6 +204,13 @@ public class AutomationFlowDefinitionService {
                 case N8N_WORKFLOW -> required(config,"webhookUrl",node);
                 case PAGINATED_CALL_API -> { required(config,"itemsPath",node); if(config.get("url")==null&&(config.get("serviceKey")==null||config.get("path")==null)) throw new IllegalArgumentException("PAGINATED_CALL_API requires url or serviceKey/path"); }
                 case RUN_BATCH_JOB -> required(config, "definitionKey", node);
+                case AI_OPERATION -> {
+                    required(config, "operation", node);
+                    required(config, "instructions", node);
+                    String operation = Objects.toString(config.get("operation"), "").toUpperCase(Locale.ROOT);
+                    if (!Set.of("TRANSFORM_DATA", "GENERATE_CONTENT", "GENERATE_DSL").contains(operation))
+                        throw new IllegalArgumentException("AI_OPERATION operation is unsupported: " + operation);
+                }
                 case FOR_EACH -> {
                     if ("N8N_ITEMS".equalsIgnoreCase(definition.getRuntimeMode())) {
                         requirePorts(outgoing,node,"loop","done");

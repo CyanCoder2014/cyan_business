@@ -7,6 +7,7 @@ import com.cyancoder.dynamiccore.service.DynamicOperatorEngine;
 import com.cyancoder.dynamiccore.service.DynamicValidationEngine;
 import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinition;
 import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinitionRepository;
+import com.cyancoder.dynamiccore.store.jpa.StoredEntityDefinitionVersionRepository;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordRepository;
 import com.cyancoder.dynamiccore.template.DynamicTemplateRegistry;
@@ -51,6 +52,7 @@ class DynamicRuntimeServiceDefinitionRequestTest {
         properties.setServiceKey("bpm-service");
         runtimeService = new DynamicRuntimeService(
                 definitionRepository,
+                mock(StoredEntityDefinitionVersionRepository.class),
                 recordRepository,
                 new DynamicDefinitionParser(objectMapper),
                 mock(DynamicValidationEngine.class),

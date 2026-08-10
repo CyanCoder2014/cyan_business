@@ -66,6 +66,19 @@ public class UserDirectoryService {
         return toSummary(storedUserRepository.save(storedUser));
     }
 
+    public UserSummary registerIdempotent(UserRegistrationRequest request) {
+        String username = normalizeUsername(required(request.username(), "username"));
+        StoredUserEntity existing = storedUserRepository.findById(username).orElse(null);
+        if (existing != null) {
+            String requestedEmail = normalizeEmail(request.email());
+            if (requestedEmail != null && existing.getEmail() != null && !requestedEmail.equals(existing.getEmail())) {
+                throw new IllegalArgumentException("Username already belongs to a different email");
+            }
+            return toSummary(existing);
+        }
+        return register(request);
+    }
+
     public UserSummary getUser(String username) {
         StoredUserEntity storedUser = resolveUser(username);
         return storedUser == null ? null : toSummary(storedUser);
@@ -73,6 +86,20 @@ public class UserDirectoryService {
 
     public List<UserSummary> listUsers() {
         return storedUserRepository.findAll().stream().map(this::toSummary).toList();
+    }
+
+    public UserSummary updateProfile(String username,String email,String phoneNumber) {
+        StoredUserEntity user=storedUserRepository.findById(normalizeUsername(username)).orElseThrow();
+        String normalizedEmail=normalizeEmail(email);
+        if(normalizedEmail!=null)storedUserRepository.findByEmail(normalizedEmail).filter(other->!other.getUsername().equals(user.getUsername())).ifPresent(other->{throw new IllegalArgumentException("Email already exists");});
+        user.setEmail(normalizedEmail);user.setPhoneNumber(phoneNumber==null||phoneNumber.isBlank()?null:phoneNumber.trim());return toSummary(storedUserRepository.save(user));
+    }
+
+    public void changePassword(String username,String currentPassword,String newPassword) {
+        StoredUserEntity user=storedUserRepository.findById(normalizeUsername(username)).orElseThrow();
+        if(!passwordEncoder.matches(required(currentPassword,"currentPassword"),user.getPasswordHash()))throw new IllegalArgumentException("Current password is invalid");
+        String next=required(newPassword,"newPassword");if(next.length()<8)throw new IllegalArgumentException("New password must contain at least 8 characters");
+        user.setPasswordHash(passwordEncoder.encode(next));storedUserRepository.save(user);
     }
 
     public PasswordVerificationResponse verifyPassword(String username, String password) {

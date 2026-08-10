@@ -52,4 +52,10 @@ public class EndpointConversationSessionController {
     public ConversationSession appendMessage(@PathVariable("sessionId") String sessionId, @RequestBody SessionMessageRequest request) {
         return conversationSessionService.appendMessage(sessionId, request);
     }
+
+    @PostMapping("/{sessionId}/close")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
+    public ConversationSession close(@PathVariable("sessionId") String sessionId) {
+        return conversationSessionService.closeSession(sessionId);
+    }
 }

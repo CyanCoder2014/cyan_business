@@ -21,6 +21,7 @@ public class StoredEntityDefinition {
     private boolean active = true;
     private Instant createdAt;
     private Instant updatedAt;
+    private long revision;
 
     @PrePersist
     public void onCreate() {
@@ -56,4 +57,6 @@ public class StoredEntityDefinition {
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public long getRevision() { return revision; }
+    public void setRevision(long revision) { this.revision = revision; }
 }

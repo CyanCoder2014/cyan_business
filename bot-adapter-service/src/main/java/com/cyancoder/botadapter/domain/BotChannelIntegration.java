@@ -26,7 +26,9 @@ public class BotChannelIntegration {
     private String managedBotToken;
     private String tokenSecretRef;
     private String tokenFingerprint;
+    @JsonIgnore
     private String webhookSecret;
+    private String webhookSecretRef;
     private String miniAppUrl;
     private boolean miniAppEnabled;
     private String miniAppStartParam;
@@ -61,6 +63,8 @@ public class BotChannelIntegration {
     public void setTokenFingerprint(String tokenFingerprint) { this.tokenFingerprint = tokenFingerprint; }
     public String getWebhookSecret() { return webhookSecret; }
     public void setWebhookSecret(String webhookSecret) { this.webhookSecret = webhookSecret; }
+    public String getWebhookSecretRef() { return webhookSecretRef; }
+    public void setWebhookSecretRef(String webhookSecretRef) { this.webhookSecretRef = webhookSecretRef; }
     public String getMiniAppUrl() { return miniAppUrl; }
     public void setMiniAppUrl(String miniAppUrl) { this.miniAppUrl = miniAppUrl; }
     public boolean isMiniAppEnabled() { return miniAppEnabled; }

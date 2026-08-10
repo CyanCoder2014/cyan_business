@@ -1,0 +1,372 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: cyan-envoy
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: cyan-gateway
+spec:
+  gatewayClassName: cyan-envoy
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: cyan-platform-routes
+spec:
+  parentRefs:
+    - name: cyan-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/api/tax-service/
+        - path:
+            type: PathPrefix
+            value: /v2/api/tax/
+      backendRefs:
+        - name: tax-pay-sys
+          port: 8002
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/api/factor-service/
+      backendRefs:
+        - name: factor-service
+          port: 8003
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/api/buyer-service/
+      backendRefs:
+        - name: buyer-service
+          port: 8004
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/api/product-service/
+      backendRefs:
+        - name: product-service
+          port: 8005
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/api/client-service/
+      backendRefs:
+        - name: client-service
+          port: 8010
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /realms/
+        - path:
+            type: PathPrefix
+            value: /api/sso/auth/
+        - path:
+            type: PathPrefix
+            value: /.well-known/
+      backendRefs:
+        - name: sso-auth-service
+          port: 9001
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/sso/users/
+        - path:
+            type: PathPrefix
+            value: /api/sso/iam/
+      backendRefs:
+        - name: sso-user-service
+          port: 9002
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/sso/captcha/
+      backendRefs:
+        - name: sso-captcha-service
+          port: 9003
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/sso/otp/
+      backendRefs:
+        - name: sso-otp-service
+          port: 9004
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/sso/sessions/
+      backendRefs:
+        - name: sso-session-service
+          port: 9005
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/sso/fido/
+      backendRefs:
+        - name: sso-fido-service
+          port: 9006
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/content-service/
+      backendRefs:
+        - name: content-service
+          port: 9101
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/catalog-service/
+      backendRefs:
+        - name: catalog-service
+          port: 9102
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/crm-service/
+      backendRefs:
+        - name: crm-service
+          port: 9103
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/commerce-service/
+      backendRefs:
+        - name: commerce-service
+          port: 9104
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/finance-service/
+      backendRefs:
+        - name: finance-service
+          port: 9105
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/inventory-service/
+      backendRefs:
+        - name: inventory-service
+          port: 9106
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: cyan-platform-routes-2
+spec:
+  parentRefs:
+    - name: cyan-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/report-service/
+      backendRefs:
+        - name: report-service
+          port: 9107
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/processor-service/
+      backendRefs:
+        - name: processor-service
+          port: 9108
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/event-service/
+      backendRefs:
+        - name: event-service
+          port: 9109
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/crm-automation-service/
+      backendRefs:
+        - name: crm-automation-service
+          port: 9110
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/finance-automation-service/
+      backendRefs:
+        - name: finance-automation-service
+          port: 9111
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/inventory-automation-service/
+      backendRefs:
+        - name: inventory-automation-service
+          port: 9112
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/report-automation-service/
+      backendRefs:
+        - name: report-automation-service
+          port: 9113
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/payment-service/
+        - path:
+            type: PathPrefix
+            value: /endpoint/payment/
+        - path:
+            type: PathPrefix
+            value: /internal/payment/
+        - path:
+            type: PathPrefix
+            value: /public/payment/
+      backendRefs:
+        - name: payment-service
+          port: 9114
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/storefront-service/
+        - path:
+            type: PathPrefix
+            value: /public/storefront/
+      backendRefs:
+        - name: storefront-service
+          port: 9115
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/media-service/
+        - path:
+            type: PathPrefix
+            value: /public/media/
+        - path:
+            type: PathPrefix
+            value: /internal/media/
+      backendRefs:
+        - name: media-service
+          port: 9116
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/cart-service/
+      backendRefs:
+        - name: cart-service
+          port: 9117
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/checkout-service/
+      backendRefs:
+        - name: checkout-service
+          port: 9118
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/bpm-service/
+        - path:
+            type: PathPrefix
+            value: /endpoint/bpm/
+        - path:
+            type: PathPrefix
+            value: /internal/bpm/
+        - path:
+            type: PathPrefix
+            value: /public/bpm/
+      backendRefs:
+        - name: bpm-service
+          port: 9119
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/automation-orchestrator-service/
+        - path:
+            type: PathPrefix
+            value: /internal/automation-orchestrator/
+      backendRefs:
+        - name: automation-orchestrator-service
+          port: 9120
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/ai-orchestrator-service/
+        - path:
+            type: PathPrefix
+            value: /endpoint/ai-orchestrator/
+        - path:
+            type: PathPrefix
+            value: /internal/ai-orchestrator/
+      backendRefs:
+        - name: ai-orchestrator-service
+          port: 9121
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/notification-service/
+        - path:
+            type: PathPrefix
+            value: /endpoint/notifications/
+        - path:
+            type: PathPrefix
+            value: /internal/notifications/
+      backendRefs:
+        - name: notification-service
+          port: 9122
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: cyan-platform-routes-3
+spec:
+  parentRefs:
+    - name: cyan-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/payment-orchestrator-service/
+      backendRefs:
+        - name: payment-orchestrator-service
+          port: 9123
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/pricing-promotion-service/
+      backendRefs:
+        - name: pricing-promotion-service
+          port: 9124
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/search-index-service/
+        - path:
+            type: PathPrefix
+            value: /public/search-index/
+        - path:
+            type: PathPrefix
+            value: /internal/search-index/
+      backendRefs:
+        - name: search-index-service
+          port: 9125
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/bot-adapter-service/
+        - path:
+            type: PathPrefix
+            value: /endpoint/bot-adapter/
+        - path:
+            type: PathPrefix
+            value: /public/bot-adapter/
+      backendRefs:
+        - name: bot-adapter-service
+          port: 9126

@@ -25,7 +25,8 @@ public class DynamicEntityResponseMapper {
                 parseDefinition(stored.getDefinitionJson()),
                 stored.isActive(),
                 stored.getCreatedAt(),
-                stored.getUpdatedAt()
+                stored.getUpdatedAt(),
+                stored.getRevision()
         );
     }
 

@@ -10,6 +10,7 @@ import com.cyancoder.ssouser.service.IamDirectoryService;
 import com.cyancoder.ssouser.service.IamSecurityService;
 import com.cyancoder.ssouser.service.UserDirectoryService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,6 +52,23 @@ public class UserController {
     public UserSummary getUser(@PathVariable("username") String username) {
         return userDirectoryService.getUser(username);
     }
+
+    @GetMapping("/me")
+    @PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
+    public UserSummary me(Authentication authentication) {
+        return userDirectoryService.getUser(authentication.getName());
+    }
+
+    public record UpdateProfileRequest(String email,String phoneNumber){}
+    public record ChangePasswordRequest(String currentPassword,String newPassword){}
+
+    @PatchMapping("/me")
+    @PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
+    public UserSummary updateMe(@RequestBody UpdateProfileRequest request,Authentication authentication){return userDirectoryService.updateProfile(authentication.getName(),request.email(),request.phoneNumber());}
+
+    @PostMapping("/me/password/change") @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PlatformOpenApiAuth(PlatformApiSecurity.BEARER)
+    public void changePassword(@RequestBody ChangePasswordRequest request,Authentication authentication){userDirectoryService.changePassword(authentication.getName(),request.currentPassword(),request.newPassword());}
 
     @PostMapping("/verify-password")
     public PasswordVerificationResponse verifyPassword(@RequestBody PasswordVerificationRequest request) {

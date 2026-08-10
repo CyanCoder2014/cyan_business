@@ -1,6 +1,7 @@
 package com.cyancoder.notification.service;
 
 import com.cyancoder.dynamiccore.runtime.DynamicRuntimeService;
+import com.cyancoder.dynamiccore.runtime.DynamicScope;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.notification.model.NotificationDispatchRequest;
 import com.cyancoder.notification.model.NotificationDispatchResponse;
@@ -32,14 +33,18 @@ public class NotificationDispatchService {
     }
 
     public NotificationDispatchResponse dispatch(NotificationDispatchRequest request) {
-        ensureDefinition("notification-template");
-        ensureDefinition("notification-message");
-        Map<String, Object> template = resolveTemplate(request.templateKey());
+        return dispatch(request, new DynamicScope(null, null));
+    }
+
+    public NotificationDispatchResponse dispatch(NotificationDispatchRequest request, DynamicScope scope) {
+        ensureDefinition("notification-template", scope);
+        ensureDefinition("notification-message", scope);
+        Map<String, Object> template = resolveTemplate(request.templateKey(), scope);
         String messageKey = request.messageKey() == null || request.messageKey().isBlank()
                 ? "msg-" + UUID.randomUUID()
                 : request.messageKey();
         String channel = firstNonBlank(request.channel(), string(template, "channel"), "EMAIL");
-        String provider = firstNonBlank(request.provider(), string(template, "provider"), defaultProvider(channel));
+        String provider = normalizeProvider(firstNonBlank(request.provider(), string(template, "provider"), defaultProvider(channel)));
         String dispatchMode = firstNonBlank(request.dispatchMode(), "SYNC");
         String subject = renderTemplate(firstNonBlank(request.subject(), string(template, "subjectTemplate")), request.model());
         String body = renderTemplate(firstNonBlank(request.body(), string(template, "bodyTemplate")), request.model());
@@ -47,7 +52,7 @@ public class NotificationDispatchService {
         Map<String, Object> data = baseMessageData(request, messageKey, channel, provider, subject, body);
         if ("ASYNC".equalsIgnoreCase(dispatchMode) || "QUEUE".equalsIgnoreCase(dispatchMode)) {
             data.put("status", "QUEUED");
-            dynamicRuntimeService.submitMap("notification-message", messageKey, data, true);
+            dynamicRuntimeService.submitMap("notification-message", messageKey, data, true, scope);
             kafkaTemplate.send("notification-dispatch", messageKey, new QueuedNotificationMessage(
                     messageKey, channel, request.templateKey(), request.recipient(), subject, body, provider,
                     request.model() == null ? Map.of() : request.model(),
@@ -69,7 +74,7 @@ public class NotificationDispatchService {
                 request.relatedRef()
         ));
         applyResult(data, result);
-        dynamicRuntimeService.submitMap("notification-message", messageKey, data, true);
+        dynamicRuntimeService.submitMap("notification-message", messageKey, data, true, scope);
         return new NotificationDispatchResponse(messageKey, data.get("status").toString(), channel, request.recipient());
     }
 
@@ -114,6 +119,41 @@ public class NotificationDispatchService {
         return dynamicRuntimeService.getRecord("notification-message", messageKey);
     }
 
+    public DynamicEntityRecordDocument getMessage(String messageKey, DynamicScope scope) {
+        ensureDefinition("notification-message", scope);
+        return dynamicRuntimeService.getRecord("notification-message", messageKey, scope);
+    }
+
+    public java.util.List<DynamicEntityRecordDocument> listMessages(DynamicScope scope) {
+        ensureDefinition("notification-message", scope);
+        return dynamicRuntimeService.listRecords("notification-message", scope);
+    }
+
+    public Map<String,Object> preview(NotificationDispatchRequest request, DynamicScope scope) {
+        ensureDefinition("notification-template", scope);
+        Map<String,Object> template=resolveTemplate(request.templateKey(),scope);
+        String channel=firstNonBlank(request.channel(),string(template,"channel"),"EMAIL");
+        String provider=normalizeProvider(firstNonBlank(request.provider(),string(template,"provider"),defaultProvider(channel)));
+        return Map.of("channel",channel,"provider",provider,"subject",renderTemplate(firstNonBlank(request.subject(),string(template,"subjectTemplate")),request.model()),"body",renderTemplate(firstNonBlank(request.body(),string(template,"bodyTemplate")),request.model()));
+    }
+
+    public NotificationDispatchResponse retry(String messageKey, DynamicScope scope) {
+        DynamicEntityRecordDocument record=getMessage(messageKey,scope); Map<String,Object> d=record.getData();
+        String status=Objects.toString(d.get("status"),"");
+        if(!java.util.Set.of("FAILED","NOT_CONFIGURED").contains(status.toUpperCase()))throw new IllegalArgumentException("Only failed or not-configured messages can be retried");
+        return dispatch(new NotificationDispatchRequest(messageKey,Objects.toString(d.get("channel"),""),Objects.toString(d.get("templateKey"),""),Objects.toString(d.get("provider"),""),"SYNC",Objects.toString(d.get("recipient"),""),Objects.toString(d.get("subject"),""),Objects.toString(d.get("body"),""),Map.of(),d.get("relatedRef") instanceof Map<?,?> m?(Map<String,Object>)m:Map.of()),scope);
+    }
+
+    public java.util.List<Map<String,Object>> providers() {
+        return java.util.List.of(
+                Map.of("channel","EMAIL","provider","smtp","status","NOT_CONFIGURED"),
+                Map.of("channel","SMS","provider","kavenegar","status","NOT_CONFIGURED"),
+                Map.of("channel","PUSH","provider","push-default","status","NOT_CONFIGURED"),
+                Map.of("channel","MQTT","provider","mqtt-default","status","NOT_CONFIGURED"),
+                Map.of("channel","WEBHOOK","provider","rest-webhook","status","CONFIGURATION_DEPENDENT")
+        );
+    }
+
     private Map<String, Object> baseMessageData(NotificationDispatchRequest request,
                                                 String messageKey,
                                                 String channel,
@@ -148,6 +188,11 @@ public class NotificationDispatchService {
         }
     }
 
+    private void ensureDefinition(String entityKey, DynamicScope scope) {
+        try { dynamicRuntimeService.getDefinition(entityKey, scope); }
+        catch (Exception ex) { dynamicRuntimeService.createFromTemplate(entityKey, entityKey, scope); }
+    }
+
     @SuppressWarnings("unchecked")
     private Map<String, Object> resolveTemplate(String templateKey) {
         if (templateKey == null || templateKey.isBlank()) {
@@ -159,6 +204,11 @@ public class NotificationDispatchService {
         } catch (Exception ex) {
             return Map.of();
         }
+    }
+
+    private Map<String,Object> resolveTemplate(String templateKey, DynamicScope scope) {
+        if(templateKey==null||templateKey.isBlank())return Map.of();
+        try{DynamicEntityRecordDocument record=dynamicRuntimeService.getRecord("notification-template",templateKey,scope);return record.getData()==null?Map.of():record.getData();}catch(Exception ex){return Map.of();}
     }
 
     private NotificationSendResult sendNow(NotificationDispatchRequest request) {
@@ -203,6 +253,11 @@ public class NotificationDispatchService {
             return "rest-webhook";
         }
         return "smtp";
+    }
+
+    private String normalizeProvider(String provider) {
+        int statusSeparator = provider.indexOf(" · ");
+        return statusSeparator < 0 ? provider : provider.substring(0, statusSeparator).trim();
     }
 
     private String firstNonBlank(String... values) {

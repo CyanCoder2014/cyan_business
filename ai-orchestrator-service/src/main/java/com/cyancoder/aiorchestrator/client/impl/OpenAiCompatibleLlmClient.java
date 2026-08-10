@@ -63,6 +63,11 @@ public class OpenAiCompatibleLlmClient implements LlmClient {
         throw new IllegalStateException("Failed to parse LLM response into platform DSL from provider " + provider, last);
     }
 
+    @Override
+    public String generateContent(String prompt) {
+        return callChatCompletion(prompt);
+    }
+
     private String callChatCompletion(String prompt) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

@@ -13,6 +13,6 @@ public class PushNotificationSender implements NotificationSender {
 
     @Override
     public NotificationSendResult send(NotificationDispatchRequest request, String subject, String body) {
-        return new NotificationSendResult(true, request.provider() == null || request.provider().isBlank() ? "push-default" : request.provider(), "push-" + request.messageKey(), "SENT", "");
+        return new NotificationSendResult(false, request.provider() == null || request.provider().isBlank() ? "push-default" : request.provider(), "", "NOT_CONFIGURED", "Push provider is not configured");
     }
 }

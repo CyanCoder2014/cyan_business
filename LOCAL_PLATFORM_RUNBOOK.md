@@ -156,6 +156,8 @@ Do not assume every module has a fully equivalent localdemo mode.
 | `bot-adapter-service` | `9126` | Mongo |
 | `batch-worker-service` | `9127` | PostgreSQL / Spring Batch metadata |
 | `api-docs-service` | `9128` | none; bounded in-memory OpenAPI cache |
+| `tenant-service` | `9129` | PostgreSQL (H2 for local development) |
+| `billing-service` | `9130` | PostgreSQL (H2 for local development) |
 
 ### Dynamic business services
 
@@ -221,6 +223,10 @@ If you only want the panel features added in this session, start at least:
 ```bash
 bash ./gradlew :discovery-server:bootRun
 bash ./gradlew :api-gateway:bootRun
+bash ./gradlew :sso-user-service:bootRun
+bash ./gradlew :sso-session-service:bootRun
+bash ./gradlew :tenant-service:bootRun
+bash ./gradlew :billing-service:bootRun
 bash ./gradlew :content-service:bootRun --args='--spring.profiles.active=localdemo'
 bash ./gradlew :storefront-service:bootRun --args='--spring.profiles.active=localdemo'
 bash ./gradlew :bpm-service:bootRun --args='--spring.profiles.active=localdemo'

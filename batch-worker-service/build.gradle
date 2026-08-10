@@ -29,7 +29,6 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation project(':dynamic-entity-core')
     runtimeOnly 'org.postgresql:postgresql'
-    testRuntimeOnly 'com.h2database:h2'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

@@ -20,7 +20,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                 "platform.openapi.docs-access=BASIC",
                 "platform.openapi.docs-username=controller_docs",
                 "platform.openapi.docs-password=controller_secret",
-                "spring.datasource.url=jdbc:h2:mem:processor-openapi;DB_CLOSE_DELAY=-1"
+                "spring.datasource.url=jdbc:postgresql://localhost:5432/processor_test",
+                "spring.datasource.username=postgres",
+                "spring.datasource.password=postgres"
         }
 )
 @AutoConfigureMockMvc

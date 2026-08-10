@@ -205,6 +205,10 @@ public class GraphAutomationRuntime {
         if (outputSchema != null) request.put("outputSchema", outputSchema);
         Object locale = value(execution, config.get("locale"));
         if (locale != null) request.put("locale", locale);
+        Object providerProfileKey = value(execution, config.get("providerProfileKey"));
+        if (providerProfileKey != null) request.put("providerProfileKey", providerProfileKey);
+        Object assets = value(execution, config.get("assets"));
+        if (assets != null) request.put("assets", assets);
         Object raw = http.exchange("ai-orchestrator-service", "/internal/ai-orchestrator/operations",
                 HttpMethod.POST, request,
                 http.internalHeaders("ai-orchestrator-service", execution.getTenantKey(), execution.getSiteKey()), Object.class);

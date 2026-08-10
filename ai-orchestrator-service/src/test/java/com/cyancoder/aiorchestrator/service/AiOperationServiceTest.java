@@ -14,7 +14,7 @@ class AiOperationServiceTest {
     @Test void transformsDataThroughConfiguredLlmClient() {
         LlmClient llm = mock(LlmClient.class);
         when(llm.generateContent(anyString())).thenReturn("{\"title\":\"Normalized\"}");
-        AiOperationService service = new AiOperationService(llm, new ObjectMapper());
+        AiOperationService service = new AiOperationService(llm, new ObjectMapper(), mock(AiProviderProfileService.class), mock(AiMediaAssetClient.class), mock(CustomAiProviderClient.class));
 
         var response = service.execute(new AiOperationRequest(
                 AiOperationRequest.AiOperationType.TRANSFORM_DATA,

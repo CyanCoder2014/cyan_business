@@ -24,7 +24,7 @@ public class AutomationMetadataService {
         configs.put(AutomationNodeType.HTTP_REQUEST, List.of("url|serviceKey+path", "method", "headers", "body", "responsePath", "executeOnce"));
         configs.put(AutomationNodeType.PAGINATED_CALL_API, List.of("url|serviceKey+path", "method", "headers", "body", "pageStart", "pageEnd|pageCount", "pageParamPath", "size", "sizeParamPath", "itemsPath", "targetPath", "pageResponsesPath", "stopOnEmpty", "responseMappings"));
         configs.put(AutomationNodeType.RUN_BATCH_JOB, List.of("definitionKey", "runKey", "pollSeconds", "resultPath"));
-        configs.put(AutomationNodeType.AI_OPERATION, List.of("operation", "instructions", "input", "outputSchema", "locale", "resultPath"));
+        configs.put(AutomationNodeType.AI_OPERATION, List.of("operation", "instructions", "input", "outputSchema", "locale", "providerProfileKey", "assets", "resultPath"));
         configs.put(AutomationNodeType.IF, List.of("field", "operator", "value"));
         configs.put(AutomationNodeType.SWITCH, List.of("field", "cases"));
         configs.put(AutomationNodeType.MERGE, List.of());

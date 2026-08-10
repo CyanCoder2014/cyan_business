@@ -594,6 +594,8 @@ public class ItemStreamAutomationRuntime {
             request.put("input", resolved.getOrDefault("input", json(source)));
             if (resolved.get("outputSchema") != null) request.put("outputSchema", resolved.get("outputSchema"));
             if (resolved.get("locale") != null) request.put("locale", resolved.get("locale"));
+            if (resolved.get("providerProfileKey") != null) request.put("providerProfileKey", resolved.get("providerProfileKey"));
+            if (resolved.get("assets") != null) request.put("assets", resolved.get("assets"));
             Map<String,Object> response = AutomationDataSupport.map(http.exchange("ai-orchestrator-service",
                     "/internal/ai-orchestrator/operations", HttpMethod.POST, request,
                     http.internalHeaders("ai-orchestrator-service", execution.getTenantKey(), execution.getSiteKey()), Object.class));

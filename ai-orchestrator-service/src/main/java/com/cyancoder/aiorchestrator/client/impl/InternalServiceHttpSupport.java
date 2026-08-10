@@ -41,6 +41,20 @@ public class InternalServiceHttpSupport {
         return exchange(serviceKey, path, HttpMethod.PUT, body, tenantKey, siteKey);
     }
 
+    public BinaryResponse getBytes(String serviceKey, String path, String tenantKey, String siteKey) {
+        ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()
+                .orElseThrow(() -> new DownstreamServiceException("No internal route is configured for service: " + serviceKey, serviceKey, path, 503, null, null));
+        HttpHeaders headers = new HttpHeaders();
+        String normalized = normalizeServiceCredentialsKey(serviceKey);
+        headers.setBasicAuth(normalized + "_internal", normalized + "_secret", StandardCharsets.UTF_8);
+        if (tenantKey != null && !tenantKey.isBlank()) headers.set("X-Tenant-Key", tenantKey);
+        if (siteKey != null && !siteKey.isBlank()) headers.set("X-Site-Key", siteKey);
+        ResponseEntity<byte[]> response = restTemplate.exchange(resolveBaseUri(instance) + path, HttpMethod.GET, new HttpEntity<>(headers), byte[].class);
+        return new BinaryResponse(response.getBody() == null ? new byte[0] : response.getBody(), response.getHeaders().getContentType() == null ? "application/octet-stream" : response.getHeaders().getContentType().toString(), response.getHeaders().getFirst("X-Media-File-Name"));
+    }
+
+    public record BinaryResponse(byte[] bytes, String mimeType, String fileName) {}
+
     private String exchange(String serviceKey, String path, HttpMethod method, Object body, String tenantKey, String siteKey) {
         try {
             ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()

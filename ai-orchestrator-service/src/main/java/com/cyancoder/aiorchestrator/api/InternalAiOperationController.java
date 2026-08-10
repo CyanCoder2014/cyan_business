@@ -14,7 +14,9 @@ public class InternalAiOperationController {
     public InternalAiOperationController(AiOperationService operations) { this.operations = operations; }
 
     @PostMapping
-    public AiOperationResponse execute(@Valid @RequestBody AiOperationRequest request) {
-        return operations.execute(request);
+    public AiOperationResponse execute(@Valid @RequestBody AiOperationRequest request,
+                                       @RequestHeader(value="X-Tenant-Key",required=false) String tenant,
+                                       @RequestHeader(value="X-Site-Key",required=false) String site) {
+        return operations.execute(request,tenant,site);
     }
 }

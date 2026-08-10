@@ -38,6 +38,7 @@ public class ClientProvisioningService {
     }
 
     public List<String> capabilityCatalog() { requireAdmin(); return TenantCapabilityService.catalog(); }
+    @Transactional public ClientProvisioningResult updateCapabilities(String tenantKey,List<String> requested){requireAdmin();if(!tenants.existsById(tenantKey))throw new IllegalArgumentException("Client not found");List<String> keys=requested==null?List.of():requested.stream().distinct().toList();if(keys.stream().anyMatch(k->!TenantCapabilityService.isKnownCapability(k)))throw new IllegalArgumentException("Unknown capability key");for(String capability:TenantCapabilityService.catalog()){TenantCapabilityOverrideEntity item=overrides.findByTenantKey(tenantKey).stream().filter(v->v.getSiteKey()==null&&v.getCapabilityKey().equals(capability)).findFirst().orElseGet(TenantCapabilityOverrideEntity::new);item.setOverrideId(tenantKey+"||"+capability);item.setTenantKey(tenantKey);item.setCapabilityKey(capability);item.setEnabled(keys.contains(capability));item.setReason("Updated by platform administrator");overrides.save(item);}return result(tenantKey,null,"ACTIVE");}
 
     @Transactional
     public ClientProvisioningResult create(CreateClientRequest request, String idempotencyKey) {

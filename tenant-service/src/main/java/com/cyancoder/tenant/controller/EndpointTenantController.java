@@ -35,12 +35,14 @@ public class EndpointTenantController {
     private final TenantCapabilityService capabilities;
     private final TenantFeatureFlagRepository flags;
     private final TenantTeamService team;
+    private final com.cyancoder.tenant.service.TenantInvitationService invitations;
 
-    public EndpointTenantController(TenantDirectoryService directory, TenantCapabilityService capabilities, TenantFeatureFlagRepository flags, TenantTeamService team) {
+    public EndpointTenantController(TenantDirectoryService directory, TenantCapabilityService capabilities, TenantFeatureFlagRepository flags, TenantTeamService team, com.cyancoder.tenant.service.TenantInvitationService invitations) {
         this.directory = directory;
         this.capabilities = capabilities;
         this.flags = flags;
         this.team = team;
+        this.invitations = invitations;
     }
 
     @GetMapping public List<TenantSummary> list() { return directory.listForCurrentUser(); }
@@ -107,4 +109,9 @@ public class EndpointTenantController {
     public com.cyancoder.tenant.api.TenantContracts.EffectiveAccess effectiveAccess(@PathVariable String tenantKey, @PathVariable String username) {
         directory.requireCurrentMembership(tenantKey); return team.effectiveAccess(tenantKey, username);
     }
+
+    @PostMapping("/{tenantKey}/ownership/transfer")
+    public com.cyancoder.tenant.api.TenantContracts.TenantUserSummary transferOwnership(@PathVariable String tenantKey,@Valid @RequestBody com.cyancoder.tenant.api.TenantContracts.TransferOwnershipRequest request){return team.transferOwnership(tenantKey,request.newOwnerUsername(),request.previousOwnerRoleKey());}
+    @GetMapping("/{tenantKey}/invitations") public java.util.List<com.cyancoder.tenant.api.TenantContracts.TenantInvitationView> invitations(@PathVariable String tenantKey){return invitations.list(tenantKey);}
+    @PostMapping("/{tenantKey}/invitations") @ResponseStatus(HttpStatus.CREATED) public com.cyancoder.tenant.api.TenantContracts.TenantInvitationView invite(@PathVariable String tenantKey,@Valid @RequestBody com.cyancoder.tenant.api.TenantContracts.CreateInvitationRequest request){return invitations.create(tenantKey,request);}
 }

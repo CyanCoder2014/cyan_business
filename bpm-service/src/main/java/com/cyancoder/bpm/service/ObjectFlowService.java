@@ -7,6 +7,7 @@ import com.cyancoder.bpm.api.dto.FormSubmissionSyncRequest;
 import com.cyancoder.bpm.api.dto.FormSubmissionSyncResponse;
 import com.cyancoder.bpm.api.dto.ManagedObjectActiveFormResponse;
 import com.cyancoder.bpm.api.dto.ManagedObjectFormSubmissionResponse;
+import com.cyancoder.bpm.api.dto.ManagedObjectQueueResponse;
 import com.cyancoder.bpm.api.dto.SubmitManagedObjectFormRequest;
 import com.cyancoder.bpm.api.dto.TransitionActorContext;
 import com.cyancoder.bpm.api.dto.TransitionOptionResponse;
@@ -45,6 +46,7 @@ public class ObjectFlowService {
     private final FlowActionExecutor actionExecutor;
     private final RuntimeService runtimeService;
     private final TaskService taskService;
+    private final BpmAssignmentDirectoryService assignmentDirectory;
 
     public ObjectFlowService(ManagedObjectRepository managedObjectRepository,
                              FlowDefinitionService flowDefinitionService,
@@ -52,7 +54,8 @@ public class ObjectFlowService {
                              DynamicFlowIntegrationClient integrationClient,
                              FlowActionExecutor actionExecutor,
                              ObjectProvider<RuntimeService> runtimeServiceProvider,
-                             ObjectProvider<TaskService> taskServiceProvider) {
+                             ObjectProvider<TaskService> taskServiceProvider,
+                             BpmAssignmentDirectoryService assignmentDirectory) {
         this.managedObjectRepository = managedObjectRepository;
         this.flowDefinitionService = flowDefinitionService;
         this.transitionConditionEvaluator = transitionConditionEvaluator;
@@ -60,6 +63,7 @@ public class ObjectFlowService {
         this.actionExecutor = actionExecutor;
         this.runtimeService = runtimeServiceProvider.getIfAvailable();
         this.taskService = taskServiceProvider.getIfAvailable();
+        this.assignmentDirectory = assignmentDirectory;
     }
 
     public ManagedObject createAndStart(BpmScope scope, CreateManagedObjectRequest request, TransitionActorContext actorContext) {
@@ -208,9 +212,39 @@ public class ObjectFlowService {
         ManagedObject object = findById(scope, objectId);
         assertCanRead(object, actor);
         if (assignee == null || assignee.isBlank()) throw new IllegalArgumentException("assignee is required");
+        assignmentDirectory.requireValid(scope.tenantKey(), type, assignee.trim());
         object.setAssignee(assignee.trim()); object.setAssigneeType(type); object.setUpdatedAt(Instant.now());
         object.getAuditLog().add("assigned to " + assignee + " by " + actor.userId() + " at=" + Instant.now());
         return managedObjectRepository.save(object);
+    }
+
+    public ManagedObjectQueueResponse cartable(BpmScope scope, TransitionActorContext actor, String view,
+                                                String state, String priority, Boolean overdue,
+                                                String query, int page, int size) {
+        String normalizedView = view == null || view.isBlank() ? "ASSIGNED" : view.trim().toUpperCase(java.util.Locale.ROOT);
+        if (!Set.of("ASSIGNED", "VISIBLE", "ROLE", "GROUP", "UNASSIGNED", "COMPLETED").contains(normalizedView)) {
+            throw new IllegalArgumentException("unsupported cartable view");
+        }
+        Instant now = Instant.now();
+        String needle = query == null ? "" : query.trim().toLowerCase(java.util.Locale.ROOT);
+        List<ManagedObject> filtered = findAll(scope).stream().filter(object -> switch (normalizedView) {
+            case "ASSIGNED" -> assignedTo(object, actor) && object.getCompletedAt() == null;
+            case "VISIBLE" -> canRead(object, actor) && object.getCompletedAt() == null;
+            case "ROLE" -> object.getAssigneeType() == com.cyancoder.bpm.domain.AssigneeType.ROLE && actor.roles().contains(object.getAssignee()) && object.getCompletedAt() == null;
+            case "GROUP" -> object.getAssigneeType() == com.cyancoder.bpm.domain.AssigneeType.GROUP && actor.groups().contains(object.getAssignee()) && object.getCompletedAt() == null;
+            case "UNASSIGNED" -> (object.getAssignee() == null || object.getAssignee().isBlank()) && canRead(object, actor) && object.getCompletedAt() == null;
+            case "COMPLETED" -> object.getCompletedAt() != null && canRead(object, actor);
+            default -> false;
+        }).filter(object -> state == null || state.isBlank() || state.equalsIgnoreCase(object.getState()))
+          .filter(object -> priority == null || priority.isBlank() || priority.equalsIgnoreCase(object.getPriority()))
+          .filter(object -> overdue == null || !overdue || (object.getDueAt() != null && object.getDueAt().isBefore(now) && object.getCompletedAt() == null))
+          .filter(object -> needle.isBlank() || (object.getObjectType() + " " + object.getFlowKey() + " " + object.getState() + " " + java.util.Objects.toString(object.getAssignee(), "")).toLowerCase(java.util.Locale.ROOT).contains(needle))
+          .toList();
+        int safeSize = Math.max(1, Math.min(size, 100));
+        int safePage = Math.max(0, page);
+        int from = Math.min(safePage * safeSize, filtered.size());
+        int to = Math.min(from + safeSize, filtered.size());
+        return new ManagedObjectQueueResponse(filtered.subList(from, to), filtered.size(), safePage, safeSize);
     }
 
     public ManagedObject lock(BpmScope scope, String objectId, boolean lock, TransitionActorContext actor) {

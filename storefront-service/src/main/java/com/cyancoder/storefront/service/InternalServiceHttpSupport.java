@@ -22,6 +22,11 @@ public class InternalServiceHttpSupport {
     }
 
     public <T> T get(String serviceKey, String path, String tenantKey, String siteKey, Class<T> responseType) {
+        return getAsActor(serviceKey, path, tenantKey, siteKey, null, null, null, responseType);
+    }
+
+    public <T> T getAsActor(String serviceKey, String path, String tenantKey, String siteKey,
+                            String actor, String roles, String groups, Class<T> responseType) {
         ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("service not found: " + serviceKey));
         HttpHeaders headers = new HttpHeaders();
@@ -33,6 +38,9 @@ public class InternalServiceHttpSupport {
         if (siteKey != null && !siteKey.isBlank()) {
             headers.set("X-Site-Key", siteKey);
         }
+        if (actor != null && !actor.isBlank()) headers.set("X-Actor-User", actor);
+        if (roles != null && !roles.isBlank()) headers.set("X-Actor-Roles", roles);
+        if (groups != null && !groups.isBlank()) headers.set("X-Actor-Groups", groups);
         ResponseEntity<T> response = restTemplate.exchange(resolveBaseUri(instance) + path, HttpMethod.GET, new HttpEntity<>(headers), responseType);
         return response.getBody();
     }

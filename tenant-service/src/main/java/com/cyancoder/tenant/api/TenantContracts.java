@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.Valid;
 
 import java.time.Instant;
@@ -70,6 +72,8 @@ public final class TenantContracts {
     public record EffectiveAccess(String tenantKey, String username, String roleKey, List<String> permissions,
                                   boolean active) {}
 
+    public record AssignableTarget(String type, String key, String displayName, boolean active) {}
+
     public record ClientHeadUser(
             @NotBlank @Size(max = 180) String username,
             @Email @NotBlank @Size(max = 240) String email,
@@ -88,6 +92,11 @@ public final class TenantContracts {
 
     public record ClientProvisioningResult(TenantSummary client, TenantUserSummary headUser,
                                            List<String> capabilityKeys, String planKey, String status) {}
+    public record UpdateClientCapabilitiesRequest(List<@NotBlank String> capabilityKeys) {}
+    public record TransferOwnershipRequest(@NotBlank String newOwnerUsername,@NotBlank String previousOwnerRoleKey) {}
+    public record CreateInvitationRequest(@Email @NotBlank String email,@NotBlank String roleKey,@Min(1) @Max(168) Integer expiresInHours) {}
+    public record AcceptInvitationRequest(@NotBlank String token,@NotBlank @Size(max=180) String username,@NotBlank @Size(min=8,max=200) String password,@Size(max=40) String phoneNumber,boolean mfaRequired) {}
+    public record TenantInvitationView(String invitationId,String tenantKey,String email,String roleKey,String status,String deliveryStatus,Instant expiresAt,Instant createdAt) {}
 
     public record BillingEntitlements(String planKey, String status, List<String> features, Map<String, Object> limits) {
         public static BillingEntitlements none() {

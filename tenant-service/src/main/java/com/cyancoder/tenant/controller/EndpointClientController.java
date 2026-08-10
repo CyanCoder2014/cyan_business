@@ -22,4 +22,5 @@ public class EndpointClientController {
     @GetMapping("/capabilities/catalog") public List<String> capabilities(){return service.capabilityCatalog();}
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
     public ClientProvisioningResult create(@Valid @RequestBody CreateClientRequest request,@RequestHeader("Idempotency-Key") String idempotencyKey){return service.create(request,idempotencyKey);}
+    @PutMapping("/{tenantKey}/capabilities") public ClientProvisioningResult capabilities(@PathVariable String tenantKey,@Valid @RequestBody com.cyancoder.tenant.api.TenantContracts.UpdateClientCapabilitiesRequest request){return service.updateCapabilities(tenantKey,request.capabilityKeys());}
 }

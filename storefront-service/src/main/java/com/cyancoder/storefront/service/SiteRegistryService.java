@@ -16,6 +16,10 @@ public class SiteRegistryService {
     public SiteRegistryService(SiteRepository sites, SiteIdempotencyRepository idempotency, TenantMembershipClient memberships) { this.sites = sites; this.idempotency = idempotency; this.memberships = memberships; }
     public List<SiteSummary> list(String tenantKey, String subject) { memberships.requireMembership(tenantKey, subject); return sites.findAllByTenantKeyOrderByNameAsc(tenantKey).stream().map(this::summary).toList(); }
     public SiteMembership internalMembership(String tenantKey, String siteKey) { return new SiteMembership(tenantKey, siteKey, sites.existsByTenantKeyAndSiteKey(tenantKey, siteKey)); }
+    public void requireSiteMembership(String tenantKey, String siteKey, String subject) {
+        memberships.requireMembership(tenantKey, subject);
+        if (!sites.existsByTenantKeyAndSiteKey(tenantKey, siteKey)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Site not found");
+    }
     @Transactional
     public SiteSummary create(String tenantKey, String subject, String key, CreateSiteRequest request) {
         memberships.requireMembership(tenantKey, subject);

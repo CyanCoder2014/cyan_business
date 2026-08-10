@@ -14,6 +14,13 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class TenantSecurityConfig {
+    @Bean @Order(0)
+    SecurityFilterChain publicInvitations(HttpSecurity http) throws Exception {
+        http.securityMatcher("/public/tenant-invitations/**").csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
     @Bean @Order(1)
     SecurityFilterChain internal(HttpSecurity http) throws Exception {
         http.securityMatcher("/internal/**").csrf(csrf -> csrf.disable())

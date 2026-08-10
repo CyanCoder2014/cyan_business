@@ -37,7 +37,7 @@ class ManagedObjectCollaborationServiceTest {
         when(comments.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(attachments.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ManagedObjectCollaborationService service = new ManagedObjectCollaborationService(objectFlowService, comments, attachments);
+        ManagedObjectCollaborationService service = new ManagedObjectCollaborationService(objectFlowService, comments, attachments, mock(InternalServiceHttpSupport.class));
         ManagedObjectComment comment = service.addComment(new BpmScope("tenant", "site"), "obj-1",
                 new ManagedObjectCommentRequest(null, "Please review", null, null, null, null, Map.of()),
                 new TransitionActorContext("author", Set.of(), Set.of()));

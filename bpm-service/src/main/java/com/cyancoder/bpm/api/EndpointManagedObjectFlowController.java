@@ -15,6 +15,7 @@ import com.cyancoder.bpm.domain.ManagedObjectComment;
 import com.cyancoder.bpm.service.ActorContextResolver;
 import com.cyancoder.bpm.service.ManagedObjectCollaborationService;
 import com.cyancoder.bpm.service.ObjectFlowService;
+import com.cyancoder.bpm.service.BpmAssignmentDirectoryService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,12 +37,40 @@ public class EndpointManagedObjectFlowController {
     private final ObjectFlowService objectFlowService;
     private final ActorContextResolver actorContextResolver;
     private final ManagedObjectCollaborationService collaborationService;
+    private final BpmAssignmentDirectoryService assignmentDirectory;
 
     public EndpointManagedObjectFlowController(ObjectFlowService objectFlowService, ActorContextResolver actorContextResolver,
-                                               ManagedObjectCollaborationService collaborationService) {
+                                               ManagedObjectCollaborationService collaborationService,
+                                               BpmAssignmentDirectoryService assignmentDirectory) {
         this.objectFlowService = objectFlowService;
         this.actorContextResolver = actorContextResolver;
         this.collaborationService = collaborationService;
+        this.assignmentDirectory = assignmentDirectory;
+    }
+
+    @GetMapping("/assignment-targets")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public java.util.List<com.cyancoder.bpm.api.dto.AssignmentTargetResponse> assignmentTargets(
+            @RequestHeader("X-Tenant-Key") String tenantKey,
+            @RequestParam(defaultValue = "USER") com.cyancoder.bpm.domain.AssigneeType type,
+            @RequestParam(required = false) String query) {
+        return assignmentDirectory.search(tenantKey, type, query);
+    }
+
+    @GetMapping("/cartable")
+    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    public com.cyancoder.bpm.api.dto.ManagedObjectQueueResponse cartable(
+            @RequestHeader("X-Tenant-Key") String tenantKey,
+            @RequestHeader(value="X-Site-Key",required=false) String siteKey,
+            @RequestParam(defaultValue="ASSIGNED") String view,
+            @RequestParam(required=false) String state,
+            @RequestParam(required=false) String priority,
+            @RequestParam(required=false) Boolean overdue,
+            @RequestParam(required=false) String query,
+            @RequestParam(defaultValue="0") int page,
+            @RequestParam(defaultValue="20") int size,
+            Authentication authentication) {
+        return objectFlowService.cartable(FlowScopeResolver.fromHeaders(tenantKey,siteKey), actorContextResolver.fromAuthentication(authentication), view, state, priority, overdue, query, page, size);
     }
 
     @GetMapping

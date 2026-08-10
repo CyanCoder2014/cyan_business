@@ -47,6 +47,23 @@ public class InternalManagedObjectFlowController {
         return objectFlowService.findAll(FlowScopeResolver.fromHeaders(tenantKey, siteKey));
     }
 
+    @GetMapping("/cartable")
+    public com.cyancoder.bpm.api.dto.ManagedObjectQueueResponse cartable(
+            @RequestHeader("X-Tenant-Key") String tenantKey,
+            @RequestHeader(value="X-Site-Key",required=false) String siteKey,
+            @RequestHeader("X-Actor-User") String actorUser,
+            @RequestHeader(value="X-Actor-Roles",required=false) String actorRoles,
+            @RequestHeader(value="X-Actor-Groups",required=false) String actorGroups,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue="ASSIGNED") String view,
+            @org.springframework.web.bind.annotation.RequestParam(required=false) String state,
+            @org.springframework.web.bind.annotation.RequestParam(required=false) String priority,
+            @org.springframework.web.bind.annotation.RequestParam(required=false) Boolean overdue,
+            @org.springframework.web.bind.annotation.RequestParam(required=false) String query,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue="0") int page,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue="20") int size) {
+        return objectFlowService.cartable(FlowScopeResolver.fromHeaders(tenantKey,siteKey), actorContextResolver.fromInternalHeaders(actorUser,actorRoles,actorGroups), view, state, priority, overdue, query, page, size);
+    }
+
     @PostMapping
     public ManagedObject createAndStart(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,

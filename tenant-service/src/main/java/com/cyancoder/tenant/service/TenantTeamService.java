@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -147,8 +148,47 @@ public class TenantTeamService {
         return new EffectiveAccess(tenantKey, username, role.getRoleKey(), List.copyOf(role.getPermissions()), true);
     }
 
+    /** Internal directory used by BPM to validate and discover authoritative assignees. */
+    @Transactional
+    public List<com.cyancoder.tenant.api.TenantContracts.AssignableTarget> assignableTargets(String tenantKey, String type, String query) {
+        ensureSystemRoles(tenantKey);
+        String requestedType = type == null ? "ALL" : type.trim().toUpperCase(java.util.Locale.ROOT);
+        String needle = query == null ? "" : query.trim().toLowerCase(java.util.Locale.ROOT);
+        List<com.cyancoder.tenant.api.TenantContracts.AssignableTarget> result = new ArrayList<>();
+        if (requestedType.equals("ALL") || requestedType.equals("USER")) {
+            for (TenantMembershipEntity membership : memberships.findByTenantKeyOrderByUsernameAsc(tenantKey)) {
+                IdentityDirectoryClient.IdentityUser identity = identities.get(membership.getUsername());
+                String label = identity != null && identity.email() != null ? identity.email() : membership.getUsername();
+                if (needle.isBlank() || (membership.getUsername() + " " + label).toLowerCase(java.util.Locale.ROOT).contains(needle)) {
+                    result.add(new com.cyancoder.tenant.api.TenantContracts.AssignableTarget("USER", membership.getUsername(), label, membership.isActive()));
+                }
+            }
+        }
+        if (requestedType.equals("ALL") || requestedType.equals("ROLE")) {
+            for (TenantRoleEntity role : roles.findByTenantKeyOrderBySystemRoleDescDisplayNameAsc(tenantKey)) {
+                if (needle.isBlank() || (role.getRoleKey() + " " + role.getDisplayName()).toLowerCase(java.util.Locale.ROOT).contains(needle)) {
+                    result.add(new com.cyancoder.tenant.api.TenantContracts.AssignableTarget("ROLE", role.getRoleKey(), role.getDisplayName(), true));
+                }
+            }
+        }
+        if (!Set.of("ALL", "USER", "ROLE", "GROUP").contains(requestedType)) throw new IllegalArgumentException("Unsupported assignment target type");
+        return result.stream().limit(50).toList();
+    }
+
     private void requireRead(String tenantKey) { tenants.requireCurrentMembership(tenantKey); }
     private void requireManageTeam(String tenantKey) { requirePermission(tenantKey, "team.manage"); }
+    public void requireTeamManager(String tenantKey) { requireManageTeam(tenantKey); }
+    public String currentActor() { return security.username(); }
+    @Transactional
+    public TenantUserSummary transferOwnership(String tenantKey, String newOwnerUsername, String previousOwnerRoleKey) {
+        if(!security.isPlatformAdmin()&&!"TENANT_OWNER".equals(effectiveAccess(tenantKey,security.username()).roleKey()))throw new AccessDeniedException("Tenant owner access is required");
+        if(!Set.of("TENANT_ADMIN","TENANT_MEMBER").contains(previousOwnerRoleKey))throw new IllegalArgumentException("Previous owner role must be TENANT_ADMIN or TENANT_MEMBER");
+        TenantMembershipEntity next=memberships.findByTenantKeyAndUsernameAndActiveTrue(tenantKey,newOwnerUsername).orElseThrow(()->new IllegalArgumentException("New owner must be an active tenant member"));
+        TenantMembershipEntity current=memberships.findByTenantKeyAndUsernameAndActiveTrue(tenantKey,security.username()).orElse(null);
+        next.setRoleKey("TENANT_OWNER");next.setUpdatedAt(Instant.now());memberships.save(next);
+        if(current!=null&&!current.getUsername().equals(next.getUsername())){current.setRoleKey(previousOwnerRoleKey);current.setUpdatedAt(Instant.now());memberships.save(current);}
+        return userSummary(next);
+    }
     private void requireManageRoles(String tenantKey) { requirePermission(tenantKey, "roles.manage"); }
     private void requirePermission(String tenantKey, String permission) {
         if (security.isPlatformAdmin()) return;

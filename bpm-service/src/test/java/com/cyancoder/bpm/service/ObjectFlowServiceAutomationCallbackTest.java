@@ -52,7 +52,8 @@ class ObjectFlowServiceAutomationCallbackTest {
                 integrationClient,
                 flowActionExecutor,
                 runtimeProvider,
-                taskProvider
+                taskProvider,
+                mock(BpmAssignmentDirectoryService.class)
         );
 
         ManagedObject object = new ManagedObject();
@@ -139,7 +140,8 @@ class ObjectFlowServiceAutomationCallbackTest {
                 integrationClient,
                 flowActionExecutor,
                 runtimeProvider,
-                taskProvider
+                taskProvider,
+                mock(BpmAssignmentDirectoryService.class)
         );
 
         ManagedObject object = new ManagedObject();

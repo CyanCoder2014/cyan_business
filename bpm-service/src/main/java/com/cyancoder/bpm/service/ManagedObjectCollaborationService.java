@@ -23,15 +23,18 @@ public class ManagedObjectCollaborationService {
     private final ObjectFlowService objectFlowService;
     private final ManagedObjectCommentRepository commentRepository;
     private final ManagedObjectAttachmentRepository attachmentRepository;
+    private final InternalServiceHttpSupport http;
 
     public ManagedObjectCollaborationService(
             ObjectFlowService objectFlowService,
             ManagedObjectCommentRepository commentRepository,
-            ManagedObjectAttachmentRepository attachmentRepository
+            ManagedObjectAttachmentRepository attachmentRepository,
+            InternalServiceHttpSupport http
     ) {
         this.objectFlowService = objectFlowService;
         this.commentRepository = commentRepository;
         this.attachmentRepository = attachmentRepository;
+        this.http = http;
     }
 
     public ManagedObjectComment addComment(BpmScope scope, String objectId, ManagedObjectCommentRequest request, TransitionActorContext actor) {
@@ -90,7 +93,10 @@ public class ManagedObjectCollaborationService {
         attachment.setVisibleUntilState(normalize(request.visibleUntilState()));
         attachment.setMetadata(request.metadata() == null ? Map.of() : request.metadata());
         attachment.setCreatedAt(Instant.now());
-        return attachmentRepository.save(attachment);
+        ManagedObjectAttachment saved=attachmentRepository.save(attachment);
+        String referenceKey = saved.getId() == null ? objectId + ":" + saved.getAssetKey() : saved.getId();
+        http.exchange("media-service","/internal/media/assets/"+java.net.URLEncoder.encode(saved.getAssetKey(),java.nio.charset.StandardCharsets.UTF_8)+"/references",org.springframework.http.HttpMethod.PUT,Map.of("ownerService","bpm-service","ownerType","BPM_ATTACHMENT","ownerKey",referenceKey,"fieldPath","assetKey"),scope.tenantKey(),scope.siteKey(),Object.class);
+        return saved;
     }
 
     public List<ManagedObjectAttachment> attachments(BpmScope scope, String objectId, TransitionActorContext actor) {

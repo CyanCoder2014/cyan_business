@@ -37,4 +37,12 @@ public class InternalTenantController {
             @org.springframework.web.bind.annotation.RequestParam(required = false) String siteKey) {
         return capabilities.resolve(tenantKey, siteKey);
     }
+
+    @GetMapping("/{tenantKey}/assignment-targets")
+    public java.util.List<com.cyancoder.tenant.api.TenantContracts.AssignableTarget> assignmentTargets(
+            @PathVariable String tenantKey,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String type,
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String query) {
+        return team.assignableTargets(tenantKey, type, query);
+    }
 }

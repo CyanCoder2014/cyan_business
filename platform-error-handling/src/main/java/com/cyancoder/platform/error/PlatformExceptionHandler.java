@@ -47,6 +47,11 @@ public class PlatformExceptionHandler {
     }
 
     private ResponseEntity<PlatformErrorResponse> build(PlatformErrorLocalizationService.LocalizedErrorDescriptor descriptor, HttpServletRequest request) {
+        java.util.List<PlatformErrorResponse.FieldError> fieldErrors = java.util.List.of();
+        Object validation = descriptor.details().get("validationErrors");
+        if (validation instanceof java.util.List<?> values) fieldErrors = values.stream().filter(java.util.Map.class::isInstance).map(java.util.Map.class::cast).map(item -> new PlatformErrorResponse.FieldError(String.valueOf(item.get("field")), "INVALID", String.valueOf(item.get("message")))).toList();
+        String correlationId = request.getHeader("X-Correlation-ID");
+        if (correlationId == null || correlationId.isBlank()) correlationId = java.util.UUID.randomUUID().toString();
         PlatformErrorResponse body = new PlatformErrorResponse(
                 Instant.now(),
                 descriptor.status().value(),
@@ -54,8 +59,11 @@ public class PlatformExceptionHandler {
                 descriptor.errorCode(),
                 descriptor.message(),
                 request.getRequestURI(),
-                descriptor.details()
+                descriptor.details(),
+                fieldErrors,
+                correlationId,
+                descriptor.status().value() == 408 || descriptor.status().value() == 429 || descriptor.status().is5xxServerError()
         );
-        return ResponseEntity.status(descriptor.status()).body(body);
+        return ResponseEntity.status(descriptor.status()).header("X-Correlation-ID",correlationId).body(body);
     }
 }

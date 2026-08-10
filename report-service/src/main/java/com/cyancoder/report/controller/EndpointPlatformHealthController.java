@@ -1,0 +1,6 @@
+package com.cyancoder.report.controller;
+import com.cyancoder.report.service.PlatformHealthHistoryService;import com.cyancoder.report.service.PlatformHealthHistoryService.HealthRunPage;import com.cyancoder.report.service.PlatformHealthHistoryService.HealthRunView;import org.springframework.security.access.prepost.PreAuthorize;import org.springframework.security.core.Authentication;import org.springframework.web.bind.annotation.*;
+@RestController
+@RequestMapping("/endpoint/platform-health/runs")
+@PreAuthorize("@platformAuthorizationService.canManageService('report-service')")
+public class EndpointPlatformHealthController{private final PlatformHealthHistoryService service;public EndpointPlatformHealthController(PlatformHealthHistoryService service){this.service=service;}@PostMapping public HealthRunView run(@RequestHeader("X-Tenant-Key")String tenant,@RequestHeader(value="X-Site-Key",required=false)String site,Authentication authentication){return service.run(tenant,site,authentication.getName());}@GetMapping public HealthRunPage history(@RequestHeader("X-Tenant-Key")String tenant,@RequestHeader(value="X-Site-Key",required=false)String site,Authentication authentication,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return service.history(tenant,site,authentication.getName(),page,size);}}

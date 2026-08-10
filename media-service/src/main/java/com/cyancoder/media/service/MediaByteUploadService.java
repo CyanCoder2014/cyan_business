@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
 import com.cyancoder.dynamiccore.runtime.DynamicScope;
+import java.util.Set;
 
 @Service
 public class MediaByteUploadService {
@@ -92,6 +93,41 @@ public class MediaByteUploadService {
         if ("UPLOADED".equals(upload.getStatus())) throw new ResponseStatusException(HttpStatus.CONFLICT, "Completed uploads cannot be cancelled");
         upload.setStatus("CANCELLED");
         repository.save(upload);
+    }
+
+    public MediaContent readInternal(String assetKey, String tenantKey, String siteKey, long maximumBytes, Set<String> allowedMimeTypes) {
+        requireTenant(tenantKey);
+        MediaUploadEntity upload = repository.findByAssetKey(assetKey)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Media asset bytes not found"));
+        if (!upload.getTenantKey().equals(tenantKey) || !equalsNullable(upload.getSiteKey(), blankToNull(siteKey)) || !"UPLOADED".equals(upload.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Media asset bytes not found");
+        }
+        long limit = Math.min(maxUploadBytes, maximumBytes <= 0 ? maxUploadBytes : maximumBytes);
+        if (upload.getUploadedSizeBytes() > limit) throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Media asset exceeds consumer byte limit");
+        if (allowedMimeTypes != null && !allowedMimeTypes.isEmpty() && allowedMimeTypes.stream().noneMatch(pattern -> mimeMatches(upload.getMimeType(), pattern))) {
+            throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Media asset type is not allowed");
+        }
+        try {
+            Path path = Path.of(upload.getStoragePath()).toAbsolutePath().normalize();
+            if (!path.startsWith(storageRoot) || !Files.isRegularFile(path)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Media asset bytes not found");
+            return new MediaContent(upload.getAssetKey(), upload.getOriginalFileName(), upload.getMimeType(), upload.getUploadedSizeBytes(), Files.readAllBytes(path));
+        } catch (IOException exception) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Media bytes could not be read", exception);
+        }
+    }
+
+    private boolean mimeMatches(String mime, String pattern) { return pattern.endsWith("/*") ? mime.startsWith(pattern.substring(0, pattern.length() - 1)) : mime.equalsIgnoreCase(pattern); }
+    public record MediaContent(String assetKey, String fileName, String mimeType, long sizeBytes, byte[] bytes) {}
+
+    @Transactional
+    public UploadResponse ingestGenerated(com.cyancoder.media.model.MediaByteUploadContracts.GeneratedAssetRequest request,String tenantKey,String siteKey) {
+        requireTenant(tenantKey);
+        byte[] bytes;
+        try { bytes=java.util.Base64.getDecoder().decode(request.base64()); }
+        catch(IllegalArgumentException exception){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Generated asset base64 is invalid");}
+        if(bytes.length==0||bytes.length>maxUploadBytes)throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Generated asset exceeds configured media limit");
+        if(!(request.mimeType().startsWith("image/")||request.mimeType().startsWith("audio/")||request.mimeType().startsWith("video/")||request.mimeType().startsWith("text/")||request.mimeType().equals("application/json")))throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,"Generated artifact media type is not supported");
+        MediaUploadEntity upload=new MediaUploadEntity();Instant now=Instant.now();upload.setUploadId(UUID.randomUUID().toString());upload.setAssetKey(UUID.randomUUID().toString());upload.setTenantKey(tenantKey);upload.setSiteKey(blankToNull(siteKey));upload.setOriginalFileName(safeFileName(request.fileName()));upload.setMimeType(request.mimeType());upload.setVisibility("PRIVATE");upload.setExpectedSizeBytes(bytes.length);upload.setUploadedSizeBytes(bytes.length);upload.setStatus("UPLOADED");upload.setCreatedBy(request.generatedBy());upload.setCreatedAt(now);upload.setCompletedAt(now);upload.setExpiresAt(now.plusSeconds(Math.max(1,Math.min(request.retentionDays()==null?30:request.retentionDays(),365))*86400L));Path destination=storageRoot.resolve(tenantKey).resolve(upload.getSiteKey()==null?"_tenant":upload.getSiteKey()).resolve(upload.getUploadId()).normalize();if(!destination.startsWith(storageRoot))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid generated asset path");try{Files.createDirectories(destination.getParent());Files.write(destination,bytes);upload.setStoragePath(destination.toString());repository.save(upload);assetService.prepareUpload(new MediaUploadPrepareRequest(upload.getAssetKey(),mediaType(upload.getMimeType()),upload.getOriginalFileName(),upload.getMimeType(),"PRIVATE",upload.getOriginalFileName(),"",upload.getOriginalFileName(),"","filesystem","",null,null,(long)bytes.length),new DynamicScope(tenantKey,upload.getSiteKey()));return response(upload);}catch(IOException exception){throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Generated media could not be stored",exception);}
     }
 
     private MediaUploadEntity scoped(String id, String tenant, String site, String actor) {

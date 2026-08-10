@@ -132,6 +132,9 @@ export type ManagedObject = {
   updatedAt?: string;
 };
 
+export type ManagedObjectQueue = { content: ManagedObject[]; totalElements: number; page: number; size: number };
+export type AssignmentTarget = { type: "USER" | "ROLE" | "GROUP"; key: string; displayName: string; active: boolean };
+
 export type ManagedObjectActiveFormResponse = {
   objectId: string;
   objectType: string;
@@ -267,6 +270,31 @@ export function listVisibleManagedObjects(scope: { tenantKey?: string; siteKey?:
     tenantKey: scope.tenantKey,
     siteKey: scope.siteKey
   });
+}
+
+export function listCartable(params: {
+  tenantKey?: string; siteKey?: string; view?: string; state?: string; priority?: string;
+  overdue?: boolean; query?: string; page?: number; size?: number;
+}): Promise<ManagedObjectQueue> {
+  const query = new URLSearchParams({ view: params.view ?? "ASSIGNED", page: String(params.page ?? 0), size: String(params.size ?? 20) });
+  if (params.state) query.set("state", params.state);
+  if (params.priority) query.set("priority", params.priority);
+  if (params.overdue !== undefined) query.set("overdue", String(params.overdue));
+  if (params.query) query.set("query", params.query);
+  return requestJson<ManagedObjectQueue>(`/endpoint/bpm/managed-objects/cartable?${query}`, { method: "GET", tenantKey: params.tenantKey, siteKey: params.siteKey });
+}
+
+export function listAssignmentTargets(type: "USER" | "ROLE" | "GROUP", query: string, scope: { tenantKey?: string; siteKey?: string }) {
+  const search = new URLSearchParams({ type });
+  if (query.trim()) search.set("query", query.trim());
+  return requestJson<AssignmentTarget[]>(`/endpoint/bpm/managed-objects/assignment-targets?${search}`, { method: "GET", tenantKey: scope.tenantKey, siteKey: scope.siteKey });
+}
+
+export async function listSiteWorkPortal(params: { tenantKey: string; siteKey: string; view?: string; page?: number; size?: number }) {
+  const query = new URLSearchParams({ view: params.view ?? "VISIBLE", page: String(params.page ?? 0), size: String(params.size ?? 20) });
+  const response = await platformFetch(`/api/platform/service/storefront-service/endpoint/sites/${encodeURIComponent(params.siteKey)}/portal/work?${query}`, { method: "GET", headers: { "X-Tenant-Key": params.tenantKey, "X-Site-Key": params.siteKey }, cache: "no-store" });
+  if (!response.ok) throw await platformErrorFromResponse(response);
+  return response.json() as Promise<ManagedObjectQueue>;
 }
 
 export function createManagedObject(

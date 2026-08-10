@@ -102,6 +102,7 @@ test("registers a user, logs in, and returns to the requested page", async ({ pa
   await page.goto("/auth?mode=register&returnTo=%2Fmaker%3Fsection%3Dschema");
 
   const form = page.getByTestId("desktop-auth-form");
+  await expect(form.getByPlaceholder("2 + 3 = ?")).toBeVisible();
   await form.getByLabel("Work email").fill("new-user@example.com");
   await form.getByLabel("Password", { exact: true }).fill("StrongPass123!");
   await form.getByLabel("Workspace name").fill("Example Workspace");

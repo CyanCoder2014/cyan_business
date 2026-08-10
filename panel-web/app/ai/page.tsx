@@ -104,6 +104,7 @@ export default function AiPage() {
 
   const questions = draft?.pendingQuestions ?? active?.pendingQuestions ?? [];
   return <PanelShell activeKey="studio" title="AI Studio" titleFa="استودیوی هوش مصنوعی" subtitle="Build through persisted conversations and backend-validated drafts." subtitleFa="با گفتگوهای پایدار و پیش‌نویس‌های معتبر backend بسازید.">
+    <div className="page-action-bar"><span>{locale === "fa" ? "پروفایل‌های API و تولید رسانه به‌صورت مستقل مدیریت می‌شوند." : "API profiles and generated media are managed independently."}</span><Link className="secondary-pill" href="/ai/providers">{locale === "fa" ? "مدیریت ارائه‌دهندگان" : "Manage providers"}</Link></div>
     <div className="ai-workspace">
       <aside className="ai-session-list"><button className="primary-pill" disabled={starting || sending} onClick={start}>{starting ? (locale === "fa" ? "در حال ساخت…" : "Creating…") : (locale === "fa" ? "گفتگوی جدید" : "New conversation")}</button>{sessions.map((session) => <button key={session.sessionId} disabled={starting || sending} className={active?.sessionId === session.sessionId ? "active" : ""} onClick={() => setActive(session)}><strong>{session.latestPrompt || session.sessionId}</strong><span>{session.status}</span></button>)}</aside>
       <section className="ai-thread">

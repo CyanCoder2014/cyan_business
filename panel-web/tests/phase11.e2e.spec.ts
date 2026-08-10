@@ -35,6 +35,7 @@ async function platform(route: Route) {
   if (url.includes("/managed-objects/work-11/attachments")) return route.fulfill({ json: [] });
   if (url.includes("/managed-objects/work-11/transitions")) return route.fulfill({ json: [{ transitionId: "approve", fromState: "review", toState: "done", label: "Approve", allowedRoles: ["REVIEWER"], allowedGroups: ["approvers"] }] });
   if (url.includes("/managed-objects/work-11/assignment")) return route.fulfill({ json: { ...work, ...route.request().postDataJSON() } });
+  if (url.includes("/managed-objects/assignment-targets")) return route.fulfill({ json: [{ type: "ROLE", key: "REVIEWER", displayName: "Reviewer", active: true }] });
   if (url.includes("/managed-objects/work-11")) return route.fulfill({ json: work });
   return route.fulfill({ json: [] });
 }
@@ -86,7 +87,7 @@ test("work assignment supports role and prevents duplicate mutation", async ({ p
   await page.route("**/managed-objects/work-11/assignment", async route => { calls += 1; await new Promise(resolve => setTimeout(resolve, 1500)); await route.fulfill({ json: { ...work, ...route.request().postDataJSON() } }); });
   await page.goto("/work/work-11");
   await page.getByLabel("Assignee type").selectOption("ROLE");
-  await page.getByLabel("Assignee key").fill("REVIEWER");
+  await page.getByLabel("Find and select assignee").fill("REVIEWER");
   const assign = page.getByRole("button", { name: "Assign" });
   await assign.click();
   const pendingAssign = page.getByRole("button", { name: "Working…" });

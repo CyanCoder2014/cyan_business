@@ -1,0 +1,19 @@
+[
+  {"service":"tenant-service","method":"GET","path":"/endpoint/tenants/{tenantKey}/invitations"},
+  {"service":"tenant-service","method":"POST","path":"/endpoint/tenants/{tenantKey}/invitations"},
+  {"service":"tenant-service","method":"POST","path":"/endpoint/tenants/{tenantKey}/ownership/transfer"},
+  {"service":"tenant-service","method":"PUT","path":"/endpoint/clients/{tenantKey}/capabilities"},
+  {"service":"bpm-service","method":"GET","path":"/endpoint/bpm/managed-objects/cartable"},
+  {"service":"bpm-service","method":"GET","path":"/endpoint/bpm/managed-objects/assignment-targets"},
+  {"service":"storefront-service","method":"GET","path":"/endpoint/sites/{siteKey}/portal/work"},
+  {"service":"ai-orchestrator-service","method":"GET","path":"/endpoint/ai-orchestrator/provider-profiles"},
+  {"service":"ai-orchestrator-service","method":"PUT","path":"/endpoint/ai-orchestrator/provider-profiles/{profileKey}"},
+  {"service":"ai-orchestrator-service","method":"POST","path":"/endpoint/ai-orchestrator/artifact-jobs"},
+  {"service":"ai-orchestrator-service","method":"GET","path":"/endpoint/ai-orchestrator/artifact-jobs"},
+  {"service":"report-service","method":"POST","path":"/endpoint/reports/{key}/runs/{id}/exports"},
+  {"service":"report-service","method":"GET","path":"/endpoint/reports/{key}/runs/{id}/exports"},
+  {"service":"report-service","method":"POST","path":"/endpoint/platform-health/runs"},
+  {"service":"report-service","method":"GET","path":"/endpoint/platform-health/runs"},
+  {"service":"media-service","method":"GET","path":"/endpoint/media/assets/{assetKey}/usage"},
+  {"service":"media-service","method":"DELETE","path":"/endpoint/media/assets/{assetKey}"}
+]

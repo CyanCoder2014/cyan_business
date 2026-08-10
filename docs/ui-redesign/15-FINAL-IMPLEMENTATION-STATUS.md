@@ -3,7 +3,7 @@
 Status: **IMPLEMENTED AND VERIFIED**, subject to the truthful external and
 follow-on gaps in `16-REMAINING-BACKEND-GAPS.md`.
 
-Updated: 2026-08-09
+Updated: 2026-08-10
 
 ## Outcome
 
@@ -53,9 +53,10 @@ closed the repository-wide hardening boundary with:
 6. Permission and capability failures remain distinct and an AI node cannot
    become a fake successful step.
 
-Custom provider profiles, multimodal file/video input, and generated binary
-artifacts were deliberately not smuggled into Phase 11. Their end-to-end
-contracts remain GAP-081 through GAP-083.
+The approved post-Phase-11 backend closure now adds scoped custom provider
+profiles, validated multimodal file/video input, and persisted asynchronous
+generated binary artifacts. These are implemented in AI Orchestrator and Media,
+not as frontend-only success states.
 
 ## Product flow status
 
@@ -66,11 +67,11 @@ contracts remain GAP-081 through GAP-083.
 | Head-user role/member management | Operational | bounded server-side permission grants and last-owner protection |
 | CRM + Automation project | Operational | real AI draft/run/release and dynamic service provisioning contracts |
 | Automation AI call | Operational and hardened | tenant effective permission plus capability revalidation before save/activate/run |
-| BPM/cartable | Operational | assigned/visible queues, active form, transitions, locks, comments, attachments, role/group/user assignment |
+| BPM/cartable | Operational | pageable assigned/visible/role/group/unassigned/completed queues, active form, transitions, locks, comments, attachments, and authoritative role/group/user assignment |
 | Telegram/Bale to Automation/BPM | Operational when configured | provider secrets remain references; absent credentials are `NOT_CONFIGURED` |
 | Site builder/public view | Operational | dynamic route/theme records and sandboxed Storefront render |
 | Domain/certificate | Partial by external prerequisite | DNS verification is real; certificate provider remains truthful when not configured |
-| Reports/media/search | Operational within documented contracts | report runs, real media bytes, search definitions/sync/query; export/delete gaps remain explicit |
+| Reports/media/search | Operational within documented contracts | report runs and CSV/JSON exports, real media bytes with reference-protected deletion, durable health history, and search definitions/sync/query |
 
 ## Quality evidence
 

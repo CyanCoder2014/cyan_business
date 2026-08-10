@@ -4,6 +4,11 @@ Status: **COMPLETE**
 
 Completed: 2026-08-09
 
+Post-completion note (2026-08-10): the subsequently approved implementation of
+GAP-081 through GAP-093 is recorded in
+`PHASE-11-BACKEND-GAP-CLOSURE-REPORT.md`. The text below remains the exact
+boundary and verification record at the original Phase 11 completion point.
+
 ## Delivered
 
 Phase 11 completed the approved hardening scope and did not begin a new product
@@ -98,7 +103,7 @@ copied into runtime code.
 
 ## Truthful remaining boundary
 
-GAP-081 through GAP-083 (custom/multimodal/generated-media AI), expanded BPM
-candidate/queue/portal contracts, report export, protected media deletion, and
-external provider prerequisites remain in
-`docs/ui-redesign/16-REMAINING-BACKEND-GAPS.md`. They are not simulated.
+At the original completion point, GAP-081 through GAP-093 remained unimplemented
+and were not simulated. They are now closed by the approved follow-on report
+linked above. External provider prerequisites remain in
+`docs/ui-redesign/16-REMAINING-BACKEND-GAPS.md` and are still not simulated.

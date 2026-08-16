@@ -174,6 +174,15 @@ public class InvoiceHeaderDto {
     private String crn;
 
 
+
+
+    /**
+     * maadde 9
+     */
+    private Integer insr;
+
+
+
     public Long getIndati2m() {
         return indati2m;
     }
@@ -436,5 +445,14 @@ public class InvoiceHeaderDto {
 
     public void setCrn(String crn) {
         this.crn = crn;
+    }
+
+
+    public java.lang.Integer getInsr() {
+        return insr;
+    }
+
+    public void setInsr(java.lang.Integer insr) {
+        this.insr = insr;
     }
 }

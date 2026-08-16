@@ -114,6 +114,10 @@ public class FactorService {
                 header.setCrn(String.valueOf(factorModel.getContractId())); // شماره قرارداد
             }
 
+            if (factorModel.getNote() != null && factorModel.getNote().contains("ماده 9")) {
+                header.setInsr(1);
+            }
+
 
             //******** buyer **********//
             if (!factorModel.getState().trim().equals("type2")) {

@@ -78,10 +78,10 @@ NOTIFICATION_SERVICE_BASE_URL=http://notification-service:9122
 TENANT_INVITATION_ACCEPT_BASE_URL=https://cyancoder.com/auth/invitation
 ```
 
-The shared Secret template caps Hikari at three connections with one minimum
-idle connection. All generated backend Deployments consume that Secret through
-`envFrom`; services without a JDBC datasource ignore these settings. Keep the
-same limits in the live `cyan-platform-secrets` Secret for small staging nodes.
+Every PostgreSQL-backed Deployment explicitly caps Hikari at three connections
+with one minimum idle connection. The values live in container `env`, rather
+than the optional shared Secret, so applying or regenerating the manifests keeps
+the staging pool bounds without depending on Secret contents.
 
 Spring Boot 4 Mongo services use `spring.mongodb.uri`. Service server profiles
 bind their existing `<SERVICE>_MONGODB_URI` variable to that property, with a

@@ -28,6 +28,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
             - name: SSO_USER_SERVICE_BASE_URL
               value: http://sso-user-service:9002
             - name: BILLING_SERVICE_BASE_URL
@@ -96,6 +100,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
             - name: TENANT_SERVICE_BASE_URL
               value: http://tenant-service:9129
           envFrom:

@@ -28,6 +28,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -88,6 +92,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -148,6 +156,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -208,6 +220,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -268,6 +284,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -328,6 +348,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -388,6 +412,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -508,6 +536,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -568,6 +600,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -688,6 +724,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -748,6 +788,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -808,6 +852,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -868,6 +916,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -928,6 +980,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -988,6 +1044,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1048,6 +1108,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1108,6 +1172,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1168,6 +1236,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1228,6 +1300,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1288,6 +1364,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1348,6 +1428,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1408,6 +1492,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1468,6 +1556,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1528,6 +1620,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1588,6 +1684,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1648,6 +1748,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1708,6 +1812,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1768,6 +1876,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -1948,6 +2060,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -2008,6 +2124,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -2068,6 +2188,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -2128,6 +2252,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
@@ -2248,6 +2376,10 @@ spec:
               value: server
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
+            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+              value: "3"
+            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
+              value: "1"
             - name: EUREKA_CLIENT_ENABLED
               value: "false"
           envFrom:

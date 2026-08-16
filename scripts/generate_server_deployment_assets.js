@@ -402,6 +402,14 @@ function appsYaml() {
         "              value: server",
         "            - name: JAVA_TOOL_OPTIONS",
         "              value: -XX:MaxRAMPercentage=75.0",
+        ...(postgresServices.has(appName)
+          ? [
+              "            - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE",
+              '              value: "3"',
+              "            - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE",
+              '              value: "1"',
+            ]
+          : []),
         "          envFrom:",
         "            - secretRef:",
         "                name: cyan-platform-secrets",
@@ -543,8 +551,6 @@ function secretTemplateYaml() {
     "stringData:",
     "  SPRING_DATASOURCE_USERNAME: postgres",
     "  SPRING_DATASOURCE_PASSWORD: change-me",
-    "  SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: \"3\"",
-    "  SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: \"1\"",
     "  KAFKA_BOOTSTRAP_SERVERS: kafka:9092",
     "  JWKS_URI: http://sso-auth-service:9001/.well-known/jwks.json",
     "  SSO_JWT_ISSUER: https://api.cyancoder.com",

@@ -137,7 +137,21 @@ async function authRequestJson<T>(path: string, init: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new Error(body || `Request failed with status ${response.status}`);
+    let message = "";
+    if (body) {
+      try {
+        const error = JSON.parse(body) as { message?: unknown; details?: { reason?: unknown } };
+        if (typeof error.details?.reason === "string" && error.details.reason.trim()) {
+          const reason = error.details.reason.trim();
+          message = reason.match(/^\d{3}\s+[A-Z_]+\s+"(.+)"$/)?.[1] ?? reason;
+        } else if (typeof error.message === "string" && error.message.trim()) {
+          message = error.message.trim();
+        }
+      } catch {
+        message = body;
+      }
+    }
+    throw new Error(message || `Request failed with status ${response.status}`);
   }
 
   return response.json() as Promise<T>;
@@ -301,10 +315,11 @@ export async function loginWithPassword(input: LoginInput) {
   return response;
 }
 
-export async function sendLoginOtp(usernameInput: string) {
+export async function sendLoginOtp(usernameInput: string, captchaChallengeId: string, captchaAnswer: string) {
   const username = normalizeUsername(usernameInput);
   if (!username) throw new Error("Username is required before requesting a login code");
-  return authRequestJson<LoginOtpResponse>("/api/sso/otp/send", {
+  const search = new URLSearchParams({ captchaChallengeId, captchaAnswer });
+  return authRequestJson<LoginOtpResponse>(`/api/sso/auth/otp/send?${search.toString()}`, {
     method: "POST",
     body: JSON.stringify({ username, clientId: PLATFORM_AUTH_CLIENT_ID, purpose: "LOGIN" })
   });

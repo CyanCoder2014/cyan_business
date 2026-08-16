@@ -23,11 +23,26 @@ export async function GET(request: Request) {
   const services: Record<string, ServiceState> = {};
   const warnings: string[] = [];
   try {
-    const [identity, access, tenants] = await Promise.all([
+    const core = await Promise.allSettled([
       getJson<PanelBootstrap["identity"]>(`${urls.users}/api/sso/users/me`, authorization),
       getJson<PanelBootstrap["access"]>(`${urls.users}/api/sso/iam/me/access?clientId=cyan-panel`, authorization),
       getJson<PanelBootstrap["tenants"]>(`${urls.tenants}/endpoint/tenants`, authorization)
     ]);
+    services.identity = core[0].status === "fulfilled" && core[1].status === "fulfilled" ? "AVAILABLE" : "UNAVAILABLE";
+    services.tenancy = core[2].status === "fulfilled" ? "AVAILABLE" : "UNAVAILABLE";
+    if (core[0].status !== "fulfilled" || core[1].status !== "fulfilled" || core[2].status !== "fulfilled") {
+      if (services.identity === "UNAVAILABLE") warnings.push("Identity or access context is temporarily unavailable.");
+      if (services.tenancy === "UNAVAILABLE") warnings.push("Tenant context is temporarily unavailable.");
+      return NextResponse.json({
+        code: "BOOTSTRAP_UNAVAILABLE",
+        message: warnings.join(" ") || "The authenticated panel context could not be loaded.",
+        services,
+        warnings
+      }, { status: 503 });
+    }
+    const identity = core[0].value;
+    const access = core[1].value;
+    const tenants = core[2].value;
     services.identity = "AVAILABLE";
     services.tenancy = "AVAILABLE";
     const sessionId = request.headers.get("X-Session-Id");

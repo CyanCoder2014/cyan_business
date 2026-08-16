@@ -190,10 +190,15 @@ function AuthScreen() {
   }
 
   async function handleSendOtp() {
+    if (!captcha || !captchaAnswer.trim()) {
+      setStatus(locale === "fa" ? "ابتدا پاسخ بررسی امنیتی را وارد کنید." : "Complete the security answer before requesting a login code.");
+      return;
+    }
     setOtpLoading(true);
     setStatus(null);
     try {
-      const response = await sendLoginOtp(email);
+      const response = await sendLoginOtp(email, captcha.challengeId, captchaAnswer.trim());
+      await loadCaptcha();
       setStatus(response.devCode
         ? (locale === "fa" ? `کد توسعه: ${response.devCode}` : `Development login code: ${response.devCode}`)
         : (locale === "fa" ? "کد ورود ارسال شد." : "Login code sent."));

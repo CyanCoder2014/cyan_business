@@ -9,18 +9,21 @@ test("live admin signs in, navigates Phase 1-7, and publishes a CRM automation p
   const form = page.getByTestId("desktop-auth-form");
   await form.getByLabel("Work email").fill("admin@cyan.local");
   await form.getByLabel("Password", { exact: true }).fill("admin123");
+  const securityAnswer = form.getByLabel("Security answer");
+  const solveSecurityAnswer = async () => {
+    const challenge = await securityAnswer.getAttribute("placeholder");
+    const values = challenge?.match(/\d+/g)?.map(Number) ?? [];
+    expect(values).toHaveLength(2);
+    await securityAnswer.fill(String(values[0] + values[1]));
+  };
+  await solveSecurityAnswer();
   await form.getByRole("button", { name: "Send code" }).click();
   const otpMessage = form.getByText(/Development login code:/);
   await expect(otpMessage).toBeVisible();
   const otpCode = (await otpMessage.textContent())?.match(/\d{6}/)?.[0];
   expect(otpCode).toBeTruthy();
   await form.getByLabel("Two-factor login code").fill(otpCode!);
-
-  const securityAnswer = form.getByLabel("Security answer");
-  const challenge = await securityAnswer.getAttribute("placeholder");
-  const values = challenge?.match(/\d+/g)?.map(Number) ?? [];
-  expect(values).toHaveLength(2);
-  await securityAnswer.fill(String(values[0] + values[1]));
+  await solveSecurityAnswer();
   await form.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByText("The persisted session scope could not be loaded.")).toHaveCount(0);

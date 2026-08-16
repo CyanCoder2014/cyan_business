@@ -114,6 +114,32 @@ test("registers a user, logs in, and returns to the requested page", async ({ pa
   await expect(page.getByRole("heading", { name: "Definitions & Forms" })).toBeVisible();
 });
 
+test("protects MFA code requests with captcha and presents the development code", async ({ page }) => {
+  await routeCaptcha(page);
+  let otpRequests = 0;
+  await page.route("**/api/sso/auth/otp/send?**", async (route) => {
+    otpRequests += 1;
+    const url = new URL(route.request().url());
+    expect(url.searchParams.get("captchaChallengeId")).toBe("captcha-1");
+    expect(url.searchParams.get("captchaAnswer")).toBe("5");
+    expect(route.request().postDataJSON()).toMatchObject({
+      username: "user@cyan.local",
+      clientId: "cyan-panel",
+      purpose: "LOGIN"
+    });
+    await route.fulfill({ json: { codeId: "otp-1", sent: true, deliveryTarget: "user@cyan.local", devCode: "123456" } });
+  });
+
+  await page.goto("/auth");
+  const form = page.getByTestId("desktop-auth-form");
+  await form.getByLabel("Work email").fill("user@cyan.local");
+  await form.getByLabel("Security answer").fill("5");
+  await form.getByRole("button", { name: "Send code" }).click();
+
+  await expect(form.getByText("Development login code: 123456")).toBeVisible();
+  expect(otpRequests).toBe(1);
+});
+
 test("refreshes an expired access token before retrying protected API calls", async ({ page }) => {
   await page.addInitScript((keys) => {
     window.localStorage.setItem(keys.accessToken, "expired-access");

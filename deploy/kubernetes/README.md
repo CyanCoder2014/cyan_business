@@ -75,6 +75,15 @@ NOTIFICATION_SERVICE_BASE_URL=http://notification-service:9122
 TENANT_INVITATION_ACCEPT_BASE_URL=https://cyancoder.com/auth/invitation
 ```
 
+The shared Secret template caps Hikari at three connections with one minimum
+idle connection. All generated backend Deployments consume that Secret through
+`envFrom`; services without a JDBC datasource ignore these settings. Keep the
+same limits in the live `cyan-platform-secrets` Secret for small staging nodes.
+
+Spring Boot 4 Mongo services use `spring.mongodb.uri`. Service server profiles
+bind their existing `<SERVICE>_MONGODB_URI` variable to that property, with a
+Kubernetes DNS default such as `mongodb://mongo:27017/search_index_service`.
+
 ## Verification
 
 After applying images and configuration:
@@ -95,3 +104,21 @@ has no ready endpoints, or its panel env URL is wrong.
 When building interactively over SSH, run build loops inside a script or use
 `return 1` from a sourced function. Do not append `|| exit 1` directly in the
 interactive shell: it closes the SSH session on the first failed image build.
+
+## Migration recovery checks
+
+Do not create application tables manually. After deploying a migration-bearing
+image, inspect its startup log before changing database state:
+
+```bash
+kubectl -n cyan-staging logs deployment/billing-service --tail=200
+kubectl -n cyan-staging logs deployment/notification-service --tail=200
+kubectl -n cyan-staging logs deployment/storefront-service --tail=200
+```
+
+Billing safely supports fresh databases, an existing Flyway V1 database, and a
+legacy non-empty database without Flyway history. The shared dynamic migration
+chain creates `dynamic_entity_definitions` in V199 before V200 adds definition
+versioning. If Flyway reports a failed schema-history entry rather than applying
+these migrations, retain the log and run a Flyway repair through the service
+tooling; do not delete history rows or create tables by hand.

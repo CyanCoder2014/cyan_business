@@ -299,7 +299,7 @@ function serverProfile(appName) {
 
   if (mongoServices.has(appName)) {
     const db = mongoServices.get(appName);
-    lines.push(`spring.data.mongodb.uri=${springPlaceholder(`${prefix}_MONGODB_URI`, `mongodb://mongo:27017/${db}`)}`);
+    lines.push(`spring.mongodb.uri=${springPlaceholder(`${prefix}_MONGODB_URI`, `mongodb://mongo:27017/${db}`)}`);
   }
 
   if (jwtServices.has(appName)) {
@@ -543,6 +543,8 @@ function secretTemplateYaml() {
     "stringData:",
     "  SPRING_DATASOURCE_USERNAME: postgres",
     "  SPRING_DATASOURCE_PASSWORD: change-me",
+    "  SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: \"3\"",
+    "  SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: \"1\"",
     "  KAFKA_BOOTSTRAP_SERVERS: kafka:9092",
     "  JWKS_URI: http://sso-auth-service:9001/.well-known/jwks.json",
     "  SSO_JWT_ISSUER: https://api.cyancoder.com",
@@ -737,6 +739,7 @@ function kustomizationYaml() {
   return [
     "apiVersion: kustomize.config.k8s.io/v1beta1",
     "kind: Kustomization",
+    "namespace: cyan-staging",
     "resources:",
     "  - apps.yaml",
     "  - tenant-billing.yaml",

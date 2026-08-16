@@ -2,6 +2,7 @@ package com.cyancoder.platform.error;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.NoSuchElementException;
 
@@ -34,5 +35,18 @@ class PlatformErrorLocalizationServiceTest {
         assertEquals(ErrorLocale.FA, service.resolveLocale("fa-IR,fa;q=0.9,en;q=0.8"));
         assertEquals(ErrorLocale.EN, service.resolveLocale("en-US,en;q=0.9"));
         assertEquals(ErrorLocale.EN, service.resolveLocale(null));
+    }
+
+    @Test
+    void preservesResponseStatusAndActionableReason() {
+        var descriptor = service.resolve(
+                new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP code is required"),
+                ErrorLocale.EN
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, descriptor.status());
+        assertEquals("ERR_VALIDATION", descriptor.errorCode());
+        assertEquals("OTP code is required", descriptor.message());
+        assertEquals("OTP code is required", descriptor.details().get("reason"));
     }
 }

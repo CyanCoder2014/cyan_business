@@ -3,6 +3,7 @@ package com.cyancoder.platform.error;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.LinkedHashMap;
@@ -19,6 +20,31 @@ public class PlatformErrorLocalizationService {
                     ex.getErrorCode().code(),
                     locale == ErrorLocale.FA ? ex.getFarsiMessage() : ex.getEnglishMessage(),
                     ex.getDetails()
+            );
+        }
+        if (throwable instanceof ResponseStatusException ex) {
+            HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+            if (status == null) {
+                status = HttpStatus.INTERNAL_SERVER_ERROR;
+            }
+            String reason = ex.getReason();
+            if (reason == null || reason.isBlank()) {
+                reason = status.getReasonPhrase();
+            }
+            PlatformErrorCode code = switch (status) {
+                case UNAUTHORIZED, FORBIDDEN -> PlatformErrorCode.ACCESS_DENIED;
+                case NOT_FOUND -> PlatformErrorCode.RESOURCE_NOT_FOUND;
+                case CONFLICT, PRECONDITION_FAILED -> PlatformErrorCode.ILLEGAL_STATE;
+                case BAD_GATEWAY, SERVICE_UNAVAILABLE, GATEWAY_TIMEOUT -> PlatformErrorCode.DOWNSTREAM_SERVICE_ERROR;
+                default -> status.is4xxClientError()
+                        ? PlatformErrorCode.VALIDATION_ERROR
+                        : PlatformErrorCode.INTERNAL_ERROR;
+            };
+            return new LocalizedErrorDescriptor(
+                    status,
+                    code.code(),
+                    reason,
+                    Map.of("reason", reason)
             );
         }
         if (throwable instanceof IllegalArgumentException ex) {

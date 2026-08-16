@@ -34,6 +34,9 @@ unless the corresponding services and provider configuration are deployed.
   and all internal BFF service URLs.
 - `tenant-billing.yaml` defines tenant and billing Deployments/Services and the
   required SSO, billing, notification, and invitation URL wiring.
+- `operational-services.yaml` is the explicitly `cyan-staging`-scoped subset
+  for `batch-worker-service` and `api-docs-service`; use it when those two
+  resources are missing without applying the complete backend catalog.
 - `apps.yaml` contains the wider backend service catalog.
 - `secret.template.yaml` is a template only. Replace every `change-me` and do
   not commit the resulting Secret.

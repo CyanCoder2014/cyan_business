@@ -1106,6 +1106,8 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: server
+            - name: TENANT_SERVICE_BASE_URL
+              value: http://tenant-service:9129
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
@@ -1682,6 +1684,8 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: server
+            - name: TENANT_SERVICE_BASE_URL
+              value: http://tenant-service:9129
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
@@ -1998,6 +2002,8 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: server
+            - name: TENANT_SERVICE_BASE_URL
+              value: http://tenant-service:9129
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
           envFrom:
@@ -2314,6 +2320,12 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: server
+            - name: TENANT_SERVICE_BASE_URL
+              value: http://tenant-service:9129
+            - name: AUTOMATION_ORCHESTRATOR_SERVICE_BASE_URL
+              value: http://automation-orchestrator-service:9120
+            - name: BPM_SERVICE_BASE_URL
+              value: http://bpm-service:9119
             - name: JAVA_TOOL_OPTIONS
               value: -XX:MaxRAMPercentage=75.0
           envFrom:

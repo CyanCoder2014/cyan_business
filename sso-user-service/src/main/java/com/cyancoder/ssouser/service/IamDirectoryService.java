@@ -117,6 +117,8 @@ public class IamDirectoryService {
             saveSeedClientRole("cyan-panel", "operator", "Operator", "Can run daily operations and builders", List.of("builder:use", "operations:*", "commerce:*", "panel:read"));
             saveSeedClientRole("cyan-panel", "viewer", "Viewer", "Read-only panel access", List.of("panel:read"));
         }
+        ensureClientRolePermissions("cyan-panel", "client-admin", List.of("media:*"));
+        ensureClientRolePermissions("cyan-panel", "builder", List.of("media:read"));
         if (storedUserRepository.findById("cyan-admin").isPresent()) {
             saveSeedMembership("cyan-admin", "cyan", true, true);
             saveSeedRealmAssignment("cyan-admin", "cyan", "super-admin");
@@ -561,6 +563,16 @@ public class IamDirectoryService {
         entity.setActive(true);
         entity.setPermissions(permissions);
         clientRoleRepository.save(entity);
+    }
+
+    private void ensureClientRolePermissions(String clientId, String roleKey, List<String> requiredPermissions) {
+        clientRoleRepository.findById(new ClientRoleEntity.ClientRoleId(clientId, roleKey)).ifPresent(entity -> {
+            LinkedHashSet<String> permissions = new LinkedHashSet<>(entity.getPermissions());
+            if (permissions.addAll(requiredPermissions)) {
+                entity.setPermissions(List.copyOf(permissions));
+                clientRoleRepository.save(entity);
+            }
+        });
     }
 
     private void saveSeedMembership(String username, String realmKey, boolean active, boolean defaultRealm) {

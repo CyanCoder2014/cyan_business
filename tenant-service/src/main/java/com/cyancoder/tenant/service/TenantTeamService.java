@@ -177,7 +177,7 @@ public class TenantTeamService {
 
     private void requireRead(String tenantKey) { tenants.requireCurrentMembership(tenantKey); }
     private void requireManageTeam(String tenantKey) { requirePermission(tenantKey, "team.manage"); }
-    public void requireTeamManager(String tenantKey) { requireManageTeam(tenantKey); }
+    public void requireTeamManager(String tenantKey) { ensureSystemRoles(tenantKey); requireManageTeam(tenantKey); }
     public String currentActor() { return security.username(); }
     @Transactional
     public TenantUserSummary transferOwnership(String tenantKey, String newOwnerUsername, String previousOwnerRoleKey) {
@@ -191,6 +191,7 @@ public class TenantTeamService {
     }
     private void requireManageRoles(String tenantKey) { requirePermission(tenantKey, "roles.manage"); }
     private void requirePermission(String tenantKey, String permission) {
+        ensureSystemRoles(tenantKey);
         if (security.isPlatformAdmin()) return;
         EffectiveAccess access = effectiveAccess(tenantKey, security.username());
         if (!access.permissions().contains("*") && !access.permissions().contains(permission)) throw new AccessDeniedException("Permission is required: " + permission);

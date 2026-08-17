@@ -46,7 +46,7 @@ public class ClientProvisioningService {
         if (idempotencyKey == null || idempotencyKey.isBlank()) throw new IllegalArgumentException("Idempotency-Key is required");
         String recordId = security.username()+"|client-create|"+idempotencyKey.trim();
         IdempotencyRecordEntity previous=idempotency.findById(recordId).orElse(null);
-        if(previous!=null)return result(previous.getResourceKey(),request.planKey(),"ALREADY_PROVISIONED");
+        if(previous!=null){identities.ensurePanelAccess(request.headUser().username(), "client-owner");return result(previous.getResourceKey(),request.planKey(),"ALREADY_PROVISIONED");}
         if(tenants.existsById(request.tenantKey()))throw new IllegalArgumentException("Client key already exists");
         List<String> capabilities=request.capabilityKeys()==null?List.of():request.capabilityKeys().stream().distinct().toList();
         if(capabilities.stream().anyMatch(key->!TenantCapabilityService.isKnownCapability(key)))throw new IllegalArgumentException("Unknown capability key");

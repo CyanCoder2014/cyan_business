@@ -437,7 +437,7 @@ public class IamDirectoryService {
 
         userDirectoryService.registerIdempotent(new com.cyancoder.sso.common.dto.UserRegistrationRequest(
                 required(request.username(), "username"),
-                required(request.password(), "password"),
+                request.password(),
                 request.email(),
                 request.phoneNumber(),
                 request.mfaEnabled(),

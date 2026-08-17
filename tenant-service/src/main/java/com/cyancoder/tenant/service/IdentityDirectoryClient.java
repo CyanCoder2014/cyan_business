@@ -40,6 +40,20 @@ public class IdentityDirectoryClient {
         return new IdentityUser(response.username(), response.email(), response.phoneNumber(), response.mfaEnabled(), response.roles(), response.active());
     }
 
+    public IdentityUser ensurePanelAccess(String username, String clientRole) {
+        IdentityUser existing = get(username);
+        if (existing == null) throw new IllegalArgumentException("Identity does not exist");
+        return provision(existing.username(), null, existing.email(), existing.phoneNumber(), existing.mfaEnabled(), clientRole);
+    }
+
+    static String panelRoleForTenantRole(String tenantRole) {
+        return switch (tenantRole) {
+            case "TENANT_OWNER" -> "client-owner";
+            case "TENANT_ADMIN" -> "client-admin";
+            default -> "builder";
+        };
+    }
+
     private record UserSummary(String username, String email, String phoneNumber, boolean mfaEnabled, List<String> roles, boolean active) {}
     private record ManagedProvisionRequest(String username, String password, String email, String phoneNumber,
                                            boolean mfaEnabled, String realmKey, String clientId,

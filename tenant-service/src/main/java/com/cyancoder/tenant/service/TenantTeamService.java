@@ -113,10 +113,11 @@ public class TenantTeamService {
         TenantMembershipEntity existing = memberships.findByTenantKeyAndUsername(tenantKey, request.username()).orElse(null);
         if (existing != null && existing.isActive()) throw new IllegalArgumentException("User is already an active tenant member");
         IdentityDirectoryClient.IdentityUser identity;
+        String panelRole = IdentityDirectoryClient.panelRoleForTenantRole(request.roleKey());
         if (request.initialPassword() != null && !request.initialPassword().isBlank()) {
-            identity = identities.provision(request.username(), request.initialPassword(), request.email(), request.phoneNumber(), request.mfaRequired());
+            identity = identities.provision(request.username(), request.initialPassword(), request.email(), request.phoneNumber(), request.mfaRequired(), panelRole);
         } else {
-            identity = identities.get(request.username());
+            identity = identities.ensurePanelAccess(request.username(), panelRole);
             if (identity == null) throw new IllegalArgumentException("An initial password is required for a new identity");
         }
         Instant now = Instant.now();
@@ -136,6 +137,7 @@ public class TenantTeamService {
             throw new IllegalArgumentException("The last tenant owner cannot be suspended or demoted");
         }
         membership.setRoleKey(request.roleKey()); membership.setActive(request.active()); membership.setUpdatedAt(Instant.now());
+        if (request.active()) identities.ensurePanelAccess(username, IdentityDirectoryClient.panelRoleForTenantRole(request.roleKey()));
         return userSummary(memberships.save(membership));
     }
 

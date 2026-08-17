@@ -29,11 +29,19 @@ public class IdentityDirectoryClient {
     }
 
     public IdentityUser provision(String username, String password, String email, String phoneNumber, boolean mfaRequired) {
-        return client.post().uri("/internal/users").header(HttpHeaders.AUTHORIZATION, authorization)
-                .body(new ProvisionRequest(username, password, email, phoneNumber, mfaRequired, List.of("user")))
-                .retrieve().body(IdentityUser.class);
+        return provision(username, password, email, phoneNumber, mfaRequired, "builder");
     }
 
-    private record ProvisionRequest(String username, String password, String email, String phoneNumber,
-                                    boolean mfaEnabled, List<String> roles) {}
+    public IdentityUser provision(String username, String password, String email, String phoneNumber, boolean mfaRequired, String clientRole) {
+        UserSummary response = client.post().uri("/internal/users/managed").header(HttpHeaders.AUTHORIZATION, authorization)
+                .body(new ManagedProvisionRequest(username, password, email, phoneNumber, mfaRequired,
+                        "cyan", "cyan-panel", List.of("realm-user"), List.of(clientRole)))
+                .retrieve().body(UserSummary.class);
+        return new IdentityUser(response.username(), response.email(), response.phoneNumber(), response.mfaEnabled(), response.roles(), response.active());
+    }
+
+    private record UserSummary(String username, String email, String phoneNumber, boolean mfaEnabled, List<String> roles, boolean active) {}
+    private record ManagedProvisionRequest(String username, String password, String email, String phoneNumber,
+                                           boolean mfaEnabled, String realmKey, String clientId,
+                                           List<String> realmRoles, List<String> clientRoles) {}
 }

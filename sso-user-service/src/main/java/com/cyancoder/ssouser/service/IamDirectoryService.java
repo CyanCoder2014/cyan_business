@@ -286,18 +286,22 @@ public class IamDirectoryService {
     @Transactional
     public IamUserAccessSummary assignRealmRole(String realmKey, UserRoleAssignmentRequest request) {
         iamSecurityService.requireRealmManager(realmKey);
-        userRealmMembershipRepository.findByUsernameAndRealmKey(required(request.username(), "username"), required(realmKey, "realmKey"))
+        assignRealmRoleOwned(realmKey, request.username(), request.roleKey());
+        return resolveAccess(request.username(), null);
+    }
+
+    private void assignRealmRoleOwned(String realmKey, String username, String roleKey) {
+        userRealmMembershipRepository.findByUsernameAndRealmKey(required(username, "username"), required(realmKey, "realmKey"))
                 .orElseThrow(() -> new IllegalArgumentException("User is not a member of the realm"));
         realmRoleRepository.findByRealmKeyOrderByRoleKeyAsc(realmKey).stream()
-                .filter(item -> item.getRoleKey().equals(required(request.roleKey(), "roleKey")))
+                .filter(item -> item.getRoleKey().equals(required(roleKey, "roleKey")))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Realm role not found"));
         UserRealmRoleAssignmentEntity entity = new UserRealmRoleAssignmentEntity();
-        entity.setUsername(request.username());
+        entity.setUsername(username);
         entity.setRealmKey(realmKey);
-        entity.setRoleKey(request.roleKey());
+        entity.setRoleKey(roleKey);
         userRealmRoleAssignmentRepository.save(entity);
-        return resolveAccess(request.username(), null);
     }
 
     @Transactional
@@ -305,18 +309,24 @@ public class IamDirectoryService {
         ClientEntity client = clientRepository.findById(required(clientId, "clientId"))
                 .orElseThrow(() -> new IllegalArgumentException("Client not found"));
         iamSecurityService.requireClientManager(client.getRealmKey(), clientId);
-        userRealmMembershipRepository.findByUsernameAndRealmKey(required(request.username(), "username"), client.getRealmKey())
+        assignClientRoleOwned(clientId, request.username(), request.roleKey());
+        return resolveAccessInternal(request.username(), clientId);
+    }
+
+    private void assignClientRoleOwned(String clientId, String username, String roleKey) {
+        ClientEntity client = clientRepository.findById(required(clientId, "clientId"))
+                .orElseThrow(() -> new IllegalArgumentException("Client not found"));
+        userRealmMembershipRepository.findByUsernameAndRealmKey(required(username, "username"), client.getRealmKey())
                 .orElseThrow(() -> new IllegalArgumentException("User is not a member of the client realm"));
         clientRoleRepository.findByClientIdOrderByRoleKeyAsc(clientId).stream()
-                .filter(item -> item.getRoleKey().equals(required(request.roleKey(), "roleKey")))
+                .filter(item -> item.getRoleKey().equals(required(roleKey, "roleKey")))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Client role not found"));
         UserClientRoleAssignmentEntity entity = new UserClientRoleAssignmentEntity();
-        entity.setUsername(request.username());
+        entity.setUsername(username);
         entity.setClientId(clientId);
-        entity.setRoleKey(request.roleKey());
+        entity.setRoleKey(roleKey);
         userClientRoleAssignmentRepository.save(entity);
-        return resolveAccessInternal(request.username(), clientId);
     }
 
     public IamUserAccessSummary resolveAccess(String username, String clientId) {
@@ -404,6 +414,19 @@ public class IamDirectoryService {
         String realmKey = required(request.realmKey(), "realmKey");
         String clientId = request.clientId();
         iamSecurityService.requireClientScopedUserProvision(realmKey, clientId);
+        provisionManagedUserOwned(request, realmKey, clientId);
+        return resolveAccessInternal(request.username(), clientId);
+    }
+
+    @Transactional
+    public UserSummary provisionManagedUserInternal(ManagedUserProvisionRequest request) {
+        String realmKey = required(request.realmKey(), "realmKey");
+        String clientId = request.clientId();
+        provisionManagedUserOwned(request, realmKey, clientId);
+        return userDirectoryService.getUser(request.username());
+    }
+
+    private void provisionManagedUserOwned(ManagedUserProvisionRequest request, String realmKey, String clientId) {
 
         if (clientId != null && !clientId.isBlank()) {
             ClientEntity client = clientRepository.findById(clientId).orElseThrow(() -> new IllegalArgumentException("Client not found"));
@@ -412,7 +435,7 @@ public class IamDirectoryService {
             }
         }
 
-        userDirectoryService.register(new com.cyancoder.sso.common.dto.UserRegistrationRequest(
+        userDirectoryService.registerIdempotent(new com.cyancoder.sso.common.dto.UserRegistrationRequest(
                 required(request.username(), "username"),
                 required(request.password(), "password"),
                 request.email(),
@@ -430,18 +453,17 @@ public class IamDirectoryService {
         if (request.realmRoles() != null) {
             for (String role : request.realmRoles()) {
                 if (role != null && !role.isBlank()) {
-                    assignRealmRole(realmKey, new com.cyancoder.sso.common.dto.UserRoleAssignmentRequest(request.username(), role));
+                    assignRealmRoleOwned(realmKey, request.username(), role);
                 }
             }
         }
         if (clientId != null && !clientId.isBlank() && request.clientRoles() != null) {
             for (String role : request.clientRoles()) {
                 if (role != null && !role.isBlank()) {
-                    assignClientRole(clientId, new com.cyancoder.sso.common.dto.UserRoleAssignmentRequest(request.username(), role));
+                    assignClientRoleOwned(clientId, request.username(), role);
                 }
             }
         }
-        return resolveAccessInternal(request.username(), clientId);
     }
 
     private String resolveRealmKeyForSubject(String username, String clientId) {

@@ -52,7 +52,7 @@ public class ClientProvisioningService {
         if(capabilities.stream().anyMatch(key->!TenantCapabilityService.isKnownCapability(key)))throw new IllegalArgumentException("Unknown capability key");
 
         var head=request.headUser();
-        IdentityDirectoryClient.IdentityUser identity=identities.provision(head.username(),head.initialPassword(),head.email(),head.phoneNumber(),head.mfaRequired());
+        IdentityDirectoryClient.IdentityUser identity=identities.provision(head.username(),head.initialPassword(),head.email(),head.phoneNumber(),head.mfaRequired(), "client-owner");
         Instant now=Instant.now();
         TenantEntity tenant=new TenantEntity();tenant.setTenantKey(request.tenantKey());tenant.setDisplayName(request.displayName().trim());tenant.setStatus("ACTIVE");tenant.setCreatedBy(security.username());tenant.setCreatedAt(now);tenant.setUpdatedAt(now);tenants.save(tenant);
         TenantMembershipEntity membership=new TenantMembershipEntity();membership.setMembershipId(request.tenantKey()+"|"+identity.username());membership.setTenantKey(request.tenantKey());membership.setUsername(identity.username());membership.setRoleKey("TENANT_OWNER");membership.setActive(true);membership.setCreatedAt(now);membership.setUpdatedAt(now);memberships.save(membership);

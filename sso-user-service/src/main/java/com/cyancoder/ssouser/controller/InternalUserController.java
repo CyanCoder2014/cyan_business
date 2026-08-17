@@ -4,6 +4,8 @@ import com.cyancoder.platformopenapi.PlatformApiSecurity;
 import com.cyancoder.platformopenapi.PlatformOpenApiAuth;
 import com.cyancoder.sso.common.dto.UserRegistrationRequest;
 import com.cyancoder.sso.common.dto.UserSummary;
+import com.cyancoder.sso.common.dto.ManagedUserProvisionRequest;
+import com.cyancoder.ssouser.service.IamDirectoryService;
 import com.cyancoder.ssouser.service.UserDirectoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,12 +21,19 @@ import org.springframework.web.bind.annotation.RestController;
 @PlatformOpenApiAuth(PlatformApiSecurity.BASIC)
 public class InternalUserController {
     private final UserDirectoryService directory;
+    private final IamDirectoryService iam;
 
-    public InternalUserController(UserDirectoryService directory) { this.directory = directory; }
+    public InternalUserController(UserDirectoryService directory, IamDirectoryService iam) { this.directory = directory; this.iam = iam; }
 
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
     public UserSummary provision(@RequestBody UserRegistrationRequest request) {
         return directory.registerIdempotent(request);
+    }
+
+    @PostMapping("/managed")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserSummary provisionManaged(@RequestBody ManagedUserProvisionRequest request) {
+        return iam.provisionManagedUserInternal(request);
     }
 
     @GetMapping("/{username}")

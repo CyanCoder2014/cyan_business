@@ -42,9 +42,10 @@ public class SecurityConfig {
     @Bean
     UserDetailsService internalUser(
             @Value("${service.internal.username:sso_user_internal}") String username,
-            @Value("${service.internal.password:sso_user_secret}") String password
+            @Value("${service.internal.password:sso_user_secret}") String password,
+            PasswordEncoder passwordEncoder
     ) {
-        return new InMemoryUserDetailsManager(User.withUsername(username).password("{noop}" + password).roles("INTERNAL").build());
+        return new InMemoryUserDetailsManager(User.withUsername(username).password(passwordEncoder.encode(password)).roles("INTERNAL").build());
     }
 
     @Bean

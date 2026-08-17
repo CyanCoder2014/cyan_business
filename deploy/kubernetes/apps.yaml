@@ -1884,6 +1884,8 @@ spec:
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
               value: "1"
+            - name: BPM_SERVICE_MONGODB_URI
+              value: mongodb://mongo:27017/bpm_service
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets

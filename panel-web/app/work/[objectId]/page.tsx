@@ -83,7 +83,7 @@ export default function WorkItem({ params }: { params: { objectId: string } }) {
     finally { setPending(null); setUploadProgress(null); }
   };
 
-  return <PanelShell activeKey="flows" title="Work item" titleFa="مورد کاری" subtitle={params.objectId} subtitleFa={params.objectId}>
+  return <PanelShell activeKey="work" title="Work item" titleFa="مورد کاری" subtitle={params.objectId} subtitleFa={params.objectId}>
     {error ? <div className="operational-banner error" role="alert"><span>{error}</span><button aria-label={locale === "fa" ? "بستن خطا" : "Dismiss error"} onClick={() => setError(null)}>×</button></div> : null}
     {!item || !form ? <Skeleton height={600}/> : <div className="work-item-layout">
       <main>

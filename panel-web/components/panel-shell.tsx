@@ -16,7 +16,9 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
   { en: "Workspace", fa: "فضای کار", items: [
     { href: "/dashboard", key: "dashboard", icon: "⌂", en: "Home", fa: "خانه" },
     { href: "/ai", key: "studio", icon: "✦", en: "AI Studio", fa: "استودیوی هوش", capability: "ai-orchestrator", permission: "project.create" },
-    { href: "/projects", key: "blueprints", icon: "▦", en: "Projects", fa: "پروژه‌ها", capability: "ai-orchestrator", permission: "project.read" }
+    { href: "/projects", key: "blueprints", icon: "▦", en: "Projects", fa: "پروژه‌ها", capability: "ai-orchestrator", permission: "project.read" },
+    { href: "/work", key: "work", icon: "⌁", en: "My cartable", fa: "کارتابل من", capability: "bpm", permission: "bpm.read" },
+    { href: "/forms", key: "forms", icon: "▤", en: "My forms", fa: "فرم‌های من", capability: "dynamic-entities" }
   ]},
   { en: "Build", fa: "ساخت", items: [
     { href: "/definitions", key: "maker", icon: "✎", en: "Definitions", fa: "تعریف‌ها", capability: "dynamic-entities", permission: "definition.read" },

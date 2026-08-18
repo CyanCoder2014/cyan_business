@@ -31,7 +31,7 @@ export default function WorkQueue() {
   }, [tenantKey, siteKey, queryVersion, view, query, priority, overdue, page]);
   useEffect(() => { const timer = setTimeout(() => void load(), 180); return () => clearTimeout(timer); }, [load]);
 
-  return <PanelShell activeKey="flows" title="Work queue" titleFa="کارتابل" subtitle="Role-aware, server-filtered business work." subtitleFa="کارهای کسب‌وکار با فیلتر سمت سرور و دسترسی مبتنی بر نقش.">
+  return <PanelShell activeKey="work" title="Work queue" titleFa="کارتابل" subtitle="Role-aware, server-filtered business work." subtitleFa="کارهای کسب‌وکار با فیلتر سمت سرور و دسترسی مبتنی بر نقش.">
     <div className="work-filter-bar">
       <div className="ui-tabs">{[["ASSIGNED", "Assigned", "محول‌شده"], ["VISIBLE", "Visible", "قابل مشاهده"], ["ROLE", "My roles", "نقش‌های من"], ["GROUP", "My groups", "گروه‌های من"], ["UNASSIGNED", "Unassigned", "بدون مسئول"], ["COMPLETED", "Completed", "تکمیل‌شده"]].map(([key, en, fa]) => <button key={key} aria-pressed={view === key} onClick={() => { setView(key); setPage(0); }}>{locale === "fa" ? fa : en}</button>)}</div>
       <input aria-label="Search work" value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} placeholder={locale === "fa" ? "جستجوی کار" : "Search work"}/>

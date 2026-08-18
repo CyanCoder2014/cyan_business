@@ -20,11 +20,18 @@ type ScopeAccessContextValue = {
 
 const ScopeAccessContext = createContext<ScopeAccessContextValue | null>(null);
 
-function grantsPermission(grants: Set<string>, permission: string) {
+const LEGACY_PERMISSION_NAMESPACES: Record<string, ReadonlySet<string>> = {
+  "builder:*": new Set(["project", "definition", "record", "bpm", "automation", "site", "bot", "ai"]),
+  "operations:*": new Set(["record", "bpm", "automation", "report", "media", "search", "notification"]),
+  "commerce:*": new Set(["commerce", "catalog", "cart", "checkout", "payment", "pricing", "inventory"]),
+};
+
+export function grantsPermission(grants: Set<string>, permission: string) {
   if (grants.has("*") || grants.has(permission)) return true;
   const separator = permission.includes(":") ? ":" : ".";
   const namespace = permission.split(separator)[0];
-  return grants.has(`${namespace}${separator}*`);
+  if (grants.has(`${namespace}${separator}*`)) return true;
+  return Object.entries(LEGACY_PERMISSION_NAMESPACES).some(([legacyGrant, namespaces]) => grants.has(legacyGrant) && namespaces.has(namespace));
 }
 
 export function ScopeAccessProvider({ children }: { children: ReactNode }) {

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { resolveAccessState } from "@/components/access-gates";
+import { grantsPermission } from "@/components/scope-access-provider";
 
 const bootstrap = {
   identity: { username: "reviewer@cyan.local", email: "reviewer@cyan.local", mfaEnabled: true, roles: ["user"], active: true },
@@ -22,6 +23,19 @@ test("access resolver keeps denial reasons distinct", () => {
   expect(resolveAccessState({ authenticated: true, permission: false })).toBe("permission-denied");
   expect(resolveAccessState({ authenticated: true, permission: true, plan: false })).toBe("plan-locked");
   expect(resolveAccessState({ authenticated: true, permission: true, plan: true, capability: true, service: false })).toBe("service-unavailable");
+});
+
+test("legacy client grants resolve to the granular panel navigation contract", () => {
+  const builder = new Set(["builder:*", "panel:read"]);
+  expect(grantsPermission(builder, "bpm.read")).toBe(true);
+  expect(grantsPermission(builder, "automation.read")).toBe(true);
+  expect(grantsPermission(builder, "definition.manage")).toBe(true);
+  expect(grantsPermission(builder, "billing.manage")).toBe(false);
+
+  const operator = new Set(["operations:*"]);
+  expect(grantsPermission(operator, "report.read")).toBe(true);
+  expect(grantsPermission(operator, "automation.execute")).toBe(true);
+  expect(grantsPermission(operator, "project.create")).toBe(false);
 });
 
 async function prepare(page: Page, locale: "en" | "fa" = "en", theme: "light" | "dark" = "light") {

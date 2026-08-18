@@ -16,4 +16,20 @@ test("persisted automation and BPM graph nodes render",async({page})=>{
   await expect(page.locator(".react-flow__node")).toHaveCount(2);
   await expect(page.locator(".react-flow__node").first()).toBeVisible();
 });
+test("builder access loads designers without operator-only runtime calls",async({page})=>{
+  await prepare(page);
+  let runtimeCalls=0;
+  await page.route("**/api/platform/**",route=>{
+    const url=route.request().url();
+    if(url.includes("assigned-to-me")||url.includes("visible-to-me")||url.includes("automation-orchestrator/executions")){runtimeCalls++;return route.fulfill({status:403,json:{errorCode:"ERR_ACCESS_DENIED",message:"Access is denied."}})}
+    return platform(route);
+  });
+  await page.goto("/bpm");
+  await expect(page.getByText("Customer review")).toBeVisible();
+  await expect(page.getByRole("link",{name:"Work queue"})).toHaveCount(0);
+  await page.goto("/automations");
+  await expect(page.getByText("Customer enrichment")).toBeVisible();
+  await expect(page.getByRole("link",{name:"Executions"})).toHaveCount(0);
+  expect(runtimeCalls).toBe(0);
+});
 test("captures Phase 6 and 7 responsive theme and RTL states",async({page})=>{test.setTimeout(180000);test.skip(process.env.CAPTURE_PHASES_6_7!=="1","Visual capture is explicit");await prepare(page);await page.goto("/");for(const target of [{phase:6,path:"/automations/customer-enrichment",ready:".automation-editor-grid"},{phase:7,path:"/bpm/customer-review",ready:".bpm-designer-grid"},{phase:7,path:"/work/work-1",ready:".work-item-layout"}])for(const state of [{name:"desktop-en-light",w:1440,h:1000,l:"en",t:"light"},{name:"desktop-en-dark",w:1440,h:1000,l:"en",t:"dark"},{name:"tablet-en-light",w:834,h:1112,l:"en",t:"light"},{name:"mobile-en-light",w:390,h:844,l:"en",t:"light"},{name:"mobile-en-dark",w:390,h:844,l:"en",t:"dark"},{name:"desktop-fa-rtl-light",w:1440,h:1000,l:"fa",t:"light"},{name:"mobile-fa-rtl-light",w:390,h:844,l:"fa",t:"light"}]){await page.setViewportSize({width:state.w,height:state.h});await page.evaluate(({l,t})=>{localStorage.setItem("cyan.panel.locale",l);localStorage.setItem("cyan.panel.theme",t)},{l:state.l,t:state.t});await page.goto(target.path);await expect(page.locator(target.ready)).toBeVisible();await page.screenshot({path:`../docs/ui-redesign/completion/phase-${target.phase}/screenshots/${target.path.includes("work/")?"work-":""}${state.name}.png`})}});

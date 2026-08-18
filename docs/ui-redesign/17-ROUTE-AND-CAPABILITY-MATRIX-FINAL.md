@@ -17,6 +17,9 @@ by the authenticated platform client/BFF.
 | `/definitions/[serviceKey]/[entityKey]` | definition editor | `dynamic-entities` | `definition.manage` | selected dynamic service | canonical |
 | `/data` | entity data catalog | `dynamic-entities` | `record.read` | dynamic service owners | canonical |
 | `/data/[serviceKey]/[entityKey]` | definition-driven records | `dynamic-entities` | `record.read/manage` | selected dynamic service | canonical |
+| `/forms` | member form catalog and publication | `dynamic-entities` | tenant membership; builders also need `definition.read/manage` | Storefront → dynamic service | canonical |
+| `/forms/[slug]` | authenticated private form | `dynamic-entities` | tenant membership | Storefront → dynamic service | canonical |
+| `/f/[slug]` | anonymous public form | public form publication | publication must be `PUBLIC` | Storefront → dynamic service | canonical |
 | `/automations` | automation registry/runs | `automation` | `automation.read` | `automation-orchestrator-service` | canonical |
 | `/automations/new` | create graph | `automation` | `automation.manage`; AI nodes also `ai.execute` | Automation → Tenant/AI | canonical, lazy |
 | `/automations/[flowKey]` | versioned graph/lifecycle | `automation` | `automation.manage`; AI nodes also `ai.execute` | Automation → Tenant/AI | canonical, lazy |
@@ -36,6 +39,8 @@ by the authenticated platform client/BFF.
 | `/bots/[integrationKey]` | webhook/session/delivery/process binding | `bot-adapter` | `bot.manage` | Bot Adapter → Automation/BPM | canonical |
 | `/sites` | site registry | `site-builder` | `site.read/manage` | Storefront/Tenant site | canonical |
 | `/sites/[siteId]/builder` | route/theme/publish/preview | `site-builder` | `site.manage` | `storefront-service` dynamic + public render | canonical |
+| `/sites/[siteId]/published` | published website pages and share links | `site-builder` | `site.read` | Storefront | canonical |
+| `/s/[tenantKey]/[siteKey]/…` | Cyan-hosted public website | public published route | anonymous | Panel edge → Storefront | canonical |
 | `/domains` | ownership/DNS/certificate state | `site-builder` | `site.manage` | domain/hosting owner | canonical, provider-aware |
 | `/notifications` | inbox/providers/history | notification | scoped notification access | `notification-service` | canonical |
 | `/commerce` | commerce operations read model | commerce | scoped record read | Commerce/Cart/Checkout/Payment | canonical, contract-limited |

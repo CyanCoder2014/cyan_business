@@ -99,11 +99,16 @@ The root layout is `app/layout.tsx`. Global application state is provided by
 | `/projects/[projectId]` | Draft/project detail | AI Orchestrator | Blueprints |
 | `/maker` | Entity, form, and flow maker | Dynamic services, BPM, AI | Maker |
 | `/data` | Dynamic record manager | Catalog, Content, CRM, Inventory | Data |
+| `/forms` | Private/public form results | Storefront, dynamic services | My forms |
+| `/forms/[slug]` | Authenticated tenant form | Storefront, target dynamic service | No |
+| `/f/[slug]` | Public published form | Storefront, target dynamic service | No |
 | `/flows` | BPM flow catalog and cartable | BPM, AI | Flow Builder |
 | `/integrations` | Client apps, bots, mini apps | Bot Adapter | Client Apps/Bots |
 | `/bot` | Bot delivery experience | Bot Adapter | Bot Experience |
 | `/bot/[sessionId]` | AI conversation detail | AI Orchestrator | Incorrectly highlights Client Apps/Bots |
 | `/site-builder` | Storefront route builder | Storefront, dynamic runtime | Site Builder |
+| `/sites/[siteId]/published` | Published website result links | Storefront | Sites |
+| `/s/[tenantKey]/[siteKey]/...` | Cyan-hosted public website | Storefront public renderer | No |
 | `/search` | Search builder | Search Index | Incorrectly labeled Media |
 | `/automation` | Automation and batch builder | Automation, Batch Worker | Incorrectly labeled Analytics |
 | `/iam` | Profile and local panel settings | SSO User, SSO Auth | Settings |

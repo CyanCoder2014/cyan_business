@@ -3,6 +3,7 @@ dashboard,/dashboard,home,,,,1,false
 ai,/ai,home,ai-orchestrator,project.read|project.create,ai_generation,2,true
 projects,/projects,home,ai-orchestrator,project.read,projects,3,true
 definitions,/definitions,build,dynamic-entities,definition.read,dynamic_entities,4,true
+forms,/forms,workspace,dynamic-entities,,dynamic_entities,5,false
 automations,/automations,build,automation,automation.read,automation,5,true
 bpm,/bpm,build,bpm,bpm.read,bpm,6,true
 data,/data,operate,dynamic-entities,record.read,dynamic_entities,7,false

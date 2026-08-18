@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, Fragment, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, Fragment, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AuthenticationRequiredError, getPlatformAuthToken, getPlatformSessionId, platformFetch, setActivePanelScope } from "@/lib/platform-auth";
 import { platformErrorFromResponse } from "@/lib/api-error";
 import type { PanelBootstrap } from "@/lib/panel-contracts";
@@ -39,6 +39,7 @@ export function ScopeAccessProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [queryVersion, setQueryVersion] = useState(0);
+  const automaticScopeRef = useRef<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!getPlatformAuthToken()) { setLoading(false); return; }
@@ -69,6 +70,21 @@ export function ScopeAccessProvider({ children }: { children: ReactNode }) {
     setQueryVersion((current) => current + 1);
     await refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    if (loading || !bootstrap) return;
+    const tenantKey = bootstrap.activeTenantKey ?? (bootstrap.tenants.length === 1 ? bootstrap.tenants[0].tenantKey : null);
+    if (!tenantKey) return;
+    const siteKey = bootstrap.activeTenantKey && !bootstrap.activeSiteKey && bootstrap.sites.length === 1 ? bootstrap.sites[0].siteKey : bootstrap.activeSiteKey;
+    if (bootstrap.activeTenantKey && (bootstrap.activeSiteKey || bootstrap.sites.length !== 1)) return;
+    const target = `${tenantKey}:${siteKey ?? ""}`;
+    if (automaticScopeRef.current === target) return;
+    automaticScopeRef.current = target;
+    selectScope(tenantKey, siteKey).catch((reason) => {
+      automaticScopeRef.current = null;
+      setError(reason instanceof Error ? reason.message : "The workspace could not be selected.");
+    });
+  }, [bootstrap, loading, selectScope]);
 
   const value = useMemo<ScopeAccessContextValue>(() => {
     const permissions = new Set([...(bootstrap?.access.realmPermissions ?? []), ...(bootstrap?.access.clients.flatMap((client) => client.clientPermissions) ?? []), ...(bootstrap?.tenantAccess?.permissions ?? [])]);

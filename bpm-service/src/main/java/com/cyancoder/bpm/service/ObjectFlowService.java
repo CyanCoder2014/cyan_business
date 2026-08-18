@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Service
@@ -229,13 +230,14 @@ public class ObjectFlowService {
         }
         Instant now = Instant.now();
         String needle = query == null ? "" : query.trim().toLowerCase(java.util.Locale.ROOT);
+        Map<String, DynamicFlowDefinition> definitionsByFlow = new HashMap<>();
         List<ManagedObject> filtered = findAll(scope).stream().filter(object -> switch (normalizedView) {
-            case "ASSIGNED" -> assignedTo(object, actor) && object.getCompletedAt() == null;
-            case "VISIBLE" -> canRead(object, actor) && object.getCompletedAt() == null;
-            case "ROLE" -> object.getAssigneeType() == com.cyancoder.bpm.domain.AssigneeType.ROLE && actor.roles().contains(object.getAssignee()) && object.getCompletedAt() == null;
-            case "GROUP" -> object.getAssigneeType() == com.cyancoder.bpm.domain.AssigneeType.GROUP && actor.groups().contains(object.getAssignee()) && object.getCompletedAt() == null;
-            case "UNASSIGNED" -> (object.getAssignee() == null || object.getAssignee().isBlank()) && canRead(object, actor) && object.getCompletedAt() == null;
-            case "COMPLETED" -> object.getCompletedAt() != null && canRead(object, actor);
+            case "ASSIGNED" -> assignedTo(object, actor) && !isCompleted(scope, object, definitionsByFlow);
+            case "VISIBLE" -> canRead(object, actor) && !isCompleted(scope, object, definitionsByFlow);
+            case "ROLE" -> object.getAssigneeType() == com.cyancoder.bpm.domain.AssigneeType.ROLE && actor.roles().contains(object.getAssignee()) && !isCompleted(scope, object, definitionsByFlow);
+            case "GROUP" -> object.getAssigneeType() == com.cyancoder.bpm.domain.AssigneeType.GROUP && actor.groups().contains(object.getAssignee()) && !isCompleted(scope, object, definitionsByFlow);
+            case "UNASSIGNED" -> (object.getAssignee() == null || object.getAssignee().isBlank()) && canRead(object, actor) && !isCompleted(scope, object, definitionsByFlow);
+            case "COMPLETED" -> isCompleted(scope, object, definitionsByFlow) && canRead(object, actor);
             default -> false;
         }).filter(object -> state == null || state.isBlank() || state.equalsIgnoreCase(object.getState()))
           .filter(object -> priority == null || priority.isBlank() || priority.equalsIgnoreCase(object.getPriority()))
@@ -247,6 +249,37 @@ public class ObjectFlowService {
         int from = Math.min(safePage * safeSize, filtered.size());
         int to = Math.min(from + safeSize, filtered.size());
         return new ManagedObjectQueueResponse(filtered.subList(from, to), filtered.size(), safePage, safeSize);
+    }
+
+    /**
+     * Lazily repairs managed objects that reached a terminal state before completedAt
+     * was introduced. This keeps existing work out of active queues without requiring
+     * an unsafe, environment-specific MongoDB script.
+     */
+    private boolean isCompleted(BpmScope scope,
+                                ManagedObject object,
+                                Map<String, DynamicFlowDefinition> definitionsByFlow) {
+        if (object.getCompletedAt() != null) return true;
+        try {
+            DynamicFlowDefinition definition = definitionsByFlow.computeIfAbsent(
+                    object.getFlowKey(),
+                    flowKey -> flowDefinitionService.getActiveByFlowKey(scope, flowKey)
+            );
+            boolean terminal = definition.getStates().stream()
+                    .anyMatch(state -> state.id().equals(object.getState()) && state.terminal());
+            if (!terminal) return false;
+
+            Instant completedAt = object.getTransitionHistory() == null || object.getTransitionHistory().isEmpty()
+                    ? object.getUpdatedAt()
+                    : object.getTransitionHistory().get(object.getTransitionHistory().size() - 1).getTimestamp();
+            if (completedAt == null) completedAt = object.getCreatedAt();
+            if (completedAt == null) completedAt = Instant.now();
+            object.setCompletedAt(completedAt);
+            managedObjectRepository.save(object);
+            return true;
+        } catch (NoSuchElementException ignored) {
+            return false;
+        }
     }
 
     public ManagedObject lock(BpmScope scope, String objectId, boolean lock, TransitionActorContext actor) {

@@ -86,6 +86,9 @@ the staging pool bounds without depending on Secret contents.
 Spring Boot 4 Mongo services use `spring.mongodb.uri`. Service server profiles
 bind their existing `<SERVICE>_MONGODB_URI` variable to that property, with a
 Kubernetes DNS default such as `mongodb://mongo:27017/search_index_service`.
+For BPM, the Deployment also sets the canonical `SPRING_MONGODB_URI` directly
+and uses bounded server-selection/connect timeouts so an unavailable MongoDB
+produces a truthful service error before the public gateway deadline.
 
 ## Verification
 

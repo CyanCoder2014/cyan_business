@@ -25,6 +25,7 @@ import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -275,7 +276,11 @@ public class ObjectFlowService {
             if (completedAt == null) completedAt = object.getCreatedAt();
             if (completedAt == null) completedAt = Instant.now();
             object.setCompletedAt(completedAt);
-            managedObjectRepository.save(object);
+            try {
+                managedObjectRepository.save(object);
+            } catch (OptimisticLockingFailureException ignored) {
+                // A concurrent cartable request repaired the same legacy document.
+            }
             return true;
         } catch (NoSuchElementException ignored) {
             return false;

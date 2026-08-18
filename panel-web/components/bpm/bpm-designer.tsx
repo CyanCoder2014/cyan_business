@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Background, Controls, MiniMap, ReactFlow, applyNodeChanges, type Connection, type Node, type NodeChange } from "@xyflow/react";
+import { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, MiniMap, Position, ReactFlow, getBezierPath, type Connection, type EdgeProps, type Node, type NodeChange, type NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { AsyncButton, CodeViewer, EmptyState, StatusBadge } from "@/components/ui/primitives";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
-import { activateFlow, listActionMetadata, saveFlow, type DynamicFlowDefinition, type FlowStateDraft, type FlowTransitionDraft } from "@/lib/bpm-api";
+import { activateFlow, getConditionMetadata, listActionMetadata, saveFlow, type BpmConditionStructure, type DynamicFlowDefinition, type FlowConditionDraft, type FlowStateDraft, type FlowTransitionDraft } from "@/lib/bpm-api";
 import { listAutomationFlows, type AutomationFlow } from "@/lib/automation-api";
 import { useRouter } from "next/navigation";
 
@@ -15,6 +15,24 @@ const newState = (index: number): FlowStateDraft => ({ id: `state-${crypto.rando
 const splitKeys = (value: string) => value.split(",").map(item => item.trim()).filter(Boolean);
 const joinKeys = (value?: string[]) => (value ?? []).join(", ");
 
+function BpmStateNode({ data, selected }: NodeProps) {
+  const value = data as { label?: string; terminal?: boolean; start?: boolean };
+  return <div className={`bpm-state-card ${value.terminal ? "terminal" : ""} ${value.start ? "start" : ""} ${selected ? "selected" : ""}`}>
+    <Handle type="target" position={Position.Left} aria-label="Incoming transition" />
+    <span className="bpm-state-kind">{value.start ? "▶" : value.terminal ? "■" : "●"}</span>
+    <div><strong>{String(value.label ?? "State")}</strong><small>{value.start ? "Start" : value.terminal ? "Terminal" : "State"}</small></div>
+    <Handle type="source" position={Position.Right} aria-label="Outgoing transition" />
+  </div>;
+}
+
+function TransitionEdge(props: EdgeProps) {
+  const [path, labelX, labelY] = getBezierPath(props);
+  return <><BaseEdge path={path} markerEnd={props.markerEnd} style={props.style}/><EdgeLabelRenderer><div className={`bpm-transition-label ${props.selected ? "selected" : ""}`} style={{ transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)` }}><span aria-hidden>◆</span><b>{String(props.label ?? "Transition")}</b></div></EdgeLabelRenderer></>;
+}
+
+const nodeTypes = { bpmState: BpmStateNode };
+const edgeTypes = { transitionEdge: TransitionEdge };
+
 export function BpmDesigner({ initial }: { initial?: DynamicFlowDefinition }) {
   const { locale } = usePanel();
   const { tenantKey, siteKey } = useScopeAccess();
@@ -22,25 +40,39 @@ export function BpmDesigner({ initial }: { initial?: DynamicFlowDefinition }) {
   const router = useRouter();
   const [flow, setFlow] = useState(initial ?? blank());
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedTransition, setSelectedTransition] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dirty, setDirty] = useState(!initial);
   const [actionTypes, setActionTypes] = useState<string[]>([]);
   const [automations, setAutomations] = useState<AutomationFlow[]>([]);
+  const [conditionMetadata, setConditionMetadata] = useState<BpmConditionStructure | null>(null);
 
-  useEffect(() => { Promise.all([listActionMetadata(scope), listAutomationFlows()]).then(([actions, definitions]) => { setActionTypes(actions.map(item => item.type)); setAutomations(definitions.filter(item => item.active)); }).catch(reason => setError(reason instanceof Error ? reason.message : String(reason))); }, [scope]);
+  useEffect(() => { Promise.all([listActionMetadata(scope), getConditionMetadata(scope), listAutomationFlows(scope)]).then(([actions, conditions, definitions]) => { setActionTypes(actions.map(item => item.type)); setConditionMetadata(conditions); setAutomations(definitions.filter(item => item.active)); }).catch(reason => setError(reason instanceof Error ? reason.message : String(reason))); }, [scope]);
   useEffect(() => { const guard = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault(); }; window.addEventListener("beforeunload", guard); return () => window.removeEventListener("beforeunload", guard); }, [dirty]);
 
   const nodes = useMemo<Node[]>(() => flow.states.map((state, index) => ({
     id: state.id,
+    type: "bpmState",
+    width: 178,
+    height: 60,
     position: { x: Number(flow.layout?.[state.id]?.x ?? 120 + (index % 3) * 220), y: Number(flow.layout?.[state.id]?.y ?? 100 + Math.floor(index / 3) * 140) },
     data: { label: state.displayName, terminal: state.terminal, start: state.id === flow.startState },
-    className: `bpm-state-node ${state.terminal ? "terminal" : ""} ${state.id === flow.startState ? "start" : ""} ${selected === state.id ? "selected" : ""}`
+    selected: selected === state.id
   })), [flow.layout, flow.startState, flow.states, selected]);
-  const edges = useMemo(() => flow.transitions.map(transition => ({ id: transition.id, source: transition.fromState, target: transition.toState, label: transition.label, animated: flow.active })), [flow.active, flow.transitions]);
+  const edges = useMemo(() => flow.transitions.map(transition => ({ id: transition.id, type: "transitionEdge", source: transition.fromState, target: transition.toState, label: transition.label, animated: flow.active, selected: transition.id === selectedTransition, markerEnd: { type: MarkerType.ArrowClosed } })), [flow.active, flow.transitions, selectedTransition]);
   const selectedState = flow.states.find(state => state.id === selected);
-  const onNodesChange = useCallback((changes: NodeChange[]) => { const next = applyNodeChanges(changes, nodes); setFlow(current => ({ ...current, layout: Object.fromEntries(next.map(node => [node.id, node.position])) })); if (changes.some(change => change.type === "position")) setDirty(true); }, [nodes]);
-  const connect = (connection: Connection) => { if (!connection.source || !connection.target) return; setFlow(current => ({ ...current, transitions: [...current.transitions, { id: `transition-${crypto.randomUUID().slice(0, 8)}`, fromState: connection.source!, toState: connection.target!, label: locale === "fa" ? "انتقال" : "Transition", allowedGroups: [], allowedRoles: [], conditions: [] }] })); setDirty(true); };
+  const transition = flow.transitions.find(item => item.id === selectedTransition);
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    const moved = changes.filter((change): change is Extract<NodeChange, { type: "position" }> => change.type === "position" && Boolean(change.position));
+    if (!moved.length) return;
+    setFlow(current => ({
+      ...current,
+      layout: moved.reduce((layout, change) => ({ ...layout, [change.id]: change.position! }), { ...(current.layout ?? {}) })
+    }));
+    setDirty(true);
+  }, []);
+  const connect = (connection: Connection) => { if (!connection.source || !connection.target || connection.source === connection.target) return; const id = `transition-${crypto.randomUUID().slice(0, 8)}`; setFlow(current => ({ ...current, transitions: [...current.transitions, { id, fromState: connection.source!, toState: connection.target!, label: locale === "fa" ? "انتقال" : "Transition", allowedGroups: [], allowedRoles: [], conditionOperator: "AND", conditions: [] }] })); setSelected(null); setSelectedTransition(id); setDirty(true); };
   const updateState = (patch: Partial<FlowStateDraft>) => { setFlow(current => ({ ...current, states: current.states.map(state => state.id === selected ? { ...state, ...patch } : state) })); setDirty(true); };
   const updateTransition = (id: string, patch: Partial<FlowTransitionDraft>) => { setFlow(current => ({ ...current, transitions: current.transitions.map(transition => transition.id === id ? { ...transition, ...patch } : transition) })); setDirty(true); };
   const mutate = async (kind: string, operation: () => Promise<DynamicFlowDefinition>) => { if (pending) return; setPending(kind); setError(null); try { const value = await operation(); setFlow(value); setDirty(false); if (!initial) router.replace(`/bpm/${encodeURIComponent(value.flowKey)}`); } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); } finally { setPending(null); } };
@@ -49,9 +81,9 @@ export function BpmDesigner({ initial }: { initial?: DynamicFlowDefinition }) {
     <div className="page-action-bar"><div><StatusBadge tone={flow.active ? "success" : "neutral"}>{flow.lifecycleStatus ?? (flow.active ? "ACTIVE" : "DRAFT")}</StatusBadge><span>v{flow.version ?? 1}</span>{dirty ? <small>{locale === "fa" ? "ذخیره‌نشده" : "Unsaved"}</small> : null}</div><div><AsyncButton pending={pending === "save"} disabled={Boolean(pending) || !flow.flowKey || !flow.name || !flow.states.length} onClick={() => mutate("save", () => saveFlow(flow, scope))}>{locale === "fa" ? "ذخیره" : "Save"}</AsyncButton>{!flow.active && flow.version ? <AsyncButton pending={pending === "activate"} disabled={Boolean(pending)} onClick={() => confirm(locale === "fa" ? "این فرایند فعال شود؟" : "Activate this BPM flow?") && mutate("activate", () => activateFlow(flow.flowKey, flow.version!, scope))}>{locale === "fa" ? "فعال‌سازی" : "Activate"}</AsyncButton> : null}</div></div>
     {error ? <div className="operational-banner error" role="alert"><span>{error}</span><button aria-label={locale === "fa" ? "بستن خطا" : "Dismiss error"} onClick={() => setError(null)}>×</button></div> : null}
     <div className="bpm-designer-grid">
-      <aside className="bpm-state-list" aria-label={locale === "fa" ? "فهرست وضعیت‌ها" : "Keyboard state list"}><header><strong>{locale === "fa" ? "وضعیت‌ها" : "States"}</strong><button aria-label={locale === "fa" ? "افزودن وضعیت" : "Add state"} onClick={() => { const state = newState(flow.states.length); setFlow(current => ({ ...current, states: [...current.states, state], startState: current.startState || state.id })); setSelected(state.id); setDirty(true); }}>＋</button></header>{flow.states.map(state => <button key={state.id} className={selected === state.id ? "active" : ""} aria-pressed={selected === state.id} onClick={() => setSelected(state.id)}><span className={state.terminal ? "state-dot terminal" : "state-dot"}/><span><strong>{state.displayName}</strong><small>{state.id}</small></span></button>)}</aside>
-      <div className="bpm-canvas">{flow.states.length ? <ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onConnect={connect} onNodeClick={(_, node) => setSelected(node.id)} fitView><Background/><Controls/><MiniMap/></ReactFlow> : <EmptyState title={locale === "fa" ? "وضعیتی نیست" : "No states"} description={locale === "fa" ? "اولین وضعیت را اضافه کنید." : "Add the first state to begin designing."}/>}</div>
-      <aside className="bpm-inspector">{selectedState ? <StateInspector state={selectedState} flow={flow} locale={locale} update={updateState} close={() => setSelected(null)} remove={() => { setFlow(current => ({ ...current, states: current.states.filter(state => state.id !== selected), transitions: current.transitions.filter(transition => transition.fromState !== selected && transition.toState !== selected), startState: current.startState === selected ? "" : current.startState })); setSelected(null); setDirty(true); }} actionTypes={actionTypes} automations={automations} setStart={() => { setFlow(current => ({ ...current, startState: selectedState.id })); setDirty(true); }}/> : <FlowSettings flow={flow} update={value => { setFlow(value); setDirty(true); }} updateTransition={updateTransition} locale={locale}/>}</aside>
+      <aside className="bpm-state-list" aria-label={locale === "fa" ? "فهرست وضعیت‌ها" : "Keyboard state list"}><header><strong>{locale === "fa" ? "وضعیت‌ها" : "States"}</strong><button aria-label={locale === "fa" ? "افزودن وضعیت" : "Add state"} onClick={() => { const state = newState(flow.states.length); setFlow(current => ({ ...current, states: [...current.states, state], startState: current.startState || state.id })); setSelectedTransition(null); setSelected(state.id); setDirty(true); }}>＋</button></header>{flow.states.map(state => <button key={state.id} className={selected === state.id ? "active" : ""} aria-pressed={selected === state.id} onClick={() => { setSelectedTransition(null); setSelected(state.id); }}><span className={state.terminal ? "state-dot terminal" : "state-dot"}/><span><strong>{state.displayName}</strong><small>{state.id}</small></span></button>)}</aside>
+      <div className="bpm-canvas">{flow.states.length ? <ReactFlow nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onConnect={connect} onNodeClick={(_, node) => { setSelectedTransition(null); setSelected(node.id); }} onEdgeClick={(_, edge) => { setSelected(null); setSelectedTransition(edge.id); }} onPaneClick={() => { setSelected(null); setSelectedTransition(null); }} fitView><Background/><Controls/><MiniMap/></ReactFlow> : <EmptyState title={locale === "fa" ? "وضعیتی نیست" : "No states"} description={locale === "fa" ? "اولین وضعیت را اضافه کنید." : "Add the first state to begin designing."}/>}</div>
+      <aside className="bpm-inspector">{selectedState ? <StateInspector state={selectedState} flow={flow} locale={locale} update={updateState} close={() => setSelected(null)} remove={() => { setFlow(current => ({ ...current, states: current.states.filter(state => state.id !== selected), transitions: current.transitions.filter(transition => transition.fromState !== selected && transition.toState !== selected), startState: current.startState === selected ? "" : current.startState })); setSelected(null); setDirty(true); }} actionTypes={actionTypes} automations={automations} setStart={() => { setFlow(current => ({ ...current, startState: selectedState.id })); setDirty(true); }}/> : transition ? <TransitionInspector transition={transition} states={flow.states} metadata={conditionMetadata} locale={locale} update={patch => updateTransition(transition.id, patch)} close={() => setSelectedTransition(null)} remove={() => { setFlow(current => ({ ...current, transitions: current.transitions.filter(item => item.id !== transition.id) })); setSelectedTransition(null); setDirty(true); }}/> : <FlowSettings flow={flow} update={value => { setFlow(value); setDirty(true); }} selectTransition={id => { setSelected(null); setSelectedTransition(id); }} locale={locale}/>}</aside>
     </div>
   </section>;
 }
@@ -74,10 +106,36 @@ function StateInspector({ state, flow, locale, update, close, remove, actionType
   </>;
 }
 
-function FlowSettings({ flow, update, updateTransition, locale }: { flow: DynamicFlowDefinition; update: (value: DynamicFlowDefinition) => void; updateTransition: (id: string, patch: Partial<FlowTransitionDraft>) => void; locale: string }) {
-  return <><header><div><small>{locale === "fa" ? "تنظیمات" : "Flow settings"}</small><h2>{flow.name || "—"}</h2></div></header><label><span>{locale === "fa" ? "کلید" : "Flow key"}</span><input dir="ltr" disabled={Boolean(flow.id)} value={flow.flowKey} onChange={event => update({ ...flow, flowKey: event.target.value })}/></label><label><span>{locale === "fa" ? "نام" : "Name"}</span><input value={flow.name} onChange={event => update({ ...flow, name: event.target.value })}/></label><label><span>{locale === "fa" ? "توضیح" : "Description"}</span><textarea value={flow.description ?? ""} onChange={event => update({ ...flow, description: event.target.value })}/></label>
-    <section className="state-actions"><header><strong>{locale === "fa" ? "انتقال‌ها" : "Transitions"}</strong></header>{flow.transitions.map(transition => <article key={transition.id}><label><span>{locale === "fa" ? "عنوان" : "Label"}</span><input value={transition.label} onChange={event => updateTransition(transition.id, { label: event.target.value })}/></label><small dir="ltr">{transition.fromState} → {transition.toState}</small><label><span>{locale === "fa" ? "نقش‌های مجاز" : "Allowed roles"}</span><input dir="ltr" value={joinKeys(transition.allowedRoles)} onChange={event => updateTransition(transition.id, { allowedRoles: splitKeys(event.target.value) })}/></label><label><span>{locale === "fa" ? "گروه‌های مجاز" : "Allowed groups"}</span><input dir="ltr" value={joinKeys(transition.allowedGroups)} onChange={event => updateTransition(transition.id, { allowedGroups: splitKeys(event.target.value) })}/></label><button aria-label={locale === "fa" ? "حذف انتقال" : "Remove transition"} onClick={() => update({ ...flow, transitions: flow.transitions.filter(item => item.id !== transition.id) })}>×</button></article>)}</section>
-    <details><summary>{locale === "fa" ? "JSON فرایند" : "Flow JSON"}</summary><CodeViewer value={flow.transitions}/></details>
+function FlowSettings({ flow, update, selectTransition, locale }: { flow: DynamicFlowDefinition; update: (value: DynamicFlowDefinition) => void; selectTransition: (id: string) => void; locale: string }) {
+  const [from, setFrom] = useState(flow.states[0]?.id ?? "");
+  const [to, setTo] = useState(flow.states[1]?.id ?? flow.states[0]?.id ?? "");
+  const addTransition = () => {
+    if (!from || !to || from === to) return;
+    const id = `transition-${crypto.randomUUID().slice(0, 8)}`;
+    update({ ...flow, transitions: [...flow.transitions, { id, fromState: from, toState: to, label: locale === "fa" ? "انتقال" : "Transition", allowedGroups: [], allowedRoles: [], conditionOperator: "AND", conditions: [] }] });
+    selectTransition(id);
+  };
+  return <><header><div><small>{locale === "fa" ? "تنظیمات" : "Flow settings"}</small><h2>{flow.name || "—"}</h2></div></header>
+    <label><span>{locale === "fa" ? "کلید" : "Flow key"}</span><input dir="ltr" disabled={Boolean(flow.id)} value={flow.flowKey} onChange={event => update({ ...flow, flowKey: event.target.value })}/></label>
+    <label><span>{locale === "fa" ? "نام" : "Name"}</span><input value={flow.name} onChange={event => update({ ...flow, name: event.target.value })}/></label>
+    <label><span>{locale === "fa" ? "توضیح" : "Description"}</span><textarea value={flow.description ?? ""} onChange={event => update({ ...flow, description: event.target.value })}/></label>
+    <section className="transition-keyboard-builder"><header><strong>{locale === "fa" ? "افزودن انتقال" : "Add transition"}</strong><small>{locale === "fa" ? "جایگزین صفحه‌کلید برای رسم خط" : "Keyboard alternative to drawing a line"}</small></header><label><span>{locale === "fa" ? "از" : "From"}</span><select value={from} onChange={event => setFrom(event.target.value)}>{flow.states.map(state => <option value={state.id} key={state.id}>{state.displayName}</option>)}</select></label><label><span>{locale === "fa" ? "به" : "To"}</span><select value={to} onChange={event => setTo(event.target.value)}>{flow.states.map(state => <option value={state.id} key={state.id}>{state.displayName}</option>)}</select></label><button className="secondary-pill" disabled={!from || !to || from === to} onClick={addTransition}>＋ {locale === "fa" ? "انتقال" : "Transition"}</button></section>
+    <section className="transition-summary"><header><strong>{locale === "fa" ? "انتقال‌ها" : "Transitions"}</strong><span>{flow.transitions.length}</span></header>{flow.transitions.map(item => <button key={item.id} onClick={() => selectTransition(item.id)}><span aria-hidden>◆</span><span><strong>{item.label}</strong><small dir="ltr">{item.fromState} → {item.toState}</small></span><em>{item.conditions?.length ?? 0} {locale === "fa" ? "شرط" : "conditions"}</em></button>)}</section>
+    <details><summary>{locale === "fa" ? "JSON پیشرفته" : "Advanced JSON"}</summary><CodeViewer value={flow.transitions}/></details>
+  </>;
+}
+
+function TransitionInspector({ transition, states, metadata, locale, update, close, remove }: { transition: FlowTransitionDraft; states: FlowStateDraft[]; metadata: BpmConditionStructure | null; locale: string; update: (patch: Partial<FlowTransitionDraft>) => void; close: () => void; remove: () => void }) {
+  const conditions = transition.conditions ?? [];
+  const operators = metadata?.operators ?? [];
+  const addCondition = () => update({ conditions: [...conditions, { field: metadata?.supportedFields?.[0] ?? "payload.", operator: operators[0]?.key ?? "EQUALS", value: "" }] });
+  const updateCondition = (index: number, patch: Partial<FlowConditionDraft>) => update({ conditions: conditions.map((condition, itemIndex) => itemIndex === index ? { ...condition, ...patch } : condition) });
+  return <><header><div className="transition-inspector-heading"><span aria-hidden>◆</span><div><small>{locale === "fa" ? "تصمیم / انتقال" : "Decision transition"}</small><h2>{transition.label}</h2></div></div><button onClick={close} aria-label={locale === "fa" ? "بستن بازرس" : "Close inspector"}>×</button></header>
+    <label><span>{locale === "fa" ? "عنوان" : "Label"}</span><input value={transition.label} onChange={event => update({ label: event.target.value })}/></label>
+    <div className="transition-route"><label><span>{locale === "fa" ? "از" : "From"}</span><select value={transition.fromState} onChange={event => update({ fromState: event.target.value })}>{states.map(state => <option value={state.id} key={state.id}>{state.displayName}</option>)}</select></label><span aria-hidden>→</span><label><span>{locale === "fa" ? "به" : "To"}</span><select value={transition.toState} onChange={event => update({ toState: event.target.value })}>{states.map(state => <option value={state.id} key={state.id}>{state.displayName}</option>)}</select></label></div>
+    <fieldset><legend>{locale === "fa" ? "دسترسی انتقال" : "Transition access"}</legend><label><span>{locale === "fa" ? "نقش‌های مجاز" : "Allowed roles"}</span><input dir="ltr" value={joinKeys(transition.allowedRoles)} onChange={event => update({ allowedRoles: splitKeys(event.target.value) })}/></label><label><span>{locale === "fa" ? "گروه‌های مجاز" : "Allowed groups"}</span><input dir="ltr" value={joinKeys(transition.allowedGroups)} onChange={event => update({ allowedGroups: splitKeys(event.target.value) })}/></label></fieldset>
+    <section className="condition-builder"><header><div><strong>{locale === "fa" ? "شرط‌های تصمیم" : "Decision conditions"}</strong><small>{locale === "fa" ? "شرط‌ها روی همین لوزی ارزیابی می‌شوند." : "Rules are evaluated on this diamond."}</small></div><button aria-label={locale === "fa" ? "افزودن شرط" : "Add condition"} onClick={addCondition}>＋</button></header>{conditions.length ? <><label><span>{locale === "fa" ? "منطق" : "Match"}</span><select value={transition.conditionOperator ?? "AND"} onChange={event => update({ conditionOperator: event.target.value as "AND" | "OR" })}><option value="AND">{locale === "fa" ? "همه شرط‌ها" : "All conditions (AND)"}</option><option value="OR">{locale === "fa" ? "حداقل یک شرط" : "Any condition (OR)"}</option></select></label>{conditions.map((condition, index) => <article key={`${condition.field}-${index}`}><input aria-label={locale === "fa" ? "مسیر فیلد" : "Field path"} dir="ltr" list="bpm-condition-fields" value={condition.field} onChange={event => updateCondition(index, { field: event.target.value })}/><select aria-label={locale === "fa" ? "عملگر" : "Operator"} value={condition.operator} onChange={event => updateCondition(index, { operator: event.target.value })}>{operators.map(operator => <option value={operator.key} key={operator.key}>{operator.key}</option>)}</select><input aria-label={locale === "fa" ? "مقدار" : "Value"} dir="ltr" value={condition.value == null ? "" : String(condition.value)} onChange={event => updateCondition(index, { value: event.target.value })}/><button aria-label={locale === "fa" ? "حذف شرط" : "Remove condition"} onClick={() => update({ conditions: conditions.filter((_, itemIndex) => itemIndex !== index) })}>×</button></article>)}</> : <p className="muted">{locale === "fa" ? "بدون شرط، انتقال همیشه مجاز است." : "With no conditions, the transition is always eligible."}</p>}<datalist id="bpm-condition-fields">{metadata?.supportedFields?.map(field => <option value={field} key={field}/>)}</datalist></section>
+    <button className="danger-link" onClick={remove}>{locale === "fa" ? "حذف انتقال" : "Delete transition"}</button>
   </>;
 }
 

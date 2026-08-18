@@ -25,7 +25,7 @@ public class EndpointDynamicFlowDefinitionController {
     }
 
     @GetMapping
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.manage','builder:*')")
     public List<DynamicFlowDefinition> list(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey
@@ -34,7 +34,7 @@ public class EndpointDynamicFlowDefinitionController {
     }
 
     @GetMapping("/{flowKey}")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.manage','builder:*')")
     public DynamicFlowDefinition getLatest(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -44,7 +44,7 @@ public class EndpointDynamicFlowDefinitionController {
     }
 
     @PostMapping
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.manage','builder:*')")
     public DynamicFlowDefinition save(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -55,7 +55,7 @@ public class EndpointDynamicFlowDefinitionController {
     }
 
     @PostMapping("/{flowKey}/activate/{version}")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.manage','builder:*')")
     public DynamicFlowDefinition activate(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,

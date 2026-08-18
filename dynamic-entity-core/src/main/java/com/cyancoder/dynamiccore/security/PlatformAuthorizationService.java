@@ -27,15 +27,34 @@ public class PlatformAuthorizationService {
     }
 
     public boolean canReadService(String serviceKey) {
-        return hasAnyPermission("*", "panel:*", "builder:*", "service:*", "service:" + serviceKey + ":read", "service:" + serviceKey + ":write", "service:" + serviceKey + ":manage");
+        return hasAnyPermission("*", "panel:*", "builder:*", "operations:*", "service:*", "service:" + serviceKey + ":read",
+                "service:" + serviceKey + ":write", "service:" + serviceKey + ":manage");
     }
 
     public boolean canWriteService(String serviceKey) {
-        return hasAnyPermission("*", "panel:*", "builder:*", "service:*", "service:" + serviceKey + ":write", "service:" + serviceKey + ":manage");
+        return hasAnyPermission("*", "panel:*", "builder:*", "operations:*", "service:*",
+                "service:" + serviceKey + ":write", "service:" + serviceKey + ":manage");
     }
 
     public boolean canManageService(String serviceKey) {
-        return hasAnyPermission("*", "panel:*", "builder:*", "iam:*", "service:*", "service:" + serviceKey + ":manage");
+        return hasAnyPermission("*", "panel:*", "builder:*", "iam:*", "service:*",
+                "service:" + serviceKey + ":manage");
+    }
+
+    public boolean canReadDefinitions(String serviceKey) {
+        return hasAnyPermission("definition.read", "definition.manage") || canReadService(serviceKey);
+    }
+
+    public boolean canManageDefinitions(String serviceKey) {
+        return hasAnyPermission("definition.manage") || canManageService(serviceKey);
+    }
+
+    public boolean canReadRecords(String serviceKey) {
+        return hasAnyPermission("record.read", "record.manage") || canReadService(serviceKey);
+    }
+
+    public boolean canWriteRecords(String serviceKey) {
+        return hasAnyPermission("record.manage") || canWriteService(serviceKey);
     }
 
     public boolean canUseCapability(String capabilityKey) {

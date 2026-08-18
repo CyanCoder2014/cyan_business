@@ -20,13 +20,13 @@ public class EndpointBpmMetadataController {
     }
 
     @GetMapping({"/actions", "/state-actions"})
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.manage','builder:*')")
     public List<StateActionStructureResponse> actions() {
         return metadataService.stateActionStructures();
     }
 
     @GetMapping("/transition-conditions")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.manage','builder:*')")
     public TransitionConditionStructureResponse transitionConditions() {
         return metadataService.transitionConditionStructure();
     }

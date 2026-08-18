@@ -28,7 +28,7 @@ public class EndpointDynamicEntityOpenApiController {
     }
 
     @GetMapping("/definitions/{entityKey}/openapi")
-    @PreAuthorize("@platformAuthorizationService.canReadService(@endpointDynamicEntityOpenApiController.serviceKey())")
+    @PreAuthorize("@platformAuthorizationService.canReadDefinitions(@endpointDynamicEntityOpenApiController.serviceKey())")
     public OpenAPI entityOpenApi(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,

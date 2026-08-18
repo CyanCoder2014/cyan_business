@@ -7,9 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EndpointAutomationFlowControllerAuthorizationTest {
     @Test
-    void automationDefinitionEndpointsUseBuilderAccess() {
-        PreAuthorize authorization = EndpointAutomationFlowController.class.getAnnotation(PreAuthorize.class);
+    void automationDefinitionReadsUseCanonicalAutomationAccess() throws NoSuchMethodException {
+        PreAuthorize authorization = EndpointAutomationFlowController.class
+                .getDeclaredMethod("list", String.class, String.class)
+                .getAnnotation(PreAuthorize.class);
 
-        assertEquals("@platformAuthorizationService.canUseCapability('builder:use')", authorization.value());
+        assertEquals("@platformAuthorizationService.hasAnyPermission('automation.read','automation.manage','builder:*')", authorization.value());
     }
 }

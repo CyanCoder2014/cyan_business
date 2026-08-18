@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/endpoint/automation-orchestrator/credentials")
-@PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+@PreAuthorize("@platformAuthorizationService.hasAnyPermission('automation.manage','builder:*')")
 public class EndpointConnectorCredentialController {
     private final ConnectorCredentialService service;
     public EndpointConnectorCredentialController(ConnectorCredentialService service) { this.service = service; }

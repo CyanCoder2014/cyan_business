@@ -49,7 +49,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/assignment-targets")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public java.util.List<com.cyancoder.bpm.api.dto.AssignmentTargetResponse> assignmentTargets(
             @RequestHeader("X-Tenant-Key") String tenantKey,
             @RequestParam(defaultValue = "USER") com.cyancoder.bpm.domain.AssigneeType type,
@@ -58,7 +58,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/cartable")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public com.cyancoder.bpm.api.dto.ManagedObjectQueueResponse cartable(
             @RequestHeader("X-Tenant-Key") String tenantKey,
             @RequestHeader(value="X-Site-Key",required=false) String siteKey,
@@ -74,7 +74,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public List<ManagedObject> list(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey
@@ -83,7 +83,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/assigned-to-me")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public List<ManagedObject> getAssignedToCurrentUser(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -94,7 +94,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/visible-to-me")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public List<ManagedObject> getVisibleToCurrentUser(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -104,7 +104,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PostMapping
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.manage','operations:*')")
     public ManagedObject createAndStart(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -115,7 +115,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PostMapping("/{objectId}/transitions")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public ManagedObject transition(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -127,7 +127,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/{objectId}/transitions")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public List<TransitionOptionResponse> availableTransitions(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -143,7 +143,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/{objectId}/active-form")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public ManagedObjectActiveFormResponse getActiveForm(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -153,7 +153,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PostMapping("/{objectId}/active-form/submissions")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public ManagedObjectFormSubmissionResponse submitActiveForm(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -165,7 +165,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PostMapping("/{objectId}/comments")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public ManagedObjectComment addComment(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -178,7 +178,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/{objectId}/comments")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public List<ManagedObjectComment> comments(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -190,7 +190,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PostMapping("/{objectId}/attachments")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public ManagedObjectAttachment addAttachment(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -203,7 +203,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/{objectId}/attachments")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public List<ManagedObjectAttachment> attachments(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -215,7 +215,7 @@ public class EndpointManagedObjectFlowController {
     }
 
     @GetMapping("/{objectId}")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.read','bpm.transition','bpm.manage','operations:*')")
     public ManagedObject get(
             @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
             @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
@@ -225,14 +225,14 @@ public class EndpointManagedObjectFlowController {
     }
 
     @PutMapping("/{objectId}/assignment")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public ManagedObject assign(@RequestHeader(value="X-Tenant-Key",required=false) String tenantKey,@RequestHeader(value="X-Site-Key",required=false) String siteKey,@PathVariable String objectId,@Valid @RequestBody com.cyancoder.bpm.api.dto.AssignManagedObjectRequest request,Authentication authentication){return objectFlowService.assign(FlowScopeResolver.fromHeaders(tenantKey,siteKey),objectId,request.assignee(),request.assigneeType(),actorContextResolver.fromAuthentication(authentication));}
 
     @PostMapping("/{objectId}/lock")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public ManagedObject lock(@RequestHeader(value="X-Tenant-Key",required=false) String tenantKey,@RequestHeader(value="X-Site-Key",required=false) String siteKey,@PathVariable String objectId,Authentication authentication){return objectFlowService.lock(FlowScopeResolver.fromHeaders(tenantKey,siteKey),objectId,true,actorContextResolver.fromAuthentication(authentication));}
 
     @PostMapping("/{objectId}/unlock")
-    @PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public ManagedObject unlock(@RequestHeader(value="X-Tenant-Key",required=false) String tenantKey,@RequestHeader(value="X-Site-Key",required=false) String siteKey,@PathVariable String objectId,Authentication authentication){return objectFlowService.lock(FlowScopeResolver.fromHeaders(tenantKey,siteKey),objectId,false,actorContextResolver.fromAuthentication(authentication));}
 }

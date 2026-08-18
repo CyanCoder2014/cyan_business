@@ -95,6 +95,7 @@ public class ObjectFlowService {
             saved = managedObjectRepository.save(saved);
         }
         advanceThroughAutomaticStates(scope, saved, definition, actorContext, Map.of(), actor(actorContext));
+        syncCompletion(saved, definition);
         saved.setUpdatedAt(Instant.now());
         saved = managedObjectRepository.save(saved);
         return saved;
@@ -127,6 +128,7 @@ public class ObjectFlowService {
         syncStatePayload(object, newState);
         applyStateEffects(scope, object, newState, actor);
         advanceThroughAutomaticStates(scope, object, definition, actorContext, context == null ? Map.of() : context, actor);
+        syncCompletion(object, definition);
         object.setUpdatedAt(Instant.now());
         return managedObjectRepository.save(object);
     }
@@ -465,6 +467,15 @@ public class ObjectFlowService {
         object.getPayload().put("entityService", state.entityService());
         object.getPayload().put("entityKey", state.entityKey());
         object.setAccessRule(state.accessRule());
+    }
+
+    private void syncCompletion(ManagedObject object, DynamicFlowDefinition definition) {
+        FlowState currentState = findState(definition, object.getState());
+        if (currentState.terminal()) {
+            if (object.getCompletedAt() == null) object.setCompletedAt(Instant.now());
+        } else {
+            object.setCompletedAt(null);
+        }
     }
 
     private void applyStateEffects(BpmScope scope, ManagedObject object, FlowState state, String actor) {

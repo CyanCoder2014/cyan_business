@@ -5,6 +5,7 @@ import type {
   DynamicServiceKey
 } from "@/lib/types";
 import { platformFetch } from "@/lib/platform-auth";
+import { platformErrorFromResponse } from "@/lib/api-error";
 
 export const dynamicServices: DynamicServiceKey[] = [
   "content-service",
@@ -55,8 +56,7 @@ async function requestJson<T>(serviceKey: DynamicServiceKey, path: string, init?
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(body || `Request failed with status ${response.status}`);
+    throw await platformErrorFromResponse(response);
   }
 
   return response.json() as Promise<T>;

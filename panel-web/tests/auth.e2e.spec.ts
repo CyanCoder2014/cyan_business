@@ -25,6 +25,19 @@ const storageKeys = {
 };
 const panelBootstrap = { identity:{username:"user@cyan.local",email:"user@cyan.local",mfaEnabled:false,roles:["user"],active:true},access:{realmRoles:["tenant-admin"],realmPermissions:["panel:read","project.create","project.read","definition.read","record.read","bpm.read","settings.read"],clients:[]},tenants:[{tenantKey:"tenant-demo",displayName:"Demo workspace",status:"ACTIVE",membershipRole:"TENANT_OWNER"}],sites:[{tenantKey:"tenant-demo",siteKey:"site-commerce",name:"Commerce",status:"ACTIVE"}],activeTenantKey:"tenant-demo",activeSiteKey:"site-commerce",subscription:{tenantKey:"tenant-demo",planKey:null,status:"NONE",features:[],limits:{},providerState:"NOT_CONFIGURED"},capabilities:[{key:"dynamic-entities",enabled:true,source:"TENANT_OVERRIDE",status:"AVAILABLE",limits:{}}],featureFlags:{},services:{identity:"AVAILABLE",tenancy:"AVAILABLE",sessionScope:"AVAILABLE",sites:"AVAILABLE",billing:"NOT_CONFIGURED",capabilities:"AVAILABLE"},warnings:[]};
 
+test("mobile dark login colors the page and browser chrome consistently", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => localStorage.setItem("cyan.panel.theme", "dark"));
+  await routeCaptcha(page);
+  await page.goto("/auth");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  const themeColors = page.locator('meta[name="theme-color"]');
+  await expect(themeColors).toHaveCount(2);
+  expect(await themeColors.evaluateAll((elements) => elements.map((element) => element.getAttribute("content")))).toEqual(["#07101e", "#07101e"]);
+  const background = await page.locator(".auth-shell").evaluate((element) => getComputedStyle(element).backgroundImage);
+  expect(background).toContain("rgb(4, 12, 24)");
+});
+
 test("redirects to auth without a token and returns after sign in", async ({ page }) => {
   await page.addInitScript((keys) => {
     window.localStorage.removeItem(keys.accessToken);

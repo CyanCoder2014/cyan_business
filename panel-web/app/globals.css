@@ -2139,6 +2139,12 @@ select:focus {
     linear-gradient(180deg, #fbfcff 0%, var(--bg) 100%);
 }
 
+:root[data-theme="dark"] .auth-shell {
+  background:
+    radial-gradient(circle at top center, rgba(76, 102, 255, 0.16), transparent 32%),
+    linear-gradient(180deg, #040c18 0%, var(--bg) 100%);
+}
+
 .auth-body {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(400px, 520px);
@@ -2400,6 +2406,16 @@ select:focus {
   padding: 24px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 24px 60px rgba(60, 75, 125, 0.08);
+}
+
+:root[data-theme="dark"] .auth-tabs,
+:root[data-theme="dark"] .auth-tabs button.active,
+:root[data-theme="dark"] .auth-input-shell input,
+:root[data-theme="dark"] .auth-social-btn,
+:root[data-theme="dark"] .auth-mini-chat,
+:root[data-theme="dark"] .auth-flow-steps span {
+  background: var(--surface-strong);
+  border-color: var(--border);
 }
 
 :root[data-theme="dark"] .auth-card {
@@ -2689,6 +2705,12 @@ select:focus {
     padding-inline: 18px;
   }
 
+  .auth-shell {
+    min-height: 100dvh;
+    padding-block-start: calc(18px + env(safe-area-inset-top));
+    padding-block-end: calc(18px + env(safe-area-inset-bottom));
+  }
+
   .auth-footer {
     flex-direction: column;
     align-items: flex-start;
@@ -2832,6 +2854,7 @@ select:focus {
 .dialog-header h2{margin:0!important;font-size:1.14rem;line-height:1.35}.dialog-header p{max-width:58ch;margin:6px 0 0!important;color:var(--muted);line-height:1.55}
 .dialog-close{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;padding:0;border:1px solid transparent;border-radius:10px;background:var(--surface-subtle);color:var(--muted);font-size:1.35rem;line-height:1}.dialog-close:hover{border-color:var(--border);color:var(--text)}
 .dialog-content{padding:20px 22px;overflow:auto;overscroll-behavior:contain}.dialog-content>.dialog-actions:last-child{position:sticky;inset-block-end:-20px;margin:20px -22px -20px;padding:14px 22px;border-block-start:1px solid var(--border);background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px)}
+.workspace-choice-list{display:grid;gap:10px}.workspace-choice{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;min-height:64px;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--surface-subtle);color:var(--text);text-align:start}.workspace-choice:hover{border-color:var(--border-strong)}.workspace-choice.selected{border-color:color-mix(in srgb,var(--blue) 62%,var(--border));background:color-mix(in srgb,var(--blue) 8%,var(--surface))}.workspace-choice-mark{display:grid;place-items:center;width:24px;height:24px;border:1px solid var(--border-strong);border-radius:50%;color:#fff;background:var(--surface);font-size:.74rem;font-weight:800}.workspace-choice.selected .workspace-choice-mark{border-color:var(--blue);background:var(--blue)}.workspace-choice>span:nth-child(2){display:grid;gap:3px;min-width:0}.workspace-choice strong,.workspace-choice small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.workspace-choice small{color:var(--muted);font-size:.72rem}.workspace-choice em{color:var(--muted);font-size:.67rem;font-style:normal;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.workspace-choice-list+.field-error{margin:12px 0 0}
 .toast-viewport{position:fixed;z-index:160;inset-block-start:calc(18px + env(safe-area-inset-top));inset-inline-end:18px;display:flex;flex-direction:column;gap:10px;width:min(390px,calc(100vw - 28px));pointer-events:none}
 .app-toast{display:grid;grid-template-columns:34px minmax(0,1fr) 28px;align-items:start;gap:11px;padding:13px 12px;border:1px solid var(--border);border-radius:15px;background:color-mix(in srgb,var(--surface) 96%,transparent);box-shadow:0 15px 44px rgba(13,20,44,.18);backdrop-filter:blur(16px);pointer-events:auto;animation:toast-slide-in .2s ease-out}
 .app-toast.success{border-color:color-mix(in srgb,#1e9d67 36%,var(--border))}.app-toast.error{border-color:color-mix(in srgb,var(--danger) 42%,var(--border))}.app-toast.warning{border-color:color-mix(in srgb,#d69216 38%,var(--border))}.app-toast.info{border-color:color-mix(in srgb,var(--blue) 35%,var(--border))}

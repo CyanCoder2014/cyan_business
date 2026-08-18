@@ -16,7 +16,7 @@ export const SegmentedControl = Tabs;
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: string }) { return <span className={`status-pill ${tone}`}>{children}</span>; }
 export const StatusBadge = Badge;
 export function Card(props: HTMLAttributes<HTMLElement>) { return <section {...props} className={`panel-card ${props.className ?? ""}`} />; }
-export function Dialog({ open, title, description, children, onClose, closeLabel="Close dialog", size="medium" }: { open: boolean; title: string; description?:string; children: ReactNode; onClose: () => void; closeLabel?:string; size?:"small"|"medium"|"large" }) {
+export function Dialog({ open, title, description, children, onClose, closeLabel="Close dialog", size="medium", dismissible=true }: { open: boolean; title: string; description?:string; children: ReactNode; onClose: () => void; closeLabel?:string; size?:"small"|"medium"|"large"; dismissible?:boolean }) {
   const dialogRef = useRef<HTMLElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const titleId = useId();
@@ -33,7 +33,7 @@ export function Dialog({ open, title, description, children, onClose, closeLabel
     const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])') ?? []);
     (focusable()[0] ?? dialog)?.focus();
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); close(); return; }
+      if (event.key === "Escape" && dismissible) { event.preventDefault(); close(); return; }
       if (event.key !== "Tab") return;
       const items = focusable(); if (!items.length) { event.preventDefault(); dialog?.focus(); return; }
       const first = items[0], last = items[items.length - 1];
@@ -42,10 +42,10 @@ export function Dialog({ open, title, description, children, onClose, closeLabel
     };
     document.addEventListener("keydown", keydown);
     return () => { document.removeEventListener("keydown", keydown); returnFocusRef.current?.focus(); };
-  }, [open, close]);
-  return open ? <div className="dialog-backdrop" onMouseDown={close}>
+  }, [open, close, dismissible]);
+  return open ? <div className="dialog-backdrop" onMouseDown={dismissible?close:undefined}>
     <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={description?descriptionId:undefined} className={`scope-dialog dialog-${size}`} onMouseDown={(event) => event.stopPropagation()}>
-      <header className="dialog-header"><div><h2 id={titleId}>{title}</h2>{description?<p id={descriptionId}>{description}</p>:null}</div><button type="button" className="dialog-close" aria-label={closeLabel} onClick={close}>×</button></header>
+      <header className="dialog-header"><div><h2 id={titleId}>{title}</h2>{description?<p id={descriptionId}>{description}</p>:null}</div>{dismissible?<button type="button" className="dialog-close" aria-label={closeLabel} onClick={close}>×</button>:null}</header>
       <div className="dialog-content">{children}</div>
     </section>
   </div> : null;

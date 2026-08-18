@@ -7,7 +7,7 @@ import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
 import { getPlatformAuthToken, logoutPlatformSession, platformFetch, redirectToAuth } from "@/lib/platform-auth";
 import { NotificationCenter } from "@/components/notifications/notification-center";
-import { AsyncButton } from "@/components/ui/primitives";
+import { AsyncButton, Dialog } from "@/components/ui/primitives";
 
 type PanelShellProps = { title: string; titleFa: string; subtitle: string; subtitleFa: string; kicker?: string; kickerFa?: string; activeKey: string; children: ReactNode };
 type NavItem = { href: string; key: string; icon: string; en: string; fa: string; capability?: string; permission?: string; platformOnly?: boolean };
@@ -49,7 +49,7 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
 export function PanelShell(props: PanelShellProps) {
   const pathname = usePathname();
   const { locale, theme, setTheme, toggleLocale, isRtl } = usePanel();
-  const { bootstrap, loading, error, tenantKey, siteKey, selectScope, refresh, can } = useScopeAccess();
+  const { bootstrap, loading, selectionPending, error, tenantKey, siteKey, selectScope, refresh, can } = useScopeAccess();
   const [authChecked, setAuthChecked] = useState(false);
   const [sheet, setSheet] = useState<"build" | "more" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -97,8 +97,8 @@ export function PanelShell(props: PanelShellProps) {
       <div className="workspace-main">
         <header className="workspace-header">
           <div className="workspace-switchers">
-            <label className="scope-control"><span>{locale === "fa" ? "فضای کار" : "Workspace"}</span><select aria-label={locale === "fa" ? "انتخاب فضای کار" : "Select workspace"} value={tenantKey ?? ""} disabled={loading || !bootstrap?.tenants.length} onChange={(event) => selectScope(event.target.value, null).catch((reason) => setActionError(String(reason)))}><option value="">{locale === "fa" ? "انتخاب کنید" : "Select"}</option>{bootstrap?.tenants.map((item) => <option key={item.tenantKey} value={item.tenantKey}>{item.displayName}</option>)}</select></label>
-            <label className="scope-control"><span>{locale === "fa" ? "سایت" : "Site"}</span><select aria-label={locale === "fa" ? "انتخاب سایت" : "Select site"} value={siteKey ?? ""} disabled={loading || !tenantKey || !bootstrap?.sites.length} onChange={(event) => selectScope(tenantKey!, event.target.value || null).catch((reason) => setActionError(String(reason)))}><option value="">{locale === "fa" ? "بدون سایت" : "No site"}</option>{bootstrap?.sites.map((item) => <option key={item.siteKey} value={item.siteKey}>{item.name}</option>)}</select></label>
+            <label className="scope-control"><span>{locale === "fa" ? "فضای کار" : "Workspace"}</span><select aria-label={locale === "fa" ? "انتخاب فضای کار" : "Select workspace"} value={tenantKey ?? ""} disabled={loading || selectionPending || !bootstrap?.tenants.length} onChange={(event) => selectScope(event.target.value, null).catch((reason) => setActionError(reason instanceof Error ? reason.message : String(reason)))}><option value="" disabled>{locale === "fa" ? "انتخاب کنید" : "Select"}</option>{bootstrap?.tenants.map((item) => <option key={item.tenantKey} value={item.tenantKey}>{item.displayName}</option>)}</select></label>
+            <label className="scope-control"><span>{locale === "fa" ? "سایت" : "Site"}</span><select aria-label={locale === "fa" ? "انتخاب سایت" : "Select site"} value={siteKey ?? ""} disabled={loading || selectionPending || !tenantKey || !bootstrap?.sites.length} onChange={(event) => selectScope(tenantKey!, event.target.value || null).catch((reason) => setActionError(reason instanceof Error ? reason.message : String(reason)))}><option value="">{locale === "fa" ? "بدون سایت" : "No site"}</option>{bootstrap?.sites.map((item) => <option key={item.siteKey} value={item.siteKey}>{item.name}</option>)}</select></label>
             {!loading && bootstrap && !bootstrap.tenants.length ? <span className="scope-unavailable">{locale === "fa" ? "فضای کاری در دسترس نیست" : "No workspace available"}</span> : null}
           </div>
           <div className="header-actions">
@@ -120,8 +120,29 @@ export function PanelShell(props: PanelShellProps) {
       </div>
       <nav className="mobile-bottom-nav" aria-label={locale === "fa" ? "ناوبری موبایل" : "Mobile navigation"}><Link href="/dashboard"><span>⌂</span><span>{locale === "fa" ? "خانه" : "Home"}</span></Link><Link href="/ai"><span>✦</span><span>{locale === "fa" ? "هوش" : "AI"}</span></Link><button onClick={() => setSheet("build")}><span>＋</span><span>{locale === "fa" ? "ساخت" : "Build"}</span></button><Link href="/work"><span>⌁</span><span>{locale === "fa" ? "کار" : "Work"}</span></Link><button onClick={() => setSheet("more")}><span>•••</span><span>{locale === "fa" ? "بیشتر" : "More"}</span></button></nav>
       {sheet ? <div className="sheet-backdrop" onClick={() => setSheet(null)}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={sheet === "build" ? "Build navigation" : "More navigation"} onClick={(event) => event.stopPropagation()}><div className="sheet-handle"/><div className="sheet-grid">{groups.slice(sheet === "build" ? 1 : 2, sheet === "build" ? 2 : groups.length).flatMap((group) => group.items).filter(item=>!item.platformOnly||isPlatformAdmin).map((item) => navEnabled(item) ? <Link key={item.key} href={item.href} onClick={() => setSheet(null)}><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</Link> : <span key={item.key} aria-disabled="true"><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</span>)}</div><button className="secondary-pill" onClick={() => setSheet(null)}>{locale === "fa" ? "بستن" : "Close"}</button></section></div> : null}
+      <WorkspaceSelectionDialog bootstrap={bootstrap} open={!loading && Boolean(bootstrap?.tenants.length) && !tenantKey} locale={locale} pending={selectionPending} selectScope={selectScope} />
     </div>
   );
+}
+
+function WorkspaceSelectionDialog({bootstrap,open,locale,pending,selectScope}:{bootstrap:ReturnType<typeof useScopeAccess>["bootstrap"];open:boolean;locale:"en"|"fa";pending:boolean;selectScope:(tenantKey:string,siteKey?:string|null)=>Promise<void>}) {
+  const [selected,setSelected]=useState("");
+  const [error,setError]=useState<string|null>(null);
+  useEffect(()=>{
+    if(!open)return;
+    setSelected(current=>bootstrap?.tenants.some(tenant=>tenant.tenantKey===current)?current:(bootstrap?.tenants.length===1?bootstrap.tenants[0].tenantKey:""));
+    setError(null);
+  },[bootstrap?.tenants,open]);
+  const confirm=async()=>{
+    if(!selected||pending)return;
+    setError(null);
+    try{await selectScope(selected,null)}catch(reason){setError(reason instanceof Error?reason.message:String(reason))}
+  };
+  return <Dialog open={open} dismissible={false} onClose={()=>undefined} title={locale==="fa"?"فضای کاری خود را انتخاب کنید":"Choose your workspace"} description={locale==="fa"?"این انتخاب محدوده داده‌ها، دسترسی‌ها و عملیات شما را مشخص می‌کند و برای ورودهای بعدی به‌عنوان پیش‌فرض ذخیره می‌شود.":"This controls the data, access, and operations in view. Your choice is saved as the default for later sign-ins."} size="small">
+    <div className="workspace-choice-list" role="radiogroup" aria-label={locale==="fa"?"فضاهای کاری در دسترس":"Available workspaces"}>{bootstrap?.tenants.map(tenant=><button type="button" role="radio" aria-checked={selected===tenant.tenantKey} className={selected===tenant.tenantKey?"workspace-choice selected":"workspace-choice"} disabled={pending} onClick={()=>setSelected(tenant.tenantKey)} key={tenant.tenantKey}><span className="workspace-choice-mark" aria-hidden>{selected===tenant.tenantKey?"✓":""}</span><span><strong>{tenant.displayName}</strong><small dir="ltr">{tenant.tenantKey}</small></span>{tenant.membershipRole?<em>{tenant.membershipRole.replaceAll("_"," ")}</em>:null}</button>)}</div>
+    {error?<p className="field-error" role="alert">{error}</p>:null}
+    <div className="dialog-actions"><AsyncButton pending={pending} pendingLabel={locale==="fa"?"در حال انتخاب…":"Selecting…"} disabled={!selected} onClick={confirm}>{locale==="fa"?"ورود به فضای کاری":"Continue to workspace"}</AsyncButton></div>
+  </Dialog>;
 }
 
 function WorkspaceOnboarding({locale,refresh,selectScope}:{locale:"en"|"fa";refresh:()=>Promise<void>;selectScope:(tenantKey:string,siteKey?:string|null)=>Promise<void>}) {

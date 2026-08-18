@@ -58,13 +58,21 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     root.lang = locale === "fa" ? "fa" : "en";
     root.dir = locale === "fa" ? "rtl" : "ltr";
     const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    root.dataset.theme = theme === "system" ? (systemDark ? "dark" : "light") : theme;
+    const resolvedTheme = theme === "system" ? (systemDark ? "dark" : "light") : theme;
+    root.dataset.theme = resolvedTheme;
     root.dataset.themePreference = theme;
     root.dataset.locale = locale;
     window.localStorage.setItem(STORAGE_KEYS.locale, locale);
     window.localStorage.setItem(STORAGE_KEYS.theme, theme);
+    const themeColors = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
+    const syncThemeColor = (dark: boolean) => themeColors.forEach((meta) => meta.setAttribute("content", dark ? "#07101e" : "#f7f8fe"));
+    syncThemeColor(resolvedTheme === "dark");
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const syncSystem = () => { if (theme === "system") root.dataset.theme = media.matches ? "dark" : "light"; };
+    const syncSystem = () => {
+      if (theme !== "system") return;
+      root.dataset.theme = media.matches ? "dark" : "light";
+      syncThemeColor(media.matches);
+    };
     media.addEventListener("change", syncSystem);
     return () => media.removeEventListener("change", syncSystem);
   }, [locale, preferencesLoaded, theme]);

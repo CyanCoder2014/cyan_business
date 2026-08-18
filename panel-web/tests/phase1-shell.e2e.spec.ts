@@ -64,7 +64,7 @@ test("renders a real scoped shell and persists scope changes", async ({ page }) 
   await expect.poll(() => submitted).toEqual({ tenantKey: "north-star", siteKey: null });
 });
 
-test("automatically selects the only available workspace", async ({ page }) => {
+test("requires an intentional first workspace selection and persists it", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem("cyan.panel.authToken", "phase-one-token");
     localStorage.setItem("cyan.panel.authExpiresAt", String(Date.now() + 3_600_000));
@@ -76,7 +76,31 @@ test("automatically selects the only available workspace", async ({ page }) => {
   await page.route("**/api/panel/scope", async (route) => { submitted = route.request().postDataJSON(); active = true; await route.fulfill({ json: { sessionId: "phase-one-session", tenantKey: "north-star", siteKey: null } }); });
   await page.route("**/api/platform/**", (route) => route.fulfill({ json: [] }));
   await page.goto("/");
+  const dialog = page.getByRole("dialog", { name: "Choose your workspace" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("radio", { name: /North Star/ })).toHaveAttribute("aria-checked", "true");
+  await dialog.getByRole("button", { name: "Continue to workspace" }).click();
   await expect.poll(() => submitted).toEqual({ tenantKey: "north-star", siteKey: null });
+  await expect(page.getByLabel("Select workspace")).toHaveValue("north-star");
+  await expect(dialog).toBeHidden();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("cyan.panel.preferredScope.reviewer@cyan.local"))).toBe(JSON.stringify({ tenantKey: "north-star", siteKey: "main-store" }));
+});
+
+test("restores a previously selected default workspace", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("cyan.panel.authToken", "phase-one-token");
+    localStorage.setItem("cyan.panel.authExpiresAt", String(Date.now() + 3_600_000));
+    localStorage.setItem("cyan.panel.sessionId", "phase-one-session");
+    localStorage.setItem("cyan.panel.preferredScope.reviewer@cyan.local", JSON.stringify({ tenantKey: "north-star", siteKey: null }));
+  });
+  let active = false;
+  let submitted: unknown;
+  await page.route("**/api/panel/bootstrap", (route) => route.fulfill({ json: { ...bootstrap, activeTenantKey: active ? "north-star" : null, activeSiteKey: active ? "main-store" : null, sites: active ? bootstrap.sites : [], subscription: active ? bootstrap.subscription : null, capabilities: active ? bootstrap.capabilities : [] } }));
+  await page.route("**/api/panel/scope", async (route) => { submitted = route.request().postDataJSON(); active = true; await route.fulfill({ json: { sessionId: "phase-one-session", tenantKey: "north-star", siteKey: null } }); });
+  await page.route("**/api/platform/**", (route) => route.fulfill({ json: [] }));
+  await page.goto("/");
+  await expect.poll(() => submitted).toEqual({ tenantKey: "north-star", siteKey: null });
+  await expect(page.getByRole("dialog", { name: "Choose your workspace" })).toBeHidden();
   await expect(page.getByLabel("Select workspace")).toHaveValue("north-star");
 });
 

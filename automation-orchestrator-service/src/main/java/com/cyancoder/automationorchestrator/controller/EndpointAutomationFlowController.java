@@ -14,7 +14,7 @@ import com.cyancoder.automationorchestrator.domain.AutomationNodeType;
 
 @RestController
 @RequestMapping("/endpoint/automation-flows")
-@PreAuthorize("@platformAuthorizationService.canUseCapability('operations:*')")
+@PreAuthorize("@platformAuthorizationService.canUseCapability('builder:use')")
 public class EndpointAutomationFlowController {
     private final AutomationFlowDefinitionService service;
     private final N8nWorkflowCompatibilityService n8n;

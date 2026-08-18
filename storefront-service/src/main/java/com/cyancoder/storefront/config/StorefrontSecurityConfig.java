@@ -13,7 +13,7 @@ public class StorefrontSecurityConfig {
     @Bean
     @Order(0)
     public SecurityFilterChain publicStorefrontSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.securityMatcher("/public/storefront/**")
+        http.securityMatcher("/public/storefront/**", "/public/forms/**")
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());

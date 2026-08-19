@@ -26,6 +26,10 @@ export function Dialog({ open, title, description, children, onClose, closeLabel
     onClose();
     window.setTimeout(() => target?.focus(), 0);
   }, [onClose]);
+  const closeRef = useRef(close);
+  closeRef.current = close;
+  const dismissibleRef = useRef(dismissible);
+  dismissibleRef.current = dismissible;
   useEffect(() => {
     if (!open) return;
     returnFocusRef.current = document.activeElement as HTMLElement | null;
@@ -33,7 +37,7 @@ export function Dialog({ open, title, description, children, onClose, closeLabel
     const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])') ?? []);
     (focusable()[0] ?? dialog)?.focus();
     const keydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && dismissible) { event.preventDefault(); close(); return; }
+      if (event.key === "Escape" && dismissibleRef.current) { event.preventDefault(); closeRef.current(); return; }
       if (event.key !== "Tab") return;
       const items = focusable(); if (!items.length) { event.preventDefault(); dialog?.focus(); return; }
       const first = items[0], last = items[items.length - 1];
@@ -42,7 +46,11 @@ export function Dialog({ open, title, description, children, onClose, closeLabel
     };
     document.addEventListener("keydown", keydown);
     return () => { document.removeEventListener("keydown", keydown); returnFocusRef.current?.focus(); };
-  }, [open, close, dismissible]);
+    // Intentionally only re-runs when the dialog opens/closes: `close` and `dismissible`
+    // are read via refs above so an inline onClose from the caller (a new function
+    // reference on every parent render) can't reset focus mid-typing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   return open ? <div className="dialog-backdrop" onMouseDown={dismissible?close:undefined}>
     <section ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={description?descriptionId:undefined} className={`scope-dialog dialog-${size}`} onMouseDown={(event) => event.stopPropagation()}>
       <header className="dialog-header"><div><h2 id={titleId}>{title}</h2>{description?<p id={descriptionId}>{description}</p>:null}</div>{dismissible?<button type="button" className="dialog-close" aria-label={closeLabel} onClick={close}>×</button>:null}</header>

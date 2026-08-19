@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, MiniMap, Position, ReactFlow, getBezierPath, type Connection, type EdgeProps, type Node, type NodeChange, type NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import Link from "next/link";
 import { AsyncButton, CodeViewer, EmptyState, StatusBadge } from "@/components/ui/primitives";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
@@ -18,10 +19,10 @@ const joinKeys = (value?: string[]) => (value ?? []).join(", ");
 function BpmStateNode({ data, selected }: NodeProps) {
   const value = data as { label?: string; terminal?: boolean; start?: boolean };
   return <div className={`bpm-state-card ${value.terminal ? "terminal" : ""} ${value.start ? "start" : ""} ${selected ? "selected" : ""}`}>
-    <Handle type="target" position={Position.Left} aria-label="Incoming transition" />
+    <Handle type="target" position={Position.Left} isConnectable aria-label="Incoming transition" />
     <span className="bpm-state-kind">{value.start ? "▶" : value.terminal ? "■" : "●"}</span>
     <div><strong>{String(value.label ?? "State")}</strong><small>{value.start ? "Start" : value.terminal ? "Terminal" : "State"}</small></div>
-    <Handle type="source" position={Position.Right} aria-label="Outgoing transition" />
+    <Handle type="source" position={Position.Right} isConnectable aria-label="Outgoing transition" />
   </div>;
 }
 
@@ -33,12 +34,16 @@ function TransitionEdge(props: EdgeProps) {
 const nodeTypes = { bpmState: BpmStateNode };
 const edgeTypes = { transitionEdge: TransitionEdge };
 
-export function BpmDesigner({ initial }: { initial?: DynamicFlowDefinition }) {
+export function BpmDesigner({ initial, prefill }: { initial?: DynamicFlowDefinition; prefill?: { entityService?: string; entityKey?: string } }) {
   const { locale } = usePanel();
   const { tenantKey, siteKey } = useScopeAccess();
   const scope = useMemo(() => ({ tenantKey: tenantKey ?? undefined, siteKey: siteKey ?? undefined }), [tenantKey, siteKey]);
   const router = useRouter();
-  const [flow, setFlow] = useState(initial ?? blank());
+  const [flow, setFlow] = useState(() => {
+    if (initial || (!prefill?.entityService && !prefill?.entityKey)) return initial ?? blank();
+    const state = { ...newState(0), entityService: prefill.entityService, entityKey: prefill.entityKey, formKey: prefill.entityKey };
+    return { ...blank(), states: [state], startState: state.id };
+  });
   const [selected, setSelected] = useState<string | null>(null);
   const [selectedTransition, setSelectedTransition] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
@@ -48,7 +53,7 @@ export function BpmDesigner({ initial }: { initial?: DynamicFlowDefinition }) {
   const [automations, setAutomations] = useState<AutomationFlow[]>([]);
   const [conditionMetadata, setConditionMetadata] = useState<BpmConditionStructure | null>(null);
 
-  useEffect(() => { Promise.all([listActionMetadata(scope), getConditionMetadata(scope), listAutomationFlows(scope)]).then(([actions, conditions, definitions]) => { setActionTypes(actions.map(item => item.type)); setConditionMetadata(conditions); setAutomations(definitions.filter(item => item.active)); }).catch(reason => setError(reason instanceof Error ? reason.message : String(reason))); }, [scope]);
+  useEffect(() => { Promise.all([listActionMetadata(scope), getConditionMetadata(scope), listAutomationFlows(scope)]).then(([actions, conditions, definitions]) => { setActionTypes(actions.map(item => item.type)); setConditionMetadata(conditions); setAutomations(definitions.filter(item => item.active || item.lifecycleStatus === "ACTIVE")); }).catch(reason => setError(reason instanceof Error ? reason.message : String(reason))); }, [scope]);
   useEffect(() => { const guard = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault(); }; window.addEventListener("beforeunload", guard); return () => window.removeEventListener("beforeunload", guard); }, [dirty]);
 
   const nodes = useMemo<Node[]>(() => flow.states.map((state, index) => ({
@@ -100,9 +105,10 @@ function StateInspector({ state, flow, locale, update, close, remove, actionType
     <fieldset><legend>{locale === "fa" ? "قواعد دسترسی" : "Access rules"}</legend><label><span>{locale === "fa" ? "خواندن" : "Can read"}</span><input dir="ltr" value={joinKeys(access.canRead)} onChange={event => updateAccess("canRead", event.target.value)}/></label><label><span>{locale === "fa" ? "ویرایش" : "Can edit"}</span><input dir="ltr" value={joinKeys(access.canEdit)} onChange={event => updateAccess("canEdit", event.target.value)}/></label><label><span>{locale === "fa" ? "تأیید" : "Can approve"}</span><input dir="ltr" value={joinKeys(access.canApprove)} onChange={event => updateAccess("canApprove", event.target.value)}/></label></fieldset>
     <label><span>{locale === "fa" ? "سرویس موجودیت" : "Entity service"}</span><input dir="ltr" value={state.entityService ?? ""} onChange={event => update({ entityService: event.target.value })}/></label>
     <label><span>{locale === "fa" ? "کلید تعریف/فرم" : "Definition / form key"}</span><input dir="ltr" value={state.entityKey ?? state.formKey ?? ""} onChange={event => update({ entityKey: event.target.value, formKey: event.target.value })}/></label>
+    {state.entityService && (state.entityKey || state.formKey) ? <div className="bpm-linked-resources"><small>{locale === "fa" ? "منابع متصل" : "Linked resources"}</small><div><Link className="secondary-pill" href={`/data/${encodeURIComponent(state.entityService)}/${encodeURIComponent(state.entityKey ?? state.formKey ?? "")}`}>{locale === "fa" ? "داده و فرم" : "Data & form"}</Link><Link className="secondary-pill" href={`/forms?serviceKey=${encodeURIComponent(state.entityService)}&entityKey=${encodeURIComponent(state.entityKey ?? state.formKey ?? "")}`}>{locale === "fa" ? "انتشار فرم" : "Publish form"}</Link><Link className="secondary-pill" href={`/definitions/${encodeURIComponent(state.entityService)}/${encodeURIComponent(state.entityKey ?? state.formKey ?? "")}`}>{locale === "fa" ? "تعریف" : "Definition"}</Link></div></div> : null}
     <label><span>{locale === "fa" ? "پردازشگر" : "Processor key"}</span><input dir="ltr" value={state.processorKey ?? ""} onChange={event => update({ processorKey: event.target.value })}/></label>
     <label className="toggle-row"><input type="checkbox" checked={Boolean(state.reviewCommentRequired)} onChange={event => update({ reviewCommentRequired: event.target.checked })}/><span>{locale === "fa" ? "نیازمند نظر" : "Review comment required"}</span></label>
-    <ActionEditor state={state} update={update} types={actionTypes} automations={automations} locale={locale}/><button className="danger-link" onClick={remove}>{locale === "fa" ? "حذف وضعیت" : "Delete state"}</button>
+    <ActionEditor state={state} update={update} types={actionTypes} automations={automations} locale={locale} flowKey={flow.flowKey}/><button className="danger-link" onClick={remove}>{locale === "fa" ? "حذف وضعیت" : "Delete state"}</button>
   </>;
 }
 
@@ -139,9 +145,10 @@ function TransitionInspector({ transition, states, metadata, locale, update, clo
   </>;
 }
 
-function ActionEditor({ state, update, types, automations, locale }: { state: FlowStateDraft; update: (value: Partial<FlowStateDraft>) => void; types: string[]; automations: AutomationFlow[]; locale: string }) {
-  const [type, setType] = useState(types[0] ?? "ADD_AUDIT_ENTRY");
-  useEffect(() => { if (types.length && !types.includes(type)) setType(types[0]); }, [type, types]);
+function ActionEditor({ state, update, types, automations, locale, flowKey }: { state: FlowStateDraft; update: (value: Partial<FlowStateDraft>) => void; types: string[]; automations: AutomationFlow[]; locale: string; flowKey?: string }) {
+  const availableTypes = types.includes("RUN_AUTOMATION_BLOCK") ? types : [...types, "RUN_AUTOMATION_BLOCK"];
+  const [type, setType] = useState(availableTypes[0] ?? "ADD_AUDIT_ENTRY");
+  useEffect(() => { if (availableTypes.length && !availableTypes.includes(type)) setType(availableTypes[0]); }, [availableTypes, type]);
   const add = () => { const params = type === "RUN_AUTOMATION_BLOCK" ? { flowKey: automations[0]?.flowKey ?? "", executionMode: "SYNC", inputMappings: {}, outputMappings: {} } : {}; update({ onEnterActions: [...(state.onEnterActions ?? []), { type, params }] }); };
-  return <section className="state-actions"><header><strong>{locale === "fa" ? "کنش‌های ورود" : "On-enter actions"}</strong></header><div><select aria-label={locale === "fa" ? "نوع کنش" : "Action type"} value={type} onChange={event => setType(event.target.value)}>{types.map(item => <option key={item}>{item}</option>)}</select><button aria-label={locale === "fa" ? "افزودن کنش" : "Add action"} onClick={add}>＋</button></div>{(state.onEnterActions ?? []).map((action, index) => <article key={`${action.type}-${index}`}><strong>{action.type}</strong>{action.type === "RUN_AUTOMATION_BLOCK" ? <select aria-label={locale === "fa" ? "اتوماسیون منتشرشده" : "Published automation"} value={String(action.params.flowKey ?? "")} onChange={event => update({ onEnterActions: (state.onEnterActions ?? []).map((item, itemIndex) => itemIndex === index ? { ...item, params: { ...item.params, flowKey: event.target.value } } : item) })}><option value="">{locale === "fa" ? "انتخاب اتوماسیون" : "Select automation"}</option>{automations.map(automation => <option key={`${automation.flowKey}-${automation.version}`} value={automation.flowKey}>{automation.name}</option>)}</select> : null}<button aria-label={locale === "fa" ? "حذف کنش" : "Remove action"} onClick={() => update({ onEnterActions: (state.onEnterActions ?? []).filter((_, itemIndex) => itemIndex !== index) })}>×</button></article>)}</section>;
+  return <section className="state-actions"><header><strong>{locale === "fa" ? "کنش‌های ورود" : "On-enter actions"}</strong></header><div><select aria-label={locale === "fa" ? "نوع کنش" : "Action type"} value={type} onChange={event => setType(event.target.value)}>{availableTypes.map(item => <option key={item}>{item}</option>)}</select><button aria-label={locale === "fa" ? "افزودن کنش" : "Add action"} onClick={add}>＋</button></div>{(state.onEnterActions ?? []).map((action, index) => <article key={`${action.type}-${index}`}><strong>{action.type}</strong>{action.type === "RUN_AUTOMATION_BLOCK" ? <><select aria-label={locale === "fa" ? "اتوماسیون منتشرشده" : "Published automation"} value={String(action.params.automationFlowKey ?? action.params.flowKey ?? "")} onChange={event => update({ onEnterActions: (state.onEnterActions ?? []).map((item, itemIndex) => itemIndex === index ? { ...item, params: { ...item.params, flowKey: event.target.value, automationFlowKey: event.target.value } } : item) })}><option value="">{locale === "fa" ? "انتخاب اتوماسیون" : "Select automation"}</option>{automations.map(automation => <option key={`${automation.flowKey}-${automation.version}`} value={automation.flowKey}>{automation.name} · v{automation.version}</option>)}</select><div className="bpm-action-links">{String(action.params.flowKey ?? "") ? <Link href={`/automations/${encodeURIComponent(String(action.params.flowKey))}`}>{locale === "fa" ? "باز کردن اتوماسیون" : "Open automation"}</Link> : null}<Link href={`/automations/new?returnTo=${encodeURIComponent(flowKey ? `/bpm/${flowKey}` : "/bpm")}`}>{locale === "fa" ? "ساخت اتوماسیون" : "Create automation"}</Link></div><label><span>{locale === "fa" ? "حالت اجرا" : "Execution mode"}</span><select value={String(action.params.executionMode ?? "SYNC")} onChange={event => update({ onEnterActions: (state.onEnterActions ?? []).map((item, itemIndex) => itemIndex === index ? { ...item, params: { ...item.params, executionMode: event.target.value, async: event.target.value === "ASYNC" } } : item) })}><option value="SYNC">SYNC</option><option value="ASYNC">ASYNC</option></select></label></> : null}<button aria-label={locale === "fa" ? "حذف کنش" : "Remove action"} onClick={() => update({ onEnterActions: (state.onEnterActions ?? []).filter((_, itemIndex) => itemIndex !== index) })}>×</button></article>)}</section>;
 }

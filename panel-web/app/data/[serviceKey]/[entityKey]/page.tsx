@@ -115,6 +115,8 @@ export default function DataManager() {
   return <PanelShell activeKey="data" title={definition?.title || entity} titleFa={definition?.title || entity} subtitle={`${service} · ${total} records`} subtitleFa={`${service} · ${total} رکورد`}>
     <div className="data-manager-toolbar">
       <button className="secondary-pill" onClick={() => router.push("/data")}>← {locale === "fa" ? "موجودیت‌ها" : "Entities"}</button>
+      <button className="secondary-pill" onClick={() => router.push(`/forms?serviceKey=${encodeURIComponent(service)}&entityKey=${encodeURIComponent(entity)}`)}>{locale === "fa" ? "انتشار فرم" : "Publish form"}</button>
+      <button className="secondary-pill" onClick={() => router.push(`/bpm/new?entityService=${encodeURIComponent(service)}&entityKey=${encodeURIComponent(entity)}`)}>{locale === "fa" ? "استفاده در BPM" : "Use in BPM"}</button>
       <button className="primary-pill" onClick={() => openEditor(null)}>＋ {locale === "fa" ? "رکورد جدید" : "New record"}</button>
     </div>
     {loading ? <Skeleton height={440}/> : error && !definition ? <ErrorState title="Data unavailable" description={error} retry={load}/> : records.length ? <div className="record-grid">

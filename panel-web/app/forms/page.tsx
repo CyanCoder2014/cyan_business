@@ -54,6 +54,15 @@ export default function FormsPage() {
   const canBuild = can("definition.read") && can("definition.manage");
   const activeForms = forms.filter((item) => item.status === "PUBLISHED");
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const requestedService = searchParams.get("serviceKey");
+    const requestedEntity = searchParams.get("entityKey");
+    if (requestedService && dynamicServices.includes(requestedService as DynamicServiceKey)) setService(requestedService as DynamicServiceKey);
+    if (requestedEntity) setEntityKey(requestedEntity);
+    if (requestedService || requestedEntity) setDialog(true);
+  }, []);
+
   const load = useCallback(async () => {
     if (!scope) {
       setLoading(false);
@@ -177,6 +186,12 @@ export default function FormsPage() {
                 <footer>
                   <Link className="primary-pill" href={href} target={form.visibility === "PUBLIC" ? "_blank" : undefined}>
                     {locale === "fa" ? "باز کردن فرم" : "Open form"}
+                  </Link>
+                  <Link className="secondary-pill" href={`/data/${encodeURIComponent(form.serviceKey)}/${encodeURIComponent(form.entityKey)}`}>
+                    {locale === "fa" ? "داده" : "Data"}
+                  </Link>
+                  <Link className="secondary-pill" href={`/bpm/new?entityService=${encodeURIComponent(form.serviceKey)}&entityKey=${encodeURIComponent(form.entityKey)}`}>
+                    {locale === "fa" ? "استفاده در BPM" : "Use in BPM"}
                   </Link>
                   <button
                     className="secondary-pill"

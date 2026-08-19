@@ -639,7 +639,13 @@ select:focus {
 .primary-pill {
   color: white;
   border-color: transparent;
-  background: linear-gradient(135deg, var(--blue), var(--violet));
+  background: var(--gradient-brand, linear-gradient(135deg, var(--blue), var(--violet)));
+  box-shadow: 0 8px 20px color-mix(in srgb, #22d3ee 22%, transparent);
+}
+
+.primary-pill:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px color-mix(in srgb, #22d3ee 30%, transparent);
 }
 
 .wide-pill {

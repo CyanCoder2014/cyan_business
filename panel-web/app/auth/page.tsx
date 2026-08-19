@@ -25,6 +25,7 @@ import {
   UsersIcon
 } from "@/components/auth-icons";
 import { usePanel } from "@/components/panel-provider";
+import { LogoMark } from "@/components/logo-mark";
 import { createCaptchaChallenge, loginWithPassword, registerPanelUser, sendLoginOtp } from "@/lib/platform-auth";
 
 type AuthMode = "signin" | "signup";
@@ -234,7 +235,7 @@ function AuthScreen() {
       <div className="auth-body">
         <section className="auth-marketing">
           <Link href="/" className="brand-lockup auth-brand-lockup">
-            <div className="brand-badge">C</div>
+            <div className="brand-badge"><LogoMark/></div>
             <strong>Cyan</strong>
           </Link>
 
@@ -385,7 +386,7 @@ function AuthScreen() {
             </div>
             <div className="mobile-card">
               <div className="mobile-brand">
-                <div className="brand-badge">C</div>
+                <div className="brand-badge"><LogoMark/></div>
                 <strong style={{ fontSize: "2rem" }}>Cyan</strong>
               </div>
               <h2 className="auth-mobile-title">

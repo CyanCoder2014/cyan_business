@@ -8,6 +8,11 @@ export const metadata: Metadata = {
   title: "Cyan Panel",
   description: "Multilingual control panel for AI-native business apps, workflows, data, bots, and storefront operations.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg"
+  },
   appleWebApp: {
     capable: true,
     title: "Cyan Panel",

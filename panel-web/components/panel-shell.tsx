@@ -8,6 +8,7 @@ import { useScopeAccess } from "@/components/scope-access-provider";
 import { getPlatformAuthToken, logoutPlatformSession, platformFetch, redirectToAuth } from "@/lib/platform-auth";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { AsyncButton, Dialog } from "@/components/ui/primitives";
+import { LogoMark } from "@/components/logo-mark";
 
 type PanelShellProps = { title: string; titleFa: string; subtitle: string; subtitleFa: string; kicker?: string; kickerFa?: string; activeKey: string; children: ReactNode };
 type NavItem = { href: string; key: string; icon: string; en: string; fa: string; capability?: string; permission?: string; platformOnly?: boolean };
@@ -81,11 +82,11 @@ export function PanelShell(props: PanelShellProps) {
   const isPlatformAdmin = Boolean(bootstrap?.access.realmRoles.some((role) => ["platform-admin","realm-admin","admin"].includes(role.toLowerCase())));
   const navEnabled = (item: NavItem) => (!item.platformOnly || isPlatformAdmin) && (!item.permission || can(item.permission)) && (!item.capability || Boolean(bootstrap?.capabilities.some((capability) => capability.key === item.capability && capability.enabled && capability.status === "AVAILABLE")));
 
-  if (!authChecked) return <main className="auth-check-shell" aria-label="Checking authentication"><div className="brand-badge">C</div></main>;
+  if (!authChecked) return <main className="auth-check-shell" aria-label="Checking authentication"><div className="brand-badge"><LogoMark/></div></main>;
   return (
     <div className="panel-app-shell">
       <aside className="workspace-sidebar">
-        <Link href="/dashboard" className="brand-lockup" aria-label="Cyan home"><div className="brand-badge">C</div><div><strong>Cyan</strong><span>{locale === "fa" ? "فضای کار هوشمند" : "Business workspace"}</span></div></Link>
+        <Link href="/dashboard" className="brand-lockup" aria-label="Cyan home"><div className="brand-badge"><LogoMark/></div><div><strong>Cyan</strong><span>{locale === "fa" ? "فضای کار هوشمند" : "Business workspace"}</span></div></Link>
         <nav className="workspace-nav" aria-label={locale === "fa" ? "ناوبری اصلی" : "Primary navigation"}>
           {groups.map((group) => <section className="nav-group" key={group.en}><p>{locale === "fa" ? group.fa : group.en}</p>{group.items.map((item) => {
             const active = item.key === props.activeKey || pathname === item.href;

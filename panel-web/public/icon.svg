@@ -1,5 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="128" fill="#081118"/>
-  <path d="M118 336V176h62l76 94 76-94h62v160h-64v-72l-58 72h-32l-58-72v72z" fill="#51d7d0"/>
-  <path d="M118 374h276v38H118z" fill="#ffbb5c"/>
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cyanGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0EA5A6"/>
+      <stop offset="100%" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+
+  <g fill="none" stroke-linecap="round">
+    <path d="M330.2,309.3 A170,170 0 1 1 330.2,90.7"
+          stroke="url(#cyanGrad)" stroke-width="26"/>
+    <path d="M104.3,119.6 A125,125 0 1 1 104.3,280.4"
+          stroke="#0B1220" stroke-width="22"/>
+    <path d="M261.3,251.4 A80,80 0 1 1 261.3,148.6"
+          stroke="url(#cyanGrad)" stroke-width="18"/>
+    <path d="M165.4,180 A40,40 0 1 1 165.4,220"
+          stroke="#0B1220" stroke-width="14"/>
+  </g>
 </svg>

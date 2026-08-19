@@ -5,7 +5,7 @@ import "./globals.css";
 import "./phase1-shell.css";
 
 export const metadata: Metadata = {
-  title: "Cyan Panel",
+  title: "Cyan Coder business workspace | Cyan code for you and make every thing",
   description: "Multilingual control panel for AI-native business apps, workflows, data, bots, and storefront operations.",
   manifest: "/manifest.json",
   icons: {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Cyan Panel",
+    title: "Cyan business workspace",
     statusBarStyle: "black-translucent"
   }
 };

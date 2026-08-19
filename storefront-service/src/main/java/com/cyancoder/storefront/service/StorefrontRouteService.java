@@ -5,6 +5,8 @@ import com.cyancoder.dynamiccore.runtime.DynamicScope;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.storefront.model.ResolvedRouteResponse;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,7 +39,10 @@ public class StorefrontRouteService {
                 .filter(record -> routeKey.isBlank() || routeKey.equals(Objects.toString(recordData(record).get("routeKey"), "")))
                 .filter(record -> resolvedPath.equals(Objects.toString(recordData(record).get("path"), "")))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Published site route was not found"
+                ));
 
         Map<String, Object> routeData = new LinkedHashMap<>(recordData(route));
         if (!binding.isEmpty()) {

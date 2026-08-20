@@ -41,7 +41,7 @@ public class AutomationMetadataService {
                 f("callbackMappings", "object", false, "Map of variable name -> path into the incoming callback payload.", Map.of("riskScore", "score")),
                 f("callbackStorePath", "string", false, "Variable path to store the full raw callback payload at.", "screeningCallback")
         ));
-        configs.put(AutomationNodeType.CALL_API, callApiParams(false));
+        configs.put(AutomationNodeType.CALL_API, callApiParams());
         configs.put(AutomationNodeType.HTTP_REQUEST, List.of(
                 f("url", "string", false, "Direct URL for external calls. Alternative to serviceKey+path.", "https://example.test/verify"),
                 f("serviceKey", "string", false, "Target internal service key. Alternative to url.", "processor-service"),
@@ -260,25 +260,16 @@ public class AutomationMetadataService {
         );
     }
 
-    private List<MetadataFieldDescriptor> callApiParams(boolean async) {
-        List<MetadataFieldDescriptor> params = new java.util.ArrayList<>(List.of(
+    private List<MetadataFieldDescriptor> callApiParams() {
+        return List.of(
                 f("serviceKey", "string", false, "Target internal service key. Alternative to url.", "processor-service"),
                 f("path", "string", false, "Target internal path, used together with serviceKey.", "/internal/processor/forms/submit"),
                 f("url", "string", false, "Direct URL for external calls. Alternative to serviceKey+path.", "https://example.test/verify"),
                 f("method", "string", false, "HTTP method. Defaults to POST.", "POST"),
                 f("headers", "object", false, "Map of HTTP header name -> value.", Map.of("X-API-KEY", "secret")),
                 f("body", "object|array|string", false, "Templated request body.", Map.of("nationalCode", "{{payload.currentFormValues.nationalCode}}")),
-                f("responseMappings", "object", false, "Map of variable path -> response path.", Map.of("verified", "verified")),
-                f("storeFullResponseAt", "string", false, "Variable path to store the full response at.", "operatorResults.verify")
-        ));
-        if (async) {
-            params.addAll(List.of(
-                    f("actionKey", "string", false, "Stable async action key.", "screening"),
-                    f("correlationKey", "string", false, "Optional callback correlation key.", "{{payload.currentFormValues.nationalCode}}:screening"),
-                    f("callbackResponseMappings", "object", false, "Map of variable path -> callback payload path.", Map.of("riskScore", "riskScore")),
-                    f("callbackStoreFullResponseAt", "string", false, "Variable path to store the full callback payload at.", "operatorResults.screeningCallback")
-            ));
-        }
-        return params;
+                f("responseMappings", "object", false, "Map of variable path -> response path. When omitted, the whole response replaces the flow output.", Map.of("verified", "verified")),
+                f("storeResponseAt", "string", false, "Variable path to store the full response at, instead of replacing the whole flow output.", "operatorResults.verify")
+        );
     }
 }

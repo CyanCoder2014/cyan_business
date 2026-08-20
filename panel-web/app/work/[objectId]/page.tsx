@@ -13,13 +13,16 @@ import {
 import { prepareMediaUpload, uploadMediaBytes } from "@/lib/media-api";
 import { useScopeAccess } from "@/components/scope-access-provider";
 import { usePanel } from "@/components/panel-provider";
+import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError } from "@/lib/api-error";
 
-type Field = { type?: string; required?: boolean; label?: string };
+type Field = { type?: string; required?: boolean; label?: string; itemValidations?: Record<string, Field> };
 type AssigneeType = "USER" | "ROLE" | "GROUP";
 
 export default function WorkItem({ params }: { params: { objectId: string } }) {
   const { locale } = usePanel();
   const { tenantKey, siteKey } = useScopeAccess();
+  const { showToast } = useToast();
   const scope = useMemo(() => ({ tenantKey: tenantKey ?? undefined, siteKey: siteKey ?? undefined }), [tenantKey, siteKey]);
   const [item, setItem] = useState<ManagedObject | null>(null);
   const [form, setForm] = useState<ManagedObjectActiveFormResponse | null>(null);
@@ -47,8 +50,8 @@ export default function WorkItem({ params }: { params: { objectId: string } }) {
       setItem(object); setForm(activeForm); setOptions(transitions); setComments(objectComments); setAttachments(objectAttachments);
       setValues((object.payload?.currentFormValues as Record<string, unknown>) ?? {});
       setAssigneeType(object.assigneeType ?? "USER");
-    } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
-  }, [params.objectId, scope, tenantKey]);
+    } catch (reason) { const { title, message } = describeApiError(reason, "Work item unavailable"); setError(message); showToast({ tone: "error", title, message }); }
+  }, [params.objectId, scope, tenantKey, showToast]);
 
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
@@ -59,7 +62,8 @@ export default function WorkItem({ params }: { params: { objectId: string } }) {
     return () => clearTimeout(timer);
   }, [assignee, assigneeType, scope, tenantKey]);
   const fields = useMemo(() => {
-    const raw = form?.rendererDefinition?.fields;
+    const definition = form?.rendererDefinition?.definition as Record<string, unknown> | undefined;
+    const raw = definition?.fields;
     return raw && typeof raw === "object" && !Array.isArray(raw) ? raw as Record<string, Field> : {};
   }, [form]);
 
@@ -67,7 +71,7 @@ export default function WorkItem({ params }: { params: { objectId: string } }) {
     if (pending) return;
     setPending(key); setError(null);
     try { await operation(); await load(); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    catch (reason) { const { title, message } = describeApiError(reason, "Action failed"); setError(message); showToast({ tone: "error", title, message }); }
     finally { setPending(null); }
   };
   const upload = async (file: File) => {
@@ -79,7 +83,7 @@ export default function WorkItem({ params }: { params: { objectId: string } }) {
       const uploaded = await uploadMediaBytes(file, prepared, mediaScope, setUploadProgress);
       await addAttachment(params.objectId, { assetKey: uploaded.assetKey, fileName: file.name, contentType: file.type || "application/octet-stream", sizeBytes: file.size, downloadUrl: uploaded.deliveryUrl }, scope);
       await load();
-    } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    } catch (reason) { const { title, message } = describeApiError(reason, "Upload failed"); setError(message); showToast({ tone: "error", title, message }); }
     finally { setPending(null); setUploadProgress(null); }
   };
 
@@ -102,7 +106,27 @@ export default function WorkItem({ params }: { params: { objectId: string } }) {
 }
 
 function WorkField({ name, field, value, onChange }: { name: string; field: Field; value: unknown; onChange: (value: unknown) => void }) {
-  if (field.type === "boolean") return <label className="generated-field"><input type="checkbox" checked={Boolean(value)} onChange={event => onChange(event.target.checked)}/><span>{field.label ?? name}</span></label>;
-  if (field.type === "object" || field.type === "list") return <label className="generated-field"><span>{field.label ?? name}</span><textarea dir="ltr" value={value == null ? "" : JSON.stringify(value, null, 2)} onChange={event => { try { onChange(JSON.parse(event.target.value)); } catch { /* Preserve invalid draft until it is valid JSON. */ } }}/></label>;
-  return <label className="generated-field"><span>{field.label ?? name}{field.required ? " *" : ""}</span><input required={field.required} type={field.type === "number" || field.type === "integer" ? "number" : field.type === "date" ? "date" : "text"} value={value == null ? "" : String(value)} onChange={event => onChange(field.type === "number" || field.type === "integer" ? Number(event.target.value) : event.target.value)}/></label>;
+  const label = field.label ?? name;
+  const itemFields = field.itemValidations;
+  if (field.type === "boolean") return <label className="generated-field"><input type="checkbox" checked={Boolean(value)} onChange={event => onChange(event.target.checked)}/><span>{label}</span></label>;
+  if (field.type === "object" && itemFields && Object.keys(itemFields).length) {
+    const objectValue = (value && typeof value === "object" && !Array.isArray(value) ? value : {}) as Record<string, unknown>;
+    return <fieldset className="generated-field-group"><legend>{label}</legend>
+      {Object.entries(itemFields).map(([key, subField]) => <WorkField key={key} name={key} field={subField} value={objectValue[key]} onChange={next => onChange({ ...objectValue, [key]: next })}/>)}
+    </fieldset>;
+  }
+  if (field.type === "list") {
+    const items = Array.isArray(value) ? value : [];
+    const rowBlank = itemFields && Object.keys(itemFields).length ? {} : "";
+    return <fieldset className="generated-field-group generated-list"><legend>{label}</legend>
+      {items.map((item, index) => <div className="generated-list-row" key={index}>
+        {itemFields && Object.keys(itemFields).length ? <div className="generated-list-item">{Object.entries(itemFields).map(([key, subField]) => <WorkField key={key} name={key} field={subField} value={(item as Record<string, unknown> | undefined)?.[key]} onChange={next => onChange(items.map((row, i) => i === index ? { ...(row as Record<string, unknown>), [key]: next } : row))}/>)}</div>
+          : <input value={item == null ? "" : String(item)} onChange={event => onChange(items.map((row, i) => i === index ? event.target.value : row))}/>}
+        <button type="button" className="generated-list-remove" aria-label={`Remove ${label} item ${index + 1}`} onClick={() => onChange(items.filter((_, i) => i !== index))}>×</button>
+      </div>)}
+      <button type="button" className="secondary-pill" onClick={() => onChange([...items, rowBlank])}>+ Add {label}</button>
+    </fieldset>;
+  }
+  if (field.type === "object" || field.type === "list") return <label className="generated-field"><span>{label}</span><textarea dir="ltr" value={value == null ? "" : JSON.stringify(value, null, 2)} onChange={event => { try { onChange(JSON.parse(event.target.value)); } catch { /* Preserve invalid draft until it is valid JSON. */ } }}/></label>;
+  return <label className="generated-field"><span>{label}{field.required ? " *" : ""}</span><input required={field.required} type={field.type === "number" || field.type === "integer" ? "number" : field.type === "date" ? "date" : "text"} value={value == null ? "" : String(value)} onChange={event => onChange(field.type === "number" || field.type === "integer" ? Number(event.target.value) : event.target.value)}/></label>;
 }

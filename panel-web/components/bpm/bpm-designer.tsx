@@ -4,16 +4,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, MiniMap, Position, ReactFlow, getBezierPath, type Connection, type EdgeChange, type EdgeProps, type Node, type NodeChange, type NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Link from "next/link";
-import { AsyncButton, CodeViewer, EmptyState, StatusBadge } from "@/components/ui/primitives";
+import { AsyncButton, CodeViewer, Dialog, EmptyState, StatusBadge } from "@/components/ui/primitives";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
 import { useToast } from "@/components/ui/toast-provider";
 import { describeApiError } from "@/lib/api-error";
 import { activateFlow, getConditionMetadata, listActionMetadata, saveFlow, type BpmConditionStructure, type DynamicFlowDefinition, type FlowConditionDraft, type FlowStateDraft, type FlowTransitionDraft } from "@/lib/bpm-api";
 import { listAutomationFlows, type AutomationFlow } from "@/lib/automation-api";
-import { dynamicServices, listDefinitions } from "@/lib/dynamic-api";
+import { createDefinition, dynamicServices, listDefinitions } from "@/lib/dynamic-api";
 import type { DynamicEntityDefinition, DynamicServiceKey } from "@/lib/types";
-import { listProcessors, type ProcessorDefinition } from "@/lib/processor-api";
+import { createProcessor, listProcessors, type ProcessorDefinition } from "@/lib/processor-api";
 import { PlayIcon, StopIcon, CircleDotIcon } from "@/components/nav-icons";
 import { ArrowRightIcon } from "@/components/auth-icons";
 import { useRouter } from "next/navigation";
@@ -139,28 +139,152 @@ function StateInspector({ state, flow, locale, scope, update, close, remove, act
   </>;
 }
 
-function EntityBindingFields({ state, scope, locale, update }: { state: FlowStateDraft; scope: { tenantKey?: string; siteKey?: string }; locale: string; update: (patch: Partial<FlowStateDraft>) => void }) {
+function useServiceDefinitions(service: string, scope: { tenantKey?: string; siteKey?: string }) {
   const [definitions, setDefinitions] = useState<DynamicEntityDefinition[]>([]);
-  const service = state.entityService ?? "";
   useEffect(() => {
     if (!service || !scope.tenantKey) { setDefinitions([]); return; }
     let live = true;
     listDefinitions(service as DynamicServiceKey, scope).then(value => { if (live) setDefinitions(value); }).catch(() => { if (live) setDefinitions([]); });
     return () => { live = false; };
   }, [service, scope.tenantKey, scope.siteKey]);
-  const key = state.entityKey ?? state.formKey ?? "";
-  const exists = definitions.some(item => item.entityKey === key);
+  return definitions;
+}
+
+function DefinitionPicker({ label, service, entityKey, scope, locale, onChangeKey }: { label: string; service: string; entityKey: string; scope: { tenantKey?: string; siteKey?: string }; locale: string; onChangeKey: (key: string) => void }) {
+  const { showToast } = useToast();
+  const definitions = useServiceDefinitions(service, scope);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createKey, setCreateKey] = useState("");
+  const [createTitle, setCreateTitle] = useState("");
+  const [createPending, setCreatePending] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const submitCreate = async () => {
+    if (!scope.tenantKey || !service || !createKey.trim() || createPending) return;
+    setCreatePending(true);
+    setCreateError(null);
+    try {
+      await createDefinition(service as DynamicServiceKey, createKey, { entityKey: createKey, title: createTitle || createKey, fields: {} }, scope);
+      onChangeKey(createKey);
+      setCreateOpen(false);
+      setCreateKey("");
+      setCreateTitle("");
+      showToast({ tone: "success", title: locale === "fa" ? "تعریف ساخته شد" : "Definition created" });
+    } catch (cause) {
+      const { title, message } = describeApiError(cause, locale === "fa" ? "ساخت تعریف ناموفق بود" : "Definition creation failed");
+      setCreateError(message);
+      showToast({ tone: "error", title, message });
+    } finally {
+      setCreatePending(false);
+    }
+  };
   return <>
-    <label><span>{locale === "fa" ? "سرویس موجودیت" : "Entity service"}</span><select dir="ltr" value={service} onChange={event => update({ entityService: event.target.value, entityKey: "", formKey: "" })}><option value="">{locale === "fa" ? "انتخاب کنید" : "Select a service"}</option>{dynamicServices.map(item => <option key={item} value={item}>{item}</option>)}</select></label>
-    <label><span>{locale === "fa" ? "کلید تعریف/فرم" : "Definition / form key"}</span><input dir="ltr" list="bpm-entity-definitions" placeholder={locale === "fa" ? "انتخاب یا نوشتن کلید جدید" : "Select existing or type a new key"} disabled={!service} value={key} onChange={event => update({ entityKey: event.target.value, formKey: event.target.value })}/><datalist id="bpm-entity-definitions">{definitions.map(item => <option key={item.entityKey} value={item.entityKey}/>)}</datalist></label>
-    {service && key && !exists ? <p className="bpm-field-hint">{locale === "fa" ? `پس از ذخیره، تعریفی با کلید «${key}» در ${service} یافت نشد؛ می‌توانید آن را از طریق پیوند «تعریف» زیر بسازید.` : `No definition named "${key}" exists yet in ${service} — create it via the "Definition" link below after saving.`}</p> : null}
+    <label><span>{label}</span>
+      <div className="bpm-picker-row">
+        <select dir="ltr" disabled={!service} value={entityKey} onChange={event => onChangeKey(event.target.value)}>
+          <option value="">{locale === "fa" ? "انتخاب کنید" : "Select a definition"}</option>
+          {definitions.map(item => <option key={item.entityKey} value={item.entityKey}>{item.title || item.entityKey}</option>)}
+          {entityKey && !definitions.some(item => item.entityKey === entityKey) ? <option value={entityKey}>{entityKey} ({locale === "fa" ? "یافت نشد" : "not found"})</option> : null}
+        </select>
+        <button type="button" className="secondary-pill" disabled={!service} onClick={() => { setCreateKey(""); setCreateTitle(""); setCreateError(null); setCreateOpen(true); }}>{locale === "fa" ? "+ جدید" : "+ New"}</button>
+      </div>
+    </label>
+    <Dialog open={createOpen} title={locale === "fa" ? "تعریف جدید" : "New definition"} onClose={() => !createPending && setCreateOpen(false)}>
+      <div className="phase9-form">
+        <label><span>{locale === "fa" ? "کلید موجودیت" : "Entity key"}</span><input dir="ltr" value={createKey} disabled={createPending} onChange={event => setCreateKey(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}/></label>
+        <label><span>{locale === "fa" ? "عنوان" : "Title"}</span><input value={createTitle} disabled={createPending} onChange={event => setCreateTitle(event.target.value)}/></label>
+        {createError ? <p role="alert" className="field-error">{createError}</p> : null}
+        <div className="dialog-actions">
+          <button className="secondary-pill" disabled={createPending} onClick={() => setCreateOpen(false)}>{locale === "fa" ? "لغو" : "Cancel"}</button>
+          <AsyncButton pending={createPending} disabled={!createKey.trim()} onClick={submitCreate}>{locale === "fa" ? "ایجاد" : "Create"}</AsyncButton>
+        </div>
+      </div>
+    </Dialog>
+  </>;
+}
+
+function EntityBindingFields({ state, scope, locale, update }: { state: FlowStateDraft; scope: { tenantKey?: string; siteKey?: string }; locale: string; update: (patch: Partial<FlowStateDraft>) => void }) {
+  const service = state.entityService ?? "";
+  const key = state.entityKey ?? state.formKey ?? "";
+  const [rendererOpen, setRendererOpen] = useState(Boolean(state.rendererService || state.rendererKey));
+  const rendererService = state.rendererService ?? "";
+  return <>
+    <label><span>{locale === "fa" ? "حالت ثبت" : "Submit mode"}</span><select dir="ltr" value={state.submitMode ?? "DYNAMIC"} onChange={event => update({ submitMode: event.target.value as "DYNAMIC" | "STATIC" })}>
+      <option value="DYNAMIC">{locale === "fa" ? "فرم پویا (از تعریف موجودیت)" : "Dynamic (from entity definition)"}</option>
+      <option value="STATIC">{locale === "fa" ? "نشانی ثابت (صفحه سفارشی)" : "Static (custom page URL)"}</option>
+    </select></label>
+    {state.submitMode === "STATIC" ? (
+      <label><span>{locale === "fa" ? "نشانی ثبت" : "Submit URL"}</span><input dir="ltr" placeholder="https://…" value={state.submitUrl ?? ""} onChange={event => update({ submitUrl: event.target.value })}/></label>
+    ) : <>
+      <label><span>{locale === "fa" ? "سرویس موجودیت" : "Entity service"}</span><select dir="ltr" value={service} onChange={event => update({ entityService: event.target.value, entityKey: "", formKey: "" })}><option value="">{locale === "fa" ? "انتخاب کنید" : "Select a service"}</option>{dynamicServices.map(item => <option key={item} value={item}>{item}</option>)}</select></label>
+      <DefinitionPicker label={locale === "fa" ? "کلید تعریف/فرم" : "Definition / form key"} service={service} entityKey={key} scope={scope} locale={locale} onChangeKey={value => update({ entityKey: value, formKey: value })}/>
+      <label className="toggle-row"><input type="checkbox" checked={rendererOpen} onChange={event => { setRendererOpen(event.target.checked); if (!event.target.checked) update({ rendererService: undefined, rendererKey: undefined }); }}/><span>{locale === "fa" ? "رندر فرم از تعریف دیگری انجام شود" : "Render the form from a different definition"}</span></label>
+      {rendererOpen ? <>
+        <label><span>{locale === "fa" ? "سرویس رندر" : "Renderer service"}</span><select dir="ltr" value={rendererService} onChange={event => update({ rendererService: event.target.value || undefined, rendererKey: "" })}><option value="">{locale === "fa" ? "انتخاب کنید" : "Select a service"}</option>{dynamicServices.map(item => <option key={item} value={item}>{item}</option>)}</select></label>
+        <DefinitionPicker label={locale === "fa" ? "کلید تعریف رندر" : "Renderer definition key"} service={rendererService} entityKey={state.rendererKey ?? ""} scope={scope} locale={locale} onChangeKey={value => update({ rendererKey: value })}/>
+        <p className="bpm-field-hint">{locale === "fa" ? "داده در تعریف موجودیت بالا ذخیره می‌شود؛ فرم از این تعریف رندر می‌شود." : "Data is stored against the entity definition above; the form is rendered from this definition instead."}</p>
+      </> : null}
+    </>}
   </>;
 }
 
 function ProcessorKeyField({ state, locale, update }: { state: FlowStateDraft; locale: string; update: (patch: Partial<FlowStateDraft>) => void }) {
+  const { showToast } = useToast();
   const [processors, setProcessors] = useState<ProcessorDefinition[]>([]);
-  useEffect(() => { let live = true; listProcessors().then(value => { if (live) setProcessors(value); }).catch(() => { if (live) setProcessors([]); }); return () => { live = false; }; }, []);
-  return <label><span>{locale === "fa" ? "پردازشگر" : "Processor key"}</span><input dir="ltr" list="bpm-processor-keys" placeholder={locale === "fa" ? "انتخاب یا نوشتن کلید جدید" : "Select existing or type a new key"} value={state.processorKey ?? ""} onChange={event => update({ processorKey: event.target.value })}/><datalist id="bpm-processor-keys">{processors.map(item => <option key={item.processorKey} value={item.processorKey}>{item.description ?? item.targetType ?? ""}</option>)}</datalist></label>;
+  const reload = useCallback(() => { let live = true; listProcessors().then(value => { if (live) setProcessors(value); }).catch(() => { if (live) setProcessors([]); }); return () => { live = false; }; }, []);
+  useEffect(() => reload(), [reload]);
+  const selected = processors.find(item => item.processorKey === state.processorKey);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createKey, setCreateKey] = useState("");
+  const [createTargetType, setCreateTargetType] = useState("");
+  const [createDescription, setCreateDescription] = useState("");
+  const [createPending, setCreatePending] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const submitCreate = async () => {
+    if (!createKey.trim() || createPending) return;
+    setCreatePending(true);
+    setCreateError(null);
+    try {
+      await createProcessor({ processorKey: createKey, targetType: createTargetType || undefined, description: createDescription || undefined, active: true });
+      update({ processorKey: createKey });
+      setCreateOpen(false);
+      setCreateKey("");
+      setCreateTargetType("");
+      setCreateDescription("");
+      showToast({ tone: "success", title: locale === "fa" ? "پردازشگر ساخته شد" : "Processor created" });
+      reload();
+    } catch (cause) {
+      const { title, message } = describeApiError(cause, locale === "fa" ? "ساخت پردازشگر ناموفق بود" : "Processor creation failed");
+      setCreateError(message);
+      showToast({ tone: "error", title, message });
+    } finally {
+      setCreatePending(false);
+    }
+  };
+  return <>
+    <label><span>{locale === "fa" ? "پردازشگر" : "Processor key"}</span>
+      <div className="bpm-picker-row">
+        <select dir="ltr" value={state.processorKey ?? ""} onChange={event => update({ processorKey: event.target.value || undefined })}>
+          <option value="">{locale === "fa" ? "بدون پردازشگر" : "No processor"}</option>
+          {processors.map(item => <option key={item.processorKey} value={item.processorKey}>{item.processorKey}{item.active === false ? ` (${locale === "fa" ? "غیرفعال" : "inactive"})` : ""}</option>)}
+        </select>
+        <button type="button" className="secondary-pill" onClick={() => { setCreateKey(""); setCreateTargetType(""); setCreateDescription(""); setCreateError(null); setCreateOpen(true); }}>{locale === "fa" ? "+ جدید" : "+ New"}</button>
+      </div>
+    </label>
+    {selected ? <p className="bpm-field-hint">{[selected.targetType, selected.description].filter(Boolean).join(" — ") || (locale === "fa" ? "بدون توضیح" : "No description")}</p> : null}
+    {state.processorKey ? <p className="bpm-field-hint">{locale === "fa" ? "شکست پردازشگر مانع ذخیره می‌شود." : "Processor failure blocks persistence."}</p> : null}
+    <Dialog open={createOpen} title={locale === "fa" ? "پردازشگر جدید" : "New processor"} onClose={() => !createPending && setCreateOpen(false)}>
+      <div className="phase9-form">
+        <label><span>{locale === "fa" ? "کلید پردازشگر" : "Processor key"}</span><input dir="ltr" value={createKey} disabled={createPending} onChange={event => setCreateKey(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}/></label>
+        <label><span>{locale === "fa" ? "نوع هدف" : "Target type"}</span><input dir="ltr" value={createTargetType} disabled={createPending} onChange={event => setCreateTargetType(event.target.value)}/></label>
+        <label><span>{locale === "fa" ? "توضیح" : "Description"}</span><input value={createDescription} disabled={createPending} onChange={event => setCreateDescription(event.target.value)}/></label>
+        {createError ? <p role="alert" className="field-error">{createError}</p> : null}
+        <div className="dialog-actions">
+          <button className="secondary-pill" disabled={createPending} onClick={() => setCreateOpen(false)}>{locale === "fa" ? "لغو" : "Cancel"}</button>
+          <AsyncButton pending={createPending} disabled={!createKey.trim()} onClick={submitCreate}>{locale === "fa" ? "ایجاد" : "Create"}</AsyncButton>
+        </div>
+      </div>
+    </Dialog>
+  </>;
 }
 
 function FlowSettings({ flow, update, selectTransition, locale }: { flow: DynamicFlowDefinition; update: (value: DynamicFlowDefinition) => void; selectTransition: (id: string) => void; locale: string }) {

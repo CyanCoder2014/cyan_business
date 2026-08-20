@@ -141,18 +141,19 @@ function StateInspector({ state, flow, locale, scope, update, close, remove, act
 
 function useServiceDefinitions(service: string, scope: { tenantKey?: string; siteKey?: string }) {
   const [definitions, setDefinitions] = useState<DynamicEntityDefinition[]>([]);
+  const [reloadToken, setReloadToken] = useState(0);
   useEffect(() => {
     if (!service || !scope.tenantKey) { setDefinitions([]); return; }
     let live = true;
     listDefinitions(service as DynamicServiceKey, scope).then(value => { if (live) setDefinitions(value); }).catch(() => { if (live) setDefinitions([]); });
     return () => { live = false; };
-  }, [service, scope.tenantKey, scope.siteKey]);
-  return definitions;
+  }, [service, scope.tenantKey, scope.siteKey, reloadToken]);
+  return { definitions, refresh: () => setReloadToken(value => value + 1) };
 }
 
 function DefinitionPicker({ label, service, entityKey, scope, locale, onChangeKey }: { label: string; service: string; entityKey: string; scope: { tenantKey?: string; siteKey?: string }; locale: string; onChangeKey: (key: string) => void }) {
   const { showToast } = useToast();
-  const definitions = useServiceDefinitions(service, scope);
+  const { definitions, refresh } = useServiceDefinitions(service, scope);
   const [createOpen, setCreateOpen] = useState(false);
   const [createKey, setCreateKey] = useState("");
   const [createTitle, setCreateTitle] = useState("");
@@ -165,6 +166,7 @@ function DefinitionPicker({ label, service, entityKey, scope, locale, onChangeKe
     try {
       await createDefinition(service as DynamicServiceKey, createKey, { entityKey: createKey, title: createTitle || createKey, fields: {} }, scope);
       onChangeKey(createKey);
+      refresh();
       setCreateOpen(false);
       setCreateKey("");
       setCreateTitle("");

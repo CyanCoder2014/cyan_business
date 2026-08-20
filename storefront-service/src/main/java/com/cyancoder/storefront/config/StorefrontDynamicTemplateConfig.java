@@ -54,6 +54,18 @@ public class StorefrontDynamicTemplateConfig {
                               "preloadAssets":{"id":"preloadAssets","type":"list"},
                               "hydrateTargetEntity":{"id":"hydrateTargetEntity","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["true","false"]}}]}
                             }},
+                            "sections":{"id":"sections","type":"list","itemValidations":{
+                              "sectionKey":{"id":"sectionKey","type":"string","validations":[{"validation":"REQUIRED","order":1}]},
+                              "type":{"id":"type","type":"string","validations":[{"validation":"REQUIRED","order":1},{"validation":"ENUM","order":2,"validationParams":{"values":["hero","features","testimonials","faq","cta","footer"]}}]},
+                              "order":{"id":"order","type":"number"},
+                              "visible":{"id":"visible","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["true","false"]}}]},
+                              "content":{"id":"content","type":"object"},
+                              "style":{"id":"style","type":"object","itemValidations":{
+                                "backgroundColor":{"id":"backgroundColor","type":"string"},
+                                "padding":{"id":"padding","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["sm","md","lg"]}}]},
+                                "align":{"id":"align","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["start","center","end"]}}]}
+                              }}
+                            }},
                             "indexingEnabled":{"id":"indexingEnabled","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["true","false"]}}]},
                             "sitemapPriority":{"id":"sitemapPriority","type":"string"},
                             "publicationStatus":{"id":"publicationStatus","type":"string","validations":[{"validation":"ENUM","order":1,"validationParams":{"values":["DRAFT","PUBLISHED","ARCHIVED"]}}]},

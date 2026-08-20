@@ -260,21 +260,268 @@ public class StorefrontRouteService {
             html.append("<meta name=\"twitter:image\" content=\"").append(escapeHtml(ogImage)).append("\">");
         }
         html.append("<script type=\"application/ld+json\">").append(escapeHtml(schemaJson)).append("</script>");
+        html.append(BASE_STYLESHEET);
         html.append("</head><body>");
         html.append("<header><h1>").append(escapeHtml(brandName)).append("</h1></header>");
         html.append("<main>");
-        html.append("<article>");
-        html.append("<h2>").append(escapeHtml(bodyTitle)).append("</h2>");
-        if (!description.isBlank()) {
-            html.append("<p>").append(escapeHtml(description)).append("</p>");
+        List<Map<String, Object>> sections = resolveSections(route);
+        if (!sections.isEmpty()) {
+            sections.forEach(section -> html.append(renderSection(section)));
+        } else {
+            html.append("<article>");
+            html.append("<h2>").append(escapeHtml(bodyTitle)).append("</h2>");
+            if (!description.isBlank()) {
+                html.append("<p>").append(escapeHtml(description)).append("</p>");
+            }
+            if (!bodyContent.isBlank()) {
+                html.append("<section>").append(escapeHtml(bodyContent)).append("</section>");
+            }
+            html.append("</article>");
         }
-        if (!bodyContent.isBlank()) {
-            html.append("<section>").append(escapeHtml(bodyContent)).append("</section>");
-        }
-        html.append("</article>");
         html.append("</main>");
         html.append("</body></html>");
         return html.toString();
+    }
+
+    private static final String BASE_STYLESHEET = "<style>"
+            + "*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1e293b;line-height:1.55}"
+            + "header{padding:18px 24px;border-bottom:1px solid #e2e8f0}header h1{margin:0;font-size:1.15rem}"
+            + "main section{padding:56px 24px}main section.cs-pad-sm{padding-block:32px}main section.cs-pad-lg{padding-block:88px}"
+            + ".cs-inner{max-width:960px;margin:0 auto}.cs-align-start{text-align:start}.cs-align-center{text-align:center}.cs-align-end{text-align:end}"
+            + "h2{font-size:clamp(1.5rem,3vw,2.25rem);margin:0 0 12px}h3{font-size:1.1rem;margin:0 0 8px}p{color:#475569;margin:0 0 16px}"
+            + ".cs-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}.cs-align-center .cs-actions{justify-content:center}"
+            + ".cs-btn{display:inline-block;padding:11px 22px;border-radius:10px;text-decoration:none;font-weight:600}"
+            + ".cs-btn-primary{background:#0f172a;color:#fff}.cs-btn-secondary{border:1px solid #cbd5e1;color:#0f172a}"
+            + ".cs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:28px;text-align:start}"
+            + ".cs-card{padding:20px;border:1px solid #e2e8f0;border-radius:14px}"
+            + ".cs-quote{font-size:1.05rem;font-style:italic}.cs-quote-author{margin-top:10px;font-weight:600;font-style:normal;color:#0f172a}"
+            + "details{border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:10px}summary{font-weight:600;cursor:pointer}"
+            + "footer{padding:32px 24px;border-top:1px solid #e2e8f0}.cs-footer-links{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}.cs-footer-links a{color:#475569}"
+            + "@media(max-width:700px){main section{padding:36px 20px}}"
+            + "</style>";
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> resolveSections(Map<String, Object> route) {
+        Object raw = route.get("sections");
+        if (!(raw instanceof List<?> list)) {
+            return List.of();
+        }
+        return list.stream()
+                .filter(item -> item instanceof Map<?, ?>)
+                .map(item -> (Map<String, Object>) item)
+                .filter(section -> !"false".equalsIgnoreCase(Objects.toString(section.get("visible"), "true")))
+                .sorted((a, b) -> Double.compare(numberOf(a.get("order")), numberOf(b.get("order"))))
+                .toList();
+    }
+
+    private double numberOf(Object value) {
+        if (value instanceof Number number) {
+            return number.doubleValue();
+        }
+        try {
+            return value == null ? 0 : Double.parseDouble(String.valueOf(value));
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private String renderSection(Map<String, Object> section) {
+        String type = Objects.toString(section.get("type"), "");
+        Map<String, Object> content = section.get("content") instanceof Map<?, ?> map ? (Map<String, Object>) map : Map.of();
+        Map<String, Object> style = section.get("style") instanceof Map<?, ?> map ? (Map<String, Object>) map : Map.of();
+        String body = switch (type) {
+            case "hero" -> renderHero(content);
+            case "features" -> renderFeatures(content);
+            case "testimonials" -> renderTestimonials(content);
+            case "faq" -> renderFaq(content);
+            case "cta" -> renderCta(content);
+            case "footer" -> renderFooter(content);
+            default -> "";
+        };
+        if (body.isBlank()) {
+            return "";
+        }
+        if ("footer".equals(type)) {
+            return "<footer" + styleAttr(style) + ">" + "<div class=\"cs-inner " + alignClass(style) + "\">" + body + "</div></footer>";
+        }
+        return "<section class=\"" + paddingClass(style) + "\"" + styleAttr(style) + ">"
+                + "<div class=\"cs-inner " + alignClass(style) + "\">" + body + "</div></section>";
+    }
+
+    private String styleAttr(Map<String, Object> style) {
+        String background = Objects.toString(style.get("backgroundColor"), "");
+        return background.isBlank() ? "" : " style=\"background:" + escapeHtml(background) + "\"";
+    }
+
+    private String paddingClass(Map<String, Object> style) {
+        String padding = Objects.toString(style.get("padding"), "md");
+        return "sm".equals(padding) || "lg".equals(padding) ? "cs-pad-" + padding : "";
+    }
+
+    private String alignClass(Map<String, Object> style) {
+        String align = Objects.toString(style.get("align"), "start");
+        return List.of("start", "center", "end").contains(align) ? "cs-align-" + align : "cs-align-start";
+    }
+
+    private String renderHero(Map<String, Object> content) {
+        String heading = Objects.toString(content.get("heading"), "");
+        if (heading.isBlank()) {
+            return "";
+        }
+        StringBuilder body = new StringBuilder("<h2>").append(escapeHtml(heading)).append("</h2>");
+        String subheading = Objects.toString(content.get("subheading"), "");
+        if (!subheading.isBlank()) {
+            body.append("<p>").append(escapeHtml(subheading)).append("</p>");
+        }
+        String actions = renderActions(content);
+        if (!actions.isBlank()) {
+            body.append("<div class=\"cs-actions\">").append(actions).append("</div>");
+        }
+        return body.toString();
+    }
+
+    private String renderCta(Map<String, Object> content) {
+        String heading = Objects.toString(content.get("heading"), "");
+        if (heading.isBlank()) {
+            return "";
+        }
+        StringBuilder body = new StringBuilder("<h2>").append(escapeHtml(heading)).append("</h2>");
+        String subheading = Objects.toString(content.get("subheading"), "");
+        if (!subheading.isBlank()) {
+            body.append("<p>").append(escapeHtml(subheading)).append("</p>");
+        }
+        String label = Objects.toString(content.get("buttonLabel"), "");
+        if (!label.isBlank()) {
+            body.append("<div class=\"cs-actions\">").append(button(label, Objects.toString(content.get("buttonHref"), "#"), "primary")).append("</div>");
+        }
+        return body.toString();
+    }
+
+    private String renderActions(Map<String, Object> content) {
+        StringBuilder actions = new StringBuilder();
+        String primaryLabel = Objects.toString(content.get("primaryButtonLabel"), "");
+        if (!primaryLabel.isBlank()) {
+            actions.append(button(primaryLabel, Objects.toString(content.get("primaryButtonHref"), "#"), "primary"));
+        }
+        String secondaryLabel = Objects.toString(content.get("secondaryButtonLabel"), "");
+        if (!secondaryLabel.isBlank()) {
+            actions.append(button(secondaryLabel, Objects.toString(content.get("secondaryButtonHref"), "#"), "secondary"));
+        }
+        return actions.toString();
+    }
+
+    private String button(String label, String href, String tone) {
+        return "<a class=\"cs-btn cs-btn-" + tone + "\" href=\"" + escapeHtml(href) + "\">" + escapeHtml(label) + "</a>";
+    }
+
+    @SuppressWarnings("unchecked")
+    private String renderFeatures(Map<String, Object> content) {
+        List<Object> items = content.get("items") instanceof List<?> list ? (List<Object>) list : List.of();
+        if (items.isEmpty()) {
+            return "";
+        }
+        StringBuilder body = new StringBuilder();
+        String heading = Objects.toString(content.get("heading"), "");
+        if (!heading.isBlank()) {
+            body.append("<h2>").append(escapeHtml(heading)).append("</h2>");
+        }
+        String subheading = Objects.toString(content.get("subheading"), "");
+        if (!subheading.isBlank()) {
+            body.append("<p>").append(escapeHtml(subheading)).append("</p>");
+        }
+        body.append("<div class=\"cs-grid\">");
+        for (Object raw : items) {
+            if (!(raw instanceof Map<?, ?> map)) {
+                continue;
+            }
+            Map<String, Object> item = (Map<String, Object>) map;
+            body.append("<div class=\"cs-card\"><h3>").append(escapeHtml(Objects.toString(item.get("title"), ""))).append("</h3><p>")
+                    .append(escapeHtml(Objects.toString(item.get("description"), ""))).append("</p></div>");
+        }
+        body.append("</div>");
+        return body.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String renderTestimonials(Map<String, Object> content) {
+        List<Object> items = content.get("items") instanceof List<?> list ? (List<Object>) list : List.of();
+        if (items.isEmpty()) {
+            return "";
+        }
+        StringBuilder body = new StringBuilder();
+        String heading = Objects.toString(content.get("heading"), "");
+        if (!heading.isBlank()) {
+            body.append("<h2>").append(escapeHtml(heading)).append("</h2>");
+        }
+        body.append("<div class=\"cs-grid\">");
+        for (Object raw : items) {
+            if (!(raw instanceof Map<?, ?> map)) {
+                continue;
+            }
+            Map<String, Object> item = (Map<String, Object>) map;
+            String author = Objects.toString(item.get("author"), "");
+            String role = Objects.toString(item.get("role"), "");
+            body.append("<div class=\"cs-card\"><p class=\"cs-quote\">“").append(escapeHtml(Objects.toString(item.get("quote"), ""))).append("”</p>");
+            if (!author.isBlank()) {
+                body.append("<p class=\"cs-quote-author\">").append(escapeHtml(author));
+                if (!role.isBlank()) {
+                    body.append(", ").append(escapeHtml(role));
+                }
+                body.append("</p>");
+            }
+            body.append("</div>");
+        }
+        body.append("</div>");
+        return body.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String renderFaq(Map<String, Object> content) {
+        List<Object> items = content.get("items") instanceof List<?> list ? (List<Object>) list : List.of();
+        if (items.isEmpty()) {
+            return "";
+        }
+        StringBuilder body = new StringBuilder();
+        String heading = Objects.toString(content.get("heading"), "");
+        if (!heading.isBlank()) {
+            body.append("<h2>").append(escapeHtml(heading)).append("</h2>");
+        }
+        for (Object raw : items) {
+            if (!(raw instanceof Map<?, ?> map)) {
+                continue;
+            }
+            Map<String, Object> item = (Map<String, Object>) map;
+            body.append("<details><summary>").append(escapeHtml(Objects.toString(item.get("question"), ""))).append("</summary><p>")
+                    .append(escapeHtml(Objects.toString(item.get("answer"), ""))).append("</p></details>");
+        }
+        return body.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private String renderFooter(Map<String, Object> content) {
+        String text = Objects.toString(content.get("text"), "");
+        List<Object> links = content.get("links") instanceof List<?> list ? (List<Object>) list : List.of();
+        if (text.isBlank() && links.isEmpty()) {
+            return "";
+        }
+        StringBuilder body = new StringBuilder();
+        if (!text.isBlank()) {
+            body.append("<p>").append(escapeHtml(text)).append("</p>");
+        }
+        if (!links.isEmpty()) {
+            body.append("<div class=\"cs-footer-links\">");
+            for (Object raw : links) {
+                if (!(raw instanceof Map<?, ?> map)) {
+                    continue;
+                }
+                Map<String, Object> link = (Map<String, Object>) map;
+                body.append("<a href=\"").append(escapeHtml(Objects.toString(link.get("href"), "#"))).append("\">")
+                        .append(escapeHtml(Objects.toString(link.get("label"), ""))).append("</a>");
+            }
+            body.append("</div>");
+        }
+        return body.toString();
     }
 
     @SuppressWarnings("unchecked")

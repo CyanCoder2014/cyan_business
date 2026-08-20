@@ -7,7 +7,7 @@ import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
 import { EmptyState, ErrorState, Skeleton, StatusBadge } from "@/components/ui/primitives";
 import { prepareMediaUpload, uploadMediaBytes } from "@/lib/media-api";
-import { appendConversationMessage, attachProjectAsset, closeConversationSession, createConversationSession, generatePlatformApp, getClientDraft, getConversationSession, listBlueprints, listConversationSessions, updateClientDraft } from "@/lib/platform-api";
+import { appendConversationMessage, attachProjectAsset, closeConversationSession, createConversationSession, generatePlatformApp, getClientDraft, listBlueprints, listConversationSessions, updateClientDraft } from "@/lib/platform-api";
 import type { AiConversationSession, AppBlueprint, ClientAppDraft } from "@/lib/types";
 
 export default function AiPage() {
@@ -60,12 +60,19 @@ export default function AiPage() {
   };
   const send = async () => {
     if (!prompt.trim() || !tenantKey) return;
+    const text = prompt.trim();
     setSending(true); setError(null);
     try {
       let session = active;
-      if (!session) session = await createConversationSession({ channelType: "PANEL", tenantKey, siteKey: siteKey || undefined, title: prompt.trim().slice(0, 80) });
-      const response = await generatePlatformApp({ prompt: prompt.trim(), tenantKey, siteKey: siteKey || undefined, sessionId: session.sessionId, execute: false });
-      const refreshed = await getConversationSession(response.sessionId || session.sessionId);
+      if (!session) session = await createConversationSession({ channelType: "PANEL", tenantKey, siteKey: siteKey || undefined, title: text.slice(0, 80) });
+      await appendConversationMessage(session.sessionId, { role: "USER", content: text });
+      const response = await generatePlatformApp({ prompt: text, tenantKey, siteKey: siteKey || undefined, sessionId: session.sessionId, execute: false });
+      const summary = response.nextQuestions.length
+        ? response.nextQuestions[0]
+        : (locale === "fa"
+          ? `پیش‌نویس به‌روزرسانی شد: ${response.dsl.entities.length} موجودیت، ${response.dsl.routes.length} مسیر، ${response.dsl.flows.length} فلو.`
+          : `Draft updated: ${response.dsl.entities.length} entities, ${response.dsl.routes.length} routes, ${response.dsl.flows.length} flows.`);
+      const refreshed = await appendConversationMessage(response.sessionId || session.sessionId, { role: "ASSISTANT", content: summary });
       setActive(refreshed); setSessions((current) => [refreshed, ...current.filter((item) => item.sessionId !== refreshed.sessionId)]);
       if (response.draftId) setDraft(await getClientDraft(response.draftId));
       setPrompt("");

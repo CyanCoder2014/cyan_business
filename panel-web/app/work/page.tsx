@@ -32,9 +32,9 @@ export default function WorkQueue() {
     if (!tenantKey) { setLoading(false); return; }
     setLoading(true); setError(null);
     try { setResult(await listCartable({ ...scope, view, query, priority, overdue: overdue || undefined, page, size: 20 })); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    catch (reason) { const { title, message } = describeApiError(reason, locale === "fa" ? "کارتابل در دسترس نیست" : "Work queue unavailable"); setError(message); showToast({ tone: "error", title, message }); }
     finally { setLoading(false); }
-  }, [tenantKey, siteKey, queryVersion, view, query, priority, overdue, page]);
+  }, [tenantKey, siteKey, queryVersion, view, query, priority, overdue, page, locale, showToast]);
   useEffect(() => { const timer = setTimeout(() => void load(), 180); return () => clearTimeout(timer); }, [load]);
 
   return <PanelShell activeKey="work" title="Work queue" titleFa="کارتابل" subtitle="Role-aware, server-filtered business work." subtitleFa="کارهای کسب‌وکار با فیلتر سمت سرور و دسترسی مبتنی بر نقش.">

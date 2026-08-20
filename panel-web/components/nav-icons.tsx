@@ -112,6 +112,12 @@ export function PlusIcon({ className, size = 18 }: IconProps) {
 export function MoreIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="5" cy="12" r="1.6" fill="currentColor" /><circle cx="12" cy="12" r="1.6" fill="currentColor" /><circle cx="19" cy="12" r="1.6" fill="currentColor" /></svg>;
 }
+export function QuoteIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.5 7.5c-2.5 1-4 3.2-4 6a3 3 0 0 0 3 3h.5a2.5 2.5 0 0 0 2.5-2.5V11a2.5 2.5 0 0 0-2.5-2.5H7c.3-.8 1-1.4 1.5-1.7v-.3z" fill="currentColor" /><path d="M17.5 7.5c-2.5 1-4 3.2-4 6a3 3 0 0 0 3 3h.5a2.5 2.5 0 0 0 2.5-2.5V11a2.5 2.5 0 0 0-2.5-2.5H16c.3-.8 1-1.4 1.5-1.7v-.3z" fill="currentColor" /></svg>;
+}
+export function QuestionIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" /><path d="M9.3 9.5a2.7 2.7 0 1 1 3.9 2.4c-.8.4-1.2.9-1.2 1.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /><circle cx="12" cy="16.7" r="1" fill="currentColor" /></svg>;
+}
 export function BlogIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 4.5h11l4 4v11h-15v-15z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M15.5 4.5v4h4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M8 12.5h6M8 16h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>;
 }
@@ -155,6 +161,21 @@ const CAPABILITY_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
 
 export function capabilityIcon(capability: string) {
   return CAPABILITY_ICONS[capability.trim().toLowerCase()] ?? BoxIcon;
+}
+
+export type SectionType = "hero" | "features" | "testimonials" | "faq" | "cta" | "footer";
+
+const SECTION_TYPE_ICONS: Record<SectionType, (props: IconProps) => JSX.Element> = {
+  hero: LayoutIcon,
+  features: GridIcon,
+  testimonials: QuoteIcon,
+  faq: QuestionIcon,
+  cta: ZapIcon,
+  footer: LayersIcon
+};
+
+export function sectionTypeIcon(type: string) {
+  return SECTION_TYPE_ICONS[type as SectionType] ?? BoxIcon;
 }
 
 const CAPABILITY_ACRONYMS = new Set(["crm", "erp", "bpm"]);

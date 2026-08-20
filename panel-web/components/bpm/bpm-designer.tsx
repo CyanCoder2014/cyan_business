@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, MiniMap, Position, ReactFlow, getBezierPath, type Connection, type EdgeProps, type Node, type NodeChange, type NodeProps } from "@xyflow/react";
+import { Background, BaseEdge, Controls, EdgeLabelRenderer, Handle, MarkerType, MiniMap, Position, ReactFlow, getBezierPath, type Connection, type EdgeChange, type EdgeProps, type Node, type NodeChange, type NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import Link from "next/link";
 import { AsyncButton, CodeViewer, EmptyState, StatusBadge } from "@/components/ui/primitives";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
+import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError } from "@/lib/api-error";
 import { activateFlow, getConditionMetadata, listActionMetadata, saveFlow, type BpmConditionStructure, type DynamicFlowDefinition, type FlowConditionDraft, type FlowStateDraft, type FlowTransitionDraft } from "@/lib/bpm-api";
 import { listAutomationFlows, type AutomationFlow } from "@/lib/automation-api";
 import { useRouter } from "next/navigation";
@@ -37,6 +39,7 @@ const edgeTypes = { transitionEdge: TransitionEdge };
 export function BpmDesigner({ initial, prefill }: { initial?: DynamicFlowDefinition; prefill?: { entityService?: string; entityKey?: string } }) {
   const { locale } = usePanel();
   const { tenantKey, siteKey } = useScopeAccess();
+  const { showToast } = useToast();
   const scope = useMemo(() => ({ tenantKey: tenantKey ?? undefined, siteKey: siteKey ?? undefined }), [tenantKey, siteKey]);
   const router = useRouter();
   const [flow, setFlow] = useState(() => {
@@ -70,24 +73,43 @@ export function BpmDesigner({ initial, prefill }: { initial?: DynamicFlowDefinit
   const transition = flow.transitions.find(item => item.id === selectedTransition);
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     const moved = changes.filter((change): change is Extract<NodeChange, { type: "position" }> => change.type === "position" && Boolean(change.position));
-    if (!moved.length) return;
-    setFlow(current => ({
-      ...current,
-      layout: moved.reduce((layout, change) => ({ ...layout, [change.id]: change.position! }), { ...(current.layout ?? {}) })
-    }));
+    if (moved.length) {
+      setFlow(current => ({
+        ...current,
+        layout: moved.reduce((layout, change) => ({ ...layout, [change.id]: change.position! }), { ...(current.layout ?? {}) })
+      }));
+      setDirty(true);
+    }
+    const removed = changes.filter((change): change is Extract<NodeChange, { type: "remove" }> => change.type === "remove").map(change => change.id);
+    if (removed.length) {
+      setFlow(current => ({
+        ...current,
+        states: current.states.filter(state => !removed.includes(state.id)),
+        transitions: current.transitions.filter(transition => !removed.includes(transition.fromState) && !removed.includes(transition.toState)),
+        startState: removed.includes(current.startState) ? "" : current.startState
+      }));
+      setSelected(current => removed.includes(current ?? "") ? null : current);
+      setDirty(true);
+    }
+  }, []);
+  const onEdgesChange = useCallback((changes: EdgeChange[]) => {
+    const removed = changes.filter((change): change is Extract<EdgeChange, { type: "remove" }> => change.type === "remove").map(change => change.id);
+    if (!removed.length) return;
+    setFlow(current => ({ ...current, transitions: current.transitions.filter(transition => !removed.includes(transition.id)) }));
+    setSelectedTransition(current => removed.includes(current ?? "") ? null : current);
     setDirty(true);
   }, []);
   const connect = (connection: Connection) => { if (!connection.source || !connection.target || connection.source === connection.target) return; const id = `transition-${crypto.randomUUID().slice(0, 8)}`; setFlow(current => ({ ...current, transitions: [...current.transitions, { id, fromState: connection.source!, toState: connection.target!, label: locale === "fa" ? "انتقال" : "Transition", allowedGroups: [], allowedRoles: [], conditionOperator: "AND", conditions: [] }] })); setSelected(null); setSelectedTransition(id); setDirty(true); };
   const updateState = (patch: Partial<FlowStateDraft>) => { setFlow(current => ({ ...current, states: current.states.map(state => state.id === selected ? { ...state, ...patch } : state) })); setDirty(true); };
   const updateTransition = (id: string, patch: Partial<FlowTransitionDraft>) => { setFlow(current => ({ ...current, transitions: current.transitions.map(transition => transition.id === id ? { ...transition, ...patch } : transition) })); setDirty(true); };
-  const mutate = async (kind: string, operation: () => Promise<DynamicFlowDefinition>) => { if (pending) return; setPending(kind); setError(null); try { const value = await operation(); setFlow(value); setDirty(false); if (!initial) router.replace(`/bpm/${encodeURIComponent(value.flowKey)}`); } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); } finally { setPending(null); } };
+  const mutate = async (kind: string, operation: () => Promise<DynamicFlowDefinition>) => { if (pending) return; setPending(kind); setError(null); try { const value = await operation(); setFlow(value); setDirty(false); showToast({ tone: "success", title: kind === "activate" ? (locale === "fa" ? "فرایند فعال شد" : "Process activated") : (locale === "fa" ? "فرایند ذخیره شد" : "Process saved") }); if (!initial) router.replace(`/bpm/${encodeURIComponent(value.flowKey)}`); } catch (reason) { const described = describeApiError(reason, locale === "fa" ? "عملیات ناموفق بود" : "Action failed"); setError(described.message); showToast({ tone: "error", title: described.title, message: described.message }); } finally { setPending(null); } };
 
   return <section className="bpm-workspace">
     <div className="page-action-bar"><div><StatusBadge tone={flow.active ? "success" : "neutral"}>{flow.lifecycleStatus ?? (flow.active ? "ACTIVE" : "DRAFT")}</StatusBadge><span>v{flow.version ?? 1}</span>{dirty ? <small>{locale === "fa" ? "ذخیره‌نشده" : "Unsaved"}</small> : null}</div><div><AsyncButton pending={pending === "save"} disabled={Boolean(pending) || !flow.flowKey || !flow.name || !flow.states.length} onClick={() => mutate("save", () => saveFlow(flow, scope))}>{locale === "fa" ? "ذخیره" : "Save"}</AsyncButton>{!flow.active && flow.version ? <AsyncButton pending={pending === "activate"} disabled={Boolean(pending)} onClick={() => confirm(locale === "fa" ? "این فرایند فعال شود؟" : "Activate this BPM flow?") && mutate("activate", () => activateFlow(flow.flowKey, flow.version!, scope))}>{locale === "fa" ? "فعال‌سازی" : "Activate"}</AsyncButton> : null}</div></div>
     {error ? <div className="operational-banner error" role="alert"><span>{error}</span><button aria-label={locale === "fa" ? "بستن خطا" : "Dismiss error"} onClick={() => setError(null)}>×</button></div> : null}
     <div className="bpm-designer-grid">
       <aside className="bpm-state-list" aria-label={locale === "fa" ? "فهرست وضعیت‌ها" : "Keyboard state list"}><header><strong>{locale === "fa" ? "وضعیت‌ها" : "States"}</strong><button aria-label={locale === "fa" ? "افزودن وضعیت" : "Add state"} onClick={() => { const state = newState(flow.states.length); setFlow(current => ({ ...current, states: [...current.states, state], startState: current.startState || state.id })); setSelectedTransition(null); setSelected(state.id); setDirty(true); }}>＋</button></header>{flow.states.map(state => <button key={state.id} className={selected === state.id ? "active" : ""} aria-pressed={selected === state.id} onClick={() => { setSelectedTransition(null); setSelected(state.id); }}><span className={state.terminal ? "state-dot terminal" : "state-dot"}/><span><strong>{state.displayName}</strong><small>{state.id}</small></span></button>)}</aside>
-      <div className="bpm-canvas">{flow.states.length ? <ReactFlow nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onConnect={connect} onNodeClick={(_, node) => { setSelectedTransition(null); setSelected(node.id); }} onEdgeClick={(_, edge) => { setSelected(null); setSelectedTransition(edge.id); }} onPaneClick={() => { setSelected(null); setSelectedTransition(null); }} connectionRadius={45} fitView><Background/><Controls/><MiniMap/></ReactFlow> : <EmptyState title={locale === "fa" ? "وضعیتی نیست" : "No states"} description={locale === "fa" ? "اولین وضعیت را اضافه کنید." : "Add the first state to begin designing."}/>}</div>
+      <div className="bpm-canvas">{flow.states.length ? <><ReactFlow nodeTypes={nodeTypes} edgeTypes={edgeTypes} nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onConnect={connect} onNodeClick={(_, node) => { setSelectedTransition(null); setSelected(node.id); }} onEdgeClick={(_, edge) => { setSelected(null); setSelectedTransition(edge.id); }} onPaneClick={() => { setSelected(null); setSelectedTransition(null); }} connectionRadius={45} deleteKeyCode={["Backspace", "Delete"]} fitView><Background/><Controls/><MiniMap/></ReactFlow><p className="bpm-canvas-hint">{locale === "fa" ? "برای حذف، انتخاب کنید و Delete را بزنید." : "Select a node or connection and press Delete to remove it."}</p></> : <EmptyState title={locale === "fa" ? "وضعیتی نیست" : "No states"} description={locale === "fa" ? "اولین وضعیت را اضافه کنید." : "Add the first state to begin designing."}/>}</div>
       <aside className="bpm-inspector">{selectedState ? <StateInspector state={selectedState} flow={flow} locale={locale} update={updateState} close={() => setSelected(null)} remove={() => { setFlow(current => ({ ...current, states: current.states.filter(state => state.id !== selected), transitions: current.transitions.filter(transition => transition.fromState !== selected && transition.toState !== selected), startState: current.startState === selected ? "" : current.startState })); setSelected(null); setDirty(true); }} actionTypes={actionTypes} automations={automations} setStart={() => { setFlow(current => ({ ...current, startState: selectedState.id })); setDirty(true); }}/> : transition ? <TransitionInspector transition={transition} states={flow.states} metadata={conditionMetadata} locale={locale} update={patch => updateTransition(transition.id, patch)} close={() => setSelectedTransition(null)} remove={() => { setFlow(current => ({ ...current, transitions: current.transitions.filter(item => item.id !== transition.id) })); setSelectedTransition(null); setDirty(true); }}/> : <FlowSettings flow={flow} update={value => { setFlow(value); setDirty(true); }} selectTransition={id => { setSelected(null); setSelectedTransition(id); }} locale={locale}/>}</aside>
     </div>
   </section>;

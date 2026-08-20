@@ -62,3 +62,12 @@ export function fieldErrorsByPath(error: unknown): Record<string, string> {
   if (!(error instanceof PlatformApiError)) return {};
   return Object.fromEntries(error.fieldErrors.map((item) => [item.field, item.message]));
 }
+
+/** Renders a caught error (ideally a PlatformApiError) into a toast-ready title/message, including per-field validation detail when present. */
+export function describeApiError(error: unknown, fallbackTitle: string): { title: string; message: string } {
+  if (error instanceof PlatformApiError) {
+    const fieldSummary = error.fieldErrors.map((item) => `${item.field}: ${item.message}`).join(" · ");
+    return { title: fallbackTitle, message: fieldSummary ? `${error.message} (${fieldSummary})` : error.message };
+  }
+  return { title: fallbackTitle, message: error instanceof Error ? error.message : String(error) };
+}

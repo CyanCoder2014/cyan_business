@@ -9,6 +9,7 @@ import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
 import { AsyncButton, CodeViewer, ConfirmDialog, ErrorState, Skeleton, StatusBadge, Tabs } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError } from "@/lib/api-error";
 import { getDefinition, listDefinitionVersions, publishDefinition, saveDefinition } from "@/lib/dynamic-api";
 import type { DynamicEntityDefinition, DynamicServiceKey } from "@/lib/types";
 
@@ -64,8 +65,8 @@ export default function DefinitionEditor() {
       setVersions(await listDefinitionVersions(service, entity, scope));
       showToast({ tone: "success", title: locale === "fa" ? "تعریف ذخیره شد" : "Definition saved" });
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : "Save failed"; setError(message);
-      showToast({ tone: "error", title: locale === "fa" ? "ذخیره ناموفق بود" : "Save failed", message });
+      const described = describeApiError(cause, locale === "fa" ? "ذخیره ناموفق بود" : "Save failed"); setError(described.message);
+      showToast({ tone: "error", title: described.title, message: described.message });
     } finally { setPending(null); }
   };
   const publish = async () => {
@@ -75,7 +76,10 @@ export default function DefinitionEditor() {
       setValue(await publishDefinition(service, entity, scope));
       setVersions(await listDefinitionVersions(service, entity, scope)); setPublishOpen(false);
       showToast({ tone: "success", title: locale === "fa" ? "تعریف منتشر شد" : "Definition published" });
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Publish failed"); }
+    } catch (cause) {
+      const described = describeApiError(cause, locale === "fa" ? "انتشار ناموفق بود" : "Publish failed"); setError(described.message);
+      showToast({ tone: "error", title: described.title, message: described.message });
+    }
     finally { setPending(null); }
   };
   const applyAdvanced = () => {

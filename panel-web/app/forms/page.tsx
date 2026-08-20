@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
+import { FormIcon } from "@/components/nav-icons";
 import {
   AsyncButton,
   ConfirmDialog,
@@ -17,6 +18,7 @@ import {
   StatusBadge,
 } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError } from "@/lib/api-error";
 import { dynamicServices, listDefinitions } from "@/lib/dynamic-api";
 import {
   archiveForm,
@@ -73,7 +75,7 @@ export default function FormsPage() {
     try {
       setForms(await listPublishedForms(scope));
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Forms unavailable");
+      const { title, message } = describeApiError(cause, "Forms unavailable"); setError(message); showToast({ tone: "error", title, message });
     } finally {
       setLoading(false);
     }
@@ -88,7 +90,7 @@ export default function FormsPage() {
     setDefinitionsLoading(true);
     listDefinitions(service, scope)
       .then(setDefinitions)
-      .catch((cause) => setError(cause instanceof Error ? cause.message : "Definitions unavailable"))
+      .catch((cause) => { const { message } = describeApiError(cause, "Definitions unavailable"); setError(message); })
       .finally(() => setDefinitionsLoading(false));
   }, [dialog, service, canBuild, scope]);
 
@@ -120,7 +122,7 @@ export default function FormsPage() {
         message: visibility === "PUBLIC" ? publicFormPath(slug) : memberFormPath(slug),
       });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Publish failed");
+      const { title, message } = describeApiError(cause, "Publish failed"); setError(message); showToast({ tone: "error", title, message });
     } finally {
       setPending(false);
     }
@@ -135,7 +137,7 @@ export default function FormsPage() {
       await load();
       showToast({ tone: "success", title: locale === "fa" ? "فرم بایگانی شد" : "Form archived" });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Archive failed");
+      const { title, message } = describeApiError(cause, "Archive failed"); setError(message); showToast({ tone: "error", title, message });
     } finally {
       setPending(false);
     }
@@ -175,7 +177,7 @@ export default function FormsPage() {
             return (
               <article className="result-card" key={form.slug}>
                 <header>
-                  <span className="result-card-icon" aria-hidden>▤</span>
+                  <span className="result-card-icon" aria-hidden><FormIcon size={18}/></span>
                   <StatusBadge tone={form.visibility === "PUBLIC" ? "success" : "info"}>{form.visibility}</StatusBadge>
                 </header>
                 <div>

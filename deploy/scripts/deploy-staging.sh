@@ -7,104 +7,94 @@ source deploy/kubernetes/common-client-profile.sh
 NAMESPACE="cyan-staging"
 TAG="$(git rev-parse --short HEAD)-$(date +%Y%m%d%H%M%S)"
 
-echo "Deploying Cyan version: ${TAG}"
+REQUESTED_SERVICES=("$@")
 
-# Mirrors the Deployment objects in deploy/kubernetes/*.yaml. Adding a gradle
-# module also means adding it here and to the manifests, or this script will
-# fail on a missing deployment/<service>.
-BACKEND_SERVICES=(
-  tax-pay-sys
-  factor-service
-  buyer-service
-  product-service
-  client-service
+if (( ${#REQUESTED_SERVICES[@]} == 0 )); then
+  echo "No services requested, nothing to deploy."
+  exit 0
+fi
 
-  "${COMMON_IDENTITY_SERVICES[@]}"
-  sso-fido-service
+is_known_backend_service() {
+  local candidate="$1"
+  local service
+  for service in "${ALL_BACKEND_SERVICES[@]}"; do
+    if [[ "$service" == "$candidate" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
 
-  content-service
-  catalog-service
-  crm-service
-  commerce-service
-  finance-service
-  inventory-service
-  report-service
-  processor-service
-  event-service
+deploy_backend() {
+  local service="$1"
 
-  crm-automation-service
-  finance-automation-service
-  inventory-automation-service
-  report-automation-service
-
-  payment-service
-  storefront-service
-  media-service
-  cart-service
-  checkout-service
-  payment-orchestrator-service
-  automation-orchestrator-service
-  pricing-promotion-service
-  search-index-service
-  notification-service
-  bpm-service
-  ai-orchestrator-service
-  bot-adapter-service
-  batch-worker-service
-  api-docs-service
-
-  tenant-service
-  billing-service
-)
-
-for SERVICE in "${BACKEND_SERVICES[@]}"; do
   echo
   echo "======================================"
-  echo "BUILD ${SERVICE}"
+  echo "BUILD ${service}"
   echo "======================================"
 
-  ./gradlew ":${SERVICE}:clean" ":${SERVICE}:bootJar"
+  ./gradlew ":${service}:clean" ":${service}:bootJar"
 
-  IMAGE="localhost/cyan/${SERVICE}:${TAG}"
+  local image="localhost/cyan/${service}:${TAG}"
 
-  docker build -t "${IMAGE}" "./${SERVICE}"
+  docker build -t "${image}" "./${service}"
 
-  docker save "${IMAGE}" | sudo k3s ctr -n k8s.io images import -
+  docker save "${image}" | sudo k3s ctr -n k8s.io images import -
 
   sudo k3s kubectl set image \
-    "deployment/${SERVICE}" \
+    "deployment/${service}" \
     -n "${NAMESPACE}" \
-    "${SERVICE}=${IMAGE}"
+    "${service}=${image}"
 
   sudo k3s kubectl rollout status \
-    "deployment/${SERVICE}" \
+    "deployment/${service}" \
     -n "${NAMESPACE}" \
     --timeout=180s
+}
+
+deploy_panel() {
+  echo
+  echo "======================================"
+  echo "BUILD panel-web"
+  echo "======================================"
+
+  local image="localhost/cyan/panel-web:${TAG}"
+
+  docker build \
+    --build-arg NEXT_PUBLIC_PLATFORM_API_BASE_URL=https://api.cyancoder.com \
+    -t "${image}" \
+    ./panel-web
+
+  docker save "${image}" | sudo k3s ctr -n k8s.io images import -
+
+  sudo k3s kubectl set image \
+    deployment/panel-web \
+    -n "${NAMESPACE}" \
+    "panel-web=${image}"
+
+  sudo k3s kubectl rollout status \
+    deployment/panel-web \
+    -n "${NAMESPACE}" \
+    --timeout=180s
+}
+
+echo "Deploying Cyan version: ${TAG}"
+echo "Requested services: ${REQUESTED_SERVICES[*]}"
+
+for SERVICE in "${REQUESTED_SERVICES[@]}"; do
+  if [[ "$SERVICE" == "panel-web" ]]; then
+    deploy_panel
+    continue
+  fi
+
+  if ! is_known_backend_service "$SERVICE"; then
+    echo "Unknown service requested: ${SERVICE}" >&2
+    echo "Known services: ${ALL_BACKEND_SERVICES[*]} panel-web" >&2
+    exit 1
+  fi
+
+  deploy_backend "$SERVICE"
 done
-
-echo
-echo "======================================"
-echo "BUILD panel-web"
-echo "======================================"
-
-PANEL_IMAGE="localhost/cyan/panel-web:${TAG}"
-
-docker build \
-  --build-arg NEXT_PUBLIC_PLATFORM_API_BASE_URL=https://api.cyancoder.com \
-  -t "${PANEL_IMAGE}" \
-  ./panel-web
-
-docker save "${PANEL_IMAGE}" | sudo k3s ctr -n k8s.io images import -
-
-sudo k3s kubectl set image \
-  deployment/panel-web \
-  -n "${NAMESPACE}" \
-  "panel-web=${PANEL_IMAGE}"
-
-sudo k3s kubectl rollout status \
-  deployment/panel-web \
-  -n "${NAMESPACE}" \
-  --timeout=180s
 
 echo
 echo "Cyan deployment finished: ${TAG}"

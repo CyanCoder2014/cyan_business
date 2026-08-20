@@ -58,11 +58,22 @@ jobs:
     steps:
       - name: Checkout exact commit
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Make scripts executable
         run: |
           chmod +x gradlew
           chmod +x deploy/scripts/deploy-staging.sh
+          chmod +x deploy/scripts/detect-changed-services.sh
 
-      - name: Deploy
-        run: ./deploy/scripts/deploy-staging.sh
+      - name: Detect changed services
+        id: changes
+        run: |
+          SERVICES="$(./deploy/scripts/detect-changed-services.sh "${{ github.event.before }}" "${{ github.sha }}")"
+          echo "Changed services: ${SERVICES:-<none>}"
+          echo "services=${SERVICES}" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy changed services
+        if: steps.changes.outputs.services != ''
+        run: ./deploy/scripts/deploy-staging.sh ${{ steps.changes.outputs.services }}

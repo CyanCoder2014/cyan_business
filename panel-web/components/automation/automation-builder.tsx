@@ -27,6 +27,7 @@ function AutomationNodeCard({data,selected}:NodeProps){const value=data as {labe
 </div>}
 function AutomationEdge(props:EdgeProps){const [path]=getBezierPath(props);return <BaseEdge path={path} markerEnd={props.markerEnd} style={props.style}/>}
 const automationNodeTypes={automationCard:AutomationNodeCard};
+const automationNodeHandles=[{id:null,type:"target" as const,position:Position.Left,x:9,y:25,width:14,height:14},{id:null,type:"source" as const,position:Position.Right,x:89,y:25,width:14,height:14}];
 const automationEdgeTypes={automationEdge:AutomationEdge};
 
 export function AutomationBuilder({initial,returnTo}: {initial?:AutomationFlow;returnTo?:string}){
@@ -34,7 +35,7 @@ export function AutomationBuilder({initial,returnTo}: {initial?:AutomationFlow;r
  const [n8nWorkflow,setN8nWorkflow]=useState<unknown|null>(null);const [n8nAnalysis,setN8nAnalysis]=useState<Record<string,unknown>|null>(null);
  useEffect(()=>{if(!tenantKey)return;Promise.all([listAutomationNodeMetadata(),canManage?listCredentials(scope):Promise.resolve([])]).then(([m,c])=>{setMetadata(m);setCredentials(c)}).catch(e=>setError(e instanceof Error?e.message:String(e)))},[canManage,scope,tenantKey]);
  useEffect(()=>{const guard=(e:BeforeUnloadEvent)=>{if(dirty){e.preventDefault();e.returnValue=""}};window.addEventListener("beforeunload",guard);return()=>window.removeEventListener("beforeunload",guard)},[dirty]);
- const nodes=useMemo<Node[]>(()=>flow.nodes.map(n=>({id:n.id,type:"automationCard",position:{x:Number(n.position?.x??0),y:Number(n.position?.y??0)},width:112,height:112,data:{label:n.name,status:n.enabled?"":"disabled",type:n.type},selected:n.id===selected})),[flow.nodes,selected]);
+ const nodes=useMemo<Node[]>(()=>flow.nodes.map(n=>({id:n.id,type:"automationCard",position:{x:Number(n.position?.x??0),y:Number(n.position?.y??0)},width:112,height:112,handles:automationNodeHandles,data:{label:n.name,status:n.enabled?"":"disabled",type:n.type},selected:n.id===selected})),[flow.nodes,selected]);
  const edges=useMemo<Edge[]>(()=>flow.edges.map(e=>({id:e.id,type:"automationEdge",source:e.fromNodeId,target:e.toNodeId,sourceHandle:e.fromPort??undefined,targetHandle:e.toPort??undefined,animated:flow.active,markerEnd:{type:MarkerType.ArrowClosed},className:"automation-edge"})),[flow.edges,flow.active]);
  const selectedNode=flow.nodes.find(n=>n.id===selected);
  const updateNode=(patch:Record<string,unknown>)=>{setFlow(v=>({...v,nodes:v.nodes.map(n=>n.id===selected?{...n,...patch}:n)}));setDirty(true)};

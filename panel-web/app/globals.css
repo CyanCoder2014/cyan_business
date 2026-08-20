@@ -366,8 +366,8 @@ select:focus {
   width: 42px;
   height: 42px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(37, 141, 247, 0.22), rgba(126, 73, 255, 0.18));
-  color: #1741c8;
+  background: color-mix(in srgb, var(--cyan) 20%, var(--surface));
+  color: var(--teal);
   font-weight: 700;
 }
 

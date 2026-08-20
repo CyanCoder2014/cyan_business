@@ -192,7 +192,28 @@ function GeneratedField({ name, field, value, error, onChange }: { name: string;
   const type = field.type || "string";
   const id = `field-${name.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const describedBy = error ? `${id}-error` : undefined;
+  const itemFields = field.itemValidations;
   if (type === "boolean") return <label className="generated-field generated-toggle" htmlFor={id}><input id={id} type="checkbox" checked={Boolean(value)} onChange={(event) => onChange(event.target.checked)}/><span>{name}</span>{error ? <small id={describedBy} className="field-error">{error}</small> : null}</label>;
+  if (type === "object" && itemFields && Object.keys(itemFields).length) {
+    const objectValue = (value && typeof value === "object" && !Array.isArray(value) ? value : {}) as Record<string, unknown>;
+    return <fieldset className="generated-field-group"><legend>{name}</legend>
+      {Object.entries(itemFields).map(([key, subField]) => <GeneratedField key={key} name={key} field={subField} value={objectValue[key]} onChange={(next) => onChange({ ...objectValue, [key]: next })}/>)}
+      {error ? <small className="field-error">{error}</small> : null}
+    </fieldset>;
+  }
+  if (type === "list") {
+    const items = Array.isArray(value) ? value : [];
+    const rowBlank = itemFields && Object.keys(itemFields).length ? {} : "";
+    return <fieldset className="generated-field-group generated-list"><legend>{name}</legend>
+      {items.map((item, index) => <div className="generated-list-row" key={index}>
+        {itemFields && Object.keys(itemFields).length ? <div className="generated-list-item">{Object.entries(itemFields).map(([key, subField]) => <GeneratedField key={key} name={key} field={subField} value={(item as Record<string, unknown> | undefined)?.[key]} onChange={(next) => onChange(items.map((row, i) => i === index ? { ...(row as Record<string, unknown>), [key]: next } : row))}/>)}</div>
+          : <input value={item == null ? "" : String(item)} onChange={(event) => onChange(items.map((row, i) => i === index ? event.target.value : row))}/>}
+        <button type="button" className="generated-list-remove" aria-label={`Remove ${name} item ${index + 1}`} onClick={() => onChange(items.filter((_, i) => i !== index))}>×</button>
+      </div>)}
+      <button type="button" className="secondary-pill" onClick={() => onChange([...items, rowBlank])}>+ Add {name}</button>
+      {error ? <small className="field-error">{error}</small> : null}
+    </fieldset>;
+  }
   if (type === "object" || type === "list") return <label className="generated-field" htmlFor={id}><span>{name}<em>{type}</em></span><textarea id={id} dir="ltr" aria-invalid={Boolean(error)} aria-describedby={describedBy} value={value === undefined ? "" : JSON.stringify(value, null, 2)} onChange={(event) => { try { onChange(JSON.parse(event.target.value)); } catch { /* Keep the last valid structured value until parsing succeeds. */ } }}/>{error ? <small id={describedBy} className="field-error">{error}</small> : null}</label>;
   return <label className="generated-field" htmlFor={id}><span>{name}<em>{type}</em></span><input id={id} aria-invalid={Boolean(error)} aria-describedby={describedBy} type={type === "number" || type === "integer" ? "number" : type === "date" ? "date" : "text"} value={value == null ? "" : String(value)} onChange={(event) => onChange(type === "number" || type === "integer" ? (event.target.value === "" ? null : Number(event.target.value)) : event.target.value)}/>{error ? <small id={describedBy} className="field-error">{error}</small> : null}</label>;
 }

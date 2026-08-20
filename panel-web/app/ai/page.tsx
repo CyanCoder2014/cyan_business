@@ -10,10 +10,13 @@ import { prepareMediaUpload, uploadMediaBytes } from "@/lib/media-api";
 import { appendConversationMessage, attachProjectAsset, closeConversationSession, createConversationSession, generatePlatformApp, getClientDraft, listBlueprints, listConversationSessions, updateClientDraft } from "@/lib/platform-api";
 import type { AiConversationSession, AppBlueprint, ClientAppDraft } from "@/lib/types";
 import { appTypeIcon, capabilityIcon, capabilityLabel, CheckCircleIcon, ClockIcon, PaperclipIcon, SendIcon, SparkleIcon, XCircleIcon } from "@/components/nav-icons";
+import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError } from "@/lib/api-error";
 
 export default function AiPage() {
   const { locale } = usePanel();
   const { tenantKey, siteKey, queryVersion } = useScopeAccess();
+  const { showToast } = useToast();
   const [sessions, setSessions] = useState<AiConversationSession[]>([]);
   const [blueprints, setBlueprints] = useState<AppBlueprint[]>([]);
   const [active, setActive] = useState<AiConversationSession | null>(null);
@@ -27,6 +30,7 @@ export default function AiPage() {
   const [pendingAnswers, setPendingAnswers] = useState<Record<string, string>>({});
   const [answering, setAnswering] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!tenantKey) { setLoading(false); return; }
@@ -43,7 +47,7 @@ export default function AiPage() {
         const blueprint = blueprintValues.find((item) => item.blueprintKey === requestedBlueprint);
         if (blueprint) setPrompt(blueprint.description);
       }
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "AI Studio could not be loaded."); }
+    } catch (cause) { const { title, message } = describeApiError(cause, "AI Studio could not be loaded."); setError(message); showToast({ tone: "error", title, message }); }
     finally { setLoading(false); }
   }, [siteKey, tenantKey]);
 
@@ -52,17 +56,17 @@ export default function AiPage() {
   useEffect(() => { setPendingAnswers({}); }, [draft?.draftId, draft?.revision]);
   const start = async () => {
     if (!tenantKey) return;
-    setStarting(true); setError(null);
+    setStarting(true); setActionError(null);
     try {
       const value = await createConversationSession({ channelType: "PANEL", tenantKey, siteKey: siteKey || undefined, title: locale === "fa" ? "گفتگوی جدید" : "New conversation" });
       setSessions((current) => [value, ...current]); setActive(value); setDraft(null);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "A new conversation could not be created."); }
+    } catch (cause) { const { title, message } = describeApiError(cause, "A new conversation could not be created."); setActionError(message); showToast({ tone: "error", title, message }); }
     finally { setStarting(false); }
   };
   const send = async () => {
     if (!prompt.trim() || !tenantKey) return;
     const text = prompt.trim();
-    setSending(true); setError(null);
+    setSending(true); setActionError(null);
     try {
       let session = active;
       if (!session) session = await createConversationSession({ channelType: "PANEL", tenantKey, siteKey: siteKey || undefined, title: text.slice(0, 80) });
@@ -77,19 +81,19 @@ export default function AiPage() {
       setActive(refreshed); setSessions((current) => [refreshed, ...current.filter((item) => item.sessionId !== refreshed.sessionId)]);
       if (response.draftId) setDraft(await getClientDraft(response.draftId));
       setPrompt("");
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Generation failed."); }
+    } catch (cause) { const { title, message } = describeApiError(cause, "Generation failed."); setActionError(message); showToast({ tone: "error", title, message }); }
     finally { setSending(false); }
   };
   const attach = async (file: File) => {
     if (!tenantKey || !draft) return;
-    setUploading(true); setProgress(0); setError(null);
+    setUploading(true); setProgress(0); setActionError(null);
     try {
       const scope = { tenantKey, siteKey: siteKey || undefined };
       const prepared = await prepareMediaUpload(file, scope);
       const uploaded = await uploadMediaBytes(file, prepared, scope, setProgress);
       await attachProjectAsset(draft.draftId, { assetKey: uploaded.assetKey, fileName: file.name, mimeType: file.type || "application/octet-stream", sizeBytes: file.size }, scope);
       setDraft(await getClientDraft(draft.draftId));
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Attachment upload failed."); }
+    } catch (cause) { const { title, message } = describeApiError(cause, "Attachment upload failed."); setActionError(message); showToast({ tone: "error", title, message }); }
     finally { setUploading(false); }
   };
 
@@ -97,7 +101,7 @@ export default function AiPage() {
     if (!draft) return;
     const answersPatch = Object.fromEntries(draft.pendingQuestionKeys.map((key) => [key, pendingAnswers[key]?.trim()]).filter(([, value]) => value));
     if (!Object.keys(answersPatch).length) return;
-    setAnswering(true); setError(null);
+    setAnswering(true); setActionError(null);
     try {
       const updatedDraft = await updateClientDraft(draft.draftId, { answersPatch });
       if (active) {
@@ -106,7 +110,7 @@ export default function AiPage() {
         setSessions((current) => current.map((item) => item.sessionId === refreshed.sessionId ? refreshed : item));
       }
       setDraft(updatedDraft);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "The answers could not be saved."); }
+    } catch (cause) { const { title, message } = describeApiError(cause, "The answers could not be saved."); setActionError(message); showToast({ tone: "error", title, message }); }
     finally { setAnswering(false); }
   };
 
@@ -120,8 +124,8 @@ export default function AiPage() {
         <div className="quick-prompts">{blueprints.slice(0, 5).map((blueprint) => { const Icon = appTypeIcon(blueprint.appType); return <button key={blueprint.blueprintKey} onClick={() => setPrompt(blueprint.description)}><Icon size={14}/>{blueprint.title}</button>; })}</div>
         <div className="ai-composer"><label className={draft ? "secondary-pill" : "secondary-pill disabled"} title={draft ? "" : (locale === "fa" ? "ابتدا پروژه بسازید" : "Create a project first")}><input type="file" hidden disabled={!draft || uploading} onChange={(event) => { const file = event.target.files?.[0]; if (file) void attach(file); event.target.value = ""; }} />{uploading ? `${progress}%` : <PaperclipIcon size={16}/>}</label><textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder={locale === "fa" ? "چه چیزی می‌خواهید بسازید؟" : "What would you like to build?"} /><button className="primary-pill ai-send-button" disabled={sending || !prompt.trim()} onClick={send}>{sending ? (locale === "fa" ? "در حال ساخت" : "Generating") : <><span>{locale === "fa" ? "ارسال" : "Send"}</span><SendIcon size={15}/></>}</button></div>
       </section>
-      <aside className="project-inspector"><header>{draft ? (()=>{const AppIcon=appTypeIcon(draft.appType);return <span className="project-inspector-icon" aria-hidden><AppIcon size={17}/></span>;})():null}<h2>{draft?.title || (locale === "fa" ? "خلاصه پروژه" : "Project summary")}</h2>{draft ? <StatusBadge tone="info">{draft.status}</StatusBadge> : null}</header>{draft ? <><p>{draft.latestIntent}</p><div className="summary-grid"><span>{draft.resolvedDsl.entities.length} entities</span><span>{draft.resolvedDsl.routes.length} routes</span><span>{draft.resolvedDsl.flows.length} flows</span></div>{draft.resolvedDsl.app.capabilities?.length ? <ul className="capability-chip-list">{draft.resolvedDsl.app.capabilities.map((capability) => { const Icon = capabilityIcon(capability); return <li key={capability}><Icon size={13}/>{capabilityLabel(capability)}</li>; })}</ul> : null}{questions.length ? <section className="follow-up-form"><h3>{locale === "fa" ? "پرسش‌های باقی‌مانده" : "Pending questions"}</h3>{questions.map((question, index) => { const key = draft.pendingQuestionKeys[index] ?? `answer-${index}`; return <label key={key}><span>{question}</span><input aria-label={`Answer: ${question}`} value={pendingAnswers[key] ?? ""} disabled={answering} onChange={(event) => setPendingAnswers((current) => ({ ...current, [key]: event.target.value }))} /></label>})}<button className="primary-pill" disabled={answering || !draft.pendingQuestionKeys.some((key) => pendingAnswers[key]?.trim())} onClick={submitAnswers}>{answering ? (locale === "fa" ? "در حال ذخیره…" : "Saving answers…") : (locale === "fa" ? "ثبت پاسخ‌ها" : "Submit answers")}</button></section> : null}{draft.manualActions.length ? <section className="manual-action-list"><h3>{locale === "fa" ? "پیش از انتشار" : "Before you publish"}</h3><ul>{draft.manualActions.map((action, index) => <li key={index}><ClockIcon size={13} className="tone-warning"/><span>{action}</span></li>)}</ul></section> : questions.length === 0 ? <p className="manual-action-ready"><CheckCircleIcon size={14} className="tone-success"/>{locale === "fa" ? "آماده انتشار است." : "Ready to publish."}</p> : null}<Link className="primary-pill" href={`/projects/${draft.draftId}`}>{locale === "fa" ? "باز کردن پروژه" : "Open project"}</Link></> : <EmptyState title={locale === "fa" ? "هنوز پروژه‌ای نیست" : "No project yet"} description={locale === "fa" ? "خروجی واقعی تولید در اینجا ظاهر می‌شود." : "A generated backend draft will appear here."} />}{active && active.status !== "CLOSED" ? <button className="secondary-pill" disabled={answering} onClick={async () => { const value = await closeConversationSession(active.sessionId); setActive(value); setSessions((current) => current.map((item) => item.sessionId === value.sessionId ? value : item)); }}>{locale === "fa" ? "بستن گفتگو" : "Close session"}</button> : null}</aside>
+      <aside className="project-inspector"><header>{draft ? (()=>{const AppIcon=appTypeIcon(draft.appType);return <span className="project-inspector-icon" aria-hidden><AppIcon size={17}/></span>;})():null}<h2>{draft?.title || (locale === "fa" ? "خلاصه پروژه" : "Project summary")}</h2>{draft ? <StatusBadge tone="info">{draft.status}</StatusBadge> : null}</header>{draft ? <><p>{draft.latestIntent}</p><div className="summary-grid"><span>{draft.resolvedDsl.entities.length} entities</span><span>{draft.resolvedDsl.routes.length} routes</span><span>{draft.resolvedDsl.flows.length} flows</span></div>{draft.resolvedDsl.app.capabilities?.length ? <ul className="capability-chip-list">{draft.resolvedDsl.app.capabilities.map((capability) => { const Icon = capabilityIcon(capability); return <li key={capability}><Icon size={13}/>{capabilityLabel(capability)}</li>; })}</ul> : null}{questions.length ? <section className="follow-up-form"><h3>{locale === "fa" ? "پرسش‌های باقی‌مانده" : "Pending questions"}</h3>{questions.map((question, index) => { const key = draft.pendingQuestionKeys[index] ?? `answer-${index}`; return <label key={key}><span>{question}</span><input aria-label={`Answer: ${question}`} value={pendingAnswers[key] ?? ""} disabled={answering} onChange={(event) => setPendingAnswers((current) => ({ ...current, [key]: event.target.value }))} /></label>})}<button className="primary-pill" disabled={answering || !draft.pendingQuestionKeys.some((key) => pendingAnswers[key]?.trim())} onClick={submitAnswers}>{answering ? (locale === "fa" ? "در حال ذخیره…" : "Saving answers…") : (locale === "fa" ? "ثبت پاسخ‌ها" : "Submit answers")}</button></section> : null}{draft.manualActions.length ? <section className="manual-action-list"><h3>{locale === "fa" ? "پیش از انتشار" : "Before you publish"}</h3><ul>{draft.manualActions.map((action, index) => <li key={index}><ClockIcon size={13} className="tone-warning"/><span>{action}</span></li>)}</ul></section> : questions.length === 0 ? <p className="manual-action-ready"><CheckCircleIcon size={14} className="tone-success"/>{locale === "fa" ? "آماده انتشار است." : "Ready to publish."}</p> : null}<Link className="primary-pill" href={`/projects/${draft.draftId}`}>{locale === "fa" ? "باز کردن پروژه" : "Open project"}</Link></> : <EmptyState title={locale === "fa" ? "هنوز پروژه‌ای نیست" : "No project yet"} description={locale === "fa" ? "خروجی واقعی تولید در اینجا ظاهر می‌شود." : "A generated backend draft will appear here."} />}{active && active.status !== "CLOSED" ? <button className="secondary-pill" disabled={answering} onClick={async () => { setActionError(null); try { const value = await closeConversationSession(active.sessionId); setActive(value); setSessions((current) => current.map((item) => item.sessionId === value.sessionId ? value : item)); } catch (cause) { const { title, message } = describeApiError(cause, "Closing the session failed."); setActionError(message); showToast({ tone: "error", title, message }); } }}>{locale === "fa" ? "بستن گفتگو" : "Close session"}</button> : null}</aside>
     </div>
-    {error && active ? <p className="operational-banner error" role="alert">{error}</p> : null}
+    {actionError ? <p className="operational-banner error" role="alert">{actionError}</p> : null}
   </PanelShell>;
 }

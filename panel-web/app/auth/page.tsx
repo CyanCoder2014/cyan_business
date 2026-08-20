@@ -236,7 +236,7 @@ function AuthScreen() {
         <section className="auth-marketing">
           <Link href="/" className="brand-lockup auth-brand-lockup">
             <div className="brand-badge"><LogoMark/></div>
-            <strong>Cyan</strong>
+            <strong>Cyan Coder</strong>
           </Link>
 
           <div className="auth-hero">
@@ -433,7 +433,7 @@ function AuthScreen() {
       </div>
 
       <footer className="auth-footer">
-        <span>{locale === "fa" ? "© ۲۰۲۴ Cyan Labs, Inc. تمامی حقوق محفوظ است." : "© 2024 Cyan Labs, Inc. All rights reserved."}</span>
+        <span>{locale === "fa" ? "© ۲۰۱۴-۲۰۲۶ Cyan Labs, Inc. تمامی حقوق محفوظ است." : "© 2014-2026 Cyan Labs, Inc. All rights reserved."}</span>
         <div className="auth-footer-links">
           <Link href="#">{locale === "fa" ? "شرایط استفاده" : "Terms of Service"}</Link>
           <Link href="#">{locale === "fa" ? "حریم خصوصی" : "Privacy Policy"}</Link>

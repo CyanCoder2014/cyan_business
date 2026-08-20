@@ -5,7 +5,7 @@ import "./globals.css";
 import "./phase1-shell.css";
 
 export const metadata: Metadata = {
-  title: "Cyan Coder business workspace | Cyan code for you and make every thing",
+  title: "Cyan Coder | AI-Native Business Workspace & Control Panel",
   description: "Multilingual control panel for AI-native business apps, workflows, data, bots, and storefront operations.",
   manifest: "/manifest.json",
   icons: {

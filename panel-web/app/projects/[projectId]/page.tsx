@@ -9,6 +9,8 @@ import { useScopeAccess } from "@/components/scope-access-provider";
 import { CodeViewer, EmptyState, ErrorState, Skeleton, StatusBadge, Tabs } from "@/components/ui/primitives";
 import { createProjectRelease, getClientDraft, listConversationSessions, listProjectReleases, listProvisioningRuns, provisionClientDraft, publishProjectRelease, rollbackProjectRelease } from "@/lib/platform-api";
 import type { AiConversationSession, ClientAppDraft, ProjectRelease, ProvisioningRun } from "@/lib/types";
+import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError } from "@/lib/api-error";
 
 type WorkspaceTab = "overview" | "ai" | "structure" | "automations" | "bpm" | "data" | "channels" | "site" | "releases" | "provisioning" | "activity";
 
@@ -16,6 +18,7 @@ export default function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const { locale } = usePanel();
   const { tenantKey, siteKey, queryVersion } = useScopeAccess();
+  const { showToast } = useToast();
   const [draft, setDraft] = useState<ClientAppDraft | null>(null);
   const [sessions, setSessions] = useState<AiConversationSession[]>([]);
   const [runs, setRuns] = useState<ProvisioningRun[]>([]);
@@ -35,7 +38,7 @@ export default function ProjectPage() {
       listProvisioningRuns(projectId),
       listProjectReleases(projectId),
     ]);
-    if (results[0].status === "fulfilled") setDraft(results[0].value); else setError(results[0].reason instanceof Error ? results[0].reason.message : "Project unavailable");
+    if (results[0].status === "fulfilled") setDraft(results[0].value); else setError(describeApiError(results[0].reason, "Project unavailable").message);
     if (results[1].status === "fulfilled") setSessions(results[1].value);
     if (results[2].status === "fulfilled") setRuns(results[2].value);
     if (results[3].status === "fulfilled") setReleases(results[3].value);
@@ -69,16 +72,16 @@ export default function ProjectPage() {
       const run = await provisionClientDraft(projectId, { mode, triggerType: "PANEL", idempotencyKey: crypto.randomUUID() });
       setRuns((current) => [run, ...current.filter((item) => item.runId !== run.runId)]);
       setTab("provisioning");
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Provisioning failed"); }
+    } catch (cause) { const { title, message } = describeApiError(cause, "Provisioning failed"); setError(message); showToast({ tone: "error", title, message }); }
     finally { setBusy(false); }
   };
   const createRelease = async (runId: string) => {
     if (!window.confirm(locale === "fa" ? "از این اجرای موفق یک نسخه تغییرناپذیر ساخته شود؟" : "Create an immutable release from this successful run?")) return;
-    setBusy(true); try { const release = await createProjectRelease(projectId, runId); setReleases((current) => [release, ...current]); setTab("releases"); } catch (cause) { setError(cause instanceof Error ? cause.message : "Release creation failed"); } finally { setBusy(false); }
+    setBusy(true); try { const release = await createProjectRelease(projectId, runId); setReleases((current) => [release, ...current]); setTab("releases"); } catch (cause) { const { title, message } = describeApiError(cause, "Release creation failed"); setError(message); showToast({ tone: "error", title, message }); } finally { setBusy(false); }
   };
   const mutateRelease = async (release: ProjectRelease, action: "publish" | "rollback") => {
     if (!window.confirm(action === "publish" ? (locale === "fa" ? "این نسخه فعال شود؟" : "Publish this release?") : (locale === "fa" ? "به این نسخه بازگردانی شود؟" : "Roll back to this release?"))) return;
-    setBusy(true); try { const updated = action === "publish" ? await publishProjectRelease(release.releaseId) : await rollbackProjectRelease(release.releaseId); setReleases((current) => current.map((item) => item.releaseId === updated.releaseId ? updated : item.status === "ACTIVE" ? { ...item, status: "SUPERSEDED" } : item)); } catch (cause) { setError(cause instanceof Error ? cause.message : "Release operation failed"); } finally { setBusy(false); }
+    setBusy(true); try { const updated = action === "publish" ? await publishProjectRelease(release.releaseId) : await rollbackProjectRelease(release.releaseId); setReleases((current) => current.map((item) => item.releaseId === updated.releaseId ? updated : item.status === "ACTIVE" ? { ...item, status: "SUPERSEDED" } : item)); } catch (cause) { const { title, message } = describeApiError(cause, "Release operation failed"); setError(message); showToast({ tone: "error", title, message }); } finally { setBusy(false); }
   };
 
   if (loading) return <PanelShell activeKey="blueprints" title="Project workspace" titleFa="فضای پروژه" subtitle="Loading persisted project state." subtitleFa="در حال بارگیری وضعیت پایدار پروژه."><Skeleton height={520} /></PanelShell>;

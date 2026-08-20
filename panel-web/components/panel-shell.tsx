@@ -9,7 +9,7 @@ import { getPlatformAuthToken, logoutPlatformSession, platformFetch, redirectToA
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { AsyncButton, Dialog } from "@/components/ui/primitives";
 import { LogoMark } from "@/components/logo-mark";
-import { HomeIcon, SparkleIcon, GridIcon, InboxIcon, FormIcon, PencilIcon, DatabaseIcon, WorkflowIcon, ZapIcon, BotIcon, LayoutIcon, GlobeDotIcon, BellIcon, ChartBarIcon, ImageIcon, SearchIcon, CodeIcon, TeamIcon, ShieldCheckIcon, BuildingsIcon, CardIcon, GearIcon, PulseIcon, PlusIcon, MoreIcon } from "@/components/nav-icons";
+import { HomeIcon, SparkleIcon, GridIcon, InboxIcon, FormIcon, PencilIcon, DatabaseIcon, WorkflowIcon, ZapIcon, BotIcon, LayoutIcon, GlobeDotIcon, BellIcon, ChartBarIcon, ImageIcon, SearchIcon, CodeIcon, TeamIcon, ShieldCheckIcon, BuildingsIcon, CardIcon, GearIcon, PulseIcon, PlusIcon, MoreIcon, SidebarIcon, ChevronRightIcon } from "@/components/nav-icons";
 
 type PanelShellProps = { title: string; titleFa: string; subtitle: string; subtitleFa: string; kicker?: string; kickerFa?: string; activeKey: string; children: ReactNode };
 type NavIcon = (props: { className?: string; size?: number }) => JSX.Element;
@@ -53,7 +53,7 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
 
 export function PanelShell(props: PanelShellProps) {
   const pathname = usePathname();
-  const { locale, theme, setTheme, toggleLocale, isRtl } = usePanel();
+  const { locale, theme, setTheme, toggleLocale, isRtl, sidebarMode, cycleSidebarMode } = usePanel();
   const { bootstrap, loading, selectionPending, error, tenantKey, siteKey, selectScope, refresh, can } = useScopeAccess();
   const [authChecked, setAuthChecked] = useState(false);
   const [sheet, setSheet] = useState<"build" | "more" | null>(null);
@@ -102,10 +102,13 @@ export function PanelShell(props: PanelShellProps) {
       </aside>
       <div className="workspace-main">
         <header className="workspace-header">
+          <div className="workspace-header-start">
+          <button type="button" className="sidebar-toggle" aria-label={locale === "fa" ? "تغییر حالت نوار کناری" : "Toggle sidebar"} title={locale === "fa" ? `نوار کناری: ${sidebarMode}` : `Sidebar: ${sidebarMode}`} onClick={cycleSidebarMode}><SidebarIcon size={18} /></button>
           <div className="workspace-switchers">
             <label className="scope-control"><span>{locale === "fa" ? "فضای کار" : "Workspace"}</span><select aria-label={locale === "fa" ? "انتخاب فضای کار" : "Select workspace"} value={tenantKey ?? ""} disabled={loading || selectionPending || !bootstrap?.tenants.length} onChange={(event) => selectScope(event.target.value, null).catch((reason) => setActionError(reason instanceof Error ? reason.message : String(reason)))}><option value="" disabled>{locale === "fa" ? "انتخاب کنید" : "Select"}</option>{bootstrap?.tenants.map((item) => <option key={item.tenantKey} value={item.tenantKey}>{item.displayName}</option>)}</select></label>
             <label className="scope-control"><span>{locale === "fa" ? "سایت" : "Site"}</span><select aria-label={locale === "fa" ? "انتخاب سایت" : "Select site"} value={siteKey ?? ""} disabled={loading || selectionPending || !tenantKey || !bootstrap?.sites.length} onChange={(event) => selectScope(tenantKey!, event.target.value || null).catch((reason) => setActionError(reason instanceof Error ? reason.message : String(reason)))}><option value="">{locale === "fa" ? "بدون سایت" : "No site"}</option>{bootstrap?.sites.map((item) => <option key={item.siteKey} value={item.siteKey}>{item.name}</option>)}</select></label>
             {!loading && bootstrap && !bootstrap.tenants.length ? <span className="scope-unavailable">{locale === "fa" ? "فضای کاری در دسترس نیست" : "No workspace available"}</span> : null}
+          </div>
           </div>
           <div className="header-actions">
             <NotificationCenter />
@@ -116,6 +119,7 @@ export function PanelShell(props: PanelShellProps) {
           {error ? <div className="operational-banner error" role="alert"><span>{error}</span><button onClick={() => refresh()}>{locale === "fa" ? "تلاش دوباره" : "Retry"}</button></div> : null}
           {bootstrap?.warnings.length ? <div className="operational-banner" role="status">{bootstrap.warnings.join(" ")}</div> : null}
           {actionError ? <div className="operational-banner error" role="alert">{actionError}<button onClick={() => setActionError(null)}>×</button></div> : null}
+          <Breadcrumb pathname={pathname ?? ""} locale={locale} isRtl={isRtl} />
           <section className="page-intro"><div><p className="page-kicker">{locale === "fa" ? props.kickerFa ?? "فضای کار" : props.kicker ?? "Workspace"}</p><h1>{locale === "fa" ? props.titleFa : props.title}</h1><p>{locale === "fa" ? props.subtitleFa : props.subtitle}</p></div></section>
           {bootstrap && !bootstrap.tenants.length
             ? <WorkspaceOnboarding locale={locale} refresh={refresh} selectScope={selectScope} />
@@ -129,6 +133,26 @@ export function PanelShell(props: PanelShellProps) {
       <WorkspaceSelectionDialog bootstrap={bootstrap} open={!loading && Boolean(bootstrap?.tenants.length) && !tenantKey} locale={locale} pending={selectionPending} selectScope={selectScope} />
     </div>
   );
+}
+
+function humanizeSegment(segment: string) {
+  return segment.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function Breadcrumb({ pathname, locale, isRtl }: { pathname: string; locale: "en" | "fa"; isRtl: boolean }) {
+  const segments = pathname.split("/").filter(Boolean);
+  if (!segments.length || (segments.length === 1 && segments[0] === "dashboard")) return null;
+  let acc = "";
+  const crumbs = segments.map((segment) => { acc += `/${segment}`; return { label: humanizeSegment(segment), href: acc }; });
+  const Sep = isRtl ? ArrowLeftGlyph : ChevronRightIcon;
+  return <nav className="breadcrumb-trail" aria-label={locale === "fa" ? "مسیر ناوبری" : "Breadcrumb"}>
+    <Link href="/dashboard">{locale === "fa" ? "خانه" : "Home"}</Link>
+    {crumbs.map((crumb, index) => <span key={crumb.href} className="breadcrumb-item"><Sep size={12} aria-hidden />{index === crumbs.length - 1 ? <span aria-current="page">{crumb.label}</span> : <Link href={crumb.href}>{crumb.label}</Link>}</span>)}
+  </nav>;
+}
+
+function ArrowLeftGlyph({ size = 12 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
 function WorkspaceSelectionDialog({bootstrap,open,locale,pending,selectScope}:{bootstrap:ReturnType<typeof useScopeAccess>["bootstrap"];open:boolean;locale:"en"|"fa";pending:boolean;selectScope:(tenantKey:string,siteKey?:string|null)=>Promise<void>}) {

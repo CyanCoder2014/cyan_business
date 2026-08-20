@@ -37,7 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('cyan.panel.theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.dataset.themePreference=t;var l=localStorage.getItem('cyan.panel.locale')||'en';document.documentElement.lang=l==='fa'?'fa':'en';document.documentElement.dir=l==='fa'?'rtl':'ltr'}catch(e){}})()` }} /></head>
+      <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('cyan.panel.theme')||'system';var d=t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';document.documentElement.dataset.themePreference=t;var l=localStorage.getItem('cyan.panel.locale')||'en';document.documentElement.lang=l==='fa'?'fa':'en';document.documentElement.dir=l==='fa'?'rtl':'ltr';var s=localStorage.getItem('cyan.panel.sidebarMode')||'open';document.documentElement.dataset.sidebarMode=s}catch(e){}})()` }} /></head>
       <body>
         <AppProviders>{children}</AppProviders>
       </body>

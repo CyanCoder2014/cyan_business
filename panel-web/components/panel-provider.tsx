@@ -4,10 +4,12 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 
 export type PanelLocale = "en" | "fa";
 export type PanelTheme = "light" | "dark" | "system";
+export type SidebarMode = "open" | "half" | "closed";
 
 type PanelContextValue = {
   locale: PanelLocale;
   theme: PanelTheme;
+  sidebarMode: SidebarMode;
   /** @deprecated Business scope is supplied by ScopeAccessProvider. */
   workspaceName: string;
   /** @deprecated Business scope is supplied by ScopeAccessProvider. */
@@ -18,14 +20,17 @@ type PanelContextValue = {
   setSiteName: (value: string) => void;
   setLocale: (value: PanelLocale) => void;
   setTheme: (value: PanelTheme) => void;
+  setSidebarMode: (value: SidebarMode) => void;
   toggleLocale: () => void;
   toggleTheme: () => void;
+  cycleSidebarMode: () => void;
   isRtl: boolean;
 };
 
 const STORAGE_KEYS = {
   locale: "cyan.panel.locale",
   theme: "cyan.panel.theme",
+  sidebarMode: "cyan.panel.sidebarMode"
 } as const;
 
 const PanelContext = createContext<PanelContextValue | null>(null);
@@ -33,6 +38,7 @@ const PanelContext = createContext<PanelContextValue | null>(null);
 export function PanelProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<PanelLocale>("en");
   const [theme, setThemeState] = useState<PanelTheme>("system");
+  const [sidebarMode, setSidebarModeState] = useState<SidebarMode>("open");
   const [preferencesLoaded, setPreferencesLoaded] = useState(false);
 
   useEffect(() => {
@@ -42,12 +48,16 @@ export function PanelProvider({ children }: { children: ReactNode }) {
 
     const storedLocale = window.localStorage.getItem(STORAGE_KEYS.locale) as PanelLocale | null;
     const storedTheme = window.localStorage.getItem(STORAGE_KEYS.theme) as PanelTheme | null;
+    const storedSidebarMode = window.localStorage.getItem(STORAGE_KEYS.sidebarMode) as SidebarMode | null;
 
     if (storedLocale === "en" || storedLocale === "fa") {
       setLocaleState(storedLocale);
     }
     if (storedTheme === "light" || storedTheme === "dark" || storedTheme === "system") {
       setThemeState(storedTheme);
+    }
+    if (storedSidebarMode === "open" || storedSidebarMode === "half" || storedSidebarMode === "closed") {
+      setSidebarModeState(storedSidebarMode);
     }
     setPreferencesLoaded(true);
   }, []);
@@ -62,8 +72,10 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     root.dataset.theme = resolvedTheme;
     root.dataset.themePreference = theme;
     root.dataset.locale = locale;
+    root.dataset.sidebarMode = sidebarMode;
     window.localStorage.setItem(STORAGE_KEYS.locale, locale);
     window.localStorage.setItem(STORAGE_KEYS.theme, theme);
+    window.localStorage.setItem(STORAGE_KEYS.sidebarMode, sidebarMode);
     const themeColors = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
     const syncThemeColor = (dark: boolean) => themeColors.forEach((meta) => meta.setAttribute("content", dark ? "#07101e" : "#f7f8fe"));
     syncThemeColor(resolvedTheme === "dark");
@@ -75,23 +87,26 @@ export function PanelProvider({ children }: { children: ReactNode }) {
     };
     media.addEventListener("change", syncSystem);
     return () => media.removeEventListener("change", syncSystem);
-  }, [locale, preferencesLoaded, theme]);
+  }, [locale, preferencesLoaded, theme, sidebarMode]);
 
   const value = useMemo<PanelContextValue>(
     () => ({
       locale,
       theme,
+      sidebarMode,
       workspaceName: "",
       siteName: "",
       setWorkspaceName: () => undefined,
       setSiteName: () => undefined,
       setLocale: setLocaleState,
       setTheme: setThemeState,
+      setSidebarMode: setSidebarModeState,
       toggleLocale: () => setLocaleState((current) => (current === "en" ? "fa" : "en")),
       toggleTheme: () => setThemeState((current) => (current === "light" ? "dark" : current === "dark" ? "system" : "light")),
+      cycleSidebarMode: () => setSidebarModeState((current) => (current === "open" ? "half" : current === "half" ? "closed" : "open")),
       isRtl: locale === "fa"
     }),
-    [locale, theme]
+    [locale, theme, sidebarMode]
   );
 
   return <PanelContext.Provider value={value}>{children}</PanelContext.Provider>;

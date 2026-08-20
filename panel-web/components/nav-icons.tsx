@@ -100,6 +100,12 @@ export function XCircleIcon({ className, size = 18 }: IconProps) {
 export function ClockIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" /><path d="M12 7.5V12l3 2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
+export function SidebarIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.6" /><path d="M9.5 4.5v15" stroke="currentColor" strokeWidth="1.6" /></svg>;
+}
+export function ChevronRightIcon({ className, size = 14 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
 export function PaperclipIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 13.5l6.5-6.5a3.2 3.2 0 0 1 4.5 4.5l-7.6 7.6a5 5 0 0 1-7-7l7-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }

@@ -14,6 +14,8 @@ import { listAutomationFlows, type AutomationFlow } from "@/lib/automation-api";
 import { dynamicServices, listDefinitions } from "@/lib/dynamic-api";
 import type { DynamicEntityDefinition, DynamicServiceKey } from "@/lib/types";
 import { listProcessors, type ProcessorDefinition } from "@/lib/processor-api";
+import { PlayIcon, StopIcon, CircleDotIcon } from "@/components/nav-icons";
+import { ArrowRightIcon } from "@/components/auth-icons";
 import { useRouter } from "next/navigation";
 
 const blank = (key = ""): DynamicFlowDefinition => ({ flowKey: key, name: "", description: "", startState: "", states: [], transitions: [], active: false, lifecycleStatus: "DRAFT", layout: {} });
@@ -23,9 +25,10 @@ const joinKeys = (value?: string[]) => (value ?? []).join(", ");
 
 function BpmStateNode({ data, selected }: NodeProps) {
   const value = data as { label?: string; terminal?: boolean; start?: boolean };
+  const Icon = value.start ? PlayIcon : value.terminal ? StopIcon : CircleDotIcon;
   return <div className={`bpm-state-card ${value.terminal ? "terminal" : ""} ${value.start ? "start" : ""} ${selected ? "selected" : ""}`}>
     <Handle type="target" position={Position.Left} isConnectable aria-label="Incoming transition" />
-    <span className="bpm-state-kind">{value.start ? "▶" : value.terminal ? "■" : "●"}</span>
+    <span className="bpm-state-kind"><Icon size={16} /></span>
     <div><strong>{String(value.label ?? "State")}</strong><small>{value.start ? "Start" : value.terminal ? "Terminal" : "State"}</small></div>
     <Handle type="source" position={Position.Right} isConnectable aria-label="Outgoing transition" />
   </div>;
@@ -33,7 +36,7 @@ function BpmStateNode({ data, selected }: NodeProps) {
 
 function TransitionEdge(props: EdgeProps) {
   const [path, labelX, labelY] = getBezierPath(props);
-  return <><BaseEdge path={path} markerEnd={props.markerEnd} style={props.style}/><EdgeLabelRenderer><div className={`bpm-transition-label ${props.selected ? "selected" : ""}`} style={{ transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)` }}><span aria-hidden>◆</span><b>{String(props.label ?? "Transition")}</b></div></EdgeLabelRenderer></>;
+  return <><BaseEdge path={path} markerEnd={props.markerEnd} style={props.style}/><EdgeLabelRenderer><div className={`bpm-transition-label ${props.selected ? "selected" : ""}`} style={{ transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)` }}><span aria-hidden><ArrowRightIcon size={13}/></span><b>{String(props.label ?? "Transition")}</b></div></EdgeLabelRenderer></>;
 }
 
 const nodeTypes = { bpmState: BpmStateNode };
@@ -174,7 +177,7 @@ function FlowSettings({ flow, update, selectTransition, locale }: { flow: Dynami
     <label><span>{locale === "fa" ? "نام" : "Name"}</span><input value={flow.name} onChange={event => update({ ...flow, name: event.target.value })}/></label>
     <label><span>{locale === "fa" ? "توضیح" : "Description"}</span><textarea value={flow.description ?? ""} onChange={event => update({ ...flow, description: event.target.value })}/></label>
     <section className="transition-keyboard-builder"><header><strong>{locale === "fa" ? "افزودن انتقال" : "Add transition"}</strong><small>{locale === "fa" ? "جایگزین صفحه‌کلید برای رسم خط" : "Keyboard alternative to drawing a line"}</small></header><label><span>{locale === "fa" ? "از" : "From"}</span><select value={from} onChange={event => setFrom(event.target.value)}>{flow.states.map(state => <option value={state.id} key={state.id}>{state.displayName}</option>)}</select></label><label><span>{locale === "fa" ? "به" : "To"}</span><select value={to} onChange={event => setTo(event.target.value)}>{flow.states.map(state => <option value={state.id} key={state.id}>{state.displayName}</option>)}</select></label><button className="secondary-pill" disabled={!from || !to || from === to} onClick={addTransition}>＋ {locale === "fa" ? "انتقال" : "Transition"}</button></section>
-    <section className="transition-summary"><header><strong>{locale === "fa" ? "انتقال‌ها" : "Transitions"}</strong><span>{flow.transitions.length}</span></header>{flow.transitions.map(item => <button key={item.id} onClick={() => selectTransition(item.id)}><span aria-hidden>◆</span><span><strong>{item.label}</strong><small dir="ltr">{item.fromState} → {item.toState}</small></span><em>{item.conditions?.length ?? 0} {locale === "fa" ? "شرط" : "conditions"}</em></button>)}</section>
+    <section className="transition-summary"><header><strong>{locale === "fa" ? "انتقال‌ها" : "Transitions"}</strong><span>{flow.transitions.length}</span></header>{flow.transitions.map(item => <button key={item.id} onClick={() => selectTransition(item.id)}><span aria-hidden><ArrowRightIcon size={13}/></span><span><strong>{item.label}</strong><small dir="ltr">{item.fromState} → {item.toState}</small></span><em>{item.conditions?.length ?? 0} {locale === "fa" ? "شرط" : "conditions"}</em></button>)}</section>
     <details><summary>{locale === "fa" ? "JSON پیشرفته" : "Advanced JSON"}</summary><CodeViewer value={flow.transitions}/></details>
   </>;
 }
@@ -184,7 +187,7 @@ function TransitionInspector({ transition, states, metadata, locale, update, clo
   const operators = metadata?.operators ?? [];
   const addCondition = () => update({ conditions: [...conditions, { field: metadata?.supportedFields?.[0] ?? "payload.", operator: operators[0]?.key ?? "EQUALS", value: "" }] });
   const updateCondition = (index: number, patch: Partial<FlowConditionDraft>) => update({ conditions: conditions.map((condition, itemIndex) => itemIndex === index ? { ...condition, ...patch } : condition) });
-  return <><header><div className="transition-inspector-heading"><span aria-hidden>◆</span><div><small>{locale === "fa" ? "تصمیم / انتقال" : "Decision transition"}</small><h2>{transition.label}</h2></div></div><button onClick={close} aria-label={locale === "fa" ? "بستن بازرس" : "Close inspector"}>×</button></header>
+  return <><header><div className="transition-inspector-heading"><span aria-hidden><ArrowRightIcon size={13}/></span><div><small>{locale === "fa" ? "تصمیم / انتقال" : "Decision transition"}</small><h2>{transition.label}</h2></div></div><button onClick={close} aria-label={locale === "fa" ? "بستن بازرس" : "Close inspector"}>×</button></header>
     <label><span>{locale === "fa" ? "عنوان" : "Label"}</span><input value={transition.label} onChange={event => update({ label: event.target.value })}/></label>
     <div className="transition-route"><label><span>{locale === "fa" ? "از" : "From"}</span><select value={transition.fromState} onChange={event => update({ fromState: event.target.value })}>{states.map(state => <option value={state.id} key={state.id}>{state.displayName}</option>)}</select></label><span aria-hidden>→</span><label><span>{locale === "fa" ? "به" : "To"}</span><select value={transition.toState} onChange={event => update({ toState: event.target.value })}>{states.map(state => <option value={state.id} key={state.id}>{state.displayName}</option>)}</select></label></div>
     <fieldset><legend>{locale === "fa" ? "دسترسی انتقال" : "Transition access"}</legend><label><span>{locale === "fa" ? "نقش‌های مجاز" : "Allowed roles"}</span><input dir="ltr" value={joinKeys(transition.allowedRoles)} onChange={event => update({ allowedRoles: splitKeys(event.target.value) })}/></label><label><span>{locale === "fa" ? "گروه‌های مجاز" : "Allowed groups"}</span><input dir="ltr" value={joinKeys(transition.allowedGroups)} onChange={event => update({ allowedGroups: splitKeys(event.target.value) })}/></label></fieldset>

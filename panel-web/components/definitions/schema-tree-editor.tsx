@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type CSSProperties, type DragEvent } from "react";
 import { ConfirmDialog, Dialog, EmptyState } from "@/components/ui/primitives";
+import { fieldTypeIcon } from "@/components/nav-icons";
 
 export type SchemaRule = {
   id?: string;
@@ -172,7 +173,7 @@ function TreeLevel({ fields, parent, selected, expanded, setExpanded, select, ad
   return <ul>{Object.entries(fields).map(([key, field]) => { const path = [...parent, key]; const id = pathKey(path); const open = expanded.has(id); const container = isContainer(field); return <li key={id}>
     <div className={`schema-tree-row ${pathKey(selected) === id ? "selected" : ""}`} style={{ "--tree-depth": parent.length } as CSSProperties} draggable onDragStart={() => drag(path)} onDragEnd={() => drag(null)} onDragOver={(event: DragEvent) => event.preventDefault()} onDrop={(event: DragEvent) => { event.preventDefault(); drop(path); }}>
       <button className="tree-expander" aria-label={open ? "Collapse" : "Expand"} disabled={!container} onClick={() => { const next = new Set(expanded); open ? next.delete(id) : next.add(id); setExpanded(next); }}>{container ? (open ? "⌄" : "›") : "·"}</button>
-      <button className="tree-field" onClick={() => select(path)} onKeyDown={event => { if (event.altKey && event.key === "ArrowUp") { event.preventDefault(); move(path, -1); } if (event.altKey && event.key === "ArrowDown") { event.preventDefault(); move(path, 1); } }}><span className={`field-type-icon ${field.type}`}>{container ? "▦" : "•"}</span><span><strong>{key}</strong><small>{field.type ?? "string"} · {field.validations?.length ?? 0} {locale === "fa" ? "قاعده" : "rules"} · {field.operations?.length ?? 0} {locale === "fa" ? "عملیات" : "ops"}</small></span></button>
+      <button className="tree-field" onClick={() => select(path)} onKeyDown={event => { if (event.altKey && event.key === "ArrowUp") { event.preventDefault(); move(path, -1); } if (event.altKey && event.key === "ArrowDown") { event.preventDefault(); move(path, 1); } }}>{(() => { const TypeIcon = fieldTypeIcon(field.type); return <span className={`field-type-icon ${field.type}`}><TypeIcon size={14}/></span>; })()}<span><strong>{key}</strong><small>{field.type ?? "string"} · {field.validations?.length ?? 0} {locale === "fa" ? "قاعده" : "rules"} · {field.operations?.length ?? 0} {locale === "fa" ? "عملیات" : "ops"}</small></span></button>
       {container ? <button className="tree-action" aria-label={locale === "fa" ? "افزودن فیلد فرزند" : "Add child field"} onClick={() => add(path)}>＋</button> : null}<button className="tree-action danger" aria-label={locale === "fa" ? "حذف فیلد" : "Delete field"} onClick={() => remove(path)}>×</button>
     </div>{container && open ? <TreeLevel fields={field.itemValidations ?? {}} parent={path} selected={selected} expanded={expanded} setExpanded={setExpanded} select={select} add={add} remove={remove} move={move} drag={drag} drop={drop} locale={locale}/> : null}
   </li>; })}</ul>;

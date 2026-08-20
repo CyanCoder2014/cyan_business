@@ -100,6 +100,51 @@ export function XCircleIcon({ className, size = 18 }: IconProps) {
 export function ClockIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" /><path d="M12 7.5V12l3 2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
+export function PlayIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 5.5v13l11-6.5-11-6.5z" fill="currentColor" /></svg>;
+}
+export function StopIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2" fill="currentColor" /></svg>;
+}
+export function CircleDotIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="7.5" stroke="currentColor" strokeWidth="1.6" /><circle cx="12" cy="12" r="2.5" fill="currentColor" /></svg>;
+}
+export function TextIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>;
+}
+export function HashIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 3.5l-3 17M17.5 3.5l-3 17M4 8.5h16M3.5 15.5h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+export function ToggleIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="5" stroke="currentColor" strokeWidth="1.6" /><circle cx="16" cy="12" r="3" fill="currentColor" /></svg>;
+}
+export function CalendarIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.6" /><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>;
+}
+export function LinkIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9.5 14.5l5-5M10 8l1.2-1.2a3.5 3.5 0 1 1 5 5L15 13M14 16l-1.2 1.2a3.5 3.5 0 1 1-5-5L9 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+export function ListIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /><circle cx="4.5" cy="6.5" r="1.3" fill="currentColor" /><circle cx="4.5" cy="12" r="1.3" fill="currentColor" /><circle cx="4.5" cy="17.5" r="1.3" fill="currentColor" /></svg>;
+}
+
+const FIELD_TYPE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
+  string: TextIcon,
+  number: HashIcon,
+  integer: HashIcon,
+  boolean: ToggleIcon,
+  date: CalendarIcon,
+  datetime: CalendarIcon,
+  object: LayersIcon,
+  list: ListIcon,
+  enum: ListIcon,
+  relation: LinkIcon
+};
+
+export function fieldTypeIcon(type: string | undefined) {
+  return FIELD_TYPE_ICONS[type ?? "string"] ?? TextIcon;
+}
+
 export function SidebarIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke="currentColor" strokeWidth="1.6" /><path d="M9.5 4.5v15" stroke="currentColor" strokeWidth="1.6" /></svg>;
 }

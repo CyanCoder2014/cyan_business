@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Cyan business workspace",
+    title: "Cyan Coder business workspace",
     statusBarStyle: "black-translucent"
   }
 };

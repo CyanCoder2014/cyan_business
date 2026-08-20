@@ -9,7 +9,7 @@ import { getPlatformAuthToken, logoutPlatformSession, platformFetch, redirectToA
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { AsyncButton, Dialog } from "@/components/ui/primitives";
 import { LogoMark } from "@/components/logo-mark";
-import { HomeIcon, SparkleIcon, GridIcon, InboxIcon, FormIcon, PencilIcon, DatabaseIcon, WorkflowIcon, ZapIcon, BotIcon, LayoutIcon, GlobeDotIcon, BellIcon, ChartBarIcon, ImageIcon, SearchIcon, CodeIcon, TeamIcon, ShieldCheckIcon, BuildingsIcon, CardIcon, GearIcon, PulseIcon, PlusIcon, MoreIcon, SidebarIcon, ChevronRightIcon } from "@/components/nav-icons";
+import { HomeIcon, SparkleIcon, GridIcon, InboxIcon, FormIcon, PencilIcon, DatabaseIcon, WorkflowIcon, ZapIcon, BotIcon, LayoutIcon, GlobeDotIcon, BellIcon, ChartBarIcon, ImageIcon, SearchIcon, CodeIcon, TeamIcon, ShieldCheckIcon, BuildingsIcon, CardIcon, GearIcon, PulseIcon, PlusIcon, MoreIcon, SidebarIcon, ChevronRightIcon, BagIcon } from "@/components/nav-icons";
 
 type PanelShellProps = { title: string; titleFa: string; subtitle: string; subtitleFa: string; kicker?: string; kickerFa?: string; activeKey: string; children: ReactNode };
 type NavIcon = (props: { className?: string; size?: number }) => JSX.Element;
@@ -30,7 +30,8 @@ const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
     { href: "/automations", key: "automation", icon: ZapIcon, en: "Automation", fa: "اتوماسیون", capability: "automation", permission: "automation.read" },
     { href: "/bots", key: "bots", icon: BotIcon, en: "Bots", fa: "ربات‌ها", capability: "bot-adapter", permission: "bot.read" },
     { href: "/sites", key: "sites", icon: LayoutIcon, en: "Sites", fa: "سایت‌ها", capability: "site-builder", permission: "site.read" },
-    { href: "/domains", key: "domains", icon: GlobeDotIcon, en: "Domains", fa: "دامنه‌ها", capability: "site-builder", permission: "site.read" }
+    { href: "/domains", key: "domains", icon: GlobeDotIcon, en: "Domains", fa: "دامنه‌ها", capability: "site-builder", permission: "site.read" },
+    { href: "/commerce", key: "commerce", icon: BagIcon, en: "Commerce", fa: "تجارت", capability: "commerce", permission: "record.read" }
   ]},
   { en: "Operate", fa: "عملیات", items: [
     { href: "/notifications", key: "notifications", icon: BellIcon, en: "Notifications", fa: "اعلان‌ها" },

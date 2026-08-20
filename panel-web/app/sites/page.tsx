@@ -15,6 +15,7 @@ import {
   StatusBadge,
 } from "@/components/ui/primitives";
 import { createSite, listSites, type SiteSummary } from "@/lib/site-admin-api";
+import { LayoutIcon } from "@/components/nav-icons";
 
 export default function Sites() {
   const { locale } = usePanel();
@@ -93,7 +94,7 @@ export default function Sites() {
         <div className="phase9-card-grid">
           {items.map((site) => (
             <article className="panel-card phase9-resource-card" key={site.siteKey}>
-              <div className="phase9-provider-icon">▣</div>
+              <div className="phase9-provider-icon"><LayoutIcon size={20}/></div>
               <div>
                 <p className="page-kicker">{site.siteKey}</p>
                 <h2>{site.name}</h2>

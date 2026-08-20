@@ -5,11 +5,13 @@ import { PanelShell } from "@/components/panel-shell";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
 import { AsyncButton, EmptyState, ErrorState, Skeleton, StatusBadge } from "@/components/ui/primitives";
+import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError } from "@/lib/api-error";
 import { cancelAiArtifactJob, listAiArtifactJobs, listAiProviderProfiles, saveAiProviderProfile, startAiArtifactJob, type AiArtifactJob, type AiProviderProfile } from "@/lib/ai-operations-api";
 
 const emptyProfile = { profileKey: "", displayName: "", baseUrl: "", operationPath: "/v1/chat/completions", model: "", secretRef: "", modalities: ["TEXT"], enabled: true };
 export default function AiProviders() {
-  const { locale } = usePanel(); const { tenantKey, siteKey, queryVersion } = useScopeAccess();
+  const { locale } = usePanel(); const { tenantKey, siteKey, queryVersion } = useScopeAccess(); const { showToast } = useToast();
   const scope = useMemo(() => tenantKey ? { tenantKey, siteKey: siteKey ?? undefined } : null, [tenantKey, siteKey]);
   const [profiles, setProfiles] = useState<AiProviderProfile[]>([]); const [jobs, setJobs] = useState<AiArtifactJob[]>([]);
   const [profile, setProfile] = useState(emptyProfile); const [job, setJob] = useState({ operation: "GENERATE_IMAGE", providerProfileKey: "", instructions: "", mimeType: "image/png", fileName: "generated.png", retentionDays: 30 });
@@ -17,10 +19,10 @@ export default function AiProviders() {
   const load = useCallback(async () => {
     if (!scope) { setLoading(false); return; } setLoading(true); setError(null);
     try { const [profileValues, jobValues] = await Promise.all([listAiProviderProfiles(scope), listAiArtifactJobs(scope)]); setProfiles(profileValues); setJobs(jobValues); setJob(current => ({ ...current, providerProfileKey: current.providerProfileKey || profileValues.find(value => value.enabled)?.profileKey || "" })); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); } finally { setLoading(false); }
-  }, [scope, queryVersion]);
+    catch (reason) { const { title, message } = describeApiError(reason, "AI operation failed"); setError(message); showToast({ tone: "error", title, message }); } finally { setLoading(false); }
+  }, [scope, queryVersion, showToast]);
   useEffect(() => { void load(); }, [load]);
-  const perform = async (key: string, operation: () => Promise<unknown>) => { if (pending) return; setPending(key); setError(null); try { await operation(); await load(); } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); } finally { setPending(null); } };
+  const perform = async (key: string, operation: () => Promise<unknown>) => { if (pending) return; setPending(key); setError(null); try { await operation(); await load(); } catch (reason) { const { title, message } = describeApiError(reason, "Action failed"); setError(message); showToast({ tone: "error", title, message }); } finally { setPending(null); } };
   const shell = (children: React.ReactNode) => <PanelShell activeKey="studio" title="AI providers" titleFa="ارائه‌دهندگان هوش مصنوعی" subtitle="Credentials use secret references, never stored values." subtitleFa="اعتبارنامه فقط با ارجاع راز استفاده می‌شود.">{children}</PanelShell>;
   if (loading) return shell(<Skeleton height={600}/>); if (!scope) return shell(<EmptyState title="Select a workspace" description="Provider profiles are tenant scoped."/>);
   return <PanelShell activeKey="studio" kicker="AI operations" kickerFa="عملیات هوش مصنوعی" title="Providers and generated media" titleFa="ارائه‌دهندگان و رسانه تولیدشده" subtitle="Credentials remain behind environment or Kubernetes secret references." subtitleFa="اطلاعات محرمانه فقط با ارجاع راز محیط یا کوبرنتیز استفاده می‌شود.">

@@ -9,6 +9,7 @@ import {
   type ApiDocsServiceSummary,
   type OpenApiDocument
 } from "@/lib/service-api";
+import { describeApiError } from "@/lib/api-error";
 
 const httpMethods = new Set(["get", "post", "put", "patch", "delete", "head", "options", "trace"]);
 
@@ -34,7 +35,7 @@ export default function ApiDocsPage() {
         if (first) setSelected(first.serviceKey);
         setStatus("");
       })
-      .catch((error) => setStatus(error instanceof Error ? error.message : "API catalog could not be loaded."));
+      .catch((error) => setStatus(describeApiError(error, "API catalog could not be loaded.").message));
   }, []);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function ApiDocsPage() {
       })
       .catch((error) => {
         setDocument(null);
-        setStatus(error instanceof Error ? error.message : "Specification could not be loaded.");
+        setStatus(describeApiError(error, "Specification could not be loaded.").message);
       });
   }, [locale, selected]);
 
@@ -81,7 +82,7 @@ export default function ApiDocsPage() {
       setDocument(await getApiDocsService(selected, true));
       setStatus(locale === "fa" ? "مشخصات به‌روز شد." : "Specification refreshed.");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Refresh failed.");
+      setStatus(describeApiError(error, "Refresh failed.").message);
     }
   }
 

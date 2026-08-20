@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast-provider";
 import { describeApiError } from "@/lib/api-error";
-import { dynamicServices, listDefinitions } from "@/lib/dynamic-api";
+import { dynamicServices as allDynamicServices, listDefinitions } from "@/lib/dynamic-api";
+import { useAvailableDynamicServices } from "@/lib/use-available-services";
 import {
   archiveForm,
   listPublishedForms,
@@ -35,6 +36,7 @@ export default function FormsPage() {
   const { locale } = usePanel();
   const { showToast } = useToast();
   const { tenantKey, siteKey, can } = useScopeAccess();
+  const dynamicServices = useAvailableDynamicServices({ tenantKey: tenantKey || undefined, siteKey: siteKey || undefined });
   const [forms, setForms] = useState<PublishedFormSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export default function FormsPage() {
     const searchParams = new URLSearchParams(window.location.search);
     const requestedService = searchParams.get("serviceKey");
     const requestedEntity = searchParams.get("entityKey");
-    if (requestedService && dynamicServices.includes(requestedService as DynamicServiceKey)) setService(requestedService as DynamicServiceKey);
+    if (requestedService && allDynamicServices.includes(requestedService as DynamicServiceKey)) setService(requestedService as DynamicServiceKey);
     if (requestedEntity) setEntityKey(requestedEntity);
     if (requestedService || requestedEntity) setDialog(true);
   }, []);

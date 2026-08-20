@@ -8,7 +8,8 @@ import { useScopeAccess } from "@/components/scope-access-provider";
 import { Dialog, EmptyState, ErrorState, Field, Skeleton, StatusBadge } from "@/components/ui/primitives";
 import { useToast } from "@/components/ui/toast-provider";
 import { describeApiError } from "@/lib/api-error";
-import { createDefinition, createDefinitionFromTemplate, dynamicServices, listDefinitions, listTemplates } from "@/lib/dynamic-api";
+import { createDefinition, createDefinitionFromTemplate, listDefinitions, listTemplates } from "@/lib/dynamic-api";
+import { useAvailableDynamicServices } from "@/lib/use-available-services";
 import type { DynamicEntityDefinition, DynamicEntityTemplate, DynamicServiceKey } from "@/lib/types";
 
 export default function Definitions() {
@@ -16,6 +17,7 @@ export default function Definitions() {
   const router = useRouter();
   const { showToast } = useToast();
   const { tenantKey, siteKey, queryVersion } = useScopeAccess();
+  const dynamicServices = useAvailableDynamicServices({ tenantKey: tenantKey || undefined, siteKey: siteKey || undefined });
   const [service, setService] = useState<DynamicServiceKey>("content-service");
   const [definitions, setDefinitions] = useState<DynamicEntityDefinition[]>([]);
   const [templates, setTemplates] = useState<DynamicEntityTemplate[]>([]);

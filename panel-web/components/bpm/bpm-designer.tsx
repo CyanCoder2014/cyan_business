@@ -11,7 +11,8 @@ import { useToast } from "@/components/ui/toast-provider";
 import { describeApiError } from "@/lib/api-error";
 import { activateFlow, getConditionMetadata, listActionMetadata, saveFlow, type BpmActionStructure, type BpmConditionStructure, type DynamicFlowDefinition, type FlowConditionDraft, type FlowStateDraft, type FlowTransitionDraft, type MetadataFieldDescriptor } from "@/lib/bpm-api";
 import { listAutomationFlows, type AutomationFlow } from "@/lib/automation-api";
-import { createDefinition, dynamicServices, listDefinitions } from "@/lib/dynamic-api";
+import { createDefinition, listDefinitions } from "@/lib/dynamic-api";
+import { useAvailableDynamicServices } from "@/lib/use-available-services";
 import type { DynamicEntityDefinition, DynamicServiceKey } from "@/lib/types";
 import { createProcessor, listProcessors, type ProcessorDefinition } from "@/lib/processor-api";
 import { PlayIcon, StopIcon, CircleDotIcon } from "@/components/nav-icons";
@@ -205,6 +206,7 @@ function DefinitionPicker({ label, service, entityKey, scope, locale, onChangeKe
 }
 
 function EntityBindingFields({ state, scope, locale, update }: { state: FlowStateDraft; scope: { tenantKey?: string; siteKey?: string }; locale: string; update: (patch: Partial<FlowStateDraft>) => void }) {
+  const dynamicServices = useAvailableDynamicServices(scope);
   const service = state.entityService ?? "";
   const key = state.entityKey ?? state.formKey ?? "";
   const [rendererOpen, setRendererOpen] = useState(Boolean(state.rendererService || state.rendererKey));

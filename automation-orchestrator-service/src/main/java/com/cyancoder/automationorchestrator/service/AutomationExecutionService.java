@@ -45,12 +45,13 @@ public class AutomationExecutionService {
     private final GraphAutomationRuntime graphRuntime;
     private final ItemStreamAutomationRuntime itemStreamRuntime;
     private final AutomationWorkerProperties workerProperties;
+    private final BillingUsageReporter usageReporter;
 
     public AutomationExecutionService(AutomationExecutionRepository repository,
                                       InternalServiceHttpSupport httpSupport,
                                       AutomationCallbackProperties callbackProperties,
                                       ObjectMapper objectMapper) {
-        this(repository, httpSupport, callbackProperties, objectMapper, null, null, null, new AutomationWorkerProperties());
+        this(repository, httpSupport, callbackProperties, objectMapper, null, null, null, new AutomationWorkerProperties(), new BillingUsageReporter(httpSupport));
     }
 
     @Autowired
@@ -61,7 +62,8 @@ public class AutomationExecutionService {
                                       AutomationFlowDefinitionService flowDefinitionService,
                                       GraphAutomationRuntime graphRuntime,
                                       ItemStreamAutomationRuntime itemStreamRuntime,
-                                      AutomationWorkerProperties workerProperties) {
+                                      AutomationWorkerProperties workerProperties,
+                                      BillingUsageReporter usageReporter) {
         this.repository = repository;
         this.httpSupport = httpSupport;
         this.callbackProperties = callbackProperties;
@@ -71,6 +73,7 @@ public class AutomationExecutionService {
         this.graphRuntime = graphRuntime;
         this.itemStreamRuntime = itemStreamRuntime;
         this.workerProperties = workerProperties;
+        this.usageReporter = usageReporter;
     }
 
     public AutomationStartResponse start(AutomationStartRequest request) {
@@ -128,6 +131,7 @@ public class AutomationExecutionService {
             if (concurrent.isPresent()) return toResponse(concurrent.get());
             throw duplicate;
         }
+        usageReporter.increment(tenantKey, "automationRuns");
 
         if (execution.getExecutionMode() == AutomationExecutionMode.SYNC) {
             executeNow(execution);

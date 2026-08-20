@@ -28,16 +28,19 @@ public class MediaByteUploadService {
     private final Path storageRoot;
     private final long maxUploadBytes;
     private final long ttlSeconds;
+    private final BillingUsageReporter usageReporter;
 
     public MediaByteUploadService(MediaUploadRepository repository, MediaAssetService assetService,
                                   @Value("${media.storage.root}") String storageRoot,
                                   @Value("${media.storage.max-upload-bytes}") long maxUploadBytes,
-                                  @Value("${media.storage.prepare-ttl-seconds}") long ttlSeconds) {
+                                  @Value("${media.storage.prepare-ttl-seconds}") long ttlSeconds,
+                                  BillingUsageReporter usageReporter) {
         this.repository = repository;
         this.assetService = assetService;
         this.storageRoot = Path.of(storageRoot).toAbsolutePath().normalize();
         this.maxUploadBytes = maxUploadBytes;
         this.ttlSeconds = ttlSeconds;
+        this.usageReporter = usageReporter;
     }
 
     @Transactional
@@ -81,6 +84,7 @@ public class MediaByteUploadService {
             upload.setCompletedAt(Instant.now());
             repository.save(upload);
             assetService.prepareUpload(new MediaUploadPrepareRequest(upload.getAssetKey(), mediaType(upload.getMimeType()), upload.getOriginalFileName(), upload.getMimeType(), upload.getVisibility(), upload.getOriginalFileName(), "", upload.getOriginalFileName(), "", "filesystem", "", null, null, copied), new DynamicScope(upload.getTenantKey(),upload.getSiteKey()));
+            usageReporter.increment(upload.getTenantKey(), "storageBytes", copied);
             return response(upload);
         } catch (IOException exception) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Media bytes could not be stored", exception);
@@ -127,7 +131,7 @@ public class MediaByteUploadService {
         catch(IllegalArgumentException exception){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Generated asset base64 is invalid");}
         if(bytes.length==0||bytes.length>maxUploadBytes)throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Generated asset exceeds configured media limit");
         if(!(request.mimeType().startsWith("image/")||request.mimeType().startsWith("audio/")||request.mimeType().startsWith("video/")||request.mimeType().startsWith("text/")||request.mimeType().equals("application/json")))throw new ResponseStatusException(HttpStatus.UNSUPPORTED_MEDIA_TYPE,"Generated artifact media type is not supported");
-        MediaUploadEntity upload=new MediaUploadEntity();Instant now=Instant.now();upload.setUploadId(UUID.randomUUID().toString());upload.setAssetKey(UUID.randomUUID().toString());upload.setTenantKey(tenantKey);upload.setSiteKey(blankToNull(siteKey));upload.setOriginalFileName(safeFileName(request.fileName()));upload.setMimeType(request.mimeType());upload.setVisibility("PRIVATE");upload.setExpectedSizeBytes(bytes.length);upload.setUploadedSizeBytes(bytes.length);upload.setStatus("UPLOADED");upload.setCreatedBy(request.generatedBy());upload.setCreatedAt(now);upload.setCompletedAt(now);upload.setExpiresAt(now.plusSeconds(Math.max(1,Math.min(request.retentionDays()==null?30:request.retentionDays(),365))*86400L));Path destination=storageRoot.resolve(tenantKey).resolve(upload.getSiteKey()==null?"_tenant":upload.getSiteKey()).resolve(upload.getUploadId()).normalize();if(!destination.startsWith(storageRoot))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid generated asset path");try{Files.createDirectories(destination.getParent());Files.write(destination,bytes);upload.setStoragePath(destination.toString());repository.save(upload);assetService.prepareUpload(new MediaUploadPrepareRequest(upload.getAssetKey(),mediaType(upload.getMimeType()),upload.getOriginalFileName(),upload.getMimeType(),"PRIVATE",upload.getOriginalFileName(),"",upload.getOriginalFileName(),"","filesystem","",null,null,(long)bytes.length),new DynamicScope(tenantKey,upload.getSiteKey()));return response(upload);}catch(IOException exception){throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Generated media could not be stored",exception);}
+        MediaUploadEntity upload=new MediaUploadEntity();Instant now=Instant.now();upload.setUploadId(UUID.randomUUID().toString());upload.setAssetKey(UUID.randomUUID().toString());upload.setTenantKey(tenantKey);upload.setSiteKey(blankToNull(siteKey));upload.setOriginalFileName(safeFileName(request.fileName()));upload.setMimeType(request.mimeType());upload.setVisibility("PRIVATE");upload.setExpectedSizeBytes(bytes.length);upload.setUploadedSizeBytes(bytes.length);upload.setStatus("UPLOADED");upload.setCreatedBy(request.generatedBy());upload.setCreatedAt(now);upload.setCompletedAt(now);upload.setExpiresAt(now.plusSeconds(Math.max(1,Math.min(request.retentionDays()==null?30:request.retentionDays(),365))*86400L));Path destination=storageRoot.resolve(tenantKey).resolve(upload.getSiteKey()==null?"_tenant":upload.getSiteKey()).resolve(upload.getUploadId()).normalize();if(!destination.startsWith(storageRoot))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid generated asset path");try{Files.createDirectories(destination.getParent());Files.write(destination,bytes);upload.setStoragePath(destination.toString());repository.save(upload);assetService.prepareUpload(new MediaUploadPrepareRequest(upload.getAssetKey(),mediaType(upload.getMimeType()),upload.getOriginalFileName(),upload.getMimeType(),"PRIVATE",upload.getOriginalFileName(),"",upload.getOriginalFileName(),"","filesystem","",null,null,(long)bytes.length),new DynamicScope(tenantKey,upload.getSiteKey()));usageReporter.increment(tenantKey,"storageBytes",bytes.length);return response(upload);}catch(IOException exception){throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Generated media could not be stored",exception);}
     }
 
     private MediaUploadEntity scoped(String id, String tenant, String site, String actor) {

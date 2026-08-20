@@ -177,7 +177,8 @@ class AutomationExecutionServiceTest {
                 mock(AutomationFlowDefinitionService.class),
                 graphRuntime,
                 mock(ItemStreamAutomationRuntime.class),
-                workers
+                workers,
+                mock(BillingUsageReporter.class)
         );
 
         AutomationExecution orphan = new AutomationExecution();

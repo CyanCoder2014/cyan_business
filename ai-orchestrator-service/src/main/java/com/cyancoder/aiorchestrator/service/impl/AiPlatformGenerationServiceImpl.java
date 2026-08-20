@@ -14,6 +14,7 @@ import com.cyancoder.aiorchestrator.domain.PlatformAppDslDefinition;
 import com.cyancoder.aiorchestrator.service.AppDraftService;
 import com.cyancoder.aiorchestrator.service.AiPlatformGenerationService;
 import com.cyancoder.aiorchestrator.service.AiPromptBuilder;
+import com.cyancoder.aiorchestrator.service.BillingUsageReporter;
 import com.cyancoder.aiorchestrator.service.ConversationSessionService;
 import com.cyancoder.aiorchestrator.service.DslValidationService;
 import com.cyancoder.aiorchestrator.service.FollowUpQuestionService;
@@ -39,6 +40,7 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
     private final FollowUpQuestionService followUpQuestionService;
     private final ConversationSessionService conversationSessionService;
     private final ServiceAvailabilityResolver availabilityResolver;
+    private final BillingUsageReporter usageReporter;
 
     public AiPlatformGenerationServiceImpl(LlmClient llmClient,
                                            PlatformMetadataClient metadataClient,
@@ -49,7 +51,8 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
                                            AppDraftService appDraftService,
                                            FollowUpQuestionService followUpQuestionService,
                                            ConversationSessionService conversationSessionService,
-                                           ServiceAvailabilityResolver availabilityResolver) {
+                                           ServiceAvailabilityResolver availabilityResolver,
+                                           BillingUsageReporter usageReporter) {
         this.llmClient = llmClient;
         this.metadataClient = metadataClient;
         this.retrievalService = retrievalService;
@@ -60,6 +63,7 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
         this.followUpQuestionService = followUpQuestionService;
         this.conversationSessionService = conversationSessionService;
         this.availabilityResolver = availabilityResolver;
+        this.usageReporter = usageReporter;
     }
 
     @Override
@@ -106,6 +110,7 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
         ProvisioningResultDto provisioningResult = request.execute() && nextQuestions.isEmpty()
                 ? provisioningService.provision(dsl)
                 : null;
+        usageReporter.increment(tenantKey, "aiGenerations");
         return new GeneratePlatformAppResponse(null, null, dsl, nextQuestions, followUpQuestions, provisioningResult);
     }
 

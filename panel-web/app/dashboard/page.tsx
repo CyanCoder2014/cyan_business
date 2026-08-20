@@ -10,6 +10,7 @@ import { listBotIntegrations, listClientDrafts, listProvisioningRuns } from "@/l
 import { listAutomationExecutions } from "@/lib/service-api";
 import { getUnreadCount } from "@/lib/notification-api";
 import type { AutomationExecution, BotChannelIntegration, ClientAppDraft, ProvisioningRun } from "@/lib/types";
+import type { Subscription } from "@/lib/panel-contracts";
 import { appTypeIcon, GridIcon, RocketIcon, InboxIcon, ZapIcon, ShieldCheckIcon, BotIcon, BellIcon, CardIcon, PulseIcon, DatabaseIcon, GlobeDotIcon, WorkflowIcon, CheckCircleIcon, XCircleIcon, ClockIcon, FormIcon, LayoutIcon } from "@/components/nav-icons";
 
 type IconType = (props: { className?: string; size?: number }) => JSX.Element;
@@ -33,7 +34,7 @@ export default function Dashboard(){
    <Widget title={locale==="fa"?"قابلیت‌های فعال":"Active capabilities"} icon={ShieldCheckIcon} state={{data:capabilities,loading:!bootstrap,error:null,updatedAt:new Date().toISOString()}}>{capabilities.map(x=><div key={x.key}><strong>{x.key}</strong><StatusBadge tone={x.status==="AVAILABLE"?"success":"warning"}>{x.status}</StatusBadge></div>)}</Widget>
    <Widget title={locale==="fa"?"بات‌ها و سایت‌ها":"Bots and sites"} icon={BotIcon} state={bots} action={<Link href="/bots">{locale==="fa"?"مشاهده همه":"View all"}</Link>}>{bots.data.filter(x=>x.active).map(x=><Link key={`${x.channel}-${x.integrationKey}`} href="/bots"><strong>{x.integrationKey}</strong><span>{x.channel}</span></Link>)}{bootstrap?.sites.map(x=><Link key={x.siteKey} href={`/sites/${encodeURIComponent(x.siteKey)}/builder`}><strong>{x.name}</strong><span>{x.status}</span></Link>)}</Widget>
    <Widget title={locale==="fa"?"اعلان‌ها":"Notifications"} icon={BellIcon} state={unread} action={<Link href="/notifications">{locale==="fa"?"مشاهده همه":"View all"}</Link>}>{unread.data!==null?<Link href="/notifications"><strong>{unread.data}</strong><span>{locale==="fa"?"خوانده‌نشده":"unread"}</span></Link>:null}</Widget>
-   <Widget title={locale==="fa"?"محدودیت‌های پلن":"Plan limits"} icon={CardIcon} state={{data:bootstrap?.subscription?.limits??{},loading:!bootstrap,error:null,updatedAt:null}} action={<Link href="/billing">{locale==="fa"?"مشاهده همه":"View all"}</Link>}>{Object.entries(bootstrap?.subscription?.limits??{}).map(([key,value])=><div key={key}><strong>{key}</strong><span>{String(value)}</span></div>)}</Widget>
+   <PlanLimitsWidget locale={locale} subscription={bootstrap?.subscription??null} loading={!bootstrap}/>
    <Widget title={locale==="fa"?"فعالیت اخیر":"Recent activity"} icon={PulseIcon} state={{data:activity,loading:drafts.loading||runs.loading,error:drafts.error||runs.error,updatedAt:drafts.updatedAt}}>{activity.map(item=><Link key={item.id} href={item.href}><strong>{item.label}</strong><span>{item.status}</span></Link>)}</Widget>
   </div>
   {bootstrap?.subscription?.status==="NONE"?<section className="limited-dashboard"><h2>{locale==="fa"?"دسترسی محدود":"Limited access"}</h2><p>{locale==="fa"?"پلن فعالی ثبت نشده است. عملیات قفل‌شده موفقیت جعلی نمایش نمی‌دهند.":"No active plan is registered. Locked operations remain unavailable and never simulate success."}</p></section>:null}
@@ -51,4 +52,32 @@ function AutomationHealthWidget({locale,state}:{locale:"en"|"fa";state:Bucket<Au
  const runPct=total?(running/total)*100:0;
  const ring=total?`conic-gradient(var(--success) 0 ${pct}%, var(--danger) ${pct}% ${pct+failPct}%, var(--warning) ${pct+failPct}% 100%)`:"conic-gradient(var(--border) 0 100%)";
  return <section className="dashboard-widget automation-health-widget"><header><h3><span className="dashboard-widget-icon" aria-hidden><ZapIcon size={15}/></span>{locale==="fa"?"سلامت اتوماسیون":"Automation health"}</h3><span className="dashboard-widget-action"><Link href="/automations">{locale==="fa"?"مشاهده همه":"View all"}</Link></span></header>{state.loading?<Skeleton height={96}/>:state.error?<ErrorState title="Unavailable" description={state.error}/>:total===0?<EmptyState title={locale==="fa"?"اجرایی ثبت نشده":"No executions yet"} description={locale==="fa"?"پس از اجرای فلوها نتایج اینجا نمایش داده می‌شود.":"Results appear here once flows run."}/>:<div className="health-ring-row"><div className="health-ring" style={{backgroundImage:ring}}><div className="health-ring-inner"><strong>{pct}%</strong><span>{locale==="fa"?"موفق":"Healthy"}</span></div></div><ul className="health-legend"><li><CheckCircleIcon size={14} className="tone-success"/><span>{locale==="fa"?"موفق":"Succeeded"}</span><b>{succeeded}</b></li><li><ClockIcon size={14} className="tone-warning"/><span>{locale==="fa"?"در حال اجرا":"Running"}</span><b>{running}</b></li><li><XCircleIcon size={14} className="tone-danger"/><span>{locale==="fa"?"ناموفق":"Failed"}</span><b>{failed}</b></li></ul></div>}</section>;
+}
+
+function formatLimitValue(key: string, value: number): string {
+  if (/byte/i.test(key)) {
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let n = value, i = 0;
+    while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+    return `${n >= 100 ? Math.round(n) : Math.round(n * 10) / 10} ${units[i]}`;
+  }
+  return value >= 1000 ? `${Math.round(value / 100) / 10}K` : String(value);
+}
+
+function PlanLimitsWidget({ locale, subscription, loading }: { locale: "en" | "fa"; subscription: Subscription | null; loading: boolean }) {
+  const limits = subscription?.limits ?? {};
+  const usage = subscription?.usage ?? {};
+  const entries = Object.entries(limits);
+  const empty = entries.length === 0;
+  return <Widget title={locale === "fa" ? "محدودیت‌های پلن" : "Plan limits"} icon={CardIcon} state={{ data: entries, loading, error: null, updatedAt: null }} action={<Link href="/billing">{locale === "fa" ? "مشاهده همه" : "View all"}</Link>}>
+    {empty ? null : entries.map(([key, rawLimit]) => {
+      const limitNumber = typeof rawLimit === "number" ? rawLimit : Number(rawLimit);
+      const used = usage[key];
+      if (typeof used === "number" && Number.isFinite(limitNumber) && limitNumber > 0) {
+        const pct = Math.min(100, Math.round((used / limitNumber) * 100));
+        return <div key={key} className="limit-usage-row"><div className="limit-usage-head"><strong>{key}</strong><span>{formatLimitValue(key, used)} / {formatLimitValue(key, limitNumber)}</span></div><div className="limit-usage-track"><div className="limit-usage-fill" style={{ width: `${pct}%`, background: pct >= 90 ? "var(--danger)" : pct >= 70 ? "var(--warning)" : "var(--gradient-brand)" }} /></div></div>;
+      }
+      return <div key={key}><strong>{key}</strong><span>{String(rawLimit)}</span></div>;
+    })}
+  </Widget>;
 }

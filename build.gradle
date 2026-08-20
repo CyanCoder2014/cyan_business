@@ -77,3 +77,7 @@ dependencyManagement {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+// root project is not a deployable application; it has no main class
+bootJar { enabled = false }
+jar { enabled = true }

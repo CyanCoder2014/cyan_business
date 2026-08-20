@@ -37,3 +37,7 @@ tasks.named('test') {
 	delete "buld/libs/*.jar"
 
 }
+
+// library module shared by other services; it has no main class
+bootJar { enabled = false }
+jar { enabled = true }

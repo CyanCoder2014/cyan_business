@@ -9,43 +9,45 @@ import { getPlatformAuthToken, logoutPlatformSession, platformFetch, redirectToA
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { AsyncButton, Dialog } from "@/components/ui/primitives";
 import { LogoMark } from "@/components/logo-mark";
+import { HomeIcon, SparkleIcon, GridIcon, InboxIcon, FormIcon, PencilIcon, DatabaseIcon, WorkflowIcon, ZapIcon, BotIcon, LayoutIcon, GlobeDotIcon, BellIcon, ChartBarIcon, ImageIcon, SearchIcon, CodeIcon, TeamIcon, ShieldCheckIcon, BuildingsIcon, CardIcon, GearIcon, PulseIcon, PlusIcon, MoreIcon } from "@/components/nav-icons";
 
 type PanelShellProps = { title: string; titleFa: string; subtitle: string; subtitleFa: string; kicker?: string; kickerFa?: string; activeKey: string; children: ReactNode };
-type NavItem = { href: string; key: string; icon: string; en: string; fa: string; capability?: string; permission?: string; platformOnly?: boolean };
+type NavIcon = (props: { className?: string; size?: number }) => JSX.Element;
+type NavItem = { href: string; key: string; icon: NavIcon; en: string; fa: string; capability?: string; permission?: string; platformOnly?: boolean };
 
 const groups: Array<{ en: string; fa: string; items: NavItem[] }> = [
   { en: "Workspace", fa: "فضای کار", items: [
-    { href: "/dashboard", key: "dashboard", icon: "⌂", en: "Home", fa: "خانه" },
-    { href: "/ai", key: "studio", icon: "✦", en: "AI Studio", fa: "استودیوی هوش", capability: "ai-orchestrator", permission: "project.create" },
-    { href: "/projects", key: "blueprints", icon: "▦", en: "Projects", fa: "پروژه‌ها", capability: "ai-orchestrator", permission: "project.read" },
-    { href: "/work", key: "work", icon: "⌁", en: "My cartable", fa: "کارتابل من", capability: "bpm", permission: "bpm.read" },
-    { href: "/forms", key: "forms", icon: "▤", en: "My forms", fa: "فرم‌های من", capability: "dynamic-entities" }
+    { href: "/dashboard", key: "dashboard", icon: HomeIcon, en: "Home", fa: "خانه" },
+    { href: "/ai", key: "studio", icon: SparkleIcon, en: "AI Studio", fa: "استودیوی هوش", capability: "ai-orchestrator", permission: "project.create" },
+    { href: "/projects", key: "blueprints", icon: GridIcon, en: "Projects", fa: "پروژه‌ها", capability: "ai-orchestrator", permission: "project.read" },
+    { href: "/work", key: "work", icon: InboxIcon, en: "My cartable", fa: "کارتابل من", capability: "bpm", permission: "bpm.read" },
+    { href: "/forms", key: "forms", icon: FormIcon, en: "My forms", fa: "فرم‌های من", capability: "dynamic-entities" }
   ]},
   { en: "Build", fa: "ساخت", items: [
-    { href: "/definitions", key: "maker", icon: "✎", en: "Definitions", fa: "تعریف‌ها", capability: "dynamic-entities", permission: "definition.read" },
-    { href: "/data", key: "data", icon: "◫", en: "Data", fa: "داده‌ها", capability: "dynamic-entities", permission: "record.read" },
-    { href: "/bpm", key: "flows", icon: "⌁", en: "BPM", fa: "فرایندها", capability: "bpm", permission: "bpm.read" },
-    { href: "/automations", key: "automation", icon: "↯", en: "Automation", fa: "اتوماسیون", capability: "automation", permission: "automation.read" },
-    { href: "/bots", key: "bots", icon: "⬡", en: "Bots", fa: "ربات‌ها", capability: "bot-adapter", permission: "bot.read" },
-    { href: "/sites", key: "sites", icon: "▣", en: "Sites", fa: "سایت‌ها", capability: "site-builder", permission: "site.read" },
-    { href: "/domains", key: "domains", icon: "◎", en: "Domains", fa: "دامنه‌ها", capability: "site-builder", permission: "site.read" }
+    { href: "/definitions", key: "maker", icon: PencilIcon, en: "Definitions", fa: "تعریف‌ها", capability: "dynamic-entities", permission: "definition.read" },
+    { href: "/data", key: "data", icon: DatabaseIcon, en: "Data", fa: "داده‌ها", capability: "dynamic-entities", permission: "record.read" },
+    { href: "/bpm", key: "flows", icon: WorkflowIcon, en: "BPM", fa: "فرایندها", capability: "bpm", permission: "bpm.read" },
+    { href: "/automations", key: "automation", icon: ZapIcon, en: "Automation", fa: "اتوماسیون", capability: "automation", permission: "automation.read" },
+    { href: "/bots", key: "bots", icon: BotIcon, en: "Bots", fa: "ربات‌ها", capability: "bot-adapter", permission: "bot.read" },
+    { href: "/sites", key: "sites", icon: LayoutIcon, en: "Sites", fa: "سایت‌ها", capability: "site-builder", permission: "site.read" },
+    { href: "/domains", key: "domains", icon: GlobeDotIcon, en: "Domains", fa: "دامنه‌ها", capability: "site-builder", permission: "site.read" }
   ]},
   { en: "Operate", fa: "عملیات", items: [
-    { href: "/notifications", key: "notifications", icon: "◉", en: "Notifications", fa: "اعلان‌ها" },
-    { href: "/reports", key: "reports", icon: "▥", en: "Reports", fa: "گزارش‌ها", capability: "report", permission: "report.read" },
-    { href: "/media", key: "media", icon: "▧", en: "Media", fa: "رسانه", capability: "media", permission: "media.read" },
-    { href: "/search", key: "search", icon: "⌕", en: "Search", fa: "جستجو", capability: "search", permission: "search.read" },
-    { href: "/api-docs", key: "api-docs", icon: "{·}", en: "API docs", fa: "مستندات API" },
+    { href: "/notifications", key: "notifications", icon: BellIcon, en: "Notifications", fa: "اعلان‌ها" },
+    { href: "/reports", key: "reports", icon: ChartBarIcon, en: "Reports", fa: "گزارش‌ها", capability: "report", permission: "report.read" },
+    { href: "/media", key: "media", icon: ImageIcon, en: "Media", fa: "رسانه", capability: "media", permission: "media.read" },
+    { href: "/search", key: "search", icon: SearchIcon, en: "Search", fa: "جستجو", capability: "search", permission: "search.read" },
+    { href: "/api-docs", key: "api-docs", icon: CodeIcon, en: "API docs", fa: "مستندات API" },
   ]},
   { en: "Manage", fa: "مدیریت", items: [
-    { href: "/team/users", key: "team-users", icon: "♙", en: "Team members", fa: "اعضای تیم", permission: "team.read" },
-    { href: "/team/roles", key: "team-roles", icon: "◇", en: "Roles & permissions", fa: "نقش‌ها و مجوزها", permission: "team.read" },
-    { href: "/clients", key: "clients", icon: "▤", en: "Clients", fa: "مشتریان", permission: "realm:manage" },
-    { href: "/billing", key: "billing", icon: "◈", en: "Billing", fa: "صورتحساب", permission: "billing.read" },
-    { href: "/settings", key: "settings", icon: "⚙", en: "Settings", fa: "تنظیمات", permission: "settings.read" }
+    { href: "/team/users", key: "team-users", icon: TeamIcon, en: "Team members", fa: "اعضای تیم", permission: "team.read" },
+    { href: "/team/roles", key: "team-roles", icon: ShieldCheckIcon, en: "Roles & permissions", fa: "نقش‌ها و مجوزها", permission: "team.read" },
+    { href: "/clients", key: "clients", icon: BuildingsIcon, en: "Clients", fa: "مشتریان", permission: "realm:manage" },
+    { href: "/billing", key: "billing", icon: CardIcon, en: "Billing", fa: "صورتحساب", permission: "billing.read" },
+    { href: "/settings", key: "settings", icon: GearIcon, en: "Settings", fa: "تنظیمات", permission: "settings.read" }
   ]},
   { en: "Platform", fa: "پلتفرم", items: [
-    { href: "/platform/health", key: "platform-health", icon: "✣", en: "Health checks", fa: "بررسی سلامت", platformOnly: true }
+    { href: "/platform/health", key: "platform-health", icon: PulseIcon, en: "Health checks", fa: "بررسی سلامت", platformOnly: true }
   ]}
 ];
 
@@ -86,12 +88,13 @@ export function PanelShell(props: PanelShellProps) {
   return (
     <div className="panel-app-shell">
       <aside className="workspace-sidebar">
-        <Link href="/dashboard" className="brand-lockup" aria-label="Cyan home"><div className="brand-badge"><LogoMark/></div><div><strong>Cyan</strong><span>{locale === "fa" ? "فضای کار هوشمند" : "Business workspace"}</span></div></Link>
+        <Link href="/dashboard" className="brand-lockup" aria-label="Cyan home"><div className="brand-badge"><LogoMark/></div><div><strong>Cyan Coder</strong><span>{locale === "fa" ? "فضای کار هوشمند" : "Business workspace"}</span></div></Link>
         <nav className="workspace-nav" aria-label={locale === "fa" ? "ناوبری اصلی" : "Primary navigation"}>
           {groups.map((group) => <section className="nav-group" key={group.en}><p>{locale === "fa" ? group.fa : group.en}</p>{group.items.map((item) => {
             const active = item.key === props.activeKey || pathname === item.href;
-            return navEnabled(item) ? <Link key={item.key} href={item.href} className={active ? "workspace-link active" : "workspace-link"}><span className="workspace-link-icon" aria-hidden>{item.icon}</span><span>{locale === "fa" ? item.fa : item.en}</span></Link>
-              : <span key={item.key} className="workspace-link disabled" aria-disabled="true" title={locale === "fa" ? "در پلن یا محیط فعلی در دسترس نیست" : "Unavailable in the current plan or environment"}><span className="workspace-link-icon" aria-hidden>{item.icon}</span><span>{locale === "fa" ? item.fa : item.en}</span><span className="nav-lock" aria-hidden>·</span></span>;
+            const Icon = item.icon;
+            return navEnabled(item) ? <Link key={item.key} href={item.href} className={active ? "workspace-link active" : "workspace-link"}><span className="workspace-link-icon" aria-hidden><Icon size={18}/></span><span>{locale === "fa" ? item.fa : item.en}</span></Link>
+              : <span key={item.key} className="workspace-link disabled" aria-disabled="true" title={locale === "fa" ? "در پلن یا محیط فعلی در دسترس نیست" : "Unavailable in the current plan or environment"}><span className="workspace-link-icon" aria-hidden><Icon size={18}/></span><span>{locale === "fa" ? item.fa : item.en}</span><span className="nav-lock" aria-hidden>·</span></span>;
           })}</section>)}
         </nav>
         {bootstrap?.subscription ? <div className="sidebar-plan-card"><p>{bootstrap.subscription.planKey ?? (locale === "fa" ? "بدون پلن" : "No plan")}</p><span>{bootstrap.subscription.status === "NONE" ? (locale === "fa" ? "صورتحساب پیکربندی نشده است." : "Billing is not configured.") : bootstrap.subscription.status}</span></div> : null}
@@ -121,8 +124,8 @@ export function PanelShell(props: PanelShellProps) {
             : props.children}
         </main>
       </div>
-      <nav className="mobile-bottom-nav" aria-label={locale === "fa" ? "ناوبری موبایل" : "Mobile navigation"}><Link href="/dashboard"><span>⌂</span><span>{locale === "fa" ? "خانه" : "Home"}</span></Link><Link href="/ai"><span>✦</span><span>{locale === "fa" ? "هوش" : "AI"}</span></Link><button onClick={() => setSheet("build")}><span>＋</span><span>{locale === "fa" ? "ساخت" : "Build"}</span></button><Link href="/work"><span>⌁</span><span>{locale === "fa" ? "کار" : "Work"}</span></Link><button onClick={() => setSheet("more")}><span>•••</span><span>{locale === "fa" ? "بیشتر" : "More"}</span></button></nav>
-      {sheet ? <div className="sheet-backdrop" onClick={() => setSheet(null)}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={sheet === "build" ? "Build navigation" : "More navigation"} onClick={(event) => event.stopPropagation()}><div className="sheet-handle"/><div className="sheet-grid">{groups.slice(sheet === "build" ? 1 : 2, sheet === "build" ? 2 : groups.length).flatMap((group) => group.items).filter(item=>!item.platformOnly||isPlatformAdmin).map((item) => navEnabled(item) ? <Link key={item.key} href={item.href} onClick={() => setSheet(null)}><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</Link> : <span key={item.key} aria-disabled="true"><span>{item.icon}</span>{locale === "fa" ? item.fa : item.en}</span>)}</div><button className="secondary-pill" onClick={() => setSheet(null)}>{locale === "fa" ? "بستن" : "Close"}</button></section></div> : null}
+      <nav className="mobile-bottom-nav" aria-label={locale === "fa" ? "ناوبری موبایل" : "Mobile navigation"}><Link href="/dashboard"><span><HomeIcon size={20}/></span><span>{locale === "fa" ? "خانه" : "Home"}</span></Link><Link href="/ai"><span><SparkleIcon size={20}/></span><span>{locale === "fa" ? "هوش" : "AI"}</span></Link><button onClick={() => setSheet("build")}><span><PlusIcon size={20}/></span><span>{locale === "fa" ? "ساخت" : "Build"}</span></button><Link href="/work"><span><InboxIcon size={20}/></span><span>{locale === "fa" ? "کار" : "Work"}</span></Link><button onClick={() => setSheet("more")}><span><MoreIcon size={20}/></span><span>{locale === "fa" ? "بیشتر" : "More"}</span></button></nav>
+      {sheet ? <div className="sheet-backdrop" onClick={() => setSheet(null)}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={sheet === "build" ? "Build navigation" : "More navigation"} onClick={(event) => event.stopPropagation()}><div className="sheet-handle"/><div className="sheet-grid">{groups.slice(sheet === "build" ? 1 : 2, sheet === "build" ? 2 : groups.length).flatMap((group) => group.items).filter(item=>!item.platformOnly||isPlatformAdmin).map((item) => { const Icon = item.icon; return navEnabled(item) ? <Link key={item.key} href={item.href} onClick={() => setSheet(null)}><span><Icon size={20}/></span>{locale === "fa" ? item.fa : item.en}</Link> : <span key={item.key} aria-disabled="true"><span><Icon size={20}/></span>{locale === "fa" ? item.fa : item.en}</span>; })}</div><button className="secondary-pill" onClick={() => setSheet(null)}>{locale === "fa" ? "بستن" : "Close"}</button></section></div> : null}
       <WorkspaceSelectionDialog bootstrap={bootstrap} open={!loading && Boolean(bootstrap?.tenants.length) && !tenantKey} locale={locale} pending={selectionPending} selectScope={selectScope} />
     </div>
   );

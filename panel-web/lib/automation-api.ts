@@ -1,5 +1,6 @@
 import { platformFetch } from "@/lib/platform-auth";
 import { platformErrorFromResponse } from "@/lib/api-error";
+import type { MetadataFieldDescriptor } from "@/lib/bpm-api";
 
 const base = "/api/platform/service/automation-orchestrator-service";
 export type AutomationNodeType = string;
@@ -7,7 +8,7 @@ export type AutomationNode = { id:string; type:AutomationNodeType; name:string; 
 export type AutomationEdge = { id:string; fromNodeId:string; fromPort?:string|null; toNodeId:string; toPort?:string|null };
 export type AutomationFlow = { id?:string; revision?:number; flowKey:string; version:number; name:string; active:boolean; entryNodeId:string; runtimeMode:"VARIABLES"|"N8N_ITEMS"; nodes:AutomationNode[]; edges:AutomationEdge[]; inputsSchema:Record<string,unknown>; outputsSchema:Record<string,unknown>; labels:string[]; environment:string; lifecycleStatus:string; requiredRoles:string[]; settings:Record<string,unknown>; pinData:Record<string,unknown>; errorWorkflowKey?:string|null; nextScheduledAt?:string|null; lastScheduledAt?:string|null; updatedAt?:string };
 export type AutomationExecution = { executionId:string; automationFlowKey?:string; flowVersion?:number; status:string; currentNodeId?:string; input?:Record<string,unknown>; output?:Record<string,unknown>; error?:Record<string,unknown>; steps?:Array<Record<string,unknown>>; deadLetters?:Array<Record<string,unknown>>; createdAt?:string; updatedAt?:string; completedAt?:string };
-export type AutomationNodeMetadata = { type:string; commonFields:string[]; configFields:string[]; category?:string; label?:string; description?:string };
+export type AutomationNodeMetadata = { type:string; commonFields:string[]; configFields:string[]; configFieldsMetadata?:MetadataFieldDescriptor[]; category?:string; label?:string; description?:string };
 export type CredentialReference = { id:string; name:string; type:string; active:boolean; updatedAt?:string };
 export type AutomationScope = { tenantKey?: string; siteKey?: string };
 

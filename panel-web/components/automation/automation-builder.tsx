@@ -11,6 +11,7 @@ import { describeApiError } from "@/lib/api-error";
 import { usePanel } from "@/components/panel-provider";
 import { useScopeAccess } from "@/components/scope-access-provider";
 import { analyzeN8n, automationLifecycle, exportN8n, importN8n, listAutomationNodeMetadata, listCredentials, saveAutomationFlow, startManualExecution, type AutomationFlow, type AutomationNodeMetadata, type CredentialReference } from "@/lib/automation-api";
+import { MetadataFieldInput } from "@/components/forms/metadata-field-input";
 
 const labels:Record<string,{en:string;fa:string}>={AI_OPERATION:{en:"AI operation",fa:"عملیات هوش مصنوعی"},MANUAL_TRIGGER:{en:"Manual trigger",fa:"شروع دستی"},SCHEDULE_TRIGGER:{en:"Schedule",fa:"زمان‌بندی"},CALL_API:{en:"Call API",fa:"فراخوانی API"},IF:{en:"Condition",fa:"شرط"},MAP_FIELDS:{en:"Map fields",fa:"نگاشت فیلدها"},END:{en:"End",fa:"پایان"}};
 const categories=(type:string)=>type.includes("TRIGGER")?"Triggers":type==="AI_OPERATION"?"AI":type.includes("CALL")||type.includes("HTTP")?"Integrations":type==="IF"||type==="SWITCH"?"Logic":"Data & flow";
@@ -73,7 +74,7 @@ export function AutomationBuilder({initial,returnTo}: {initial?:AutomationFlow;r
 
 function JsonConfig({node,updateNode,locale}:{node:AutomationFlow["nodes"][number];updateNode:(p:Record<string,unknown>)=>void;locale:string}){const [text,setText]=useState(JSON.stringify(node.config??{},null,2));useEffect(()=>setText(JSON.stringify(node.config??{},null,2)),[node.id]);return <label><span>{locale==="fa"?"پارامترها (JSON)":"Parameters (JSON)"}</span><textarea dir="ltr" value={text} onChange={e=>{setText(e.target.value);try{updateNode({config:JSON.parse(e.target.value)})}catch{}}}/></label>}
 function configFieldNames(fields:string[]):string[]{const names=fields.flatMap(field=>field.split("|").flatMap(alt=>alt.split("+")));return Array.from(new Set(names));}
-function ConfigFieldInput({name,value,onChange,locale}:{name:string;value:unknown;onChange:(value:unknown)=>void;locale:string}){
+function ConfigFieldInput({name,value,onChange}:{name:string;value:unknown;onChange:(value:unknown)=>void}){
   const id=`node-config-${name}`;
   if(typeof value==="boolean")return <label className="toggle-row" htmlFor={id}><input id={id} type="checkbox" checked={value} onChange={e=>onChange(e.target.checked)}/><span>{name}</span></label>;
   if(typeof value==="number")return <label htmlFor={id}><span>{name}</span><input id={id} type="number" value={value} onChange={e=>onChange(e.target.value===""?undefined:Number(e.target.value))}/></label>;
@@ -83,10 +84,17 @@ function ConfigFieldInput({name,value,onChange,locale}:{name:string;value:unknow
 function NodeConfigFields({node,structure,updateNode,locale}:{node:AutomationFlow["nodes"][number];structure?:AutomationNodeMetadata;updateNode:(p:Record<string,unknown>)=>void;locale:string}){
   const config=node.config??{};
   const set=(key:string,value:unknown)=>updateNode({config:{...config,[key]:value}});
+  const metadata=structure?.configFieldsMetadata;
+  if(metadata&&metadata.length){
+    return <div className="automation-node-config-fields">
+      {metadata.map(field=><MetadataFieldInput key={field.key} field={field} value={config[field.key]} onChange={value=>set(field.key,value)}/>)}
+      <details><summary>{locale==="fa"?"پیشرفته (JSON خام)":"Advanced (raw JSON)"}</summary><JsonConfig node={node} updateNode={updateNode} locale={locale}/></details>
+    </div>;
+  }
   const names=configFieldNames(structure?.configFields??[]);
   if(!names.length)return <p className="muted">{locale==="fa"?"این نوع گره پارامتری ندارد.":"This node type has no configurable parameters."}</p>;
   return <div className="automation-node-config-fields">
-    {names.map(name=><ConfigFieldInput key={name} name={name} value={config[name]} onChange={value=>set(name,value)} locale={locale}/>)}
+    {names.map(name=><ConfigFieldInput key={name} name={name} value={config[name]} onChange={value=>set(name,value)}/>)}
     <details><summary>{locale==="fa"?"پیشرفته (JSON خام)":"Advanced (raw JSON)"}</summary><JsonConfig node={node} updateNode={updateNode} locale={locale}/></details>
   </div>;
 }

@@ -100,6 +100,12 @@ export function XCircleIcon({ className, size = 18 }: IconProps) {
 export function ClockIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.6" /><path d="M12 7.5V12l3 2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
+export function PaperclipIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 13.5l6.5-6.5a3.2 3.2 0 0 1 4.5 4.5l-7.6 7.6a5 5 0 0 1-7-7l7-7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+export function SendIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
 export function PlusIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" /></svg>;
 }
@@ -127,4 +133,33 @@ const APP_TYPE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
 
 export function appTypeIcon(appType: string | undefined | null) {
   return APP_TYPE_ICONS[(appType ?? "").trim().toLowerCase()] ?? BoxIcon;
+}
+
+const CAPABILITY_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
+  website: GlobeDotIcon,
+  storefront: LayoutIcon,
+  shop: BagIcon,
+  "e-commerce": BagIcon,
+  crm: ContactIcon,
+  erp: LayersIcon,
+  bpm: WorkflowIcon,
+  automation: ZapIcon,
+  finance: CardIcon,
+  inventory: BoxIcon,
+  "invoice-management": ReceiptIcon,
+  notification: BellIcon,
+  report: ChartBarIcon,
+  "bot-adapter": BotIcon,
+  "dynamic-entities": DatabaseIcon
+};
+
+export function capabilityIcon(capability: string) {
+  return CAPABILITY_ICONS[capability.trim().toLowerCase()] ?? BoxIcon;
+}
+
+const CAPABILITY_ACRONYMS = new Set(["crm", "erp", "bpm"]);
+
+export function capabilityLabel(capability: string) {
+  const value = capability.trim();
+  return CAPABILITY_ACRONYMS.has(value.toLowerCase()) ? value.toUpperCase() : value;
 }

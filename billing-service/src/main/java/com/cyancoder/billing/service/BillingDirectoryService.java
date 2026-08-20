@@ -4,9 +4,11 @@ import com.cyancoder.billing.api.BillingContracts.*;
 import com.cyancoder.billing.model.BillingIdempotencyEntity;
 import com.cyancoder.billing.model.PlanEntity;
 import com.cyancoder.billing.model.TenantSubscriptionEntity;
+import com.cyancoder.billing.model.TenantUsageCounterEntity;
 import com.cyancoder.billing.repository.BillingIdempotencyRepository;
 import com.cyancoder.billing.repository.PlanRepository;
 import com.cyancoder.billing.repository.TenantSubscriptionRepository;
+import com.cyancoder.billing.repository.TenantUsageCounterRepository;
 import com.cyancoder.billing.security.BillingSecurity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -23,13 +26,26 @@ public class BillingDirectoryService {
     private final PlanRepository plans;
     private final TenantSubscriptionRepository subscriptions;
     private final BillingIdempotencyRepository idempotency;
+    private final TenantUsageCounterRepository usageCounters;
     private final TenantMembershipClient memberships;
     private final BillingSecurity security;
     private final ObjectMapper mapper;
 
     public BillingDirectoryService(PlanRepository plans, TenantSubscriptionRepository subscriptions, BillingIdempotencyRepository idempotency,
-                                   TenantMembershipClient memberships, BillingSecurity security, ObjectMapper mapper) {
-        this.plans = plans; this.subscriptions = subscriptions; this.idempotency = idempotency; this.memberships = memberships; this.security = security; this.mapper = mapper;
+                                   TenantUsageCounterRepository usageCounters, TenantMembershipClient memberships, BillingSecurity security, ObjectMapper mapper) {
+        this.plans = plans; this.subscriptions = subscriptions; this.idempotency = idempotency; this.usageCounters = usageCounters; this.memberships = memberships; this.security = security; this.mapper = mapper;
+    }
+
+    @Transactional
+    public void incrementUsage(String tenantKey, UsageIncrementRequest request) {
+        long delta = request.delta() == null ? 1L : request.delta();
+        usageCounters.increment(tenantKey, request.metricKey(), delta, Instant.now());
+    }
+
+    private Map<String, Long> usage(String tenantKey) {
+        Map<String, Long> values = new HashMap<>();
+        for (TenantUsageCounterEntity entity : usageCounters.findByIdTenantKey(tenantKey)) values.put(entity.getId().getMetricKey(), entity.getCounterValue());
+        return values;
     }
 
     public List<PlanSummary> listPlans() { return plans.findByActiveTrueOrderByDisplayNameAsc().stream().map(this::planSummary).toList(); }
@@ -85,8 +101,8 @@ public class BillingDirectoryService {
         TenantSubscriptionEntity entity = subscriptions.findById(tenantKey).orElse(null);
         if (entity == null) return SubscriptionSummary.none(tenantKey);
         PlanEntity plan = plans.findById(entity.getPlanKey()).orElse(null);
-        if (plan == null) return new SubscriptionSummary(tenantKey, entity.getPlanKey(), "INVALID", entity.getStartedAt(), entity.getRenewsAt(), List.of(), Map.of(), "NOT_CONFIGURED");
-        return new SubscriptionSummary(tenantKey, plan.getPlanKey(), entity.getStatus(), entity.getStartedAt(), entity.getRenewsAt(), features(plan), limits(plan), "FREE".equals(plan.getBillingMode()) ? "NOT_REQUIRED" : "NOT_CONFIGURED");
+        if (plan == null) return new SubscriptionSummary(tenantKey, entity.getPlanKey(), "INVALID", entity.getStartedAt(), entity.getRenewsAt(), List.of(), Map.of(), "NOT_CONFIGURED", usage(tenantKey));
+        return new SubscriptionSummary(tenantKey, plan.getPlanKey(), entity.getStatus(), entity.getStartedAt(), entity.getRenewsAt(), features(plan), limits(plan), "FREE".equals(plan.getBillingMode()) ? "NOT_REQUIRED" : "NOT_CONFIGURED", usage(tenantKey));
     }
 
     private PlanSummary planSummary(PlanEntity plan) { return new PlanSummary(plan.getPlanKey(), plan.getDisplayName(), plan.getDescription(), plan.getBillingMode(), plan.isActive(), features(plan), limits(plan)); }

@@ -20,9 +20,10 @@ public final class BillingContracts {
             Map<String, Object> limits
     ) {}
     public record PlanSummary(String planKey, String displayName, String description, String billingMode, boolean active, List<String> features, Map<String, Object> limits) {}
-    public record SubscriptionSummary(String tenantKey, String planKey, String status, Instant startedAt, Instant renewsAt, List<String> features, Map<String, Object> limits, String providerState) {
-        public static SubscriptionSummary none(String tenantKey) { return new SubscriptionSummary(tenantKey, null, "NONE", null, null, List.of(), Map.of(), "NOT_CONFIGURED"); }
+    public record SubscriptionSummary(String tenantKey, String planKey, String status, Instant startedAt, Instant renewsAt, List<String> features, Map<String, Object> limits, String providerState, Map<String, Long> usage) {
+        public static SubscriptionSummary none(String tenantKey) { return new SubscriptionSummary(tenantKey, null, "NONE", null, null, List.of(), Map.of(), "NOT_CONFIGURED", Map.of()); }
     }
     public record ChangeSubscriptionRequest(@NotBlank String planKey) {}
     public record BillingEntitlements(String planKey, String status, List<String> features, Map<String, Object> limits) {}
+    public record UsageIncrementRequest(@NotBlank String metricKey, Long delta) {}
 }

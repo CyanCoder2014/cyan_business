@@ -16,7 +16,7 @@ class BillingDirectoryServiceTest {
         TenantMembershipClient memberships = mock(TenantMembershipClient.class);
         BillingSecurity security = mock(BillingSecurity.class);
         when(security.username()).thenReturn("owner@cyan.local");
-        BillingDirectoryService service = new BillingDirectoryService(plans, subscriptions, mock(BillingIdempotencyRepository.class), memberships, security, new ObjectMapper());
+        BillingDirectoryService service = new BillingDirectoryService(plans, subscriptions, mock(BillingIdempotencyRepository.class), mock(TenantUsageCounterRepository.class), memberships, security, new ObjectMapper());
 
         var result = service.subscriptionForCurrentUser("north-star");
 

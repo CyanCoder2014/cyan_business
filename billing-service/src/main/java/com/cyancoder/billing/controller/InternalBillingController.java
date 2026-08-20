@@ -13,6 +13,10 @@ public class InternalBillingController {
     private final BillingDirectoryService service;
     public InternalBillingController(BillingDirectoryService service) { this.service = service; }
     @GetMapping("/tenants/{tenantKey}/entitlements") public BillingEntitlements entitlements(@PathVariable String tenantKey) { return service.internalEntitlements(tenantKey); }
+    @PostMapping("/tenants/{tenantKey}/usage/increment")
+    public void incrementUsage(@PathVariable String tenantKey, @org.springframework.web.bind.annotation.RequestBody com.cyancoder.billing.api.BillingContracts.UsageIncrementRequest request) {
+        service.incrementUsage(tenantKey, request);
+    }
     @PostMapping("/tenants/{tenantKey}/subscription/change")
     public com.cyancoder.billing.api.BillingContracts.SubscriptionSummary change(@PathVariable String tenantKey,
             @RequestBody com.cyancoder.billing.api.BillingContracts.ChangeSubscriptionRequest request,

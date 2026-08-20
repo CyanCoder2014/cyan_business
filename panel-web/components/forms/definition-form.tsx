@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import { AsyncButton, ValidationSummary } from "@/components/ui/primitives";
 import { PlatformApiError, fieldErrorsByPath } from "@/lib/api-error";
 import { fieldDefaults, GeneratedField, type Field } from "@/components/forms/generated-field";
+import type { MediaScope } from "@/lib/media-api";
 
-export function DefinitionForm({ definition, submitLabel, onSubmit }: { definition: Record<string, unknown>; submitLabel: string; onSubmit: (data: Record<string, unknown>) => Promise<void> }) {
+export function DefinitionForm({ definition, submitLabel, scope, onSubmit }: { definition: Record<string, unknown>; submitLabel: string; scope?: MediaScope; onSubmit: (data: Record<string, unknown>) => Promise<void> }) {
   const fields = useMemo(() => ((definition.fields && typeof definition.fields === "object") ? definition.fields : {}) as Record<string, Field>, [definition]);
   const [data, setData] = useState<Record<string, unknown>>(() => fieldDefaults(fields));
   const [pending, setPending] = useState(false);
@@ -15,7 +16,7 @@ export function DefinitionForm({ definition, submitLabel, onSubmit }: { definiti
   return <form className="published-definition-form" onSubmit={event => { event.preventDefault(); void submit(); }}>
     <ValidationSummary errors={error?.fieldErrors ?? []} correlationId={error?.correlationId}/>
     {error && !error.fieldErrors.length ? <div className="operational-banner error" role="alert">{error.message}</div> : null}
-    <div className="published-form-fields">{Object.entries(fields).map(([name, field]) => <GeneratedField key={name} path={name} name={name} field={field} value={data[name]} error={errors[name] ?? errors[`data.${name}`]} onChange={value => { setData(current => ({ ...current, [name]: value })); setError(null); }}/>)}</div>
+    <div className="published-form-fields">{Object.entries(fields).map(([name, field]) => <GeneratedField key={name} path={name} name={name} field={field} value={data[name]} error={errors[name] ?? errors[`data.${name}`]} scope={scope} onChange={value => { setData(current => ({ ...current, [name]: value })); setError(null); }}/>)}</div>
     <AsyncButton pending={pending} pendingLabel="Submitting…" type="submit">{submitLabel}</AsyncButton>
   </form>;
 }

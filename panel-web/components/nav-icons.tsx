@@ -128,6 +128,10 @@ export function ListIcon({ className, size = 18 }: IconProps) {
   return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6.5h11M9 12h11M9 17.5h11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /><circle cx="4.5" cy="6.5" r="1.3" fill="currentColor" /><circle cx="4.5" cy="12" r="1.3" fill="currentColor" /><circle cx="4.5" cy="17.5" r="1.3" fill="currentColor" /></svg>;
 }
 
+export function FileIcon({ className, size = 18 }: IconProps) {
+  return <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 3.5h6l4.5 4.5V19a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 19V5A1.5 1.5 0 0 1 8 3.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M14 3.5V8h4.5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>;
+}
+
 const FIELD_TYPE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   string: TextIcon,
   number: HashIcon,
@@ -138,7 +142,9 @@ const FIELD_TYPE_ICONS: Record<string, (props: IconProps) => JSX.Element> = {
   object: LayersIcon,
   list: ListIcon,
   enum: ListIcon,
-  relation: LinkIcon
+  relation: LinkIcon,
+  file: FileIcon,
+  "file-list": FileIcon
 };
 
 export function fieldTypeIcon(type: string | undefined) {

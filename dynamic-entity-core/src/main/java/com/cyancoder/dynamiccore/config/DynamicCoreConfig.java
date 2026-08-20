@@ -42,7 +42,9 @@ public class DynamicCoreConfig {
                 new EnumValidator(),
                 new DecimalMinValidator(),
                 new DecimalMaxValidator(),
-                new AntlrExpressionValidator()
+                new AntlrExpressionValidator(),
+                new MaxFileSizeValidator(),
+                new AllowedMimeTypesValidator()
         ));
     }
 

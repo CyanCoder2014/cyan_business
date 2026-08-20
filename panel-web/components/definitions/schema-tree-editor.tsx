@@ -38,10 +38,11 @@ type Props = {
   onChange: (fields: Record<string, SchemaField>) => void;
 };
 
-const FIELD_TYPES = ["string", "number", "integer", "boolean", "date", "datetime", "object", "list", "enum", "relation"];
+const FIELD_TYPES = ["string", "number", "integer", "boolean", "date", "datetime", "object", "list", "enum", "relation", "file", "file-list"];
 const VALIDATORS: Record<string, string[]> = {
   REQUIRED: [], MIN_LENGTH: ["min"], MAX_LENGTH: ["max"], REGEX: ["pattern"],
-  DECIMAL_MIN: ["min"], DECIMAL_MAX: ["max"], ENUM: ["values"], AntlrExpression: ["expression", "isRoot"]
+  DECIMAL_MIN: ["min"], DECIMAL_MAX: ["max"], ENUM: ["values"], AntlrExpression: ["expression", "isRoot"],
+  MAX_FILE_SIZE: ["maxBytes"], ALLOWED_MIME_TYPES: ["types"]
 };
 const OPERATIONS: Record<string, string[]> = {
   SET_FIELD: ["field", "value"], COPY_FIELD: ["sourceField", "targetField"], SUM_FIELDS: ["sourceFields", "targetField"]
@@ -94,9 +95,9 @@ function insertAfter(children: Record<string, SchemaField>, key: string, field: 
 }
 
 function parseRuleValue(key: string, value: string): unknown {
-  if (key === "values" || key === "sourceFields") return value.split(",").map(item => item.trim()).filter(Boolean);
+  if (key === "values" || key === "sourceFields" || key === "types") return value.split(",").map(item => item.trim()).filter(Boolean);
   if (key === "isRoot") return value === "true";
-  if (["min", "max"].includes(key) && value !== "") return Number(value);
+  if (["min", "max", "maxBytes"].includes(key) && value !== "") return Number(value);
   return value;
 }
 
@@ -194,5 +195,5 @@ function FieldInspector({ field, path, locale, patch, addChild, remove }: { fiel
 }
 
 function RuleEditor<T>({ title, rules, kinds, locale, kindOf, paramsOf, messageOf, add, update, removeRule }: { title: string; rules: T[]; kinds: Record<string, string[]>; locale: "en" | "fa"; kindOf: (rule: T) => string; paramsOf: (rule: T) => Record<string, unknown>; messageOf: (rule: T) => string; add: () => void; update: (index: number, kind: string, params: Record<string, unknown>, message: string) => void; removeRule: (index: number) => void }) {
-  return <section className="schema-rule-editor"><header><div><strong>{title}</strong><small>{rules.length}</small></div><button aria-label={`${locale === "fa" ? "افزودن" : "Add"} ${title}`} onClick={add}>＋</button></header>{rules.length ? rules.map((rule, index) => { const kind = kindOf(rule); const params = paramsOf(rule); return <article key={index}><div className="schema-rule-head"><span>{index + 1}</span><select value={kind} onChange={event => update(index, event.target.value, {}, messageOf(rule))}>{Object.keys(kinds).map(item => <option value={item} key={item}>{item}</option>)}</select><button aria-label={locale === "fa" ? "حذف قاعده" : "Remove rule"} onClick={() => removeRule(index)}>×</button></div>{(kinds[kind] ?? []).map(param => <label key={param}><span>{param}</span>{param === "isRoot" ? <select value={String(params[param] ?? false)} onChange={event => update(index, kind, { ...params, [param]: event.target.value === "true" }, messageOf(rule))}><option value="false">false</option><option value="true">true</option></select> : <input dir="ltr" list={param.toLowerCase().includes("field") ? "schema-field-paths" : undefined} value={displayRuleValue(params[param])} placeholder={param === "values" || param === "sourceFields" ? "value1, value2" : param} onChange={event => update(index, kind, { ...params, [param]: parseRuleValue(param, event.target.value) }, messageOf(rule))}/>}</label>)}<label><span>{locale === "fa" ? "پیام خطا / توضیح" : "Message"}</span><input value={messageOf(rule)} onChange={event => update(index, kind, params, event.target.value)}/></label></article>; }) : <p className="muted">{locale === "fa" ? "قاعده‌ای تعریف نشده است." : "No rules configured."}</p>}</section>;
+  return <section className="schema-rule-editor"><header><div><strong>{title}</strong><small>{rules.length}</small></div><button aria-label={`${locale === "fa" ? "افزودن" : "Add"} ${title}`} onClick={add}>＋</button></header>{rules.length ? rules.map((rule, index) => { const kind = kindOf(rule); const params = paramsOf(rule); return <article key={index}><div className="schema-rule-head"><span>{index + 1}</span><select value={kind} onChange={event => update(index, event.target.value, {}, messageOf(rule))}>{Object.keys(kinds).map(item => <option value={item} key={item}>{item}</option>)}</select><button aria-label={locale === "fa" ? "حذف قاعده" : "Remove rule"} onClick={() => removeRule(index)}>×</button></div>{(kinds[kind] ?? []).map(param => <label key={param}><span>{param}</span>{param === "isRoot" ? <select value={String(params[param] ?? false)} onChange={event => update(index, kind, { ...params, [param]: event.target.value === "true" }, messageOf(rule))}><option value="false">false</option><option value="true">true</option></select> : <input dir="ltr" list={param.toLowerCase().includes("field") ? "schema-field-paths" : undefined} value={displayRuleValue(params[param])} placeholder={param === "values" || param === "sourceFields" ? "value1, value2" : param === "types" ? "image/png, image/*" : param === "maxBytes" ? "5242880" : param} onChange={event => update(index, kind, { ...params, [param]: parseRuleValue(param, event.target.value) }, messageOf(rule))}/>}</label>)}<label><span>{locale === "fa" ? "پیام خطا / توضیح" : "Message"}</span><input value={messageOf(rule)} onChange={event => update(index, kind, params, event.target.value)}/></label></article>; }) : <p className="muted">{locale === "fa" ? "قاعده‌ای تعریف نشده است." : "No rules configured."}</p>}</section>;
 }

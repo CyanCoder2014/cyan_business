@@ -40,6 +40,7 @@ subprojects {
 	plugins.withId('org.springframework.boot') {
 		dependencies {
 			implementation project(':platform-error-handling')
+			implementation project(':platform-internal-http')
 			if (project.name != 'generic') {
 				implementation project(':platform-openapi-core')
 				if (project.name == 'api-gateway') {

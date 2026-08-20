@@ -3,6 +3,7 @@ package com.cyancoder.botadapter.service;
 import com.cyancoder.botadapter.config.AiOrchestratorProperties;
 import com.cyancoder.botadapter.domain.BotProcessBinding;
 import com.cyancoder.botadapter.domain.BotProcessTargetType;
+import com.cyancoder.platform.internalhttp.InternalServiceCredentialsResolver;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -10,8 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +19,13 @@ import java.util.Map;
 public class BotProcessClient {
     private final RestTemplate restTemplate;
     private final AiOrchestratorProperties properties;
+    private final InternalServiceCredentialsResolver credentialsResolver;
 
-    public BotProcessClient(RestTemplate restTemplate, AiOrchestratorProperties properties) {
+    public BotProcessClient(RestTemplate restTemplate, AiOrchestratorProperties properties,
+                            InternalServiceCredentialsResolver credentialsResolver) {
         this.restTemplate = restTemplate;
         this.properties = properties;
+        this.credentialsResolver = credentialsResolver;
     }
 
     public void validateTarget(BotProcessBinding binding) {
@@ -103,16 +105,11 @@ public class BotProcessClient {
     }
 
     private String automationAuth() {
-        return basic(properties.getAutomationInternalUsername(), properties.getAutomationInternalPassword());
+        return credentialsResolver.authorizationHeader("automation-orchestrator-service");
     }
 
     private String bpmAuth() {
-        return basic(properties.getBpmInternalUsername(), properties.getBpmInternalPassword());
-    }
-
-    private String basic(String username, String password) {
-        String value = username + ":" + password;
-        return "Basic " + Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+        return credentialsResolver.authorizationHeader("bpm-service");
     }
 
     private String stringValue(Map<?, ?> response, String key) {

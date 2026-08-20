@@ -1,1 +1,44 @@
-package com.cyancoder.searchindex.service;import java.nio.charset.StandardCharsets;import java.util.Map;import org.springframework.beans.factory.annotation.Value;import org.springframework.http.HttpStatus;import org.springframework.stereotype.Component;import org.springframework.web.client.RestClient;import org.springframework.web.server.ResponseStatusException;@Component public class TenantMembershipClient{private final RestClient c;private final String u,p;public TenantMembershipClient(RestClient.Builder b,@Value("${tenant-service.base-url:http://localhost:9129}")String url,@Value("${tenant-service.internal.username:tenant_internal}")String u,@Value("${tenant-service.internal.password:tenant_secret}")String p){c=b.baseUrl(url).build();this.u=u;this.p=p;}public void requireMembership(String t,String a){if(t==null||t.isBlank())throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"X-Tenant-Key is required");try{Map<?,?>r=c.get().uri("/internal/tenants/{t}/members/{a}/access",t,a).headers(h->h.setBasicAuth(u,p,StandardCharsets.UTF_8)).retrieve().body(Map.class);if(r==null||!Boolean.TRUE.equals(r.get("active")))throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Tenant membership required");}catch(ResponseStatusException e){throw e;}catch(Exception e){throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Tenant membership service unavailable",e);}}}
+package com.cyancoder.searchindex.service;
+
+import com.cyancoder.platform.internalhttp.InternalServiceCredentialsResolver;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Map;
+
+@Component
+public class TenantMembershipClient {
+    private final RestClient client;
+    private final InternalServiceCredentialsResolver credentialsResolver;
+
+    public TenantMembershipClient(RestClient.Builder builder,
+                                  @Value("${tenant-service.base-url:http://localhost:9129}") String url,
+                                  InternalServiceCredentialsResolver credentialsResolver) {
+        this.client = builder.baseUrl(url).build();
+        this.credentialsResolver = credentialsResolver;
+    }
+
+    public void requireMembership(String tenant, String actor) {
+        if (tenant == null || tenant.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "X-Tenant-Key is required");
+        }
+        try {
+            Map<?, ?> result = client.get()
+                    .uri("/internal/tenants/{tenant}/members/{actor}/access", tenant, actor)
+                    .headers(headers -> credentialsResolver.applyBasicAuth(headers, "tenant-service"))
+                    .retrieve()
+                    .body(Map.class);
+            if (result == null || !Boolean.TRUE.equals(result.get("active"))) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tenant membership required");
+            }
+        } catch (ResponseStatusException exception) {
+            throw exception;
+        } catch (Exception exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE, "Tenant membership service unavailable", exception);
+        }
+    }
+}

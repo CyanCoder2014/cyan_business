@@ -1,6 +1,6 @@
 package com.cyancoder.botadapter.service;
 
-import java.nio.charset.StandardCharsets;
+import com.cyancoder.platform.internalhttp.InternalServiceCredentialsResolver;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -11,17 +11,14 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class TenantMembershipClient {
     private final RestClient restClient;
-    private final String username;
-    private final String password;
+    private final InternalServiceCredentialsResolver credentialsResolver;
 
     public TenantMembershipClient(
             RestClient.Builder builder,
             @Value("${tenant-service.base-url}") String baseUrl,
-            @Value("${tenant-service.internal.username}") String username,
-            @Value("${tenant-service.internal.password}") String password) {
+            InternalServiceCredentialsResolver credentialsResolver) {
         this.restClient = builder.baseUrl(baseUrl).build();
-        this.username = username;
-        this.password = password;
+        this.credentialsResolver = credentialsResolver;
     }
 
     public void requireMembership(String tenantKey, String subject) {
@@ -31,7 +28,7 @@ public class TenantMembershipClient {
         try {
             Map<?, ?> result = restClient.get()
                     .uri("/internal/tenants/{tenantKey}/members/{subject}/access", tenantKey, subject)
-                    .headers(headers -> headers.setBasicAuth(username, password, StandardCharsets.UTF_8))
+                    .headers(headers -> credentialsResolver.applyBasicAuth(headers, "tenant-service"))
                     .retrieve()
                     .body(Map.class);
             if (result == null || !Boolean.TRUE.equals(result.get("active"))) {

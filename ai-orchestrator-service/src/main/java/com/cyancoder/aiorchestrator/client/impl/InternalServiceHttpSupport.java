@@ -1,6 +1,7 @@
 package com.cyancoder.aiorchestrator.client.impl;
 
 import com.cyancoder.aiorchestrator.exception.DownstreamServiceException;
+import com.cyancoder.platform.internalhttp.InternalServiceCredentialsResolver;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
@@ -14,15 +15,17 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 
 @Component
 public class InternalServiceHttpSupport {
     private final DiscoveryClient discoveryClient;
+    private final InternalServiceCredentialsResolver credentialsResolver;
     private final RestTemplate restTemplate;
 
-    public InternalServiceHttpSupport(DiscoveryClient discoveryClient) {
+    public InternalServiceHttpSupport(DiscoveryClient discoveryClient,
+                                      InternalServiceCredentialsResolver credentialsResolver) {
         this.discoveryClient = discoveryClient;
+        this.credentialsResolver = credentialsResolver;
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(3000);
         requestFactory.setReadTimeout(30000);
@@ -45,8 +48,7 @@ public class InternalServiceHttpSupport {
         ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()
                 .orElseThrow(() -> new DownstreamServiceException("No internal route is configured for service: " + serviceKey, serviceKey, path, 503, null, null));
         HttpHeaders headers = new HttpHeaders();
-        String normalized = normalizeServiceCredentialsKey(serviceKey);
-        headers.setBasicAuth(normalized + "_internal", normalized + "_secret", StandardCharsets.UTF_8);
+        credentialsResolver.applyBasicAuth(headers, serviceKey);
         if (tenantKey != null && !tenantKey.isBlank()) headers.set("X-Tenant-Key", tenantKey);
         if (siteKey != null && !siteKey.isBlank()) headers.set("X-Site-Key", siteKey);
         ResponseEntity<byte[]> response = restTemplate.exchange(resolveBaseUri(instance) + path, HttpMethod.GET, new HttpEntity<>(headers), byte[].class);
@@ -67,8 +69,7 @@ public class InternalServiceHttpSupport {
                             null
                     ));
             HttpHeaders headers = new HttpHeaders();
-            String normalized = normalizeServiceCredentialsKey(serviceKey);
-            headers.setBasicAuth(normalized + "_internal", normalized + "_secret", StandardCharsets.UTF_8);
+            credentialsResolver.applyBasicAuth(headers, serviceKey);
             if (tenantKey != null && !tenantKey.isBlank()) {
                 headers.set("X-Tenant-Key", tenantKey);
             }
@@ -98,11 +99,6 @@ public class InternalServiceHttpSupport {
                     ex
             );
         }
-    }
-
-    private String normalizeServiceCredentialsKey(String serviceKey) {
-        String base = serviceKey.endsWith("-service") ? serviceKey.substring(0, serviceKey.length() - "-service".length()) : serviceKey;
-        return base.replace('-', '_');
     }
 
     private URI resolveBaseUri(ServiceInstance instance) {

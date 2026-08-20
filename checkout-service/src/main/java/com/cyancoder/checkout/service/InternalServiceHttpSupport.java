@@ -1,5 +1,6 @@
 package com.cyancoder.checkout.service;
 
+import com.cyancoder.platform.internalhttp.InternalServiceCredentialsResolver;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpEntity;
@@ -10,15 +11,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 
 @Component
 public class InternalServiceHttpSupport {
     private final DiscoveryClient discoveryClient;
+    private final InternalServiceCredentialsResolver credentialsResolver;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public InternalServiceHttpSupport(DiscoveryClient discoveryClient) {
+    public InternalServiceHttpSupport(DiscoveryClient discoveryClient,
+                                      InternalServiceCredentialsResolver credentialsResolver) {
         this.discoveryClient = discoveryClient;
+        this.credentialsResolver = credentialsResolver;
     }
 
     public <T> T get(String serviceKey, String path, Class<T> responseType) {
@@ -33,15 +36,9 @@ public class InternalServiceHttpSupport {
         ServiceInstance instance = discoveryClient.getInstances(serviceKey).stream().findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("service not found: " + serviceKey));
         HttpHeaders headers = new HttpHeaders();
-        String normalized = normalizeServiceCredentialsKey(serviceKey);
-        headers.setBasicAuth(normalized + "_internal", normalized + "_secret", StandardCharsets.UTF_8);
+        credentialsResolver.applyBasicAuth(headers, serviceKey);
         ResponseEntity<T> response = restTemplate.exchange(resolveBaseUri(instance) + path, method, new HttpEntity<>(request, headers), responseType);
         return response.getBody();
-    }
-
-    private String normalizeServiceCredentialsKey(String serviceKey) {
-        String base = serviceKey.endsWith("-service") ? serviceKey.substring(0, serviceKey.length() - "-service".length()) : serviceKey;
-        return base.replace('-', '_');
     }
 
     private URI resolveBaseUri(ServiceInstance instance) {

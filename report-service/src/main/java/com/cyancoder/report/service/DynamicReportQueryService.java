@@ -3,6 +3,7 @@ package com.cyancoder.report.service;
 import com.cyancoder.dynamiccore.runtime.DynamicRuntimeService;
 import com.cyancoder.dynamiccore.runtime.DynamicScope;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
+import com.cyancoder.platform.internalhttp.InternalServiceCredentialsResolver;
 import com.cyancoder.report.model.ReportFilter;
 import com.cyancoder.report.model.ReportRunRequest;
 import com.cyancoder.report.model.ReportRunResponse;
@@ -19,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,16 +29,19 @@ public class DynamicReportQueryService {
     private final DynamicRuntimeService dynamicRuntimeService;
     private final DiscoveryClient discoveryClient;
     private final ObjectMapper objectMapper;
+    private final InternalServiceCredentialsResolver credentialsResolver;
     private final RestTemplate restTemplate;
 
     public DynamicReportQueryService(
             DynamicRuntimeService dynamicRuntimeService,
             DiscoveryClient discoveryClient,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            InternalServiceCredentialsResolver credentialsResolver
     ) {
         this.dynamicRuntimeService = dynamicRuntimeService;
         this.discoveryClient = discoveryClient;
         this.objectMapper = objectMapper;
+        this.credentialsResolver = credentialsResolver;
         this.restTemplate = new RestTemplate();
     }
 
@@ -93,8 +96,7 @@ public class DynamicReportQueryService {
                 .orElseThrow(() -> new IllegalArgumentException("service not found: " + serviceKey));
 
         HttpHeaders headers = new HttpHeaders();
-        String prefix = serviceKey.split("-")[0];
-        headers.setBasicAuth(prefix + "_internal", prefix + "_secret", StandardCharsets.UTF_8);
+        credentialsResolver.applyBasicAuth(headers, serviceKey);
         if (scope.tenantKey() != null) headers.set("X-Tenant-Key", scope.tenantKey());
         if (scope.siteKey() != null) headers.set("X-Site-Key", scope.siteKey());
 

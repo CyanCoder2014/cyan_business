@@ -1,4 +1,5 @@
 import { platformFetch } from "@/lib/platform-auth";
+import { platformErrorFromResponse } from "@/lib/api-error";
 
 const platformBaseUrl = "/api/platform/service/storefront-service";
 
@@ -32,8 +33,7 @@ async function requestJson<T>(path: string, scope: ScopedRequest): Promise<T> {
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(body || `Request failed with status ${response.status}`);
+    throw await platformErrorFromResponse(response);
   }
 
   return response.json() as Promise<T>;

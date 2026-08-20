@@ -13,6 +13,8 @@ import { SectionFields } from "@/components/sites/section-fields";
 import { SECTIONS_FIELD_SCHEMA, newSection, normalizeSections, reorderSections, type SiteSection } from "@/lib/site-sections";
 import type { SectionType } from "@/components/nav-icons";
 import type { SchemaField } from "@/components/definitions/schema-tree-editor";
+import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError } from "@/lib/api-error";
 
 type Draft = {
   recordKey: string; path: string; title: string; routeType: string;
@@ -27,6 +29,7 @@ export default function Builder({ params }: { params: { siteId: string } }) {
   const siteId = decodeURIComponent(params.siteId);
   const { locale } = usePanel();
   const { tenantKey, siteKey, queryVersion } = useScopeAccess();
+  const { showToast } = useToast();
   const scope = useMemo(() => ({ tenantKey: tenantKey ?? "", siteKey: siteId }), [tenantKey, siteId]);
   const [routes, setRoutes] = useState<DynamicEntityRecord[]>([]);
   const [themes, setThemes] = useState<DynamicEntityRecord[]>([]);
@@ -51,7 +54,7 @@ export default function Builder({ params }: { params: { siteId: string } }) {
       const [r, t] = await Promise.all([listRecords("storefront-service", "site-route", scope).catch(() => []), listRecords("storefront-service", "theme-layout", scope).catch(() => [])]);
       setRoutes(r); setThemes(t);
       if (selected) { const found = r.find(x => x.recordKey === selected); if (found) setDraft(hydrate(found)); }
-    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+    } catch (e) { const { title, message } = describeApiError(e, "Site pages unavailable"); setError(message); showToast({ tone: "error", title, message }); }
     finally { setLoading(false); }
   }, [scope, selected, tenantKey]);
   useEffect(() => { void load(); }, [queryVersion, tenantKey, siteId]);
@@ -109,7 +112,7 @@ export default function Builder({ params }: { params: { siteId: string } }) {
       setDraft(v => ({ ...v, path: normalized, publicationStatus: status }));
       await load();
       if (status === "PUBLISHED") setPreview(await renderStorefrontRoute(normalized, scope));
-    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+    } catch (e) { const { title, message } = describeApiError(e, "Save failed"); setError(message); showToast({ tone: "error", title, message }); }
     finally { setPending(null); }
   };
   const canSave = draft.recordKey.length > 1 && draft.path.length > 0 && draft.title.length > 0 && draft.service && draft.entityKey && draft.targetRecordKey && draft.themeKey && draft.templateKey;
@@ -146,7 +149,7 @@ export default function Builder({ params }: { params: { siteId: string } }) {
             <Select label="Robots" value={draft.robots} onChange={e => setDraft(v => ({ ...v, robots: e.target.value }))}>{["index,follow", "noindex,follow", "index,nofollow", "noindex,nofollow"].map(x => <option key={x}>{x}</option>)}</Select>
           </div> : null}
           {tab === "assets" ? <label className="ui-field"><span>{locale === "fa" ? "نشانی دارایی‌های preload، هر خط یکی" : "Preload asset URLs, one per line"}</span><textarea dir="ltr" rows={8} value={draft.assets} onChange={e => setDraft(v => ({ ...v, assets: e.target.value }))} /><small>{locale === "fa" ? "فقط ارجاع‌های واقعی رسانه ذخیره می‌شوند؛ آپلود ساختگی وجود ندارد." : "Only real media references are stored; this does not pretend to upload files."}</small></label> : null}
-          {tab === "preview" ? <div className="phase9-preview">{preview?.html ? <iframe title={locale === "fa" ? "پیش‌نمایش سایت" : "Site preview"} sandbox="" srcDoc={preview.html} /> : <EmptyState title={locale === "fa" ? "پیش‌نمایش آماده نیست" : "Preview not ready"} description={locale === "fa" ? "صفحه منتشرشده را از storefront-service رندر کنید." : "Render a published page from storefront-service."} action={<AsyncButton pending={pending === "preview"} disabled={draft.publicationStatus !== "PUBLISHED"} onClick={() => { setPending("preview"); renderStorefrontRoute(draft.path, scope).then(setPreview).catch(e => setError(String(e))).finally(() => setPending(null)); }}>{locale === "fa" ? "رندر پیش‌نمایش" : "Render preview"}</AsyncButton>} />}</div> : null}
+          {tab === "preview" ? <div className="phase9-preview">{preview?.html ? <iframe title={locale === "fa" ? "پیش‌نمایش سایت" : "Site preview"} sandbox="" srcDoc={preview.html} /> : <EmptyState title={locale === "fa" ? "پیش‌نمایش آماده نیست" : "Preview not ready"} description={locale === "fa" ? "صفحه منتشرشده را از storefront-service رندر کنید." : "Render a published page from storefront-service."} action={<AsyncButton pending={pending === "preview"} disabled={draft.publicationStatus !== "PUBLISHED"} onClick={() => { setPending("preview"); renderStorefrontRoute(draft.path, scope).then(setPreview).catch(e => { const { title, message } = describeApiError(e, "Preview render failed"); setError(message); showToast({ tone: "error", title, message }); }).finally(() => setPending(null)); }}>{locale === "fa" ? "رندر پیش‌نمایش" : "Render preview"}</AsyncButton>} />}</div> : null}
         </div>
         <div className="phase9-sticky-actions">
           <span><StatusBadge tone={draft.publicationStatus === "PUBLISHED" ? "success" : "warning"}>{draft.publicationStatus}</StatusBadge></span>

@@ -14,6 +14,7 @@ import type {
 import type { ProjectRelease } from "@/lib/types";
 import { getPlatformAuthToken, platformFetch } from "@/lib/platform-auth";
 import { withServiceInventory } from "@/lib/platform-service-inventory";
+import { platformErrorFromResponse } from "@/lib/api-error";
 
 type PlatformServiceKey = "ai-orchestrator-service" | "bot-adapter-service";
 
@@ -32,8 +33,7 @@ async function requestJson<T>(serviceKey: PlatformServiceKey, path: string, init
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => "");
-    throw new Error(body || `Request failed with status ${response.status}`);
+    throw await platformErrorFromResponse(response);
   }
 
   return response.json() as Promise<T>;

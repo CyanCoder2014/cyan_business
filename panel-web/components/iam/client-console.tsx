@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePanel } from "@/components/panel-provider";
 import { AsyncButton, Dialog, EmptyState, ErrorState, Skeleton, StatusBadge } from "@/components/ui/primitives";
-import { platformErrorFromResponse } from "@/lib/api-error";
+import { useToast } from "@/components/ui/toast-provider";
+import { describeApiError, platformErrorFromResponse } from "@/lib/api-error";
 import { platformFetch } from "@/lib/platform-auth";
+import { SearchIcon } from "@/components/nav-icons";
 
 type Client = { tenantKey: string; displayName: string; status: string; createdAt: string };
 type Plan = { planKey: string; displayName: string; billingMode: string; active: boolean };
@@ -20,6 +22,7 @@ async function json<T>(path: string, init?: RequestInit) {
 
 export function ClientConsole() {
   const { locale } = usePanel();
+  const { showToast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [capabilities, setCapabilities] = useState<string[]>([]);
@@ -45,7 +48,7 @@ export function ClientConsole() {
       const activePlans = planList.filter(plan => plan.active);
       setClients(clientList); setPlans(activePlans); setCapabilities(capabilityList);
       setDraft(current => ({ ...current, planKey: current.planKey || activePlans.find(plan => plan.billingMode === "FREE")?.planKey || "" }));
-    } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    } catch (reason) { setError(describeApiError(reason, locale === "fa" ? "بارگذاری مشتریان ناموفق بود" : "Clients could not be loaded").message); }
     finally { setLoading(false); }
   }, []);
   useEffect(() => { void load(); }, [load]);
@@ -59,19 +62,19 @@ export function ClientConsole() {
         body: JSON.stringify({ tenantKey: draft.tenantKey, displayName: draft.displayName, headUser: { username: draft.username, email: draft.email, phoneNumber: draft.phoneNumber, initialPassword: draft.initialPassword, mfaRequired: draft.mfaRequired }, planKey: draft.planKey, capabilityKeys: draft.capabilityKeys })
       });
       setOpen(false); setStep(0); setDraft(emptyDraft); await load();
-    } catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    } catch (reason) { const described = describeApiError(reason, locale === "fa" ? "ایجاد مشتری ناموفق بود" : "Could not create client"); setError(described.message); showToast({ tone: "error", title: described.title, message: described.message }); }
     finally { setPending(false); }
   };
   const openCapabilities = async (client: Client) => {
     if (pending) return; setPending(true); setError(null);
     try { const values = await json<EffectiveCapability[]>(`/api/platform/service/tenant-service/endpoint/tenants/${encodeURIComponent(client.tenantKey)}/capabilities`); setEditCapabilities(values.filter(value => value.enabled).map(value => value.key)); setEditing(client); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    catch (reason) { const described = describeApiError(reason, locale === "fa" ? "بارگذاری دسترسی‌ها ناموفق بود" : "Could not load service access"); setError(described.message); showToast({ tone: "error", title: described.title, message: described.message }); }
     finally { setPending(false); }
   };
   const saveCapabilities = async () => {
     if (!editing || pending) return; setPending(true); setError(null);
     try { await json(`/api/platform/service/tenant-service/endpoint/clients/${encodeURIComponent(editing.tenantKey)}/capabilities`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ capabilityKeys: editCapabilities }) }); setEditing(null); await load(); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : String(reason)); }
+    catch (reason) { const described = describeApiError(reason, locale === "fa" ? "ذخیره دسترسی ناموفق بود" : "Could not save service access"); setError(described.message); showToast({ tone: "error", title: described.title, message: described.message }); }
     finally { setPending(false); }
   };
   const freePlans = useMemo(() => plans.filter(plan => plan.billingMode === "FREE"), [plans]);
@@ -81,7 +84,7 @@ export function ClientConsole() {
   if (loading) return <div className="access-loading"><Skeleton height={80}/><Skeleton height={260}/></div>;
   if (error && !clients.length) return <ErrorState title={locale === "fa" ? "مشتریان بارگذاری نشدند" : "Clients could not be loaded"} description={error} retry={load}/>;
   return <div className="access-console">
-    <div className="access-toolbar"><div className="access-search"><span aria-hidden>⌕</span><input aria-label={locale === "fa" ? "جستجوی مشتریان" : "Search clients"} value={query} onChange={event => setQuery(event.target.value)} placeholder={locale === "fa" ? "جستجوی مشتریان" : "Search clients"}/></div><button ref={openerRef} className="primary-pill" onClick={() => setOpen(true)}>＋ {locale === "fa" ? "مشتری جدید" : "New client"}</button></div>
+    <div className="access-toolbar"><div className="access-search"><span aria-hidden><SearchIcon size={15}/></span><input aria-label={locale === "fa" ? "جستجوی مشتریان" : "Search clients"} value={query} onChange={event => setQuery(event.target.value)} placeholder={locale === "fa" ? "جستجوی مشتریان" : "Search clients"}/></div><button ref={openerRef} className="primary-pill" onClick={() => setOpen(true)}>＋ {locale === "fa" ? "مشتری جدید" : "New client"}</button></div>
     {error ? <div className="operational-banner error" role="alert">{error}</div> : null}
     {filteredClients.length ? <div className="client-grid">{filteredClients.map(client => <article className="client-card panel-card" key={client.tenantKey}><div className="card-title-row"><span className="client-mark">{client.displayName.slice(0, 2).toUpperCase()}</span><StatusBadge tone={client.status === "ACTIVE" ? "success" : "warning"}>{client.status}</StatusBadge></div><h3>{client.displayName}</h3><code>{client.tenantKey}</code><p>{locale === "fa" ? "مرز مستقل داده و دسترسی" : "Independent data and access boundary"}</p><AsyncButton className="secondary-pill" pending={pending && editing?.tenantKey === client.tenantKey} disabled={pending} onClick={() => openCapabilities(client)}>{locale === "fa" ? "خدمات مجاز" : "Service access"}</AsyncButton></article>)}</div> : <EmptyState title={query ? (locale === "fa" ? "موردی پیدا نشد" : "No matching clients") : (locale === "fa" ? "هنوز مشتری ندارید" : "No clients yet")} description={query ? (locale === "fa" ? "عبارت جستجو را تغییر دهید." : "Try a different search term.") : (locale === "fa" ? "یک فضای کسب‌وکار با کاربر ارشد، خدمات و پلن واقعی بسازید." : "Provision a business tenant with its head user, services, and a real plan.")} action={!query ? <button className="primary-pill" onClick={() => setOpen(true)}>{locale === "fa" ? "ساخت مشتری" : "Create client"}</button> : undefined}/>}
     <Dialog open={open} title={locale === "fa" ? "راه‌اندازی مشتری" : "Provision client"} onClose={close}>

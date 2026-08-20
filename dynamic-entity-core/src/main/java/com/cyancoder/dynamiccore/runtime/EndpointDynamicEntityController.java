@@ -86,11 +86,11 @@ public class EndpointDynamicEntityController {
 
     @GetMapping("/definitions/{entityKey}/versions")
     @PreAuthorize("@platformAuthorizationService.canReadDefinitions(@endpointDynamicEntityController.serviceKey())")
-    public List<Map<String,Object>> versions(@RequestHeader(value="X-Tenant-Key",required=false) String tenant,@RequestHeader(value="X-Site-Key",required=false) String site,@PathVariable String entityKey){return runtimeService.listDefinitionVersions(entityKey,DynamicScopeResolver.fromHeaders(tenant,site)).stream().map(v->Map.<String,Object>of("revision",v.getRevision(),"status",v.getStatus(),"definition",v.getDefinitionJson(),"createdAt",v.getCreatedAt())).toList();}
+    public List<Map<String,Object>> versions(@RequestHeader(value="X-Tenant-Key",required=false) String tenant,@RequestHeader(value="X-Site-Key",required=false) String site,@PathVariable("entityKey") String entityKey){return runtimeService.listDefinitionVersions(entityKey,DynamicScopeResolver.fromHeaders(tenant,site)).stream().map(v->Map.<String,Object>of("revision",v.getRevision(),"status",v.getStatus(),"definition",v.getDefinitionJson(),"createdAt",v.getCreatedAt())).toList();}
 
     @PostMapping("/definitions/{entityKey}/publish")
     @PreAuthorize("@platformAuthorizationService.canManageDefinitions(@endpointDynamicEntityController.serviceKey())")
-    public DynamicEntityDefinitionResponse publish(@RequestHeader(value="X-Tenant-Key",required=false) String tenant,@RequestHeader(value="X-Site-Key",required=false) String site,@PathVariable String entityKey){return responseMapper.toDefinitionResponse(runtimeService.publishDefinition(entityKey,DynamicScopeResolver.fromHeaders(tenant,site)));}
+    public DynamicEntityDefinitionResponse publish(@RequestHeader(value="X-Tenant-Key",required=false) String tenant,@RequestHeader(value="X-Site-Key",required=false) String site,@PathVariable("entityKey") String entityKey){return responseMapper.toDefinitionResponse(runtimeService.publishDefinition(entityKey,DynamicScopeResolver.fromHeaders(tenant,site)));}
 
     @DeleteMapping("/definitions/{entityKey}")
     @PreAuthorize("@platformAuthorizationService.canManageDefinitions(@endpointDynamicEntityController.serviceKey())")

@@ -126,6 +126,22 @@ public class DynamicValidationEngine {
     }
 
     private String message(ValidationRule rule, String responseMessage) {
-        return responseMessage == null || responseMessage.isBlank() ? rule.getValidationMessage() : responseMessage;
+        if (responseMessage != null && !responseMessage.isBlank()) return responseMessage;
+        if (rule.getValidationMessage() != null && !rule.getValidationMessage().isBlank()) return rule.getValidationMessage();
+        return defaultMessage(rule);
+    }
+
+    private String defaultMessage(ValidationRule rule) {
+        String validation = rule.getValidation() == null ? "" : rule.getValidation();
+        return switch (validation) {
+            case "REQUIRED" -> "field is required";
+            case "REGEX" -> "value does not match the required pattern";
+            case "ENUM" -> "value is not one of the allowed options";
+            case "MIN_LENGTH" -> "value is too short";
+            case "MAX_LENGTH" -> "value is too long";
+            case "DECIMAL_MIN" -> "value is below the allowed minimum";
+            case "DECIMAL_MAX" -> "value is above the allowed maximum";
+            default -> validation.isBlank() ? "value is invalid" : "value failed " + validation + " validation";
+        };
     }
 }

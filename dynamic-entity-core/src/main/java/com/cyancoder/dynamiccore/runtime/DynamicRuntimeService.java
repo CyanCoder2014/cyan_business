@@ -14,10 +14,13 @@ import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordDocument;
 import com.cyancoder.dynamiccore.store.mongo.DynamicEntityRecordRepository;
 import com.cyancoder.dynamiccore.template.DynamicEntityTemplate;
 import com.cyancoder.dynamiccore.template.DynamicTemplateRegistry;
+import com.cyancoder.platform.error.PlatformErrorCode;
+import com.cyancoder.platform.error.PlatformServiceException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -226,7 +229,7 @@ public class DynamicRuntimeService {
         Map<String, Object> merged = mergeForValidation(definition, request.getData());
         DynamicValidationResult result = validationEngine.validate(properties.getServiceKey(), entityKey, definition.getFields(), definition.getValidations(), merged, !strict);
         if (!result.valid()) {
-            throw new IllegalArgumentException("validation failed: " + result.errors());
+            throw validationException(result);
         }
         Map<String, Object> resolved = applyNonFieldDefaults(definition, result.data());
         Map<String, Object> operated = operatorEngine.apply(definition.getFields(), definition.getOperations(), new LinkedHashMap<>(resolved));
@@ -376,5 +379,21 @@ public class DynamicRuntimeService {
     }
 
     private record ResolvedDefinition(EntityDefinitionModel model, String json) {
+    }
+
+    private PlatformServiceException validationException(DynamicValidationResult result) {
+        List<Map<String, Object>> validationErrors = result.errors().stream()
+                .map(error -> Map.<String, Object>of("field", error.field(), "message", error.error()))
+                .toList();
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("validationErrors", validationErrors);
+        return new PlatformServiceException(
+                PlatformErrorCode.VALIDATION_ERROR,
+                HttpStatus.BAD_REQUEST,
+                "Request validation failed.",
+                "اعتبارسنجی درخواست ناموفق بود.",
+                details,
+                null
+        );
     }
 }

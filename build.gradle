@@ -33,6 +33,10 @@ subprojects {
 		resolutionStrategy.force 'org.projectlombok:lombok:1.18.46'
 	}
 
+	tasks.withType(JavaCompile).configureEach {
+		options.compilerArgs << '-parameters'
+	}
+
 	plugins.withId('org.springframework.boot') {
 		dependencies {
 			implementation project(':platform-error-handling')

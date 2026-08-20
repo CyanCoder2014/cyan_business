@@ -23,6 +23,8 @@ export const getActiveAutomationFlow=(flowKey:string,scope:AutomationScope={})=>
 export const saveAutomationFlow=(flow:AutomationFlow,scope:AutomationScope={})=>json<AutomationFlow>("/endpoint/automation-flows",{method:"POST",body:JSON.stringify(flow)},scope);
 export const automationLifecycle=(flowKey:string,version:number,action:"SUBMIT"|"APPROVE"|"ACTIVATE",scope:AutomationScope={})=>json<AutomationFlow>(`/endpoint/automation-flows/${encodeURIComponent(flowKey)}/versions/${version}/${action}`,{method:"POST",body:"{}"},scope);
 export const listAutomationNodeMetadata=()=>json<AutomationNodeMetadata[]>("/public/automation-flows/node-structures");
+export type AutomationEdgeMetadata = { fields:string[]; portRules:Record<string,string[]> };
+export const getAutomationEdgeMetadata=()=>json<AutomationEdgeMetadata>("/public/automation-flows/edge-structures");
 export const listCredentials=(scope:AutomationScope={})=>json<CredentialReference[]>("/endpoint/automation-orchestrator/credentials",{},scope);
 export const listExecutions=(flowKey?:string,status?:string,scope:AutomationScope={})=>{const q=new URLSearchParams();if(flowKey)q.set("flowKey",flowKey);if(status)q.set("status",status);return json<AutomationExecution[]>(`/endpoint/automation-orchestrator/executions${q.size?`?${q}`:""}`,{},scope)};
 export const getExecution=(id:string,scope:AutomationScope={})=>json<AutomationExecution>(`/endpoint/automation-orchestrator/executions/${encodeURIComponent(id)}`,{},scope);

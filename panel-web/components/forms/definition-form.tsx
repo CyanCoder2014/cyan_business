@@ -16,7 +16,7 @@ export function DefinitionForm({ definition, submitLabel, scope, onSubmit }: { d
   return <form className="published-definition-form" onSubmit={event => { event.preventDefault(); void submit(); }}>
     <ValidationSummary errors={error?.fieldErrors ?? []} correlationId={error?.correlationId}/>
     {error && !error.fieldErrors.length ? <div className="operational-banner error" role="alert">{error.message}</div> : null}
-    <div className="published-form-fields">{Object.entries(fields).map(([name, field]) => <GeneratedField key={name} path={name} name={name} field={field} value={data[name]} error={errors[name] ?? errors[`data.${name}`]} scope={scope} onChange={value => { setData(current => ({ ...current, [name]: value })); setError(null); }}/>)}</div>
+    <div className="published-form-fields">{Object.entries(fields).map(([name, field]) => <GeneratedField key={name} path={name} name={name} field={field} value={data[name]} errors={errors} scope={scope} onChange={value => { setData(current => ({ ...current, [name]: value })); setError(null); }}/>)}</div>
     <AsyncButton pending={pending} pendingLabel="Submitting…" type="submit">{submitLabel}</AsyncButton>
   </form>;
 }

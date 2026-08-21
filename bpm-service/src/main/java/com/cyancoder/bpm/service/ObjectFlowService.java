@@ -77,6 +77,7 @@ public class ObjectFlowService {
         object.setTenantKey(scope.tenantKey());
         object.setSiteKey(scope.siteKey());
         object.setObjectType(request.objectType());
+        object.setTitle(request.title() == null || request.title().isBlank() ? null : request.title().trim());
         object.setObjectRef(request.objectRef());
         object.setFlowKey(request.flowKey());
         object.setState(startState.id());
@@ -295,6 +296,14 @@ public class ObjectFlowService {
         if (!lock && object.isLocked() && !java.util.Objects.equals(object.getLockedBy(), actor.userId())) throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "Only the lock owner can unlock this work item");
         object.setLocked(lock); object.setLockedBy(lock ? actor.userId() : null); object.setUpdatedAt(Instant.now());
         object.getAuditLog().add((lock ? "locked" : "unlocked") + " by " + actor.userId() + " at=" + Instant.now());
+        return managedObjectRepository.save(object);
+    }
+
+    public ManagedObject rename(BpmScope scope, String objectId, String title, TransitionActorContext actor) {
+        ManagedObject object = findById(scope, objectId);
+        assertCanRead(object, actor);
+        object.setTitle(title == null || title.isBlank() ? null : title.trim());
+        object.setUpdatedAt(Instant.now());
         return managedObjectRepository.save(object);
     }
 

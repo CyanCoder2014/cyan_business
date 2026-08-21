@@ -73,7 +73,7 @@ class ObjectFlowServiceCompletionTest {
 
         ManagedObject result = service.createAndStart(
                 scope,
-                new CreateManagedObjectRequest("completion-check", "TEST", reference, Map.of()),
+                new CreateManagedObjectRequest("completion-check", "TEST", null, reference, Map.of()),
                 new TransitionActorContext("tester", Set.of(), Set.of())
         );
 

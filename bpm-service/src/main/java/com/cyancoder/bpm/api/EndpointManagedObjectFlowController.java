@@ -235,4 +235,8 @@ public class EndpointManagedObjectFlowController {
     @PostMapping("/{objectId}/unlock")
     @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
     public ManagedObject unlock(@RequestHeader(value="X-Tenant-Key",required=false) String tenantKey,@RequestHeader(value="X-Site-Key",required=false) String siteKey,@PathVariable String objectId,Authentication authentication){return objectFlowService.lock(FlowScopeResolver.fromHeaders(tenantKey,siteKey),objectId,false,actorContextResolver.fromAuthentication(authentication));}
+
+    @PostMapping("/{objectId}/title")
+    @PreAuthorize("@platformAuthorizationService.hasAnyPermission('bpm.transition','bpm.manage','operations:*')")
+    public ManagedObject rename(@RequestHeader(value="X-Tenant-Key",required=false) String tenantKey,@RequestHeader(value="X-Site-Key",required=false) String siteKey,@PathVariable String objectId,@RequestBody com.cyancoder.bpm.api.dto.RenameManagedObjectRequest request,Authentication authentication){return objectFlowService.rename(FlowScopeResolver.fromHeaders(tenantKey,siteKey),objectId,request.title(),actorContextResolver.fromAuthentication(authentication));}
 }

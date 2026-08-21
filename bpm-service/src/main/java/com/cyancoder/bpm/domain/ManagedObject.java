@@ -21,6 +21,7 @@ public class ManagedObject {
     private String tenantKey;
     private String siteKey;
     private String objectType;
+    private String title;
     private ManagedObjectRef objectRef;
     private String flowKey;
     private String state;
@@ -51,6 +52,8 @@ public class ManagedObject {
     public void setSiteKey(String siteKey) { this.siteKey = siteKey; }
     public String getObjectType() { return objectType; }
     public void setObjectType(String objectType) { this.objectType = objectType; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
     public ManagedObjectRef getObjectRef() { return objectRef; }
     public void setObjectRef(ManagedObjectRef objectRef) { this.objectRef = objectRef; }
     public String getFlowKey() { return flowKey; }

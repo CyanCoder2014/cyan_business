@@ -40,6 +40,7 @@ import java.util.Set;
 @Service
 public class ObjectFlowService {
     private static final String FORMS_KEY = "_bpmForms";
+    private static final String CURRENT_FORM_VALUES_KEY = "currentFormValues";
 
     private final ManagedObjectRepository managedObjectRepository;
     private final FlowDefinitionService flowDefinitionService;
@@ -568,6 +569,12 @@ public class ObjectFlowService {
         stateForm.put("currentValues", submission.currentFormValues());
         forms.put(state.id(), stateForm);
         object.getPayload().put(state.id(), submission.currentFormValues());
+        // Canonical key read by condition/action payload paths ("payload.currentFormValues.*", used throughout
+        // FlowTransitionConditionEvaluator, action mappings, and seed/sample flows) and by the panel's own
+        // active-form re-read on load. Without this, every payload.currentFormValues.* path silently resolves to
+        // null forever, and the active form always appears empty again after a reload even though the per-state
+        // history above was saved correctly.
+        object.getPayload().put(CURRENT_FORM_VALUES_KEY, submission.currentFormValues());
         object.setUpdatedAt(Instant.now());
     }
 

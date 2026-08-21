@@ -107,6 +107,7 @@ export type ManagedObject = {
   tenantKey?: string;
   siteKey?: string;
   objectType: string;
+  title?: string;
   objectRef?: ManagedObjectRef;
   flowKey: string;
   state: string;
@@ -301,6 +302,7 @@ export function createManagedObject(
   request: {
     flowKey: string;
     objectType: string;
+    title?: string;
     objectRef?: ManagedObjectRef;
     payload?: Record<string, unknown>;
   },
@@ -311,6 +313,19 @@ export function createManagedObject(
     tenantKey: scope.tenantKey,
     siteKey: scope.siteKey,
     body: JSON.stringify(request)
+  });
+}
+
+export function renameManagedObject(
+  objectId: string,
+  title: string,
+  scope: { tenantKey?: string; siteKey?: string }
+): Promise<ManagedObject> {
+  return requestJson<ManagedObject>(`/endpoint/bpm/managed-objects/${encodeURIComponent(objectId)}/title`, {
+    method: "POST",
+    tenantKey: scope.tenantKey,
+    siteKey: scope.siteKey,
+    body: JSON.stringify({ title })
   });
 }
 

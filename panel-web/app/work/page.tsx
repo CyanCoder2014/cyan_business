@@ -47,7 +47,7 @@ export default function WorkQueue() {
     </div>
     {createOpen ? <NewWorkItemDialog locale={locale} scope={{ tenantKey: tenantKey ?? undefined, siteKey: siteKey ?? undefined }} onClose={() => setCreateOpen(false)} onCreated={(objectId) => { setCreateOpen(false); showToast({ tone: "success", title: locale === "fa" ? "مورد کار ایجاد شد" : "Work item created" }); router.push(`/work/${objectId}`); }} onError={(cause) => { const described = describeApiError(cause, locale === "fa" ? "ایجاد ناموفق بود" : "Creation failed"); showToast({ tone: "error", title: described.title, message: described.message }); }}/> : null}
     {loading ? <Skeleton height={360}/> : error ? <ErrorState title="Work queue unavailable" description={error} retry={load}/> : result.content.length ? <>
-      <div className="work-list">{result.content.map(item => <Link href={`/work/${item.id}`} key={item.id}><div><strong>{item.objectType}</strong><span>{item.flowKey}</span></div><span>{item.state}</span><StatusBadge tone={item.priority === "URGENT" ? "danger" : item.priority === "HIGH" ? "warning" : "neutral"}>{item.priority ?? "NORMAL"}</StatusBadge><span>{item.assignee ?? (locale === "fa" ? "بدون مسئول" : "Unassigned")}</span><time>{item.updatedAt ? new Date(item.updatedAt).toLocaleString(locale) : "—"}</time></Link>)}</div>
+      <div className="work-list">{result.content.map(item => <Link href={`/work/${item.id}`} key={item.id}><div><strong>{item.title || item.objectType}</strong><span>{item.title ? item.objectType : item.flowKey}</span></div><span>{item.state}</span><StatusBadge tone={item.priority === "URGENT" ? "danger" : item.priority === "HIGH" ? "warning" : "neutral"}>{item.priority ?? "NORMAL"}</StatusBadge><span>{item.assignee ?? (locale === "fa" ? "بدون مسئول" : "Unassigned")}</span><time>{item.updatedAt ? new Date(item.updatedAt).toLocaleString(locale) : "—"}</time></Link>)}</div>
       <div className="pagination-bar"><button className="secondary-pill" disabled={page === 0} onClick={() => setPage(value => value - 1)}>{locale === "fa" ? "قبلی" : "Previous"}</button><span>{locale === "fa" ? `${result.totalElements} مورد` : `${result.totalElements} items`}</span><button className="secondary-pill" disabled={(page + 1) * result.size >= result.totalElements} onClick={() => setPage(value => value + 1)}>{locale === "fa" ? "بعدی" : "Next"}</button></div>
     </> : <EmptyState title={locale === "fa" ? "کاری در صف نیست" : "No work in this queue"} description={locale === "fa" ? "سرویس موردی برای این فیلتر برنگرداند." : "The service returned no items for this queue."} action={can("bpm.manage") ? <button className="primary-pill" onClick={() => setCreateOpen(true)}>＋ {locale === "fa" ? "مورد جدید" : "New work item"}</button> : undefined}/>}
   </PanelShell>;
@@ -57,12 +57,13 @@ function NewWorkItemDialog({ locale, scope, onClose, onCreated, onError }: { loc
   const [flows, setFlows] = useState<DynamicFlowDefinition[]>([]);
   const [flowKey, setFlowKey] = useState("");
   const [objectType, setObjectType] = useState("");
+  const [title, setTitle] = useState("");
   const [pending, setPending] = useState(false);
   useEffect(() => { listFlows(scope).then(value => setFlows(value.filter(item => item.active))).catch(() => setFlows([])); }, [scope.tenantKey, scope.siteKey]);
   const create = async () => {
     if (!flowKey || !objectType.trim() || pending) return;
     setPending(true);
-    try { const created = await createManagedObject({ flowKey, objectType: objectType.trim() }, scope); onCreated(created.id); }
+    try { const created = await createManagedObject({ flowKey, objectType: objectType.trim(), title: title.trim() || undefined }, scope); onCreated(created.id); }
     catch (cause) { onError(cause); }
     finally { setPending(false); }
   };
@@ -73,6 +74,7 @@ function NewWorkItemDialog({ locale, scope, onClose, onCreated, onError }: { loc
         {flows.map(flow => <option key={flow.flowKey} value={flow.flowKey}>{flow.name || flow.flowKey}</option>)}
       </Select>
       <Field label={locale === "fa" ? "نوع مورد" : "Object type"} placeholder={locale === "fa" ? "مثلاً: درخواست مرخصی" : "e.g. leave-request"} value={objectType} onChange={event => setObjectType(event.target.value)}/>
+      <Field label={locale === "fa" ? "عنوان (اختیاری، بعداً قابل ویرایش)" : "Title (optional, editable later)"} placeholder={locale === "fa" ? "مثلاً: مرخصی سارا — سه‌شنبه" : "e.g. Sara's leave request — Tuesday"} value={title} onChange={event => setTitle(event.target.value)}/>
       {!flows.length ? <p className="bpm-field-hint">{locale === "fa" ? "هیچ فرایند فعالی یافت نشد. ابتدا یک فرایند BPM بسازید و فعال کنید." : "No active process was found. Design and activate a BPM process first."}</p> : null}
       <div className="dialog-actions">
         <button className="secondary-pill" onClick={onClose}>{locale === "fa" ? "لغو" : "Cancel"}</button>

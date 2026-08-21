@@ -1737,11 +1737,58 @@ select:focus {
 .summary-card,
 .channel-card,
 .auth-mini-card,
-.auth-trust-card {
+.auth-trust-card,
+.project-card {
   border: 1px solid var(--border);
   border-radius: 22px;
   background: rgba(255, 255, 255, 0.78);
   padding: 18px;
+}
+
+.project-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.project-card {
+  display: grid;
+  gap: 10px;
+  color: inherit;
+}
+
+.project-card > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.project-card p {
+  margin: 0;
+  color: var(--text-body);
+}
+
+.project-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.project-card dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-block-start: 8px;
+  border-block-start: 1px solid var(--border);
+}
+
+.project-card dt {
+  color: var(--text-muted);
+}
+
+.project-card dd {
+  margin: 0;
 }
 
 .ai-banner {
@@ -1755,6 +1802,7 @@ select:focus {
 :root[data-theme="dark"] .capability-card,
 :root[data-theme="dark"] .mini-card,
 :root[data-theme="dark"] .blueprint-card,
+:root[data-theme="dark"] .project-card,
 :root[data-theme="dark"] .summary-card,
 :root[data-theme="dark"] .channel-card,
 :root[data-theme="dark"] .auth-mini-card,
@@ -2706,7 +2754,8 @@ select:focus {
   .site-builder-grid,
   .flow-grid,
   .metric-grid,
-  .blueprint-grid {
+  .blueprint-grid,
+  .project-card-grid {
     grid-template-columns: 1fr;
   }
 

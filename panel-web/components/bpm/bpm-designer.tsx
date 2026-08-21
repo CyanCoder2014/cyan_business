@@ -206,12 +206,25 @@ function DefinitionPicker({ label, service, entityKey, scope, locale, onChangeKe
   </>;
 }
 
+function fieldKeysOf(definitions: DynamicEntityDefinition[], entityKey: string): string[] | null {
+  const match = definitions.find(item => item.entityKey === entityKey);
+  if (!match) return null;
+  const fields = (match.definition as Record<string, unknown> | undefined)?.fields;
+  return fields && typeof fields === "object" ? Object.keys(fields as Record<string, unknown>) : [];
+}
+
 function EntityBindingFields({ state, scope, locale, update }: { state: FlowStateDraft; scope: { tenantKey?: string; siteKey?: string }; locale: string; update: (patch: Partial<FlowStateDraft>) => void }) {
   const dynamicServices = useAvailableDynamicServices(scope);
   const service = state.entityService ?? "";
   const key = state.entityKey ?? state.formKey ?? "";
   const [rendererOpen, setRendererOpen] = useState(Boolean(state.rendererService || state.rendererKey));
   const rendererService = state.rendererService ?? "";
+  const rendererKey = state.rendererKey ?? "";
+  const { definitions: storageDefinitions } = useServiceDefinitions(service, scope);
+  const { definitions: rendererDefinitions } = useServiceDefinitions(rendererService, scope);
+  const storageFields = fieldKeysOf(storageDefinitions, key);
+  const rendererFields = rendererOpen ? fieldKeysOf(rendererDefinitions, rendererKey) : null;
+  const mismatchedFields = storageFields && rendererFields ? rendererFields.filter(field => !storageFields.includes(field)) : [];
   return <>
     <label><span>{locale === "fa" ? "حالت ثبت" : "Submit mode"}</span><select dir="ltr" value={state.submitMode ?? "DYNAMIC"} onChange={event => update({ submitMode: event.target.value as "DYNAMIC" | "STATIC" })}>
       <option value="DYNAMIC">{locale === "fa" ? "فرم پویا (از تعریف موجودیت)" : "Dynamic (from entity definition)"}</option>
@@ -225,8 +238,11 @@ function EntityBindingFields({ state, scope, locale, update }: { state: FlowStat
       <label className="toggle-row"><input type="checkbox" checked={rendererOpen} onChange={event => { setRendererOpen(event.target.checked); if (!event.target.checked) update({ rendererService: undefined, rendererKey: undefined }); }}/><span>{locale === "fa" ? "رندر فرم از تعریف دیگری انجام شود" : "Render the form from a different definition"}</span></label>
       {rendererOpen ? <>
         <label><span>{locale === "fa" ? "سرویس رندر" : "Renderer service"}</span><select dir="ltr" value={rendererService} onChange={event => update({ rendererService: event.target.value || undefined, rendererKey: "" })}><option value="">{locale === "fa" ? "انتخاب کنید" : "Select a service"}</option>{dynamicServices.map(item => <option key={item} value={item}>{item}</option>)}</select></label>
-        <DefinitionPicker label={locale === "fa" ? "کلید تعریف رندر" : "Renderer definition key"} service={rendererService} entityKey={state.rendererKey ?? ""} scope={scope} locale={locale} onChangeKey={value => update({ rendererKey: value })}/>
+        <DefinitionPicker label={locale === "fa" ? "کلید تعریف رندر" : "Renderer definition key"} service={rendererService} entityKey={rendererKey} scope={scope} locale={locale} onChangeKey={value => update({ rendererKey: value })}/>
         <p className="bpm-field-hint">{locale === "fa" ? "داده در تعریف موجودیت بالا ذخیره می‌شود؛ فرم از این تعریف رندر می‌شود." : "Data is stored against the entity definition above; the form is rendered from this definition instead."}</p>
+        {mismatchedFields.length ? <p className="bpm-field-hint bpm-field-warning">{locale === "fa"
+          ? `این فیلدها در تعریف رندر وجود دارند اما در تعریف موجودیت نیستند و ثبت آن‌ها با خطای «فیلد غیرمنتظره» رد می‌شود: ${mismatchedFields.join("، ")}. این فیلدها را به «${key}» اضافه کنید یا رندر را به تعریفی سازگار بدهید.`
+          : `These fields exist on the renderer definition but not on the storage definition, so submitting them will fail with "unexpected field": ${mismatchedFields.join(", ")}. Add them to "${key}" or point the renderer at a compatible definition.`}</p> : null}
       </> : null}
     </>}
   </>;

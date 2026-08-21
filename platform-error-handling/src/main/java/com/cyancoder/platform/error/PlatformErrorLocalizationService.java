@@ -1,8 +1,10 @@
 package com.cyancoder.platform.error;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
@@ -13,6 +15,12 @@ import java.util.NoSuchElementException;
 
 public class PlatformErrorLocalizationService {
 
+    private final ObjectMapper objectMapper;
+
+    public PlatformErrorLocalizationService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
     public LocalizedErrorDescriptor resolve(Throwable throwable, ErrorLocale locale) {
         if (throwable instanceof PlatformServiceException ex) {
             return new LocalizedErrorDescriptor(
@@ -20,6 +28,35 @@ public class PlatformErrorLocalizationService {
                     ex.getErrorCode().code(),
                     locale == ErrorLocale.FA ? ex.getFarsiMessage() : ex.getEnglishMessage(),
                     ex.getDetails()
+            );
+        }
+        if (throwable instanceof RestClientResponseException ex) {
+            PlatformErrorResponse downstream = tryParseDownstreamError(ex);
+            if (downstream != null) {
+                Map<String, Object> details = new LinkedHashMap<>(
+                        downstream.details() == null ? Map.of() : downstream.details()
+                );
+                if (downstream.fieldErrors() != null && !downstream.fieldErrors().isEmpty()) {
+                    details.put("validationErrors", downstream.fieldErrors().stream()
+                            .map(fieldError -> Map.of("field", fieldError.field(), "message", fieldError.message()))
+                            .toList());
+                }
+                HttpStatus status = HttpStatus.resolve(downstream.status());
+                return new LocalizedErrorDescriptor(
+                        status == null ? HttpStatus.BAD_GATEWAY : status,
+                        downstream.errorCode() == null ? PlatformErrorCode.DOWNSTREAM_SERVICE_ERROR.code() : downstream.errorCode(),
+                        downstream.message() == null || downstream.message().isBlank() ? "A downstream service call failed." : downstream.message(),
+                        details
+                );
+            }
+            HttpStatus status = HttpStatus.resolve(ex.getStatusCode().value());
+            return descriptor(
+                    status == null ? HttpStatus.BAD_GATEWAY : status,
+                    PlatformErrorCode.DOWNSTREAM_SERVICE_ERROR,
+                    "A downstream service call failed.",
+                    "فراخوانی سرویس داخلی با خطا مواجه شد.",
+                    locale,
+                    Map.of("reason", safeMessage(ex))
             );
         }
         if (throwable instanceof ResponseStatusException ex) {
@@ -149,6 +186,18 @@ public class PlatformErrorLocalizationService {
             }
         });
         return sanitized;
+    }
+
+    private PlatformErrorResponse tryParseDownstreamError(RestClientResponseException ex) {
+        String body = ex.getResponseBodyAsString();
+        if (body == null || body.isBlank()) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(body, PlatformErrorResponse.class);
+        } catch (Exception parseFailure) {
+            return null;
+        }
     }
 
     private String safeMessage(Throwable throwable) {

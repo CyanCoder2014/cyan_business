@@ -1,5 +1,6 @@
 package com.cyancoder.platform.error;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
@@ -7,8 +8,8 @@ import org.springframework.context.annotation.Bean;
 public class PlatformErrorHandlingAutoConfiguration {
 
     @Bean
-    public PlatformErrorLocalizationService platformErrorLocalizationService() {
-        return new PlatformErrorLocalizationService();
+    public PlatformErrorLocalizationService platformErrorLocalizationService(ObjectMapper objectMapper) {
+        return new PlatformErrorLocalizationService(objectMapper);
     }
 
     @Bean

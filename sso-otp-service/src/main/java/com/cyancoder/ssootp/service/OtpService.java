@@ -6,6 +6,7 @@ import com.cyancoder.sso.common.dto.OtpVerifyRequest;
 import com.cyancoder.sso.common.dto.OtpVerifyResponse;
 import com.cyancoder.ssootp.entity.OtpCodeEntity;
 import com.cyancoder.ssootp.repository.OtpCodeRepository;
+import com.cyancoder.ssootp.sms.KavenegarOtpSender;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -16,9 +17,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public class OtpService {
 
     private final OtpCodeRepository otpCodeRepository;
+    private final KavenegarOtpSender otpSender;
 
-    public OtpService(OtpCodeRepository otpCodeRepository) {
+    public OtpService(OtpCodeRepository otpCodeRepository, KavenegarOtpSender otpSender) {
         this.otpCodeRepository = otpCodeRepository;
+        this.otpSender = otpSender;
     }
 
     public OtpSendResponse send(OtpSendRequest request) {
@@ -33,7 +36,13 @@ public class OtpService {
         entity.setCode(otp);
         entity.setExpiresAtEpochSecond(expiresAt);
         otpCodeRepository.save(entity);
-        return new OtpSendResponse(codeId, true, request.username(), otp);
+
+        boolean delivered = otpSender.send(request.username(), otp);
+        // Only echo the code back when delivery didn't actually happen, so a
+        // working Kavenegar template stops leaking codes in the API response
+        // while local/unconfigured environments stay usable without one.
+        String devCode = delivered ? null : otp;
+        return new OtpSendResponse(codeId, delivered, request.username(), devCode);
     }
 
     public OtpVerifyResponse verify(OtpVerifyRequest request) {

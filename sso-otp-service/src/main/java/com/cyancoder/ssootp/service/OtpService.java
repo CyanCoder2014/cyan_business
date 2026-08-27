@@ -7,6 +7,7 @@ import com.cyancoder.sso.common.dto.OtpVerifyResponse;
 import com.cyancoder.ssootp.entity.OtpCodeEntity;
 import com.cyancoder.ssootp.repository.OtpCodeRepository;
 import com.cyancoder.ssootp.sms.KavenegarOtpSender;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -18,10 +19,16 @@ public class OtpService {
 
     private final OtpCodeRepository otpCodeRepository;
     private final KavenegarOtpSender otpSender;
+    private final boolean exposeDevCode;
 
-    public OtpService(OtpCodeRepository otpCodeRepository, KavenegarOtpSender otpSender) {
+    public OtpService(
+            OtpCodeRepository otpCodeRepository,
+            KavenegarOtpSender otpSender,
+            @Value("${otp.expose-dev-code:false}") boolean exposeDevCode
+    ) {
         this.otpCodeRepository = otpCodeRepository;
         this.otpSender = otpSender;
+        this.exposeDevCode = exposeDevCode;
     }
 
     public OtpSendResponse send(OtpSendRequest request) {
@@ -37,11 +44,20 @@ public class OtpService {
         entity.setExpiresAtEpochSecond(expiresAt);
         otpCodeRepository.save(entity);
 
-        boolean delivered = otpSender.send(request.username(), otp);
-        // Only echo the code back when delivery didn't actually happen, so a
-        // working Kavenegar template stops leaking codes in the API response
-        // while local/unconfigured environments stay usable without one.
-        String devCode = delivered ? null : otp;
+        // Deliver to the phone number the caller resolved from the user record,
+        // falling back to username only for legacy callers that pass a phone
+        // number as the username itself.
+        String deliveryTarget = request.deliveryTarget() == null || request.deliveryTarget().isBlank()
+                ? request.username()
+                : request.deliveryTarget();
+        boolean delivered = otpSender.send(deliveryTarget, otp);
+
+        // Never echo the code back on a deployed environment. Gating this on an
+        // explicit opt-in rather than on delivery failure matters: any delivery
+        // failure (unconfigured template, bad receptor, Kavenegar outage) would
+        // otherwise silently turn every send response into a code disclosure,
+        // which defeats MFA for anyone who already has the password.
+        String devCode = exposeDevCode ? otp : null;
         return new OtpSendResponse(codeId, delivered, request.username(), devCode);
     }
 

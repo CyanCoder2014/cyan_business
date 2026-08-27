@@ -56,7 +56,14 @@ public class AuthService {
         if (!user.mfaEnabled()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User does not require OTP login");
         }
-        return otpClient.send(new OtpSendRequest(request.username(), request.clientId(), LOGIN_PURPOSE));
+        if (user.phoneNumber() == null || user.phoneNumber().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No phone number is registered for this account");
+        }
+        // Delivery target comes from the stored user record, never from the
+        // request body, so a caller cannot redirect someone else's login code.
+        return otpClient.send(new OtpSendRequest(
+                request.username(), request.clientId(), LOGIN_PURPOSE, user.phoneNumber()
+        ));
     }
 
     public TokenResponse login(LoginRequest request) {

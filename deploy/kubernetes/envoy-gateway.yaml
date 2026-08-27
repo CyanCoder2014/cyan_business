@@ -79,13 +79,12 @@ spec:
       backendRefs:
         - name: sso-captcha-service
           port: 9003
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /api/sso/otp/
-      backendRefs:
-        - name: sso-otp-service
-          port: 9004
+    # /api/sso/otp/ is deliberately NOT routed publicly. sso-otp-service has no
+    # authentication, no captcha, and no user-existence check, so a public route
+    # lets anyone mint or redirect a login code for any username and defeat MFA.
+    # The panel reaches OTP through /api/sso/auth/otp/send, which enforces
+    # captcha and the MFA flag first; sso-auth-service calls this service over
+    # the cluster network.
     - matches:
         - path:
             type: PathPrefix

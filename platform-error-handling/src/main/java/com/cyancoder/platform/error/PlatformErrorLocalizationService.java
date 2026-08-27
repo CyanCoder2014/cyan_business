@@ -94,6 +94,20 @@ public class PlatformErrorLocalizationService {
                     Map.of("reason", safeMessage(ex))
             );
         }
+        // Spring raises this when no controller mapping matched and the request fell through to static
+        // resource handling. Matched by name so this module keeps no hard dependency on spring-webmvc's
+        // resource package. Without it an unknown route reports as a retryable 500 "unexpected internal
+        // error", which reads as a broken endpoint rather than a missing one.
+        if (simpleName(throwable).equals("NoResourceFoundException") || simpleName(throwable).equals("NoHandlerFoundException")) {
+            return descriptor(
+                    HttpStatus.NOT_FOUND,
+                    PlatformErrorCode.RESOURCE_NOT_FOUND,
+                    "No endpoint matches this request path.",
+                    "مسیر درخواست‌شده وجود ندارد.",
+                    locale,
+                    Map.of()
+            );
+        }
         if (throwable instanceof NoSuchElementException) {
             return descriptor(
                     HttpStatus.NOT_FOUND,

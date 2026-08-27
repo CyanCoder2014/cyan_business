@@ -6,6 +6,7 @@ source deploy/kubernetes/common-client-profile.sh
 
 NAMESPACE="cyan-staging"
 TAG="$(git rev-parse --short HEAD)-$(date +%Y%m%d%H%M%S)"
+APPLY_MANIFESTS="${APPLY_MANIFESTS:-false}"
 
 REQUESTED_SERVICES=("$@")
 
@@ -80,6 +81,35 @@ deploy_panel() {
 
 echo "Deploying Cyan version: ${TAG}"
 echo "Requested services: ${REQUESTED_SERVICES[*]}"
+
+# Changes under deploy/kubernetes/ (gateway routes, env wiring, new objects)
+# reach the cluster only through an explicit apply — image rollouts alone never
+# pick them up.
+if [[ "$APPLY_MANIFESTS" == "true" ]]; then
+  # kustomize carries placeholder ghcr.io/your-org/... image tags, so applying
+  # resets every Deployment's image. That is only safe when this run goes on to
+  # re-set the image for every service; otherwise the ones left out would be
+  # pointing at an image the cluster cannot pull.
+  missing_from_run=()
+  for service in "${ALL_BACKEND_SERVICES[@]}" panel-web; do
+    if ! printf '%s\n' "${REQUESTED_SERVICES[@]}" | grep -qx "$service"; then
+      missing_from_run+=("$service")
+    fi
+  done
+  if (( ${#missing_from_run[@]} > 0 )); then
+    echo "Refusing to apply manifests: this run does not redeploy ${missing_from_run[*]}." >&2
+    echo "Applying resets every image tag to a placeholder, so it requires a full deploy." >&2
+    exit 1
+  fi
+
+  echo
+  echo "======================================"
+  echo "APPLY MANIFESTS"
+  echo "======================================"
+  sudo k3s kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml \
+    | sudo k3s kubectl apply -f -
+  sudo k3s kubectl apply -k deploy/kubernetes -n "${NAMESPACE}"
+fi
 
 for SERVICE in "${REQUESTED_SERVICES[@]}"; do
   if [[ "$SERVICE" == "panel-web" ]]; then

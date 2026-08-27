@@ -40,6 +40,14 @@ fi
 
 SHARED_PATTERN='^(generic|dynamic-entity-core|platform-error-handling|platform-openapi-core|sso-common)/|^(build\.gradle|settings\.gradle|gradle\.properties)$|^gradle/'
 
+# Manifest changes need `kubectl apply`, which resets every image tag, so they
+# force a full redeploy too. The workflow separately sets APPLY_MANIFESTS for
+# the same paths, which deploy-staging.sh reads.
+if grep -q '^deploy/kubernetes/' <<<"$CHANGED_FILES"; then
+  deploy_everything
+  exit 0
+fi
+
 if grep -Eq "$SHARED_PATTERN" <<<"$CHANGED_FILES"; then
   deploy_everything
   exit 0

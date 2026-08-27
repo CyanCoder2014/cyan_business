@@ -115,10 +115,26 @@ jobs:
       - name: Detect changed services
         id: changes
         run: |
-          SERVICES="$(./deploy/scripts/detect-changed-services.sh "${{ github.event.before }}" "${{ github.sha }}")"
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.sha }}"
+
+          SERVICES="$(./deploy/scripts/detect-changed-services.sh "$BASE" "$HEAD")"
           echo "Changed services: ${SERVICES:-<none>}"
           echo "services=${SERVICES}" >> "$GITHUB_OUTPUT"
 
+          # Manifest edits (gateway routes, env wiring) reach the cluster only
+          # through kubectl apply; an image rollout alone silently ignores them.
+          APPLY=false
+          if ! git cat-file -e "${BASE}^{commit}" 2>/dev/null; then
+            APPLY=true
+          elif git diff --name-only "$BASE" "$HEAD" | grep -q '^deploy/kubernetes/'; then
+            APPLY=true
+          fi
+          echo "Apply manifests: ${APPLY}"
+          echo "apply_manifests=${APPLY}" >> "$GITHUB_OUTPUT"
+
       - name: Deploy changed services
         if: steps.changes.outputs.services != ''
+        env:
+          APPLY_MANIFESTS: ${{ steps.changes.outputs.apply_manifests }}
         run: ./deploy/scripts/deploy-staging.sh ${{ steps.changes.outputs.services }}

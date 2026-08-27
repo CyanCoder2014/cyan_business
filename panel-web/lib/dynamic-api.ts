@@ -217,3 +217,50 @@ export function deleteRecord(
     siteKey: scope.siteKey
   });
 }
+
+export type RelationLookupItem = { recordKey: string; label: string };
+export type RelationLookupPage = { items: RelationLookupItem[]; total: number; page: number; size: number };
+
+/** Searchable picker source for a relation field, scoped to the active tenant/site. */
+export function lookupRelationRecords(
+  serviceKey: DynamicServiceKey,
+  entityKey: string,
+  scope: ScopedRequest,
+  options: { query?: string; displayField?: string; page?: number; size?: number } = {}
+): Promise<RelationLookupPage> {
+  const params = new URLSearchParams();
+  if (options.query) params.set("q", options.query);
+  if (options.displayField) params.set("displayField", options.displayField);
+  params.set("page", String(options.page ?? 0));
+  params.set("size", String(options.size ?? 20));
+  return requestJson(serviceKey, `/endpoint/entities/lookup/${encodeURIComponent(entityKey)}?${params}`, scope);
+}
+
+/** Turns already-stored relation keys back into labels so edit forms show names, not raw keys. */
+export function resolveRelationRecords(
+  serviceKey: DynamicServiceKey,
+  entityKey: string,
+  keys: string[],
+  scope: ScopedRequest,
+  displayField?: string
+): Promise<RelationLookupItem[]> {
+  const params = new URLSearchParams();
+  keys.forEach((key) => params.append("keys", key));
+  if (displayField) params.set("displayField", displayField);
+  return requestJson(serviceKey, `/endpoint/entities/lookup/${encodeURIComponent(entityKey)}/resolve?${params}`, scope);
+}
+
+/** Anonymous public-form lookup; only works for relation fields marked publicLookup in the definition. */
+export async function lookupPublicRelationRecords(
+  slug: string,
+  fieldName: string,
+  options: { query?: string; page?: number; size?: number } = {}
+): Promise<RelationLookupPage> {
+  const params = new URLSearchParams();
+  if (options.query) params.set("q", options.query);
+  params.set("page", String(options.page ?? 0));
+  params.set("size", String(options.size ?? 20));
+  const response = await fetch(`/api/public/forms/${encodeURIComponent(slug)}/relations/${encodeURIComponent(fieldName)}?${params}`, { cache: "no-store" });
+  if (!response.ok) throw await platformErrorFromResponse(response);
+  return response.json() as Promise<RelationLookupPage>;
+}

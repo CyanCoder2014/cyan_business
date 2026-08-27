@@ -1,8 +1,12 @@
 "use client";
 
-import { useMemo, useState, type CSSProperties, type DragEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type DragEvent } from "react";
 import { ConfirmDialog, Dialog, EmptyState } from "@/components/ui/primitives";
 import { fieldTypeIcon } from "@/components/nav-icons";
+import { useScopeAccess } from "@/components/scope-access-provider";
+import { useAvailableDynamicServices } from "@/lib/use-available-services";
+import { listDefinitions } from "@/lib/dynamic-api";
+import type { DynamicEntityDefinition, DynamicServiceKey } from "@/lib/types";
 
 export type SchemaRule = {
   id?: string;
@@ -188,6 +192,7 @@ function FieldInspector({ field, path, locale, patch, addChild, remove }: { fiel
   return <><header><div><small dir="ltr">{pathKey(path)}</small><h2>{path.at(-1)}</h2></div><button className="danger" aria-label={locale === "fa" ? "حذف فیلد" : "Delete field"} onClick={remove}>×</button></header>
     <label><span>{locale === "fa" ? "نوع فیلد" : "Field type"}</span><select value={field.type ?? "string"} onChange={event => { const type = event.target.value; patch({ type, ...(isContainer({ type }) ? { itemValidations: field.itemValidations ?? {} } : {}) }); }}>{FIELD_TYPES.map(type => <option value={type} key={type}>{type}</option>)}</select></label>
     <label><span>{locale === "fa" ? "مقدار پیش‌فرض" : "Default value"}</span><input value={field.defaultValue == null ? "" : String(field.defaultValue)} onChange={event => patch({ defaultValue: event.target.value })}/></label>
+    {field.type === "relation" ? <RelationConfig field={field} locale={locale} patch={patch}/> : null}
     {isContainer(field) ? <button className="secondary-pill" onClick={addChild}>＋ {locale === "fa" ? "افزودن فیلد فرزند" : "Add child field"}</button> : null}
     <RuleEditor title={locale === "fa" ? "اعتبارسنجی‌ها" : "Validations"} rules={validations} kinds={VALIDATORS} locale={locale} kindOf={rule => rule.validation ?? "REQUIRED"} paramsOf={rule => rule.validationParams ?? {}} messageOf={rule => rule.validationMessage ?? ""} add={() => patch({ validations: [...validations, { id: crypto.randomUUID(), order: validations.length + 1, validation: "REQUIRED", validationParams: {} }] })} update={(index, kind, params, message) => updateValidation(index, { ...validations[index], order: index + 1, validation: kind, validationParams: params, validationMessage: message })} removeRule={index => patch({ validations: validations.filter((_, itemIndex) => itemIndex !== index).map((rule, order) => ({ ...rule, order: order + 1 })) })}/>
     <RuleEditor title={locale === "fa" ? "عملیات فیلد" : "Field operations"} rules={operations} kinds={OPERATIONS} locale={locale} kindOf={rule => rule.operation ?? "SET_FIELD"} paramsOf={rule => rule.operationParams ?? {}} messageOf={rule => rule.operationMessage ?? ""} add={() => patch({ operations: [...operations, { id: crypto.randomUUID(), order: operations.length + 1, operation: "SET_FIELD", operationParams: { field: pathKey(path), value: "" } }] })} update={(index, kind, params, message) => updateOperation(index, { ...operations[index], order: index + 1, operation: kind, operationParams: params, operationMessage: message })} removeRule={index => patch({ operations: operations.filter((_, itemIndex) => itemIndex !== index).map((rule, order) => ({ ...rule, order: order + 1 })) })}/>
@@ -196,4 +201,51 @@ function FieldInspector({ field, path, locale, patch, addChild, remove }: { fiel
 
 function RuleEditor<T>({ title, rules, kinds, locale, kindOf, paramsOf, messageOf, add, update, removeRule }: { title: string; rules: T[]; kinds: Record<string, string[]>; locale: "en" | "fa"; kindOf: (rule: T) => string; paramsOf: (rule: T) => Record<string, unknown>; messageOf: (rule: T) => string; add: () => void; update: (index: number, kind: string, params: Record<string, unknown>, message: string) => void; removeRule: (index: number) => void }) {
   return <section className="schema-rule-editor"><header><div><strong>{title}</strong><small>{rules.length}</small></div><button aria-label={`${locale === "fa" ? "افزودن" : "Add"} ${title}`} onClick={add}>＋</button></header>{rules.length ? rules.map((rule, index) => { const kind = kindOf(rule); const params = paramsOf(rule); return <article key={index}><div className="schema-rule-head"><span>{index + 1}</span><select value={kind} onChange={event => update(index, event.target.value, {}, messageOf(rule))}>{Object.keys(kinds).map(item => <option value={item} key={item}>{item}</option>)}</select><button aria-label={locale === "fa" ? "حذف قاعده" : "Remove rule"} onClick={() => removeRule(index)}>×</button></div>{(kinds[kind] ?? []).map(param => <label key={param}><span>{param}</span>{param === "isRoot" ? <select value={String(params[param] ?? false)} onChange={event => update(index, kind, { ...params, [param]: event.target.value === "true" }, messageOf(rule))}><option value="false">false</option><option value="true">true</option></select> : <input dir="ltr" list={param.toLowerCase().includes("field") ? "schema-field-paths" : undefined} value={displayRuleValue(params[param])} placeholder={param === "values" || param === "sourceFields" ? "value1, value2" : param === "types" ? "image/png, image/*" : param === "maxBytes" ? "5242880" : param} onChange={event => update(index, kind, { ...params, [param]: parseRuleValue(param, event.target.value) }, messageOf(rule))}/>}</label>)}<label><span>{locale === "fa" ? "پیام خطا / توضیح" : "Message"}</span><input value={messageOf(rule)} onChange={event => update(index, kind, params, event.target.value)}/></label></article>; }) : <p className="muted">{locale === "fa" ? "قاعده‌ای تعریف نشده است." : "No rules configured."}</p>}</section>;
+}
+
+type RelationConfigValue = { serviceKey?: string; entityKey?: string; displayField?: string; publicLookup?: boolean };
+
+function RelationConfig({ field, locale, patch }: { field: SchemaField; locale: "en" | "fa"; patch: (value: Partial<SchemaField>) => void }) {
+  const { tenantKey, siteKey } = useScopeAccess();
+  const scope = useMemo(() => ({ tenantKey: tenantKey || undefined, siteKey: siteKey || undefined }), [tenantKey, siteKey]);
+  const services = useAvailableDynamicServices(scope);
+  const relation = (field.relation ?? {}) as RelationConfigValue;
+  const update = (value: Partial<RelationConfigValue>) => patch({ relation: { ...relation, ...value } });
+  const [definitions, setDefinitions] = useState<DynamicEntityDefinition[]>([]);
+  useEffect(() => {
+    if (!relation.serviceKey || !tenantKey) { setDefinitions([]); return; }
+    let live = true;
+    listDefinitions(relation.serviceKey as DynamicServiceKey, scope)
+      .then(value => { if (live) setDefinitions(value); })
+      .catch(() => { if (live) setDefinitions([]); });
+    return () => { live = false; };
+  }, [relation.serviceKey, tenantKey, scope]);
+  const target = definitions.find(item => item.entityKey === relation.entityKey);
+  const targetFields = target ? Object.keys(((target.definition as Record<string, unknown> | undefined)?.fields ?? {}) as Record<string, unknown>) : [];
+
+  return <fieldset className="schema-relation-config">
+    <legend>{locale === "fa" ? "پیکربندی ارتباط" : "Relation target"}</legend>
+    <label><span>{locale === "fa" ? "سرویس مقصد" : "Target service"}</span>
+      <select dir="ltr" value={relation.serviceKey ?? ""} onChange={event => update({ serviceKey: event.target.value, entityKey: "", displayField: "" })}>
+        <option value="">{locale === "fa" ? "انتخاب کنید" : "Select a service"}</option>
+        {services.map(item => <option key={item} value={item}>{item}</option>)}
+      </select>
+    </label>
+    <label><span>{locale === "fa" ? "موجودیت مقصد" : "Target entity"}</span>
+      <select dir="ltr" disabled={!relation.serviceKey} value={relation.entityKey ?? ""} onChange={event => update({ entityKey: event.target.value, displayField: "" })}>
+        <option value="">{locale === "fa" ? "انتخاب کنید" : "Select an entity"}</option>
+        {definitions.map(item => <option key={item.entityKey} value={item.entityKey}>{item.title || item.entityKey}</option>)}
+      </select>
+    </label>
+    <label><span>{locale === "fa" ? "فیلد نمایشی" : "Display field"}</span>
+      <select dir="ltr" disabled={!relation.entityKey} value={relation.displayField ?? ""} onChange={event => update({ displayField: event.target.value })}>
+        <option value="">{locale === "fa" ? "خودکار (اولین فیلد متنی)" : "Automatic (first text field)"}</option>
+        {targetFields.map(name => <option key={name} value={name}>{name}</option>)}
+      </select>
+    </label>
+    <label className="toggle-row"><input type="checkbox" checked={Boolean(relation.publicLookup)} onChange={event => update({ publicLookup: event.target.checked })}/><span>{locale === "fa" ? "جستجو در فرم‌های عمومی مجاز باشد" : "Allow lookup on public forms"}</span></label>
+    <p className="bpm-field-hint">{locale === "fa"
+      ? "مقدار ذخیره‌شده کلید رکورد مقصد است. تا وقتی این گزینه فعال نشود، فرم عمومی ناشناس نمی‌تواند این موجودیت را جستجو کند."
+      : "The stored value is the target record's key. Until this is enabled, an anonymous public form cannot search this entity — keep it off for anything private."}</p>
+  </fieldset>;
 }

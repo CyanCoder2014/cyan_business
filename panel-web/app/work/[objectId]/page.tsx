@@ -155,7 +155,7 @@ export default function WorkItem({ params }: { params: { objectId: string } }) {
         <section className="active-form">
           <header><div><h2>{form.formKey ?? (locale === "fa" ? "فرم فعال" : "Active form")}</h2><p>{form.entityService} · {form.entityKey}</p></div></header>
           {Object.keys(fields).length
-            ? <div className="generated-work-form">{Object.entries(fields).map(([name, field]) => <GeneratedField key={name} path={name} name={name} field={field} value={values[name]} errors={formErrors} scope={tenantKey ? { tenantKey, siteKey: siteKey ?? undefined } : undefined} onChange={(value) => setValues(current => ({ ...current, [name]: value }))}/>)}</div>
+            ? <div className="generated-work-form">{Object.entries(fields).map(([name, field]) => <GeneratedField key={name} path={name} name={name} field={field} value={values[name]} errors={formErrors} scope={tenantKey ? { tenantKey, siteKey: siteKey ?? undefined } : undefined} relationSource={tenantKey ? { kind: "scoped", tenantKey, siteKey: siteKey ?? undefined } : undefined} onChange={(value) => setValues(current => ({ ...current, [name]: value }))}/>)}</div>
             : <JsonTreeView value={values} emptyLabel={locale === "fa" ? "این فرم فیلدی ندارد." : "This form has no fields."}/>}
           <div className="work-item-submit-row">
             <AsyncButton pending={pending === "submit"} disabled={Boolean(pending && pending !== "submit")} onClick={() => submit()}>{locale === "fa" ? "ثبت فرم" : "Submit form"}</AsyncButton>

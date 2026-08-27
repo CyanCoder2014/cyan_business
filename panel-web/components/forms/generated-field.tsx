@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { prepareMediaUpload, uploadMediaBytes, type MediaScope } from "@/lib/media-api";
+import { RelationField, type RelationConfig, type RelationLookupSource } from "@/components/forms/relation-field";
 
-export type Field = { type?: string; defaultValue?: unknown; validations?: Array<Record<string, unknown>>; itemValidations?: Record<string, Field> };
+export type Field = { type?: string; defaultValue?: unknown; validations?: Array<Record<string, unknown>>; itemValidations?: Record<string, Field>; relation?: RelationConfig };
 export type FileFieldValue = { assetKey: string; fileName: string; mimeType: string; sizeBytes: number };
 
 export function fieldDefaults(fields: Record<string, Field>): Record<string, unknown> {
@@ -57,7 +58,7 @@ function FileUploadButton({ field, scope, disabled, onUploaded, label }: { field
   </div>;
 }
 
-export function GeneratedField({ path, name, field, value, errors, scope, onChange }: { path: string; name: string; field: Field; value: unknown; errors?: Record<string, string>; scope?: MediaScope; onChange: (value: unknown) => void }) {
+export function GeneratedField({ path, name, field, value, errors, scope, relationSource, onChange }: { path: string; name: string; field: Field; value: unknown; errors?: Record<string, string>; scope?: MediaScope; relationSource?: RelationLookupSource; onChange: (value: unknown) => void }) {
   const type = field.type || "string";
   const id = `field-${path.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
   const error = errors?.[path];
@@ -65,6 +66,10 @@ export function GeneratedField({ path, name, field, value, errors, scope, onChan
   const label = humanize(name);
   const required = field.validations?.some((rule) => String(rule.validation).toUpperCase() === "REQUIRED") ?? false;
   const itemFields = field.itemValidations;
+
+  if (type === "relation") {
+    return <RelationField name={path} label={label} required={required} relation={field.relation ?? {}} value={value} error={error} source={relationSource} onChange={onChange}/>;
+  }
 
   if (type === "boolean") {
     return <label className="generated-field generated-toggle" htmlFor={id}><input id={id} type="checkbox" checked={Boolean(value)} onChange={(event) => onChange(event.target.checked)}/><span>{label}</span>{error ? <small id={describedBy} className="field-error">{error}</small> : null}</label>;
@@ -94,7 +99,7 @@ export function GeneratedField({ path, name, field, value, errors, scope, onChan
   if (type === "object" && itemFields && Object.keys(itemFields).length) {
     const objectValue = (value && typeof value === "object" && !Array.isArray(value) ? value : {}) as Record<string, unknown>;
     return <fieldset className="generated-field-group"><legend>{label}</legend>
-      {Object.entries(itemFields).map(([key, subField]) => <GeneratedField key={key} path={`${path}.${key}`} name={key} field={subField} value={objectValue[key]} errors={errors} scope={scope} onChange={(next) => onChange({ ...objectValue, [key]: next })}/>)}
+      {Object.entries(itemFields).map(([key, subField]) => <GeneratedField key={key} path={`${path}.${key}`} name={key} field={subField} value={objectValue[key]} errors={errors} scope={scope} relationSource={relationSource} onChange={(next) => onChange({ ...objectValue, [key]: next })}/>)}
       {error ? <small className="field-error">{error}</small> : null}
     </fieldset>;
   }
@@ -106,7 +111,7 @@ export function GeneratedField({ path, name, field, value, errors, scope, onChan
     return <fieldset className="generated-field-group generated-list"><legend>{label}</legend>
       {items.map((item, index) => <div className="generated-list-row" key={index}>
         {structured
-          ? <div className="generated-list-item">{Object.entries(itemFields!).map(([key, subField]) => <GeneratedField key={key} path={`${path}[${index}].${key}`} name={key} field={subField} value={(item as Record<string, unknown> | undefined)?.[key]} errors={errors} scope={scope} onChange={(next) => onChange(items.map((row, i) => i === index ? { ...(row as Record<string, unknown>), [key]: next } : row))}/>)}</div>
+          ? <div className="generated-list-item">{Object.entries(itemFields!).map(([key, subField]) => <GeneratedField key={key} path={`${path}[${index}].${key}`} name={key} field={subField} value={(item as Record<string, unknown> | undefined)?.[key]} errors={errors} scope={scope} relationSource={relationSource} onChange={(next) => onChange(items.map((row, i) => i === index ? { ...(row as Record<string, unknown>), [key]: next } : row))}/>)}</div>
           : <input aria-invalid={Boolean(errors?.[`${path}[${index}]`])} value={item == null ? "" : String(item)} onChange={(event) => onChange(items.map((row, i) => i === index ? event.target.value : row))}/>}
         <button type="button" className="generated-list-remove" aria-label={`Remove ${label} item ${index + 1}`} onClick={() => onChange(items.filter((_, i) => i !== index))}>×</button>
         {!structured && errors?.[`${path}[${index}]`] ? <small className="field-error">{errors[`${path}[${index}]`]}</small> : null}

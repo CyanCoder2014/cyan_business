@@ -21,15 +21,46 @@ public class EndpointDynamicEntityController {
     private final DynamicRuntimeService runtimeService;
     private final DynamicRuntimeProperties properties;
     private final DynamicEntityResponseMapper responseMapper;
+    private final DynamicRelationLookupService relationLookupService;
 
     public EndpointDynamicEntityController(
             DynamicRuntimeService runtimeService,
             DynamicRuntimeProperties properties,
-            DynamicEntityResponseMapper responseMapper
+            DynamicEntityResponseMapper responseMapper,
+            DynamicRelationLookupService relationLookupService
     ) {
         this.runtimeService = runtimeService;
         this.properties = properties;
         this.responseMapper = responseMapper;
+        this.relationLookupService = relationLookupService;
+    }
+
+    /** Searchable, paginated {recordKey,label} lookup backing relation-field pickers. */
+    @GetMapping("/lookup/{entityKey}")
+    @PreAuthorize("@platformAuthorizationService.canReadRecords(@endpointDynamicEntityController.serviceKey())")
+    public DynamicRelationLookupService.LookupPage lookup(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable("entityKey") String entityKey,
+            @RequestParam(value = "q", required = false) String query,
+            @RequestParam(value = "displayField", required = false) String displayField,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "20") int size
+    ) {
+        return relationLookupService.lookup(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey), query, displayField, page, size);
+    }
+
+    /** Resolves already-selected relation values to labels so edit forms show names, not raw keys. */
+    @GetMapping("/lookup/{entityKey}/resolve")
+    @PreAuthorize("@platformAuthorizationService.canReadRecords(@endpointDynamicEntityController.serviceKey())")
+    public List<DynamicRelationLookupService.LookupItem> resolveLookup(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable("entityKey") String entityKey,
+            @RequestParam("keys") List<String> keys,
+            @RequestParam(value = "displayField", required = false) String displayField
+    ) {
+        return relationLookupService.resolve(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey), keys, displayField);
     }
 
     @PostMapping("/definitions")

@@ -32,7 +32,7 @@ class DynamicEntityDefinitionPaginationTest {
         when(mapper.toDefinitionResponse(stored)).thenReturn(response);
 
         var page = new EndpointDynamicEntityController(
-                runtime, new DynamicRuntimeProperties(), mapper)
+                runtime, new DynamicRuntimeProperties(), mapper, null)
                 .listDefinitions("demo-tenant", "main-site", 1, 2, "title,desc");
 
         assertThat(page.content()).containsExactly(response);
@@ -50,7 +50,7 @@ class DynamicEntityDefinitionPaginationTest {
                 new DynamicScope("demo-tenant", "main-site"), 0, 20, "entityKey,asc"))
                 .thenReturn(Page.empty(PageRequest.of(0, 20)));
 
-        var page = new InternalDynamicEntityController(runtime, mapper)
+        var page = new InternalDynamicEntityController(runtime, mapper, null)
                 .listDefinitions(
                         "demo-tenant", "main-site", 0, 20, "entityKey,asc");
 

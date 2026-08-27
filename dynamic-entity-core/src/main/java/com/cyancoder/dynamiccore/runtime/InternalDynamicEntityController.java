@@ -15,13 +15,44 @@ public class InternalDynamicEntityController {
 
     private final DynamicRuntimeService runtimeService;
     private final DynamicEntityResponseMapper responseMapper;
+    private final DynamicRelationLookupService relationLookupService;
 
     public InternalDynamicEntityController(
             DynamicRuntimeService runtimeService,
-            DynamicEntityResponseMapper responseMapper
+            DynamicEntityResponseMapper responseMapper,
+            DynamicRelationLookupService relationLookupService
     ) {
         this.runtimeService = runtimeService;
         this.responseMapper = responseMapper;
+        this.relationLookupService = relationLookupService;
+    }
+
+    /**
+     * Service-to-service relation lookup. Callers that expose this to anonymous users (the public-form
+     * proxy in storefront-service) are responsible for first checking the field's publicLookup opt-in.
+     */
+    @GetMapping("/lookup/{entityKey}")
+    public DynamicRelationLookupService.LookupPage lookup(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable("entityKey") String entityKey,
+            @RequestParam(value = "q", required = false) String query,
+            @RequestParam(value = "displayField", required = false) String displayField,
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "20") int size
+    ) {
+        return relationLookupService.lookup(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey), query, displayField, page, size);
+    }
+
+    @GetMapping("/lookup/{entityKey}/resolve")
+    public List<DynamicRelationLookupService.LookupItem> resolveLookup(
+            @RequestHeader(value = "X-Tenant-Key", required = false) String tenantKey,
+            @RequestHeader(value = "X-Site-Key", required = false) String siteKey,
+            @PathVariable("entityKey") String entityKey,
+            @RequestParam("keys") List<String> keys,
+            @RequestParam(value = "displayField", required = false) String displayField
+    ) {
+        return relationLookupService.resolve(entityKey, DynamicScopeResolver.fromHeaders(tenantKey, siteKey), keys, displayField);
     }
 
     @GetMapping("/definitions")

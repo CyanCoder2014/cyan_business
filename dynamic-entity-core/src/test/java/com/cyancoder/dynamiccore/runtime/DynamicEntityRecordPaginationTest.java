@@ -25,7 +25,7 @@ class DynamicEntityRecordPaginationTest {
                 .thenReturn(new PageImpl<>(List.of(order), PageRequest.of(2, 500), 1001));
 
         Object result = new EndpointDynamicEntityController(
-                runtime, new DynamicRuntimeProperties(), mock(DynamicEntityResponseMapper.class))
+                runtime, new DynamicRuntimeProperties(), mock(DynamicEntityResponseMapper.class), null)
                 .listRecords(
                         "demo-tenant", "main-site", "importer-order",
                         2, 500, "createdAt,asc");
@@ -46,7 +46,7 @@ class DynamicEntityRecordPaginationTest {
         when(runtime.listRecords("importer-order", scope)).thenReturn(List.of(order));
 
         Object result = new InternalDynamicEntityController(
-                runtime, mock(DynamicEntityResponseMapper.class))
+                runtime, mock(DynamicEntityResponseMapper.class), null)
                 .listRecords(
                         "demo-tenant", "main-site", "importer-order",
                         null, null, null);

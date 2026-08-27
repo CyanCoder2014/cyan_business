@@ -9,6 +9,7 @@ public class FieldDefinition {
     private List<ValidationRule> validations;
     private List<OperationRule> operations;
     private Map<String, FieldDefinition> itemValidations;
+    private RelationDefinition relation;
     private Object defaultValue;
 
     public String getId() { return id; }
@@ -21,6 +22,8 @@ public class FieldDefinition {
     public void setOperations(List<OperationRule> operations) { this.operations = operations; }
     public Map<String, FieldDefinition> getItemValidations() { return itemValidations; }
     public void setItemValidations(Map<String, FieldDefinition> itemValidations) { this.itemValidations = itemValidations; }
+    public RelationDefinition getRelation() { return relation; }
+    public void setRelation(RelationDefinition relation) { this.relation = relation; }
     public Object getDefaultValue() { return defaultValue; }
     public void setDefaultValue(Object defaultValue) { this.defaultValue = defaultValue; }
 }

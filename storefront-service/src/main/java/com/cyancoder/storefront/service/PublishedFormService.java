@@ -87,6 +87,39 @@ public class PublishedFormService {
         return new FormSubmissionResponse(submissionKey, "ACCEPTED");
     }
 
+    /**
+     * Relation lookup for an anonymous public form. Only proceeds when the named field is a relation
+     * explicitly marked publicLookup=true in the owning entity definition, so publishing a public form
+     * never implicitly exposes a searchable read API over a related entity.
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> publicRelationLookup(String slug, String fieldName, String query, int page, int size) {
+        PublishedFormEntity form = active(slug);
+        if (!"PUBLIC".equalsIgnoreCase(form.getVisibility())) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Form not found");
+        Map<String, Object> definition = loadDefinition(form.getServiceKey(), form.getEntityKey(), form.getTenantKey(), form.getSiteKey());
+        Object model = definition.get("definition");
+        Map<String, Object> parsed = model instanceof Map<?, ?> map ? cast(map) : Map.of();
+        Object fieldsValue = parsed.get("fields");
+        Map<String, Object> fields = fieldsValue instanceof Map<?, ?> map ? cast(map) : Map.of();
+        Object fieldValue = fields.get(fieldName);
+        Map<String, Object> field = fieldValue instanceof Map<?, ?> map ? cast(map) : Map.of();
+        Object relationValue = field.get("relation");
+        Map<String, Object> relation = relationValue instanceof Map<?, ?> map ? cast(map) : Map.of();
+        if (relation.isEmpty() || !Boolean.TRUE.equals(relation.get("publicLookup"))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This field is not available for public lookup");
+        }
+        String targetService = relation.get("serviceKey") == null ? form.getServiceKey() : String.valueOf(relation.get("serviceKey"));
+        String targetEntity = String.valueOf(relation.get("entityKey"));
+        String displayField = relation.get("displayField") == null ? "" : String.valueOf(relation.get("displayField"));
+        StringBuilder path = new StringBuilder("/internal/entities/lookup/").append(targetEntity)
+                .append("?page=").append(Math.max(page, 0))
+                .append("&size=").append(size < 1 ? 20 : Math.min(size, 50));
+        if (query != null && !query.isBlank()) path.append("&q=").append(java.net.URLEncoder.encode(query, StandardCharsets.UTF_8));
+        if (!displayField.isBlank()) path.append("&displayField=").append(java.net.URLEncoder.encode(displayField, StandardCharsets.UTF_8));
+        Map<String, Object> result = internal.get(targetService, path.toString(), form.getTenantKey(), form.getSiteKey(), Map.class);
+        return result == null ? Map.of("items", List.of(), "total", 0) : result;
+    }
+
     private PublishedFormView view(PublishedFormEntity form) {
         Map<String, Object> response = loadDefinition(form.getServiceKey(), form.getEntityKey(), form.getTenantKey(), form.getSiteKey());
         Object model = response.get("definition");

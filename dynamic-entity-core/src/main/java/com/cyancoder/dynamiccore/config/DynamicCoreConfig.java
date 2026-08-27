@@ -97,20 +97,32 @@ public class DynamicCoreConfig {
     }
 
     @Bean
+    public com.cyancoder.dynamiccore.runtime.DynamicRelationLookupService dynamicRelationLookupService(
+            org.springframework.data.mongodb.core.MongoTemplate mongoTemplate,
+            DynamicRuntimeService runtimeService,
+            DynamicDefinitionParser definitionParser,
+            DynamicRuntimeProperties properties
+    ) {
+        return new com.cyancoder.dynamiccore.runtime.DynamicRelationLookupService(mongoTemplate, runtimeService, definitionParser, properties);
+    }
+
+    @Bean
     public EndpointDynamicEntityController endpointDynamicEntityController(
             DynamicRuntimeService runtimeService,
             DynamicRuntimeProperties properties,
-            DynamicEntityResponseMapper responseMapper
+            DynamicEntityResponseMapper responseMapper,
+            com.cyancoder.dynamiccore.runtime.DynamicRelationLookupService relationLookupService
     ) {
-        return new EndpointDynamicEntityController(runtimeService, properties, responseMapper);
+        return new EndpointDynamicEntityController(runtimeService, properties, responseMapper, relationLookupService);
     }
 
     @Bean
     public InternalDynamicEntityController internalDynamicEntityController(
             DynamicRuntimeService runtimeService,
-            DynamicEntityResponseMapper responseMapper
+            DynamicEntityResponseMapper responseMapper,
+            com.cyancoder.dynamiccore.runtime.DynamicRelationLookupService relationLookupService
     ) {
-        return new InternalDynamicEntityController(runtimeService, responseMapper);
+        return new InternalDynamicEntityController(runtimeService, responseMapper, relationLookupService);
     }
 
     @Bean

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -124,6 +125,19 @@ public class PlatformErrorLocalizationService {
                     PlatformErrorCode.MALFORMED_REQUEST,
                     "Request body is malformed or incompatible.",
                     "بدنه درخواست نامعتبر یا ناسازگار است.",
+                    locale,
+                    Map.of("reason", safeMessage(throwable))
+            );
+        }
+        // Missing or unbindable query parameters, headers, and cookies. Without
+        // this the caller's own mistake reports as a retryable 500, which reads
+        // as a broken endpoint and invites pointless retries.
+        if (throwable instanceof ServletRequestBindingException) {
+            return descriptor(
+                    HttpStatus.BAD_REQUEST,
+                    PlatformErrorCode.VALIDATION_ERROR,
+                    "A required request parameter is missing or invalid.",
+                    "یکی از پارامترهای الزامی درخواست وجود ندارد یا نامعتبر است.",
                     locale,
                     Map.of("reason", safeMessage(throwable))
             );

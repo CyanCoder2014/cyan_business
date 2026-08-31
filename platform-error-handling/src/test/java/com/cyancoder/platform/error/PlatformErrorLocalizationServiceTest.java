@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -102,5 +103,18 @@ class PlatformErrorLocalizationServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, descriptor.status());
         assertEquals("ERR_DOWNSTREAM_SERVICE", descriptor.errorCode());
         assertTrue(descriptor.details().get("reason").toString().contains("400"));
+    }
+
+    @Test
+    void reportsMissingRequestParameterAsClientErrorRatherThanInternalFailure() {
+        var descriptor = service.resolve(
+                new MissingServletRequestParameterException("captchaChallengeId", "String"),
+                ErrorLocale.EN
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, descriptor.status());
+        assertEquals("ERR_VALIDATION", descriptor.errorCode());
+        assertEquals("A required request parameter is missing or invalid.", descriptor.message());
+        assertTrue(descriptor.details().get("reason").toString().contains("captchaChallengeId"));
     }
 }

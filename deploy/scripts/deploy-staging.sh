@@ -8,6 +8,18 @@ NAMESPACE="cyan-staging"
 TAG="$(git rev-parse --short HEAD)-$(date +%Y%m%d%H%M%S)"
 APPLY_MANIFESTS="${APPLY_MANIFESTS:-false}"
 
+# Tooling per CYAN_SERVER_UPDATE_RUNBOOK.md: images are imported into K3s
+# containerd with `k3s ctr`, while cluster changes go through the standalone
+# kubectl (`k3s kubectl` is not what this host uses). sudo is only used when
+# not already root, because sudo's secure_path drops /usr/local/bin and makes
+# k3s unresolvable.
+SUDO=()
+if [[ "$(id -u)" -ne 0 ]]; then
+  SUDO=(sudo)
+fi
+KUBECTL=("${SUDO[@]}" kubectl)
+CTR=("${SUDO[@]}" k3s ctr)
+
 REQUESTED_SERVICES=("$@")
 
 if (( ${#REQUESTED_SERVICES[@]} == 0 )); then
@@ -40,14 +52,14 @@ deploy_backend() {
 
   docker build -t "${image}" "./${service}"
 
-  docker save "${image}" | sudo k3s ctr -n k8s.io images import -
+  docker save "${image}" | "${CTR[@]}" -n k8s.io images import -
 
-  sudo k3s kubectl set image \
+  "${KUBECTL[@]}" set image \
     "deployment/${service}" \
     -n "${NAMESPACE}" \
     "${service}=${image}"
 
-  sudo k3s kubectl rollout status \
+  "${KUBECTL[@]}" rollout status \
     "deployment/${service}" \
     -n "${NAMESPACE}" \
     --timeout=180s
@@ -66,14 +78,14 @@ deploy_panel() {
     -t "${image}" \
     ./panel-web
 
-  docker save "${image}" | sudo k3s ctr -n k8s.io images import -
+  docker save "${image}" | "${CTR[@]}" -n k8s.io images import -
 
-  sudo k3s kubectl set image \
+  "${KUBECTL[@]}" set image \
     deployment/panel-web \
     -n "${NAMESPACE}" \
     "panel-web=${image}"
 
-  sudo k3s kubectl rollout status \
+  "${KUBECTL[@]}" rollout status \
     deployment/panel-web \
     -n "${NAMESPACE}" \
     --timeout=180s
@@ -106,9 +118,9 @@ if [[ "$APPLY_MANIFESTS" == "true" ]]; then
   echo "======================================"
   echo "APPLY MANIFESTS"
   echo "======================================"
-  sudo k3s kubectl create namespace "${NAMESPACE}" --dry-run=client -o yaml \
-    | sudo k3s kubectl apply -f -
-  sudo k3s kubectl apply -k deploy/kubernetes -n "${NAMESPACE}"
+  "${KUBECTL[@]}" create namespace "${NAMESPACE}" --dry-run=client -o yaml \
+    | "${KUBECTL[@]}" apply -f -
+  "${KUBECTL[@]}" apply -k deploy/kubernetes -n "${NAMESPACE}"
 fi
 
 for SERVICE in "${REQUESTED_SERVICES[@]}"; do

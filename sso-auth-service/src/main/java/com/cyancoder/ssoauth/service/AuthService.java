@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthService {
 
     private static final String LOGIN_PURPOSE = "LOGIN";
+    private static final String PASSWORD_RESET_PURPOSE = "PASSWORD_RESET";
 
     private final UserClient userClient;
     private final CaptchaClient captchaClient;
@@ -64,6 +65,35 @@ public class AuthService {
         return otpClient.send(new OtpSendRequest(
                 request.username(), request.clientId(), LOGIN_PURPOSE, user.phoneNumber()
         ));
+    }
+
+    /**
+     * Starts a self-service reset. Always reports success once the captcha
+     * passes, so the response cannot be used to discover which usernames exist
+     * or which of them have a phone number on file.
+     */
+    public void requestPasswordReset(String username, String clientId, String challengeId, String challengeAnswer, String language) {
+        CaptchaVerifyResponse captchaVerifyResponse = captchaClient.verify(
+                new CaptchaVerifyRequest(challengeId, challengeAnswer, clientId)
+        );
+        if (!captchaVerifyResponse.success()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, captchaVerifyResponse.message());
+        }
+        UserSummary user = userClient.getUser(username);
+        if (user == null || !user.active() || user.phoneNumber() == null || user.phoneNumber().isBlank()) {
+            return;
+        }
+        otpClient.send(new OtpSendRequest(username, clientId, PASSWORD_RESET_PURPOSE, user.phoneNumber(), language));
+    }
+
+    public void confirmPasswordReset(String username, String clientId, String code, String newPassword) {
+        OtpVerifyResponse otpVerifyResponse = otpClient.verify(
+                new OtpVerifyRequest(username, clientId, code, PASSWORD_RESET_PURPOSE)
+        );
+        if (!otpVerifyResponse.success()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, otpVerifyResponse.message());
+        }
+        userClient.setPassword(username, new UserClient.SetPasswordRequest(newPassword));
     }
 
     public TokenResponse login(LoginRequest request) {

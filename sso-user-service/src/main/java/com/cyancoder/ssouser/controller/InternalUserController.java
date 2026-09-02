@@ -40,6 +40,15 @@ public class InternalUserController {
     @GetMapping("/{username}")
     public UserSummary get(@PathVariable String username) { return directory.getUser(username); }
 
+    public record SetPasswordRequest(String newPassword) {}
+
+    /** Used by the OTP-verified reset flow in sso-auth-service. */
+    @PostMapping("/{username}/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setPassword(@PathVariable String username, @RequestBody SetPasswordRequest request) {
+        directory.setPassword(username, request.newPassword());
+    }
+
     /** Null fields are left unchanged, so a caller can flip one setting in isolation. */
     public record AdministerUserRequest(String email, String phoneNumber, Boolean mfaEnabled, Boolean active) {}
 

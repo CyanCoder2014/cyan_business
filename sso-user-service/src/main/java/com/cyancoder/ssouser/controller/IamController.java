@@ -105,6 +105,15 @@ public class IamController {
         return iamDirectoryService.assignClientRole(clientId, request);
     }
 
+    public record AdminResetPasswordRequest(String newPassword) {}
+
+    /** Admin-initiated reset for a user in a realm the caller manages. */
+    @PostMapping("/users/{username}/password/reset")
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void resetUserPassword(@PathVariable("username") String username, @RequestBody AdminResetPasswordRequest request) {
+        iamDirectoryService.resetUserPassword(username, request.newPassword());
+    }
+
     /**
      * Soft revoke. The assignment row is kept with its audit trail, and posting
      * the same role back to assign-role restores it on that same record.

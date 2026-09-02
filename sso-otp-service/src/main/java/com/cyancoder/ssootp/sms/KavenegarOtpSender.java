@@ -1,6 +1,5 @@
 package com.cyancoder.ssootp.sms;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -19,23 +18,20 @@ import java.util.Map;
 @Component
 public class KavenegarOtpSender {
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String apiKey;
-    private final String template;
+    private final KavenegarProperties properties;
 
-    public KavenegarOtpSender(
-            @Value("${otp.sms.kavenegar.api-key:}") String apiKey,
-            @Value("${otp.sms.kavenegar.template:}") String template
-    ) {
-        this.apiKey = apiKey;
-        this.template = template;
+    public KavenegarOtpSender(KavenegarProperties properties) {
+        this.properties = properties;
     }
 
     public boolean isConfigured() {
-        return apiKey != null && !apiKey.isBlank() && template != null && !template.isBlank();
+        return properties.getApiKey() != null && !properties.getApiKey().isBlank();
     }
 
-    public boolean send(String receptor, String code) {
-        if (!isConfigured() || receptor == null || receptor.isBlank()) {
+    public boolean send(String receptor, String code, String purpose, String language) {
+        String apiKey = properties.getApiKey();
+        String template = properties.resolveTemplate(purpose, language);
+        if (!isConfigured() || template.isBlank() || receptor == null || receptor.isBlank()) {
             return false;
         }
         try {

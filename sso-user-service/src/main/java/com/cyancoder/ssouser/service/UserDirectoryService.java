@@ -129,6 +129,19 @@ public class UserDirectoryService {
         return toSummary(storedUserRepository.save(user));
     }
 
+    /**
+     * Sets a password without proving the current one. Only for callers that
+     * have already established the right to do so: an OTP-verified reset, or an
+     * administrator acting on a member of a realm/client they manage.
+     */
+    public void setPassword(String username, String newPassword) {
+        StoredUserEntity user = storedUserRepository.findById(normalizeUsername(username)).orElseThrow();
+        String next = required(newPassword, "newPassword");
+        if (next.length() < 8) throw new IllegalArgumentException("New password must contain at least 8 characters");
+        user.setPasswordHash(passwordEncoder.encode(next));
+        storedUserRepository.save(user);
+    }
+
     public void changePassword(String username,String currentPassword,String newPassword) {
         StoredUserEntity user=storedUserRepository.findById(normalizeUsername(username)).orElseThrow();
         if(!passwordEncoder.matches(required(currentPassword,"currentPassword"),user.getPasswordHash()))throw new IllegalArgumentException("Current password is invalid");

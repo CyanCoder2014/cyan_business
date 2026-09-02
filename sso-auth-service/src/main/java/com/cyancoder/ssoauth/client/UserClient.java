@@ -16,6 +16,11 @@ public interface UserClient {
     @PostMapping("/api/sso/users/verify-password")
     PasswordVerificationResponse verifyPassword(@RequestBody PasswordVerificationRequest request);
 
+    record SetPasswordRequest(String newPassword) {}
+
+    @PostMapping("/internal/users/{username}/password")
+    void setPassword(@PathVariable("username") String username, @RequestBody SetPasswordRequest request);
+
     @GetMapping("/api/sso/iam/internal/users/{username}/access")
     IamUserAccessSummary resolveAccess(@PathVariable("username") String username, @RequestParam("clientId") String clientId);
 }

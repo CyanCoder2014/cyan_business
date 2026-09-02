@@ -319,6 +319,18 @@ public class IamDirectoryService {
         userRealmRoleAssignmentRepository.save(entity);
     }
 
+    /**
+     * Administrative password reset. Requires the caller to manage the realm the
+     * target belongs to, so a client admin cannot reset an account outside their
+     * own realm.
+     */
+    @Transactional
+    public void resetUserPassword(String username, String newPassword) {
+        String targetRealm = resolveRealmKeyForSubject(required(username, "username"), null);
+        iamSecurityService.requireRealmManager(targetRealm);
+        userDirectoryService.setPassword(username, newPassword);
+    }
+
     @Transactional
     public IamUserAccessSummary revokeRealmRole(String realmKey, UserRoleAssignmentRequest request) {
         iamSecurityService.requireRealmManager(required(realmKey, "realmKey"));

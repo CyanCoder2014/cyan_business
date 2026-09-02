@@ -7,6 +7,8 @@ import com.cyancoder.ssoauth.config.JwtConfigurationProperties;
 import com.cyancoder.ssoauth.service.AuthService;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -53,6 +55,26 @@ public class AuthController {
             @RequestParam String captchaAnswer
     ) {
         return authService.sendLoginOtp(request, captchaChallengeId, captchaAnswer);
+    }
+
+    public record PasswordResetRequest(String username, String clientId, String language) {}
+    public record PasswordResetConfirmRequest(String username, String clientId, String code, String newPassword) {}
+
+    /** Always 204, whether or not the account exists — see AuthService. */
+    @PostMapping("/api/sso/auth/password/reset/request")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void requestPasswordReset(
+            @RequestBody PasswordResetRequest request,
+            @RequestParam String captchaChallengeId,
+            @RequestParam String captchaAnswer
+    ) {
+        authService.requestPasswordReset(request.username(), request.clientId(), captchaChallengeId, captchaAnswer, request.language());
+    }
+
+    @PostMapping("/api/sso/auth/password/reset/confirm")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void confirmPasswordReset(@RequestBody PasswordResetConfirmRequest request) {
+        authService.confirmPasswordReset(request.username(), request.clientId(), request.code(), request.newPassword());
     }
 
     @PostMapping("/api/sso/auth/fido/challenge")

@@ -50,7 +50,7 @@ public class OtpService {
         String deliveryTarget = request.deliveryTarget() == null || request.deliveryTarget().isBlank()
                 ? request.username()
                 : request.deliveryTarget();
-        boolean delivered = otpSender.send(deliveryTarget, otp);
+        boolean delivered = otpSender.send(deliveryTarget, otp, request.purpose(), request.language());
 
         // Never echo the code back on a deployed environment. Gating this on an
         // explicit opt-in rather than on delivery failure matters: any delivery

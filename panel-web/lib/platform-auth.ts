@@ -154,7 +154,12 @@ async function authRequestJson<T>(path: string, init: RequestInit): Promise<T> {
     throw new Error(message || `Request failed with status ${response.status}`);
   }
 
-  return response.json() as Promise<T>;
+  // 204 and other empty successes have no body to parse.
+  if (response.status === 204 || response.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
+  const text = await response.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 async function usableAccessToken() {
@@ -322,6 +327,24 @@ export async function sendLoginOtp(usernameInput: string, captchaChallengeId: st
   return authRequestJson<LoginOtpResponse>(`/api/sso/auth/otp/send?${search.toString()}`, {
     method: "POST",
     body: JSON.stringify({ username, clientId: PLATFORM_AUTH_CLIENT_ID, purpose: "LOGIN" })
+  });
+}
+
+export async function requestPasswordReset(usernameInput: string, captchaChallengeId: string, captchaAnswer: string, language: string) {
+  const username = normalizeUsername(usernameInput);
+  if (!username) throw new Error("Username is required before requesting a reset code");
+  const search = new URLSearchParams({ captchaChallengeId, captchaAnswer });
+  await authRequestJson<void>(`/api/sso/auth/password/reset/request?${search.toString()}`, {
+    method: "POST",
+    body: JSON.stringify({ username, clientId: PLATFORM_AUTH_CLIENT_ID, language })
+  });
+}
+
+export async function confirmPasswordReset(usernameInput: string, code: string, newPassword: string) {
+  const username = normalizeUsername(usernameInput);
+  await authRequestJson<void>("/api/sso/auth/password/reset/confirm", {
+    method: "POST",
+    body: JSON.stringify({ username, clientId: PLATFORM_AUTH_CLIENT_ID, code, newPassword })
   });
 }
 

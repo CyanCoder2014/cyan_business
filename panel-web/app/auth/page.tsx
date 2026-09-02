@@ -27,6 +27,7 @@ import {
 import { usePanel } from "@/components/panel-provider";
 import { LogoMark } from "@/components/logo-mark";
 import { createCaptchaChallenge, loginWithPassword, registerPanelUser, sendLoginOtp } from "@/lib/platform-auth";
+import { PasswordResetDialog } from "@/components/auth/password-reset-dialog";
 
 type AuthMode = "signin" | "signup";
 type CaptchaState = {
@@ -117,6 +118,7 @@ function AuthScreen() {
   const [captcha, setCaptcha] = useState<CaptchaState | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
 
   useEffect(() => {
     if (requestedMode === "signin") {
@@ -232,6 +234,9 @@ function AuthScreen() {
 
   return (
     <main className="auth-shell">
+      {resetOpen ? (
+        <PasswordResetDialog locale={locale} initialUsername={email} onClose={() => setResetOpen(false)} />
+      ) : null}
       <div className="auth-body">
         <section className="auth-marketing">
           <Link href="/" className="brand-lockup auth-brand-lockup">
@@ -373,6 +378,7 @@ function AuthScreen() {
               submitLabel={submitLabel}
               workspace={workspace}
               onMagicLink={handleMagicLink}
+              onForgotPassword={() => setResetOpen(true)}
               onSendOtp={handleSendOtp}
               onRefreshCaptcha={loadCaptcha}
               onSocialLogin={handleSocialLogin}
@@ -422,6 +428,7 @@ function AuthScreen() {
                 submitLabel={submitLabel}
                 workspace={workspace}
                 onMagicLink={handleMagicLink}
+                onForgotPassword={() => setResetOpen(true)}
                 onSendOtp={handleSendOtp}
                 onRefreshCaptcha={loadCaptcha}
                 onSocialLogin={handleSocialLogin}
@@ -491,6 +498,7 @@ function AuthForm({
   submitLabel,
   workspace,
   onMagicLink,
+  onForgotPassword,
   onSendOtp,
   onRefreshCaptcha,
   onSocialLogin,
@@ -519,6 +527,7 @@ function AuthForm({
   submitLabel: string;
   workspace: string;
   onMagicLink: () => void;
+  onForgotPassword: () => void;
   onSendOtp: () => Promise<void>;
   onRefreshCaptcha: () => Promise<void>;
   onSocialLogin: (provider: "google" | "github") => void;
@@ -680,6 +689,13 @@ function AuthForm({
 
       {!compact ? (
         <>
+          {mode === "signin" ? (
+            <p className="auth-magic-link">
+              <button type="button" className="text-link" onClick={onForgotPassword}>
+                {locale === "fa" ? "رمز عبور را فراموش کرده‌اید؟" : "Forgot your password?"}
+              </button>
+            </p>
+          ) : null}
           <p className="auth-magic-link">
             {locale === "fa" ? "لینک جادویی را ترجیح می‌دهید؟" : "Prefer a magic link?"}{" "}
             <button type="button" className="text-link" onClick={onMagicLink}>

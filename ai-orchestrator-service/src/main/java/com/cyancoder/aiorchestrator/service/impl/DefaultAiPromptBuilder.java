@@ -17,6 +17,10 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
         String contextSection = retrievedContext.isEmpty()
                 ? "No external context retrieved."
                 : String.join("\n---\n", retrievedContext);
+        // The list also travels inside platformMetadata, but only as part of a
+        // map dump. Restating it on its own line keeps it from losing to the
+        // concrete service-mapping rule below.
+        String availableServices = String.join(", ", availableServiceKeys(platformMetadata));
         return """
                 Generate platform application DSL from the user request.
 
@@ -92,7 +96,7 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
                 1. Always use structured platform entities and routes.
                 2. Prefer existing service templates from metadata below.
                 3. Use a service only when it appears in the authoritative available list.
-                4. Use content-service for pages/blog, catalog-service for products/services, crm-service for CRM, commerce-service for orders/invoices, finance-service for transactions, storefront-service for public routes, bpm-service for workflows.
+                4. Preferred owners, and only when that service is in the authoritative available list: content-service for pages/blog, catalog-service for products/services, crm-service for CRM, commerce-service for orders/invoices, finance-service for transactions, storefront-service for public routes, bpm-service for workflows. If the preferred owner is unavailable, place the entity on the closest available service rather than dropping it: content-service and catalog-service can hold general structured records. Use manualActions only when no available service could reasonably own it.
                 4. If domain purchase or DNS setup is required and no domain service exists, put it in manualActions.
                 5. When the prompt suggests approvals or lifecycle review, create a BPM flow in flows[].
                 6. When the prompt asks for BPM forms or form maker output, use bpm-service templates such as screening-intake-form and screening-review-form before inventing new structures.
@@ -140,6 +144,9 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
                 TenantKey: %s
                 SiteKey: %s
 
+                Authoritative available services. Use ONLY these as serviceKey values:
+                %s
+
                 Platform metadata:
                 %s
 
@@ -148,6 +155,15 @@ public class DefaultAiPromptBuilder implements AiPromptBuilder {
 
                 User prompt:
                 %s
-                """.formatted(tenantKey, siteKey, tenantKey, siteKey, platformMetadata, contextSection, userPrompt);
+                """.formatted(tenantKey, siteKey, tenantKey, siteKey, availableServices, platformMetadata, contextSection, userPrompt);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> availableServiceKeys(Map<String, Object> platformMetadata) {
+        Object availability = platformMetadata == null ? null : platformMetadata.get("_serviceAvailability");
+        if (availability instanceof Map<?, ?> map && map.get("availableServiceKeys") instanceof List<?> keys) {
+            return (List<String>) keys;
+        }
+        return List.of();
     }
 }

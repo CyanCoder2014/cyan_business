@@ -1,11 +1,8 @@
 package com.cyancoder.client.rest;
 
-
-import com.cyancoder.client.command.CreateBuyerCommand;
-import com.cyancoder.client.model.request.CreateBuyerReqModel;
+import com.cyancoder.client.model.BuyerModel;
+import com.cyancoder.client.service.BuyerService;
 import lombok.RequiredArgsConstructor;
-import org.axonframework.commandhandling.gateway.CommandGateway;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,30 +10,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class BuyerCommandController {
 
+    private final BuyerService buyerService;
 
-    private  final Environment env;
-    private  final CommandGateway commandGateway;
-
-
+    /** Returns the buyer id so a caller such as factor-service can reference it. */
     @PostMapping
-    public String createBuyer(@RequestBody CreateBuyerReqModel createBuyerReqModel){
-        CreateBuyerCommand createBuyerCommand = CreateBuyerCommand.builder()
-//                .buyerId(UUID.randomUUID().toString())
-//                .buyerId(createBuyerReqModel.getId())
-                .build();
-
-        String response;
-
-        try{
-            response = commandGateway.sendAndWait(createBuyerCommand);
-        }catch (Exception e){
-            response = e.getLocalizedMessage();
-        }
-
-
-        return response;
-
+    public String createBuyer(@RequestBody BuyerModel request) {
+        return buyerService.addOrEdit(request);
     }
-
-
 }

@@ -1,6 +1,7 @@
 package com.cyancoder.factor.service;
 
 import com.cyancoder.factor.client.services_api.entity.FactorTaxEntity;
+import com.cyancoder.factor.client.services_api.rest.BuyerClient;
 import com.cyancoder.factor.client.services_api.service.TaxClientService;
 import com.cyancoder.factor.command.CreateFactorCommand;
 import com.cyancoder.factor.entity.FactorEntity;
@@ -15,12 +16,10 @@ import com.cyancoder.factor.repository.FactorItemRepository;
 import com.cyancoder.factor.repository.FactorRepository;
 import com.cyancoder.factor.repository.ProductRepository;
 import com.cyancoder.factor.repository.UnitRepository;
-import com.cyancoder.generic.command.buyer.AddOrEditBuyerCommand;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.BeanUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
@@ -49,7 +48,7 @@ public class FactorService {
     private final UnitRepository unitRepository;
 
     private  final Environment env;
-    private  final CommandGateway commandGateway;
+    private  final BuyerClient buyerClient;
     private final TaxClientService taxClientService;
 
 
@@ -100,22 +99,14 @@ public class FactorService {
 //        if (!event.isAddNew() && buyerEntityOld != null){
 //            buyerEntity.setBuyerId(buyerEntityOld.getBuyerId());
 //        }
-        AddOrEditBuyerCommand addOrEditBuyerCommand = AddOrEditBuyerCommand.builder()
-                .buyerId(createFactorCommand.getBuyer().getBuyerId() != null ? createFactorCommand.getBuyer().getBuyerId() : UUID.randomUUID().toString())
-                .nationalCode(createFactorCommand.getBuyer().getNationalCode())
-                .economicCode(createFactorCommand.getBuyer().getEconomicCode())
-                .buyerType(createFactorCommand.getBuyer().getBuyerType())
-                .tell(createFactorCommand.getBuyer().getTell())
-                .address(createFactorCommand.getBuyer().getAddress())
-                .postCode(createFactorCommand.getBuyer().getPostCode())
-                .cityId(createFactorCommand.getBuyer().getCityId())
-                .addNew(createFactorCommand.getBuyer().isAddNew())
-                .build();
+        BuyerModel buyer = createFactorCommand.getBuyer();
+        if (buyer.getBuyerId() == null || buyer.getBuyerId().isBlank()) {
+            buyer.setBuyerId(UUID.randomUUID().toString());
+        }
 
-        log.info("temp: {} ", addOrEditBuyerCommand);
+        log.info("addOrEditBuyer: {} ", buyer);
 
-
-        String id = commandGateway.sendAndWait(addOrEditBuyerCommand);
+        String id = buyerClient.addOrEditBuyer(buyer);
         factorEntity.setBuyerId(id);
 
 

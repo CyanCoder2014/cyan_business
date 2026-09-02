@@ -19,9 +19,9 @@ public class RefreshTokenService {
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
-    public String issue(String clientId, UserSummary user, SessionResponse sessionResponse, long ttlSeconds) {
+    public String issue(String clientId, UserSummary user, SessionResponse sessionResponse, long refreshTtlSeconds) {
         String refreshToken = UUID.randomUUID().toString() + "." + UUID.randomUUID();
-        long expiresAt = Instant.now().plusSeconds(ttlSeconds * 24).getEpochSecond();
+        long expiresAt = Instant.now().plusSeconds(refreshTtlSeconds).getEpochSecond();
         RefreshTokenEntity entity = new RefreshTokenEntity();
         entity.setToken(refreshToken);
         entity.setSubject(user.username());

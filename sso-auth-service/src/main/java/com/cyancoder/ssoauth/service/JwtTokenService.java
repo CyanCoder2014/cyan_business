@@ -69,7 +69,7 @@ public class JwtTokenService {
 
         JwsHeader header = JwsHeader.with(SignatureAlgorithm.RS256).build();
         String tokenValue = jwtEncoder.encode(JwtEncoderParameters.from(header, claimsSet)).getTokenValue();
-        String refreshToken = refreshTokenService.issue(clientId, user, sessionResponse, jwtConfigurationProperties.getTtlSeconds());
+        String refreshToken = refreshTokenService.issue(clientId, user, sessionResponse, jwtConfigurationProperties.getRefreshTtlSeconds());
         return new TokenResponse(tokenValue, refreshToken, "Bearer", jwtConfigurationProperties.getTtlSeconds(), sessionResponse.sessionId());
     }
 

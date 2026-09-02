@@ -38,6 +38,15 @@ public class IdentityDirectoryClient {
         return new IdentityUser(response.username(), response.email(), response.phoneNumber(), response.mfaEnabled(), response.roles(), response.active());
     }
 
+    /** Null fields are left untouched by the directory. */
+    public IdentityUser administer(String username, String email, String phoneNumber, Boolean mfaEnabled, Boolean active) {
+        UserSummary response = client.patch().uri("/internal/users/{username}", username)
+                .header(HttpHeaders.AUTHORIZATION, authorization)
+                .body(new AdministerRequest(email, phoneNumber, mfaEnabled, active))
+                .retrieve().body(UserSummary.class);
+        return new IdentityUser(response.username(), response.email(), response.phoneNumber(), response.mfaEnabled(), response.roles(), response.active());
+    }
+
     public IdentityUser ensurePanelAccess(String username, String clientRole) {
         IdentityUser existing = get(username);
         if (existing == null) throw new IllegalArgumentException("Identity does not exist");
@@ -53,6 +62,7 @@ public class IdentityDirectoryClient {
     }
 
     private record UserSummary(String username, String email, String phoneNumber, boolean mfaEnabled, List<String> roles, boolean active) {}
+    private record AdministerRequest(String email, String phoneNumber, Boolean mfaEnabled, Boolean active) {}
     private record ManagedProvisionRequest(String username, String password, String email, String phoneNumber,
                                            boolean mfaEnabled, String realmKey, String clientId,
                                            List<String> realmRoles, List<String> clientRoles) {}

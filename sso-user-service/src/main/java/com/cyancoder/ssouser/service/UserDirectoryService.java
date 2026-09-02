@@ -95,6 +95,40 @@ public class UserDirectoryService {
         user.setEmail(normalizedEmail);user.setPhoneNumber(phoneNumber==null||phoneNumber.isBlank()?null:phoneNumber.trim());return toSummary(storedUserRepository.save(user));
     }
 
+    /**
+     * Administrative update of another user's directory record. Unlike
+     * {@link #updateProfile} this can change the MFA flag, and each field is
+     * optional so a caller can flip one setting without having to resend — and
+     * risk clobbering — the rest of the record.
+     */
+    public UserSummary administer(String username, String email, String phoneNumber, Boolean mfaEnabled, Boolean active) {
+        StoredUserEntity user = storedUserRepository.findById(normalizeUsername(username)).orElseThrow();
+        if (email != null) {
+            String normalizedEmail = normalizeEmail(email);
+            if (normalizedEmail != null) {
+                storedUserRepository.findByEmail(normalizedEmail)
+                        .filter(other -> !other.getUsername().equals(user.getUsername()))
+                        .ifPresent(other -> { throw new IllegalArgumentException("Email already exists"); });
+            }
+            user.setEmail(normalizedEmail);
+        }
+        if (phoneNumber != null) {
+            user.setPhoneNumber(phoneNumber.isBlank() ? null : phoneNumber.trim());
+        }
+        if (mfaEnabled != null) {
+            if (mfaEnabled && (user.getPhoneNumber() == null || user.getPhoneNumber().isBlank())) {
+                // Login OTP is delivered by SMS, so enabling MFA without a phone
+                // number would lock the account out at the next sign-in.
+                throw new IllegalArgumentException("A phone number is required before MFA can be enabled");
+            }
+            user.setMfaEnabled(mfaEnabled);
+        }
+        if (active != null) {
+            user.setActive(active);
+        }
+        return toSummary(storedUserRepository.save(user));
+    }
+
     public void changePassword(String username,String currentPassword,String newPassword) {
         StoredUserEntity user=storedUserRepository.findById(normalizeUsername(username)).orElseThrow();
         if(!passwordEncoder.matches(required(currentPassword,"currentPassword"),user.getPasswordHash()))throw new IllegalArgumentException("Current password is invalid");

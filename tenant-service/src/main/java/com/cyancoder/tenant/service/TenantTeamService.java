@@ -138,6 +138,9 @@ public class TenantTeamService {
         }
         membership.setRoleKey(request.roleKey()); membership.setActive(request.active()); membership.setUpdatedAt(Instant.now());
         if (request.active()) identities.ensurePanelAccess(username, IdentityDirectoryClient.panelRoleForTenantRole(request.roleKey()));
+        if (request.email() != null || request.phoneNumber() != null || request.mfaEnabled() != null) {
+            identities.administer(username, request.email(), request.phoneNumber(), request.mfaEnabled(), null);
+        }
         return userSummary(memberships.save(membership));
     }
 
@@ -228,7 +231,7 @@ public class TenantTeamService {
     private TenantUserSummary userSummary(TenantMembershipEntity membership) {
         IdentityDirectoryClient.IdentityUser identity = identities.get(membership.getUsername()); return userSummary(membership, identity);
     }
-    private TenantUserSummary userSummary(TenantMembershipEntity membership, IdentityDirectoryClient.IdentityUser identity) { return new TenantUserSummary(membership.getUsername(), identity == null ? null : identity.email(), identity == null ? null : identity.phoneNumber(), membership.getRoleKey(), membership.isActive(), membership.getCreatedAt(), membership.getUpdatedAt()); }
+    private TenantUserSummary userSummary(TenantMembershipEntity membership, IdentityDirectoryClient.IdentityUser identity) { return new TenantUserSummary(membership.getUsername(), identity == null ? null : identity.email(), identity == null ? null : identity.phoneNumber(), membership.getRoleKey(), membership.isActive(), identity != null && identity.mfaEnabled(), membership.getCreatedAt(), membership.getUpdatedAt()); }
     private static PermissionDescriptor permission(String key, String group, String name, String description) { return new PermissionDescriptor(key, group, name, description); }
     private static String trim(String value) { return value == null || value.isBlank() ? null : value.trim(); }
 }

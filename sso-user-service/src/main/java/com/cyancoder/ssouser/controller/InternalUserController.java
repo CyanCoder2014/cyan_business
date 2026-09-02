@@ -9,6 +9,7 @@ import com.cyancoder.ssouser.service.IamDirectoryService;
 import com.cyancoder.ssouser.service.UserDirectoryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,4 +39,12 @@ public class InternalUserController {
 
     @GetMapping("/{username}")
     public UserSummary get(@PathVariable String username) { return directory.getUser(username); }
+
+    /** Null fields are left unchanged, so a caller can flip one setting in isolation. */
+    public record AdministerUserRequest(String email, String phoneNumber, Boolean mfaEnabled, Boolean active) {}
+
+    @PatchMapping("/{username}")
+    public UserSummary administer(@PathVariable String username, @RequestBody AdministerUserRequest request) {
+        return directory.administer(username, request.email(), request.phoneNumber(), request.mfaEnabled(), request.active());
+    }
 }

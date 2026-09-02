@@ -56,7 +56,7 @@ public final class TenantContracts {
     ) {}
 
     public record TenantUserSummary(String username, String email, String phoneNumber, String roleKey,
-                                    boolean active, Instant joinedAt, Instant updatedAt) {}
+                                    boolean active, boolean mfaEnabled, Instant joinedAt, Instant updatedAt) {}
 
     public record AddTenantUserRequest(
             @NotBlank @Size(max = 180) String username,
@@ -67,7 +67,19 @@ public final class TenantContracts {
             boolean mfaRequired
     ) {}
 
-    public record UpdateTenantUserRequest(@NotBlank String roleKey, boolean active) {}
+    /**
+     * roleKey and active govern the tenant membership; the remaining fields are
+     * optional and, when present, are pushed to the identity directory. Leaving
+     * one null keeps the stored value.
+     */
+    public record UpdateTenantUserRequest(@NotBlank String roleKey, boolean active,
+                                          @Size(max = 240) String email,
+                                          @Size(max = 40) String phoneNumber,
+                                          Boolean mfaEnabled) {
+        public UpdateTenantUserRequest(String roleKey, boolean active) {
+            this(roleKey, active, null, null, null);
+        }
+    }
 
     public record EffectiveAccess(String tenantKey, String username, String roleKey, List<String> permissions,
                                   boolean active) {}

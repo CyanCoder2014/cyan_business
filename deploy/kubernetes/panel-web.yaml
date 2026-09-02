@@ -98,6 +98,12 @@ spec:
               value: http://tenant-service:9129
             - name: BILLING_SERVICE_BASE_URL
               value: http://billing-service:9130
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             httpGet:
               path: /auth

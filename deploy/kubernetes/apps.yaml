@@ -27,7 +27,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -36,6 +36,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -91,7 +97,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -100,6 +106,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -155,7 +167,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -164,6 +176,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -219,7 +237,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -228,6 +246,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -283,7 +307,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -292,6 +316,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -347,7 +377,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -356,6 +386,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -411,7 +447,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -420,6 +456,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -475,11 +517,17 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -535,7 +583,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -544,6 +592,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -599,7 +653,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -608,6 +662,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -663,11 +723,17 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -723,7 +789,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -732,6 +798,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -787,7 +859,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -796,6 +868,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -851,7 +929,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -860,6 +938,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -915,7 +999,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -924,6 +1008,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -979,7 +1069,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -988,6 +1078,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1043,7 +1139,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1052,6 +1148,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1109,7 +1211,7 @@ spec:
             - name: TENANT_SERVICE_BASE_URL
               value: http://tenant-service:9129
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1118,6 +1220,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1173,7 +1281,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1182,6 +1290,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1237,7 +1351,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1246,6 +1360,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1301,7 +1421,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1310,6 +1430,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1365,7 +1491,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1374,6 +1500,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1429,7 +1561,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1438,6 +1570,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1493,7 +1631,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1502,6 +1640,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1557,7 +1701,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1566,6 +1710,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1621,7 +1771,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1630,6 +1780,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1687,7 +1843,7 @@ spec:
             - name: TENANT_SERVICE_BASE_URL
               value: http://tenant-service:9129
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1696,6 +1852,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1751,7 +1913,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1760,6 +1922,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1815,7 +1983,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1824,6 +1992,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1879,7 +2053,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -1890,6 +2064,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -1945,11 +2125,17 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -2007,11 +2193,17 @@ spec:
             - name: TENANT_SERVICE_BASE_URL
               value: http://tenant-service:9129
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -2067,7 +2259,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -2076,6 +2268,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -2131,7 +2329,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -2140,6 +2338,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -2195,7 +2399,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -2204,6 +2408,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -2259,7 +2469,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -2268,6 +2478,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -2329,11 +2545,17 @@ spec:
             - name: BPM_SERVICE_BASE_URL
               value: http://bpm-service:9119
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
           envFrom:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http
@@ -2389,7 +2611,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "3"
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
@@ -2400,6 +2622,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 150m
+              memory: 448Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: http
@@ -2455,7 +2683,7 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: server
             - name: JAVA_TOOL_OPTIONS
-              value: -XX:MaxRAMPercentage=75.0
+              value: -XX:MaxRAMPercentage=65.0
             - name: PLATFORM_API_DOCS_TARGETS_JSON
               value: >-
                 [
@@ -2502,6 +2730,12 @@ spec:
             - secretRef:
                 name: cyan-platform-secrets
                 optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 320Mi
+            limits:
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: http

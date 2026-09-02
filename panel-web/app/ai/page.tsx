@@ -21,6 +21,7 @@ export default function AiPage() {
   const [blueprints, setBlueprints] = useState<AppBlueprint[]>([]);
   const [active, setActive] = useState<AiConversationSession | null>(null);
   const [draft, setDraft] = useState<ClientAppDraft | null>(null);
+  const [heuristicOnly, setHeuristicOnly] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -72,6 +73,7 @@ export default function AiPage() {
       if (!session) session = await createConversationSession({ channelType: "PANEL", tenantKey, siteKey: siteKey || undefined, title: text.slice(0, 80) });
       await appendConversationMessage(session.sessionId, { role: "USER", content: text });
       const response = await generatePlatformApp({ prompt: text, tenantKey, siteKey: siteKey || undefined, sessionId: session.sessionId, execute: false });
+      setHeuristicOnly(response.generationMode === "HEURISTIC");
       const summary = response.nextQuestions.length
         ? response.nextQuestions[0]
         : (locale === "fa"
@@ -116,6 +118,9 @@ export default function AiPage() {
 
   const questions = draft?.pendingQuestions ?? active?.pendingQuestions ?? [];
   return <PanelShell activeKey="studio" title="AI Studio" titleFa="استودیوی هوش مصنوعی" subtitle="Build through persisted conversations and backend-validated drafts." subtitleFa="با گفتگوهای پایدار و پیش‌نویس‌های معتبر backend بسازید.">
+    {heuristicOnly ? <div className="operational-banner error" role="alert"><span>{locale === "fa"
+      ? "هیچ ارائه‌دهنده هوش مصنوعی پیکربندی نشده است. این پیش‌نویس از یک قالب آماده ساخته شده و متن درخواست شما را دنبال نمی‌کند. برای تولید واقعی، یک کلید API در بخش ارائه‌دهندگان ثبت کنید."
+      : "No AI provider is configured, so this draft came from a stock template and does not follow your description. Add an API key under Manage providers for real generation."}</span></div> : null}
     <div className="page-action-bar"><span>{locale === "fa" ? "پروفایل‌های API و تولید رسانه به‌صورت مستقل مدیریت می‌شوند." : "API profiles and generated media are managed independently."}</span><Link className="secondary-pill" href="/ai/providers">{locale === "fa" ? "مدیریت ارائه‌دهندگان" : "Manage providers"}</Link></div>
     <div className="ai-workspace">
       <aside className="ai-session-list"><button className="primary-pill" disabled={starting || sending} onClick={start}><SparkleIcon size={15}/>{starting ? (locale === "fa" ? "در حال ساخت…" : "Creating…") : (locale === "fa" ? "گفتگوی جدید" : "New conversation")}</button>{sessions.map((session) => { const StatusIcon = session.status === "RESOLVED" ? CheckCircleIcon : session.status === "WAITING_FOR_ANSWERS" ? ClockIcon : session.status === "FAILED" ? XCircleIcon : null; const tone = session.status === "RESOLVED" ? "tone-success" : session.status === "WAITING_FOR_ANSWERS" ? "tone-warning" : session.status === "FAILED" ? "tone-danger" : ""; return <button key={session.sessionId} disabled={starting || sending} className={active?.sessionId === session.sessionId ? "active" : ""} onClick={() => setActive(session)}><strong>{session.latestPrompt || session.sessionId}</strong><span className="ai-session-status">{StatusIcon ? <StatusIcon size={12} className={tone}/> : null}{session.status}</span></button>; })}</aside>

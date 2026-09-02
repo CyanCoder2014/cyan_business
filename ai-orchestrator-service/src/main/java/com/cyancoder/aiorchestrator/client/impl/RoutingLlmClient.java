@@ -37,6 +37,13 @@ public class RoutingLlmClient implements LlmClient {
     }
 
     @Override
+    public boolean isModelBacked() {
+        return LlmProviderSelector.selectCandidates(llmProperties).stream()
+                .anyMatch(provider -> provider != AiProvider.HEURISTIC
+                        && LlmProviderSelector.isAvailable(llmProperties, provider));
+    }
+
+    @Override
     public PlatformAppDslDefinition generateDsl(String prompt) {
         Map<AiProvider, String> failures = new LinkedHashMap<>();
         for (AiProvider provider : LlmProviderSelector.selectCandidates(llmProperties)) {

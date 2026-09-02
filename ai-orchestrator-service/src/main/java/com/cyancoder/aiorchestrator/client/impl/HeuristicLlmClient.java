@@ -12,6 +12,11 @@ import java.util.Map;
 @Component
 public class HeuristicLlmClient implements LlmClient {
     @Override
+    public boolean isModelBacked() {
+        return false;
+    }
+
+    @Override
     public PlatformAppDslDefinition generateDsl(String prompt) {
         String lower = prompt.toLowerCase(Locale.ROOT);
         PlatformAppDslDefinition dsl = new PlatformAppDslDefinition();

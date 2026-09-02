@@ -111,7 +111,7 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
                 ? provisioningService.provision(dsl)
                 : null;
         usageReporter.increment(tenantKey, "aiGenerations");
-        return new GeneratePlatformAppResponse(null, null, dsl, nextQuestions, followUpQuestions, provisioningResult);
+        return new GeneratePlatformAppResponse(null, null, dsl, nextQuestions, followUpQuestions, provisioningResult, generationMode());
     }
 
     private GeneratePlatformAppResponse resolveKnownDraftResponse(GeneratePlatformAppRequest request, ClientAppDraft draft) {
@@ -122,7 +122,7 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
                 ? provisioningService.provision(dsl)
                 : null;
         String sessionId = resolveSessionId(request, draft, nextQuestions.isEmpty());
-        return new GeneratePlatformAppResponse(draft.getDraftId(), sessionId, dsl, nextQuestions, followUpQuestions, provisioningResult);
+        return new GeneratePlatformAppResponse(draft.getDraftId(), sessionId, dsl, nextQuestions, followUpQuestions, provisioningResult, generationMode());
     }
 
     private List<FollowUpQuestionDto> deriveNextQuestions(GeneratePlatformAppRequest request, PlatformAppDslDefinition dsl) {
@@ -156,6 +156,10 @@ public class AiPlatformGenerationServiceImpl implements AiPlatformGenerationServ
 
     private String defaultScope(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private String generationMode() {
+        return llmClient.isModelBacked() ? "MODEL" : "HEURISTIC";
     }
 
     private void removeUnavailablePlanItems(PlatformAppDslDefinition dsl, List<String> services) {

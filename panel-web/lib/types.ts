@@ -51,6 +51,8 @@ export type GeneratePlatformAppResponse = {
   nextQuestions: string[];
   followUpQuestions?: FollowUpQuestion[];
   provisioningResult: ProvisioningResult | null;
+  /** "HEURISTIC" when no AI provider is configured and the draft is a stock blueprint. */
+  generationMode?: "MODEL" | "HEURISTIC";
 };
 
 export type FollowUpQuestion = {

@@ -15,8 +15,11 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 
 @SpringBootApplication
 @EnableFeignClients
-@EntityScan(basePackages = {"com.cyancoder.taxpaysys.modules.tax_api.entity", "com.cyancoder.dynamiccore.store.jpa"})
-@EnableJpaRepositories(basePackages = {"com.cyancoder.taxpaysys.modules.tax_api.repository", "com.cyancoder.dynamiccore.store.jpa"})
+// Scans every module, not just tax_api: modules.home was omitted, so its
+// Ticket entity and TicketRepository were never registered and TicketService
+// failed to autowire, which stopped the whole context from starting.
+@EntityScan(basePackages = {"com.cyancoder.taxpaysys.modules", "com.cyancoder.dynamiccore.store.jpa"})
+@EnableJpaRepositories(basePackages = {"com.cyancoder.taxpaysys.modules", "com.cyancoder.dynamiccore.store.jpa"})
 @EnableMongoRepositories(basePackages = {"com.cyancoder.dynamiccore.store.mongo"})
 @ImportAutoConfiguration({FeignAutoConfiguration.class})
 @Import({DynamicCoreConfig.class, DynamicPersistenceConfig.class, DualApiSecurityConfig.class})

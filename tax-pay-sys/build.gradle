@@ -59,7 +59,10 @@ dependencies {
 	implementation 'org.apache.commons:commons-crypto:1.2.0'
 
 	implementation 'org.apache.commons:commons-lang3:3.0'
-	implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
+	// No version: the Spring Boot BOM manages Jackson. Pinning 2.13.4 here
+	// downgraded the whole module below the 2.14 that introduced DatatypeFeature,
+	// so Spring's content negotiation failed at startup with NoClassDefFoundError.
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'com.squareup.okhttp3:okhttp:4.9.1'
 
 	implementation 'com.github.eloyzone:jalali-calendar:1.0.0'
@@ -95,6 +98,6 @@ tasks.named('bootBuildImage') {
 	builder = 'paketobuildpacks/builder-jammy-base:latest'
 }
 
-//tasks.named('test') {
-//	useJUnitPlatform()
-//}
+tasks.named('test') {
+	useJUnitPlatform()
+}

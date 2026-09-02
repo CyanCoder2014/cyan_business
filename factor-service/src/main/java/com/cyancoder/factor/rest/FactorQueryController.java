@@ -5,12 +5,9 @@ import com.cyancoder.factor.entity.FactorEntity;
 import com.cyancoder.factor.model.FactorFilterModel;
 import com.cyancoder.factor.model.FactorModel;
 import com.cyancoder.factor.model.PageableModel;
-import com.cyancoder.factor.query.FilterFactorQuery;
 import com.cyancoder.factor.service.FactorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.axonframework.messaging.responsetypes.ResponseTypes;
-import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.core.env.Environment;
 //import org.springframework.security.core.Authentication;
 //import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,7 +29,6 @@ public class FactorQueryController {
 
 
     private  final Environment env;
-    private  final QueryGateway queryGateway;
     private  final FactorService factorService;
 
 
@@ -43,20 +39,15 @@ public class FactorQueryController {
             @RequestParam String codeTo,
             @RequestParam String fromDate,
             @RequestParam String toDate,
-            @RequestParam String factorId){
+            @RequestParam String factorId) throws java.text.ParseException {
 
-        FilterFactorQuery filterFactorQuery = new FilterFactorQuery();
-        filterFactorQuery.setCompanyId(companyId==""?null:companyId);
-        filterFactorQuery.setCodeFrom(codeFrom==""?null:codeFrom);
-        filterFactorQuery.setCodeTo(codeTo==""?null:codeTo);
-        filterFactorQuery.setFromDate(fromDate==""?null:fromDate);
-        filterFactorQuery.setToDate(toDate==""?null:toDate);
-        filterFactorQuery.setFactorId(factorId==""?null:factorId);
-
-        List<FactorModel> factors = queryGateway.query(filterFactorQuery,
-                ResponseTypes.multipleInstancesOf(FactorModel.class)).join();
-
-        return factors;
+        return factorService.filterFactors(
+                companyId.isEmpty() ? null : companyId,
+                codeFrom.isEmpty() ? null : codeFrom,
+                codeTo.isEmpty() ? null : codeTo,
+                fromDate.isEmpty() ? null : fromDate,
+                toDate.isEmpty() ? null : toDate,
+                factorId.isEmpty() ? null : factorId);
     }
 
 

@@ -20,7 +20,6 @@ import com.cyancoder.factor.service.ExcelService;
 import com.cyancoder.factor.service.FactorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +35,6 @@ import java.util.List;
 @Slf4j
 public class FactorCommandController {
     private  final Environment env;
-    private  final CommandGateway commandGateway;
 
     private final FactorService factorService;
     private final ExcelService excelService;

@@ -5,7 +5,6 @@ import com.cyancoder.factor.model.BuyerModel;
 import com.cyancoder.factor.model.FactorItemModel;
 import lombok.Builder;
 import lombok.Data;
-import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 import java.util.Date;
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.List;
 public class CreateFactorCommand {
 
 
-    @TargetAggregateIdentifier
     private final String factorId;
 
 

@@ -32,6 +32,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -228,4 +229,43 @@ public class FactorService {
 //                pageable);
     }
 
+
+    /**
+     * Filter factors and resolve each one's buyer over HTTP. This replaces the
+     * Axon query handler, which resolved the buyer through a second distributed
+     * query; the filter branches are carried over unchanged.
+     */
+    public List<FactorModel> filterFactors(String companyId, String codeFrom, String codeTo,
+                                           String fromDate, String toDate, String factorId) throws ParseException {
+        List<FactorEntity> storedFactors = new ArrayList<>();
+        if (factorId != null) {
+            storedFactors = factorRepository.findByCompanyIdAndFactorId(companyId, factorId);
+        }
+        if (codeFrom != null && codeTo != null) {
+            storedFactors = factorRepository.findByCompanyIdAndCodeBetween(companyId, codeFrom, codeTo);
+        } else if (fromDate != null && toDate != null) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            storedFactors = factorRepository.findByCompanyIdAndCreatedAtBetween(
+                    companyId, format.parse(fromDate), format.parse(toDate));
+        }
+
+        List<FactorModel> factors = new ArrayList<>();
+        for (FactorEntity entity : storedFactors) {
+            FactorModel factorModel = new FactorModel(entity);
+            String buyerId = factorModel.getBuyer() == null ? null : factorModel.getBuyer().getBuyerId();
+            if (buyerId != null && !buyerId.isBlank()) {
+                try {
+                    BuyerModel buyer = buyerClient.getBuyer(buyerId);
+                    if (buyer != null) {
+                        factorModel.setBuyer(buyer);
+                    }
+                } catch (RuntimeException ex) {
+                    // A missing or unreachable buyer must not hide the factor.
+                    log.warn("could not resolve buyer {}: {}", buyerId, ex.toString());
+                }
+            }
+            factors.add(factorModel);
+        }
+        return factors;
+    }
 }

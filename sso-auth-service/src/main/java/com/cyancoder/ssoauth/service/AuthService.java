@@ -152,6 +152,15 @@ public class AuthService {
         if (sessionResponse == null || !sessionResponse.active()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session inactive");
         }
+        // A password change invalidates every session that predates it, so a
+        // stolen refresh token cannot outlive the reset that was meant to stop
+        // it. renew() only extends the expiry, so issuedAt still reflects when
+        // the session was actually established.
+        if (user.credentialsChangedAt() != null
+                && sessionResponse.issuedAtEpochSecond() < user.credentialsChangedAt().getEpochSecond()) {
+            refreshTokenService.revokeBySessionId(state.sessionId());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credentials changed, sign in again");
+        }
         IamUserAccessSummary access = userClient.resolveAccess(user.username(), request.clientId());
         return jwtTokenService.issue(request.clientId(), user, access, sessionResponse);
     }

@@ -32,6 +32,9 @@ public class StoredUserEntity {
     @Column(name = "mfa_enabled", nullable = false)
     private boolean mfaEnabled;
 
+    @Column(name = "credentials_changed_at")
+    private java.time.Instant credentialsChangedAt;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "sso_user_roles", joinColumns = @JoinColumn(name = "username"))
     @Column(name = "role")
@@ -39,6 +42,9 @@ public class StoredUserEntity {
 
     @Column(name = "active", nullable = false)
     private boolean active;
+
+    public java.time.Instant getCredentialsChangedAt() { return credentialsChangedAt; }
+    public void setCredentialsChangedAt(java.time.Instant credentialsChangedAt) { this.credentialsChangedAt = credentialsChangedAt; }
 
     public String getUsername() {
         return username;

@@ -9,10 +9,13 @@ import com.cyancoder.ssoauth.client.UserClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class AuthServiceTest {
@@ -46,5 +49,63 @@ class AuthServiceTest {
         verify(sessions).create(request.capture());
         assertThat(request.getValue().username()).isEqualTo("cyan-admin");
         assertThat(response).isSameAs(issued);
+    }
+
+    @Test
+    void refreshIsRejectedForASessionOlderThanTheLastPasswordChange() {
+        UserClient users = mock(UserClient.class);
+        SessionClient sessions = mock(SessionClient.class);
+        RefreshTokenService refreshTokens = mock(RefreshTokenService.class);
+        AuthService service = new AuthService(users, mock(CaptchaClient.class), mock(OtpClient.class),
+                sessions, mock(FidoClient.class), mock(JwtTokenService.class), refreshTokens);
+
+        Instant passwordChangedAt = Instant.parse("2026-03-01T12:00:00Z");
+        UserSummary user = new UserSummary("cyan-admin", "admin@cyan.local", "0912", false,
+                List.of("admin"), true, passwordChangedAt);
+        // Session established an hour before the password was changed.
+        SessionResponse session = new SessionResponse("session-1", "cyan-admin", "panel-web", "browser", true,
+                passwordChangedAt.minusSeconds(3600).getEpochSecond(),
+                passwordChangedAt.plusSeconds(86400).getEpochSecond());
+
+        when(refreshTokens.consume("panel-web", "token")).thenReturn(
+                new RefreshTokenService.RefreshTokenState("token", "cyan-admin", "panel-web", "session-1",
+                        passwordChangedAt.plusSeconds(86400).getEpochSecond(), true));
+        when(users.getUser("cyan-admin")).thenReturn(user);
+        when(sessions.renew(eq("session-1"), any())).thenReturn(session);
+
+        assertThatThrownBy(() -> service.refresh(new RefreshTokenRequest("panel-web", "token")))
+                .hasMessageContaining("Credentials changed");
+        // The token is burned so it cannot simply be retried.
+        verify(refreshTokens).revokeBySessionId("session-1");
+    }
+
+    @Test
+    void refreshStillWorksForASessionEstablishedAfterThePasswordChange() {
+        UserClient users = mock(UserClient.class);
+        SessionClient sessions = mock(SessionClient.class);
+        RefreshTokenService refreshTokens = mock(RefreshTokenService.class);
+        JwtTokenService tokens = mock(JwtTokenService.class);
+        AuthService service = new AuthService(users, mock(CaptchaClient.class), mock(OtpClient.class),
+                sessions, mock(FidoClient.class), tokens, refreshTokens);
+
+        Instant passwordChangedAt = Instant.parse("2026-03-01T12:00:00Z");
+        UserSummary user = new UserSummary("cyan-admin", "admin@cyan.local", "0912", false,
+                List.of("admin"), true, passwordChangedAt);
+        SessionResponse session = new SessionResponse("session-2", "cyan-admin", "panel-web", "browser", true,
+                passwordChangedAt.plusSeconds(60).getEpochSecond(),
+                passwordChangedAt.plusSeconds(86400).getEpochSecond());
+        IamUserAccessSummary access = mock(IamUserAccessSummary.class);
+        TokenResponse issued = mock(TokenResponse.class);
+
+        when(refreshTokens.consume("panel-web", "token")).thenReturn(
+                new RefreshTokenService.RefreshTokenState("token", "cyan-admin", "panel-web", "session-2",
+                        passwordChangedAt.plusSeconds(86400).getEpochSecond(), true));
+        when(users.getUser("cyan-admin")).thenReturn(user);
+        when(sessions.renew(eq("session-2"), any())).thenReturn(session);
+        when(users.resolveAccess("cyan-admin", "panel-web")).thenReturn(access);
+        when(tokens.issue("panel-web", user, access, session)).thenReturn(issued);
+
+        assertThat(service.refresh(new RefreshTokenRequest("panel-web", "token"))).isSameAs(issued);
+        verify(refreshTokens, never()).revokeBySessionId(any());
     }
 }

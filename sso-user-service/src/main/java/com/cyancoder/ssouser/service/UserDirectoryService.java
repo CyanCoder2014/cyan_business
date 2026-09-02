@@ -139,6 +139,7 @@ public class UserDirectoryService {
         String next = required(newPassword, "newPassword");
         if (next.length() < 8) throw new IllegalArgumentException("New password must contain at least 8 characters");
         user.setPasswordHash(passwordEncoder.encode(next));
+        user.setCredentialsChangedAt(java.time.Instant.now());
         storedUserRepository.save(user);
     }
 
@@ -146,7 +147,7 @@ public class UserDirectoryService {
         StoredUserEntity user=storedUserRepository.findById(normalizeUsername(username)).orElseThrow();
         if(!passwordEncoder.matches(required(currentPassword,"currentPassword"),user.getPasswordHash()))throw new IllegalArgumentException("Current password is invalid");
         String next=required(newPassword,"newPassword");if(next.length()<8)throw new IllegalArgumentException("New password must contain at least 8 characters");
-        user.setPasswordHash(passwordEncoder.encode(next));storedUserRepository.save(user);
+        user.setPasswordHash(passwordEncoder.encode(next));user.setCredentialsChangedAt(java.time.Instant.now());storedUserRepository.save(user);
     }
 
     public PasswordVerificationResponse verifyPassword(String username, String password) {
@@ -166,7 +167,8 @@ public class UserDirectoryService {
                 storedUser.getPhoneNumber(),
                 storedUser.isMfaEnabled(),
                 storedUser.getRoles(),
-                storedUser.isActive()
+                storedUser.isActive(),
+                storedUser.getCredentialsChangedAt()
         );
     }
 

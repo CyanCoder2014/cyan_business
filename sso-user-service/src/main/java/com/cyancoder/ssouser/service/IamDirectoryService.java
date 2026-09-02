@@ -21,6 +21,7 @@ import com.cyancoder.ssouser.entity.RealmEntity;
 import com.cyancoder.ssouser.entity.RealmRoleEntity;
 import com.cyancoder.ssouser.entity.StoredUserEntity;
 import com.cyancoder.ssouser.entity.UserClientRoleAssignmentEntity;
+import java.time.Instant;
 import com.cyancoder.ssouser.entity.UserRealmMembershipEntity;
 import com.cyancoder.ssouser.entity.UserRealmRoleAssignmentEntity;
 import com.cyancoder.ssouser.repository.ClientRepository;
@@ -299,11 +300,36 @@ public class IamDirectoryService {
                 .filter(item -> item.getRoleKey().equals(required(roleKey, "roleKey")))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Realm role not found"));
-        UserRealmRoleAssignmentEntity entity = new UserRealmRoleAssignmentEntity();
-        entity.setUsername(username);
-        entity.setRealmKey(realmKey);
-        entity.setRoleKey(roleKey);
+        UserRealmRoleAssignmentEntity entity = userRealmRoleAssignmentRepository
+                .findByUsernameAndRealmKeyAndRoleKey(username, realmKey, roleKey)
+                .orElseGet(() -> {
+                    UserRealmRoleAssignmentEntity created = new UserRealmRoleAssignmentEntity();
+                    created.setUsername(username);
+                    created.setRealmKey(realmKey);
+                    created.setRoleKey(roleKey);
+                    return created;
+                });
+        // Re-granting a revoked role restores the same row, so the grant/revoke
+        // history stays on one record rather than fragmenting across duplicates.
+        entity.setActive(true);
+        entity.setRevokedAt(null);
+        entity.setRevokedBy(null);
+        entity.setGrantedAt(Instant.now());
+        entity.setGrantedBy(iamSecurityService.currentUsername());
         userRealmRoleAssignmentRepository.save(entity);
+    }
+
+    @Transactional
+    public IamUserAccessSummary revokeRealmRole(String realmKey, UserRoleAssignmentRequest request) {
+        iamSecurityService.requireRealmManager(required(realmKey, "realmKey"));
+        UserRealmRoleAssignmentEntity entity = userRealmRoleAssignmentRepository
+                .findByUsernameAndRealmKeyAndRoleKey(required(request.username(), "username"), realmKey, required(request.roleKey(), "roleKey"))
+                .orElseThrow(() -> new IllegalArgumentException("Realm role assignment not found"));
+        entity.setActive(false);
+        entity.setRevokedAt(Instant.now());
+        entity.setRevokedBy(iamSecurityService.currentUsername());
+        userRealmRoleAssignmentRepository.save(entity);
+        return resolveAccess(request.username(), null);
     }
 
     @Transactional
@@ -324,11 +350,36 @@ public class IamDirectoryService {
                 .filter(item -> item.getRoleKey().equals(required(roleKey, "roleKey")))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Client role not found"));
-        UserClientRoleAssignmentEntity entity = new UserClientRoleAssignmentEntity();
-        entity.setUsername(username);
-        entity.setClientId(clientId);
-        entity.setRoleKey(roleKey);
+        UserClientRoleAssignmentEntity entity = userClientRoleAssignmentRepository
+                .findByUsernameAndClientIdAndRoleKey(username, clientId, roleKey)
+                .orElseGet(() -> {
+                    UserClientRoleAssignmentEntity created = new UserClientRoleAssignmentEntity();
+                    created.setUsername(username);
+                    created.setClientId(clientId);
+                    created.setRoleKey(roleKey);
+                    return created;
+                });
+        entity.setActive(true);
+        entity.setRevokedAt(null);
+        entity.setRevokedBy(null);
+        entity.setGrantedAt(Instant.now());
+        entity.setGrantedBy(iamSecurityService.currentUsername());
         userClientRoleAssignmentRepository.save(entity);
+    }
+
+    @Transactional
+    public IamUserAccessSummary revokeClientRole(String clientId, UserRoleAssignmentRequest request) {
+        ClientEntity client = clientRepository.findById(required(clientId, "clientId"))
+                .orElseThrow(() -> new IllegalArgumentException("Client not found"));
+        iamSecurityService.requireClientManager(client.getRealmKey(), clientId);
+        UserClientRoleAssignmentEntity entity = userClientRoleAssignmentRepository
+                .findByUsernameAndClientIdAndRoleKey(required(request.username(), "username"), clientId, required(request.roleKey(), "roleKey"))
+                .orElseThrow(() -> new IllegalArgumentException("Client role assignment not found"));
+        entity.setActive(false);
+        entity.setRevokedAt(Instant.now());
+        entity.setRevokedBy(iamSecurityService.currentUsername());
+        userClientRoleAssignmentRepository.save(entity);
+        return resolveAccessInternal(request.username(), clientId);
     }
 
     public IamUserAccessSummary resolveAccess(String username, String clientId) {
@@ -347,7 +398,7 @@ public class IamDirectoryService {
         StoredUserEntity user = storedUserRepository.findById(required(username, "username"))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         String resolvedRealmKey = resolveRealmKey(user, clientId);
-        List<String> realmRoles = userRealmRoleAssignmentRepository.findByUsernameAndRealmKeyOrderByRoleKeyAsc(username, resolvedRealmKey)
+        List<String> realmRoles = userRealmRoleAssignmentRepository.findByUsernameAndRealmKeyAndActiveTrueOrderByRoleKeyAsc(username, resolvedRealmKey)
                 .stream().map(UserRealmRoleAssignmentEntity::getRoleKey).toList();
         List<String> realmPermissions = permissionsForRealm(resolvedRealmKey, realmRoles);
         List<IamClientAccessSummary> clients = new ArrayList<>();
@@ -356,7 +407,7 @@ public class IamDirectoryService {
             if (clientId != null && !clientId.isBlank() && !client.getClientId().equals(clientId)) {
                 continue;
             }
-            List<String> clientRoles = userClientRoleAssignmentRepository.findByUsernameAndClientIdOrderByRoleKeyAsc(username, client.getClientId())
+            List<String> clientRoles = userClientRoleAssignmentRepository.findByUsernameAndClientIdAndActiveTrueOrderByRoleKeyAsc(username, client.getClientId())
                     .stream().map(UserClientRoleAssignmentEntity::getRoleKey).toList();
             clients.add(new IamClientAccessSummary(
                     client.getClientId(),
@@ -374,7 +425,7 @@ public class IamDirectoryService {
             iamSecurityService.requireRealmManager(targetRealm);
         }
         Map<String, List<String>> grouped = new LinkedHashMap<>();
-        userClientRoleAssignmentRepository.findByUsernameOrderByClientIdAscRoleKeyAsc(username)
+        userClientRoleAssignmentRepository.findByUsernameAndActiveTrueOrderByClientIdAscRoleKeyAsc(username)
                 .forEach(item -> grouped.computeIfAbsent(item.getClientId(), ignored -> new ArrayList<>()).add(item.getRoleKey()));
         return grouped.entrySet().stream()
                 .map(entry -> new UserClientRoleAssignmentSummary(username, entry.getKey(), entry.getValue()))
@@ -585,18 +636,40 @@ public class IamDirectoryService {
     }
 
     private void saveSeedRealmAssignment(String username, String realmKey, String roleKey) {
-        UserRealmRoleAssignmentEntity entity = new UserRealmRoleAssignmentEntity();
-        entity.setUsername(username);
-        entity.setRealmKey(realmKey);
-        entity.setRoleKey(roleKey);
+        UserRealmRoleAssignmentEntity entity = userRealmRoleAssignmentRepository
+                .findByUsernameAndRealmKeyAndRoleKey(username, realmKey, roleKey)
+                .orElseGet(() -> {
+                    UserRealmRoleAssignmentEntity created = new UserRealmRoleAssignmentEntity();
+                    created.setUsername(username);
+                    created.setRealmKey(realmKey);
+                    created.setRoleKey(roleKey);
+                    return created;
+                });
+        // Re-granting a revoked role restores the same row, so the grant/revoke
+        // history stays on one record rather than fragmenting across duplicates.
+        entity.setActive(true);
+        entity.setRevokedAt(null);
+        entity.setRevokedBy(null);
+        entity.setGrantedAt(Instant.now());
+        entity.setGrantedBy("system");
         userRealmRoleAssignmentRepository.save(entity);
     }
 
     private void saveSeedClientAssignment(String username, String clientId, String roleKey) {
-        UserClientRoleAssignmentEntity entity = new UserClientRoleAssignmentEntity();
-        entity.setUsername(username);
-        entity.setClientId(clientId);
-        entity.setRoleKey(roleKey);
+        UserClientRoleAssignmentEntity entity = userClientRoleAssignmentRepository
+                .findByUsernameAndClientIdAndRoleKey(username, clientId, roleKey)
+                .orElseGet(() -> {
+                    UserClientRoleAssignmentEntity created = new UserClientRoleAssignmentEntity();
+                    created.setUsername(username);
+                    created.setClientId(clientId);
+                    created.setRoleKey(roleKey);
+                    return created;
+                });
+        entity.setActive(true);
+        entity.setRevokedAt(null);
+        entity.setRevokedBy(null);
+        entity.setGrantedAt(Instant.now());
+        entity.setGrantedBy("system");
         userClientRoleAssignmentRepository.save(entity);
     }
 }

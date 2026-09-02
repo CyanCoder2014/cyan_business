@@ -7,6 +7,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 
 @Entity
@@ -24,6 +25,23 @@ public class UserClientRoleAssignmentEntity {
     @Id
     @Column(name = "role_key", nullable = false)
     private String roleKey;
+
+    // Soft revoke: the row is kept so a withdrawn grant can be restored, and so
+    // the audit trail of who granted or revoked it survives the revocation.
+    @Column(name = "active", nullable = false, columnDefinition = "boolean not null default true")
+    private boolean active = true;
+
+    @Column(name = "granted_at")
+    private Instant grantedAt;
+
+    @Column(name = "granted_by")
+    private String grantedBy;
+
+    @Column(name = "revoked_at")
+    private Instant revokedAt;
+
+    @Column(name = "revoked_by")
+    private String revokedBy;
 
     public static class UserClientRoleAssignmentId implements Serializable {
         private String username;
@@ -58,4 +76,15 @@ public class UserClientRoleAssignmentEntity {
     public void setClientId(String clientId) { this.clientId = clientId; }
     public String getRoleKey() { return roleKey; }
     public void setRoleKey(String roleKey) { this.roleKey = roleKey; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+    public Instant getGrantedAt() { return grantedAt; }
+    public void setGrantedAt(Instant grantedAt) { this.grantedAt = grantedAt; }
+    public String getGrantedBy() { return grantedBy; }
+    public void setGrantedBy(String grantedBy) { this.grantedBy = grantedBy; }
+    public Instant getRevokedAt() { return revokedAt; }
+    public void setRevokedAt(Instant revokedAt) { this.revokedAt = revokedAt; }
+    public String getRevokedBy() { return revokedBy; }
+    public void setRevokedBy(String revokedBy) { this.revokedBy = revokedBy; }
 }

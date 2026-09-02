@@ -105,6 +105,20 @@ public class IamController {
         return iamDirectoryService.assignClientRole(clientId, request);
     }
 
+    /**
+     * Soft revoke. The assignment row is kept with its audit trail, and posting
+     * the same role back to assign-role restores it on that same record.
+     */
+    @PostMapping("/realms/{realmKey}/revoke-role")
+    public IamUserAccessSummary revokeRealmRole(@PathVariable("realmKey") String realmKey, @RequestBody UserRoleAssignmentRequest request) {
+        return iamDirectoryService.revokeRealmRole(realmKey, request);
+    }
+
+    @PostMapping("/clients/{clientId}/revoke-role")
+    public IamUserAccessSummary revokeClientRole(@PathVariable("clientId") String clientId, @RequestBody UserRoleAssignmentRequest request) {
+        return iamDirectoryService.revokeClientRole(clientId, request);
+    }
+
     @GetMapping("/users/{username}/access")
     public IamUserAccessSummary resolveAccess(@PathVariable("username") String username, @RequestParam(value = "clientId", required = false) String clientId) {
         return iamDirectoryService.resolveAccess(username, clientId);

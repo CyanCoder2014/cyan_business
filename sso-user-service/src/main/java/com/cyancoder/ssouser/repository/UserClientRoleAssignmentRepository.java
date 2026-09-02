@@ -9,4 +9,7 @@ import java.util.List;
 public interface UserClientRoleAssignmentRepository extends JpaRepository<UserClientRoleAssignmentEntity, UserClientRoleAssignmentId> {
     List<UserClientRoleAssignmentEntity> findByUsernameAndClientIdOrderByRoleKeyAsc(String username, String clientId);
     List<UserClientRoleAssignmentEntity> findByUsernameOrderByClientIdAscRoleKeyAsc(String username);
+    List<UserClientRoleAssignmentEntity> findByUsernameAndClientIdAndActiveTrueOrderByRoleKeyAsc(String username, String clientId);
+    java.util.Optional<UserClientRoleAssignmentEntity> findByUsernameAndClientIdAndRoleKey(String username, String clientId, String roleKey);
+    List<UserClientRoleAssignmentEntity> findByUsernameAndActiveTrueOrderByClientIdAscRoleKeyAsc(String username);
 }

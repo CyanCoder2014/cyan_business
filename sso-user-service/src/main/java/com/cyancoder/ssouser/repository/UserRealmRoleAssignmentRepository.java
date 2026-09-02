@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface UserRealmRoleAssignmentRepository extends JpaRepository<UserRealmRoleAssignmentEntity, UserRealmRoleAssignmentId> {
     List<UserRealmRoleAssignmentEntity> findByUsernameAndRealmKeyOrderByRoleKeyAsc(String username, String realmKey);
+    List<UserRealmRoleAssignmentEntity> findByUsernameAndRealmKeyAndActiveTrueOrderByRoleKeyAsc(String username, String realmKey);
+    java.util.Optional<UserRealmRoleAssignmentEntity> findByUsernameAndRealmKeyAndRoleKey(String username, String realmKey, String roleKey);
 }

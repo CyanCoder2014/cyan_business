@@ -38,8 +38,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -108,8 +108,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -178,8 +178,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -248,8 +248,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -318,8 +318,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -388,8 +388,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -458,8 +458,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -524,8 +524,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -594,8 +594,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -664,8 +664,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -730,8 +730,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -800,8 +800,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -870,8 +870,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -940,8 +940,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1010,8 +1010,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1080,8 +1080,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1150,8 +1150,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1222,8 +1222,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -1292,8 +1292,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1362,8 +1362,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -1432,8 +1432,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1502,8 +1502,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1572,8 +1572,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1642,8 +1642,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1712,8 +1712,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1782,8 +1782,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -1854,8 +1854,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1924,8 +1924,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -1994,8 +1994,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -2066,8 +2066,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -2132,8 +2132,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -2200,8 +2200,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -2270,8 +2270,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -2340,8 +2340,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -2410,8 +2410,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -2480,8 +2480,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -2552,8 +2552,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:
@@ -2624,8 +2624,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 150m
-              memory: 448Mi
+              cpu: 100m
+              memory: 320Mi
             limits:
               memory: 1536Mi
           readinessProbe:
@@ -2732,8 +2732,8 @@ spec:
                 optional: true
           resources:
             requests:
-              cpu: 100m
-              memory: 320Mi
+              cpu: 50m
+              memory: 192Mi
             limits:
               memory: 1Gi
           readinessProbe:

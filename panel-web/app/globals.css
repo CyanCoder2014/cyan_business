@@ -2982,3 +2982,30 @@ select:focus {
 @media(max-width:760px){.schema-tree-workspace{display:flex;flex-direction:column;min-height:0;border:0;background:transparent}.schema-tree{max-height:420px;border:1px solid var(--border);border-radius:14px}.schema-inspector{position:static;width:auto;margin-block-start:10px;border:1px solid var(--border);border-radius:14px;box-shadow:none}.definition-focused-form,.definition-config-cards{grid-template-columns:1fr}.definition-summary-strip{grid-template-columns:1fr}.advanced-definition-editor>div:last-child{display:grid}.key-value-editor>div{grid-template-columns:1fr 32px}.key-value-editor>div input:first-child{grid-column:1/-1}}
 .automation-workspace.read-only .automation-palette button,.automation-workspace.read-only .automation-toolbar .automation-import-action,.automation-workspace.read-only .automation-toolbar .test-run-trigger,.automation-workspace.read-only .automation-toolbar .primary-pill,.automation-workspace.read-only .automation-inspector input,.automation-workspace.read-only .automation-inspector select,.automation-workspace.read-only .automation-inspector textarea,.automation-workspace.read-only .automation-inspector .danger-link{pointer-events:none;opacity:.58}
 .workflow-connection-builder{display:grid;gap:8px;margin-block:12px;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--surface-muted)}.workflow-connection-builder header{display:grid;gap:2px}.workflow-connection-builder header small{color:var(--muted);font-size:.72rem}.workflow-connection-builder>div{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}.workflow-connection-builder select{min-width:0}
+
+/* --- AI Studio --------------------------------------------------------- */
+/* Questions render inside the message list so they read as part of the
+   conversation that raised them. */
+.ai-question-card{display:grid;gap:12px;margin:6px 0 14px;padding:16px;border:1px solid color-mix(in srgb,var(--warning) 40%,var(--border));border-radius:16px;background:color-mix(in srgb,var(--warning) 7%,var(--surface))}
+.ai-question-card>header{display:flex;align-items:flex-start;gap:9px}
+.ai-question-card>header>div{display:grid;gap:2px}
+.ai-question-card strong{font-size:.9rem}
+.ai-question-card small{color:var(--text-muted);font-size:.76rem}
+.ai-question-card label{display:grid;gap:5px}
+.ai-question-card label>span{font-size:.84rem;color:var(--text-body)}
+.ai-question-card input{min-height:40px;padding:8px 11px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;width:100%}
+.ai-question-card .primary-pill{justify-self:start}
+
+.ai-rail-hint{color:var(--text-muted);font-size:.8rem;padding:10px 12px;margin:0}
+
+/* Templates replace what is typed, so they sit below the composer and say so. */
+.quick-prompts{align-items:center}
+.quick-prompts-label{color:var(--text-muted);font-size:.76rem;white-space:nowrap;padding-inline-end:2px}
+
+.summary-grid span{display:grid;gap:2px;align-content:center}
+.summary-grid b{font-size:1.15rem;line-height:1.1;font-variant-numeric:tabular-nums}
+/* A zero count is a failure here, not a neutral number. */
+.summary-grid span.is-empty{border-color:color-mix(in srgb,var(--danger) 35%,var(--border));background:color-mix(in srgb,var(--danger) 6%,transparent)}
+.summary-grid span.is-empty b{color:var(--danger)}
+
+.ai-nothing-built{display:flex;align-items:center;gap:7px;margin:0;font-size:.82rem;color:var(--danger)}

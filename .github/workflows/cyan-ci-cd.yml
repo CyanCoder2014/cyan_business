@@ -90,9 +90,16 @@ jobs:
     name: Deploy Cyan
     needs: validate
 
+    # Deploys only when the push carries "deploy" in its message, so ordinary
+    # commits to develop build and test without touching the server. The node
+    # runs close to capacity, and a rollout per commit is not free.
+    #
     # kustomization.yaml hardcodes the cyan-staging namespace and there is no
-    # production overlay yet, so only develop pushes deploy for now.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    # production overlay yet, so develop is still the only branch that deploys.
+    if: >-
+      github.event_name == 'push'
+      && github.ref == 'refs/heads/develop'
+      && contains(github.event.head_commit.message, 'deploy')
 
     runs-on:
       - self-hosted

@@ -123,16 +123,32 @@ if [[ "$APPLY_MANIFESTS" == "true" ]]; then
   "${KUBECTL[@]}" apply -k deploy/kubernetes -n "${NAMESPACE}"
 fi
 
-for SERVICE in "${REQUESTED_SERVICES[@]}"; do
-  if [[ "$SERVICE" == "panel-web" ]]; then
-    deploy_panel
-    continue
-  fi
+# A deployment scaled to zero is declared but deliberately not running, so
+# building and pushing an image for it costs minutes and gains nothing. This
+# matters most when a shared-module change expands the list to every service.
+is_scaled_up() {
+  local replicas
+  replicas="$("${KUBECTL[@]}" -n "${NAMESPACE}" get deployment "$1" -o jsonpath='{.spec.replicas}' 2>/dev/null || true)"
+  [[ -n "$replicas" && "$replicas" != "0" ]]
+}
 
-  if ! is_known_backend_service "$SERVICE"; then
+for SERVICE in "${REQUESTED_SERVICES[@]}"; do
+  # Validate the name before anything else, so a typo fails loudly instead of
+  # being reported as "not deployed".
+  if [[ "$SERVICE" != "panel-web" ]] && ! is_known_backend_service "$SERVICE"; then
     echo "Unknown service requested: ${SERVICE}" >&2
     echo "Known services: ${ALL_BACKEND_SERVICES[*]} panel-web" >&2
     exit 1
+  fi
+
+  if ! is_scaled_up "$SERVICE"; then
+    echo "Skipping ${SERVICE}: not deployed (0 replicas, or no such deployment)."
+    continue
+  fi
+
+  if [[ "$SERVICE" == "panel-web" ]]; then
+    deploy_panel
+    continue
   fi
 
   deploy_backend "$SERVICE"

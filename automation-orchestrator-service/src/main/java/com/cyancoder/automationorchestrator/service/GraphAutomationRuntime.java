@@ -115,6 +115,8 @@ public class GraphAutomationRuntime {
             case CODE->{String expression=AutomationDataSupport.string(c.get("expression"));if(expression==null)throw new IllegalArgumentException("CODE expression is required");SimpleEvaluationContext ctx=SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();ctx.setVariable("variables",ex.getOutput());ctx.setVariable("context",ex.getContext());Object result=expressions.parseExpression(expression).getValue(ctx);String target=Objects.toString(c.getOrDefault("targetPath","codeResult"));AutomationDataSupport.setPath(ex.getOutput(),target,result);Map<String,Object> out=new LinkedHashMap<>();out.put("targetPath",target);out.put("value",result);finish(step,"COMPLETED",out,null);yield go(next(node.id(),null,edges));}
             case JDM_DECISION->{Object input=c.containsKey("inputTemplate")?value(ex,c.get("inputTemplate")):value(ex,c.get("inputPath"));Map<String,Object> result=decisions.evaluate(c,input instanceof Map<?,?>?AutomationDataSupport.map(input):new LinkedHashMap<>(ex.getOutput()));String target=Objects.toString(c.getOrDefault("outputPath","decisionResult"));AutomationDataSupport.setPath(ex.getOutput(),target,result.get("result"));if(c.get("tracePath")!=null)AutomationDataSupport.setPath(ex.getOutput(),c.get("tracePath").toString(),result.get("trace"));if(c.get("performancePath")!=null)AutomationDataSupport.setPath(ex.getOutput(),c.get("performancePath").toString(),result.get("performance"));finish(step,"COMPLETED",result,null);yield go(next(node.id(),null,edges));}
             case SUBFLOW->runSubflow(ex,node,c,edges,step);
+            case PARALLEL_SUBFLOWS -> runParallelSubflows(ex, node, c, edges, step);
+            case EXTERNAL_OPERATION -> runExternalOperation(ex, node, c, edges, step);
             default -> throw new IllegalArgumentException(node.type() + " requires flow runtimeMode=N8N_ITEMS");
         };
     }
@@ -187,6 +189,38 @@ public class GraphAutomationRuntime {
                 "childExecutionId", child.getExecutionId(),
                 "status", child.getStatus()
         ), null);
+        return go(next(node.id(), null, edges));
+    }
+
+    private NodeResult runParallelSubflows(AutomationExecution parent, AutomationNode node, Map<String, Object> config,
+                                           List<AutomationEdge> edges, AutomationExecutionStep step) {
+        ParallelSubflowSupport.Result result = ParallelSubflowSupport.advance(parent, node, flows, executions, objectMapper, checkpoints);
+        if (!result.complete()) {
+            parent.setStatus("WAITING");
+            parent.setResumeAt(Instant.now().plusSeconds(1));
+            parent.setResumeNodeId(node.id());
+            finish(step, "WAITING_PARALLEL_SUBFLOWS", result.details(), null);
+            return waitResult();
+        }
+        AutomationDataSupport.setPath(parent.getOutput(), Objects.toString(config.getOrDefault("resultPath", "parallelResults")), result.outputs());
+        finish(step, "COMPLETED", result.details(), null);
+        return go(next(node.id(), null, edges));
+    }
+
+    private NodeResult runExternalOperation(AutomationExecution execution, AutomationNode node, Map<String, Object> config,
+                                            List<AutomationEdge> edges, AutomationExecutionStep step) {
+        ExternalOperationSupport.Result operation = ExternalOperationSupport.execute(execution, node, config,
+                (current, currentNode, callConfig) -> call(current, currentNode, callConfig, false), checkpoints);
+        Map<String, Object> result = operation.response();
+        mapResponse(execution, config, result);
+        if (!operation.confirmed() && AutomationDataSupport.bool(config.get("awaitConfirmation"), true)) {
+            execution.setStatus("WAITING");
+            execution.setResumeAt(Instant.now().plusSeconds(Math.max(1, AutomationDataSupport.longValue(config.get("reconcileDelaySeconds"), 5))));
+            execution.setResumeNodeId(node.id());
+            finish(step, "WAITING_RECONCILIATION", result, null);
+            return waitResult();
+        }
+        finish(step, "COMPLETED", result, null);
         return go(next(node.id(), null, edges));
     }
 

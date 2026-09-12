@@ -224,6 +224,8 @@ public class AutomationFlowDefinitionService {
                     if (incoming < 2) throw new IllegalArgumentException("LOOP_OVER_ITEMS requires a feedback edge from the loop branch: " + node.id());
                 }
                 case SUBFLOW, EXECUTE_WORKFLOW -> required(config,"flowKey",node);
+                case PARALLEL_SUBFLOWS -> ParallelSubflowSupport.validate(config);
+                case EXTERNAL_OPERATION -> ExternalOperationSupport.validate(config, node);
                 case JDM_DECISION -> { if(config.get("jdm")==null&&config.get("classpathResource")==null&&config.get("filePath")==null) throw new IllegalArgumentException("JDM_DECISION requires jdm, classpathResource, or filePath"); }
                 case MAP_FIELDS -> required(config,"mappings",node);
                 case EDIT_FIELDS -> { if (config.get("assignments") == null && config.get("mappings") == null) throw new IllegalArgumentException("EDIT_FIELDS node requires assignments: " + node.id()); }

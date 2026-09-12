@@ -218,7 +218,7 @@ public class ItemStreamAutomationRuntime {
             case STOP_AND_ERROR -> throw stopError(execution, definition, state, config, items);
             case SUBFLOW, EXECUTE_WORKFLOW -> executeSubflow(execution, definition, state, node, work, config, items);
             case FILE_METADATA -> NodeOutcome.output("0", fileMetadata(config, items));
-            case JDM_DECISION, PAGINATED_CALL_API, RUN_BATCH_JOB -> throw new IllegalArgumentException(node.type() + " uses the VARIABLES runtime; use HTTP_REQUEST/CODE in N8N_ITEMS mode");
+            case JDM_DECISION, PAGINATED_CALL_API, RUN_BATCH_JOB, PARALLEL_SUBFLOWS, EXTERNAL_OPERATION -> throw new IllegalArgumentException(node.type() + " uses the VARIABLES runtime; use HTTP_REQUEST/CODE in N8N_ITEMS mode");
         };
     }
 

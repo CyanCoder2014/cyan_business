@@ -81,6 +81,24 @@ class AutomationFlowDefinitionServiceTest {
         assertEquals("stage", found.getEnvironment());
     }
 
+    @Test
+    void validatesGenericParallelAndExternalOperationContracts() {
+        AutomationFlowDefinition parallel = definition("parallel-flow", 1, "default", "DRAFT");
+        parallel.setNodes(List.of(
+                node("trigger", AutomationNodeType.WEBHOOK_TRIGGER, Map.of()),
+                node("fanout", AutomationNodeType.PARALLEL_SUBFLOWS, Map.of("branches", Map.of(
+                        "first", Map.of("flowKey", "child-a"), "second", Map.of("flowKey", "child-b")), "resultPath", "results")),
+                node("end", AutomationNodeType.END, Map.of())));
+        parallel.setEdges(List.of(edge("trigger", null, "fanout"), edge("fanout", null, "end")));
+        service.validate(parallel);
+
+        AutomationFlowDefinition invalid = definition("operation-flow", 1, "default", "DRAFT");
+        invalid.setNodes(List.of(node("trigger", AutomationNodeType.WEBHOOK_TRIGGER, Map.of()),
+                node("operation", AutomationNodeType.EXTERNAL_OPERATION, Map.of("operationKey", "caseId")), node("end", AutomationNodeType.END, Map.of())));
+        invalid.setEdges(List.of(edge("trigger", null, "operation"), edge("operation", null, "end")));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> service.validate(invalid));
+    }
+
     private AutomationFlowDefinition definition(String key, int version, String environment, String status) {
         AutomationFlowDefinition value = new AutomationFlowDefinition();
         value.setTenantKey("tenant");

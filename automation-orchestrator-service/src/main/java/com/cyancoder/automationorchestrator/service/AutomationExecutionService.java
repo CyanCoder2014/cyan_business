@@ -461,7 +461,11 @@ public class AutomationExecutionService {
                     execution.setContext(context);
                 }
                 repository.save(execution);
-                executeNow(execution);
+                if ("PARALLEL_SUBFLOW".equals(execution.getEntryType())) {
+                    CompletableFuture.runAsync(() -> executeNow(execution));
+                } else {
+                    executeNow(execution);
+                }
             } catch (RuntimeException ex) {
                 execution.setStatus("FAILED");
                 execution.setError(Map.of("message", Objects.toString(ex.getMessage(), "resume failed")));

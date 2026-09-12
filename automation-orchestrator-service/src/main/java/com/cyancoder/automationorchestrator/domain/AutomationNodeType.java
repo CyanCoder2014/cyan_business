@@ -18,6 +18,8 @@ public enum AutomationNodeType {
     FOR_EACH,
     LOOP_OVER_ITEMS,
     SUBFLOW,
+    PARALLEL_SUBFLOWS,
+    EXTERNAL_OPERATION,
     EXECUTE_WORKFLOW,
     JDM_DECISION,
     MAP_FIELDS,

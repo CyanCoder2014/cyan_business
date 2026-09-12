@@ -31,6 +31,7 @@ public class DynamicFlowDefinition {
     private boolean active;
     private String lifecycleStatus = "DRAFT";
     private Map<String, Object> layout = new LinkedHashMap<>();
+    private ApplicantAccessPolicy applicantAccess;
     private Instant updatedAt;
 
     public String getId() { return id; }
@@ -61,6 +62,8 @@ public class DynamicFlowDefinition {
     public void setLifecycleStatus(String lifecycleStatus) { this.lifecycleStatus = lifecycleStatus; }
     public Map<String, Object> getLayout() { return layout; }
     public void setLayout(Map<String, Object> layout) { this.layout = layout == null ? new LinkedHashMap<>() : new LinkedHashMap<>(layout); }
+    public ApplicantAccessPolicy getApplicantAccess() { return applicantAccess; }
+    public void setApplicantAccess(ApplicantAccessPolicy applicantAccess) { this.applicantAccess = applicantAccess; }
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

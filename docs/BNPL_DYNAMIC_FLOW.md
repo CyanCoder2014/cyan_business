@@ -70,23 +70,24 @@ Use synthetic cases for positive identity, mismatch, red flag, exactly-at-minimu
 | Dynamic forms and transitions | BPM `FlowState`, `ObjectFlowService`, dynamic entity integration | Available |
 | API calls and response mappings | Automation `CALL_API`, credential references, mapping nodes | Available; actual provider contracts still required |
 | Reusable subflows | VARIABLES runtime `SUBFLOW` | Available, but it runs children inline and does not provide native fan-out |
-| Parallel all-results join | Graph runtime follows one current node; `MERGE` is not a durable parallel join | **Generic engine gap**. Async start/poll composition is possible, but is not the selected native feature |
+| Parallel all-results join | `PARALLEL_SUBFLOWS` persists named child execution identities and definition snapshots before work is claimable | Available as a generic VARIABLES-runtime node |
 | Complex rules | `JDM_DECISION` backed by GoRules/Zen | Available; define and test the policy as data |
-| Safe applicant lifecycle | Creation requires broad BPM management permission; several reads return managed objects using coarse permission/scope checks | **Generic BPM access gap**. Do not give applicants operator permissions |
+| Safe applicant lifecycle | `/endpoint/bpm/applications` uses per-definition `applicantAccess`, authenticated ownership, server-chosen transitions and output projection | Available; do not grant applicants operator permissions |
 | Trusted sponsor and output protection | Dynamic data/context exists, but this journey needs verified principal binding and restricted projections | **Generic configuration/access gap**; do not solve with a BNPL facade |
-| Durable child recovery | Current subflow launch records its parent marker after running the child | **Generic recovery gap** for crash-safe launch/join and preserving completed branches |
+| Durable child recovery | Parallel child plan and stable execution identities are stored before scheduling | Available; completed branches are retained during parent recovery |
 | Background callback delivery | Signed callbacks exist; callback delivery and BPM state persistence must be reconciled | Verify/fix generic durable delivery and early-callback races before release |
-| Safe account opening and payout | Generic HTTP can invoke providers; no demonstrated provider-independent operation journal/reconciliation contract for this journey | **Generic reliability gap plus provider prerequisites**; HTTP retry alone is insufficient |
+| Safe account opening and payout | `EXTERNAL_OPERATION` persists operation state, reconciles before invoke, and applies a stable idempotency key | Available when the provider supplies an authoritative reconcile endpoint and honors idempotency |
 | Finance ledger service | Not deployed on target server | Excluded; do not introduce a dependency on it |
 
-Required generic improvements, subject to approval:
+The generic platform capabilities above are implemented. Provider credentials, an authoritative status/reconcile API, and reviewed flow definitions are still mandatory before provisioning a real financial journey.
 
-1. Durable parallel-subflow execution with explicit inputs, named outputs, bounded concurrency, saved child identities/definition snapshots and an all-branches join.
-2. A **generic BPM applicant interface/access model**: authenticated ownership, trusted tenant/site/sponsor binding, allowlisted form submissions, server-controlled transitions, and safe form/status/result projections. All restrictions must be configurable per definition.
-3. Generic recovery and reliable completion delivery: resume failed stages without repeating successful children; reconcile callback delivery; preserve operation identities across retry/restart.
-4. A reusable idempotent external-operation/reconciliation capability, with protected operation records in an already deployed runtime, or verified equivalent provider guarantees. No finance-service assumption.
+### Generic configuration additions
 
-Do not provision or expose a supposedly complete applicant journey until these requirements are implemented or a reviewed existing equivalent is demonstrated.
+`PARALLEL_SUBFLOWS` accepts named `branches`, each with `flowKey` and optional mapped `input`; `maxConcurrency` bounds active children and `resultPath` receives `{branchName: childOutput}` only after all branches complete.
+
+`EXTERNAL_OPERATION` requires `operationKey`, `reconcile`, and `execute`. It reconciles first on every retry, sends the stable key in `Idempotency-Key` by default, and saves `PREPARED`, `IN_FLIGHT`, `SUBMITTED`, or `CONFIRMED` operation state with the execution. It waits and reconciles again until `confirmed` (or configured success paths) is true unless `awaitConfirmation` is explicitly disabled. A retry therefore never blindly re-invokes an uncertain external operation.
+
+`applicantAccess` on a BPM flow definition requires `objectType`, `startPayloadFields`, `formStateIds`, `formNextStates`, and optional role/status-field allowlists. Applicant APIs always discard a client-selected next state and only return the allowlisted status projection.
 
 ## Curl: existing administrator capabilities
 
@@ -164,20 +165,33 @@ curl --fail-with-body -sS "$GATEWAY_URL/endpoint/bpm/flows" \
   -H "X-Tenant-Key: $TENANT_KEY" -H "X-Site-Key: $SITE_KEY"
 ```
 
-Existing BPM provisioning routes are `POST /endpoint/bpm/flows` and `POST /endpoint/bpm/flows/{flowKey}/activate/{version}`. Full main-flow provisioning is intentionally not presented as executable: the required native parallel and applicant access contracts do not exist yet.
+Existing BPM provisioning routes are `POST /endpoint/bpm/flows` and `POST /endpoint/bpm/flows/{flowKey}/activate/{version}`. Use the generic `applicantAccess`, `PARALLEL_SUBFLOWS`, and `EXTERNAL_OPERATION` contracts above when authoring the main flow.
 
-## Applicant curl status: blocked by generic access gap
+## Generic applicant BPM curls
 
-The repository has these BPM routes:
+The restricted surface is available only for definitions with enabled `applicantAccess`; it does not use or grant `bpm.manage`, `bpm.transition`, or `bpm.read`.
 
-- `POST /endpoint/bpm/managed-objects`
-- `GET /endpoint/bpm/managed-objects/{objectId}/active-form`
-- `POST /endpoint/bpm/managed-objects/{objectId}/active-form/submissions`
-- `GET /endpoint/bpm/managed-objects/{objectId}`
+```bash
+export USER_TOKEN='<existing applicant SSO access token>'
 
-They are **not a verified restricted applicant API**. Supplying user-token examples against these routes and granting the required broad permissions would conceal the access gap. No invented `/bnpl/...` applicant routes are proposed.
+curl --fail-with-body -sS -X POST "$GATEWAY_URL/endpoint/bpm/applications" \
+  -H "Authorization: Bearer $USER_TOKEN" -H 'Content-Type: application/json' \
+  -H "X-Tenant-Key: $TENANT_KEY" -H "X-Site-Key: $SITE_KEY" \
+  --data '{"flowKey":"<enabled-flow-key>","payload":{}}'
 
-After the generic BPM access contract is approved and implemented, this section must contain executable user curls for: starting an allowed definition; retrieving form 1; submitting national code/mobile; polling SHAHKAR; retrieving/submitting birthdate; polling background work; and retrieving only the final safe result. Applicant requests must not carry chosen next states, inquiry results, credit amounts, policy keys or payout destinations.
+curl --fail-with-body -sS "$GATEWAY_URL/endpoint/bpm/applications/<object-id>/active-form" \
+  -H "Authorization: Bearer $USER_TOKEN" -H "X-Tenant-Key: $TENANT_KEY" -H "X-Site-Key: $SITE_KEY"
+
+curl --fail-with-body -sS -X POST "$GATEWAY_URL/endpoint/bpm/applications/<object-id>/active-form/submissions" \
+  -H "Authorization: Bearer $USER_TOKEN" -H 'Content-Type: application/json' \
+  -H "X-Tenant-Key: $TENANT_KEY" -H "X-Site-Key: $SITE_KEY" \
+  --data '<exact fields required by the active form>'
+
+curl --fail-with-body -sS "$GATEWAY_URL/endpoint/bpm/applications/<object-id>" \
+  -H "Authorization: Bearer $USER_TOKEN" -H "X-Tenant-Key: $TENANT_KEY" -H "X-Site-Key: $SITE_KEY"
+```
+
+The client never sends a next state, automation result, policy key, payout destination, or status projection field.
 
 ## Acceptance before calling the journey complete
 

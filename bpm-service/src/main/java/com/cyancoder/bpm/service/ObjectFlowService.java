@@ -11,6 +11,10 @@ import com.cyancoder.bpm.api.dto.ManagedObjectQueueResponse;
 import com.cyancoder.bpm.api.dto.SubmitManagedObjectFormRequest;
 import com.cyancoder.bpm.api.dto.TransitionActorContext;
 import com.cyancoder.bpm.api.dto.TransitionOptionResponse;
+import com.cyancoder.bpm.api.dto.ApplicantActiveFormResponse;
+import com.cyancoder.bpm.api.dto.ApplicantStartRequest;
+import com.cyancoder.bpm.api.dto.ApplicantStatusResponse;
+import com.cyancoder.bpm.domain.ApplicantAccessPolicy;
 import com.cyancoder.bpm.domain.AutomationBlockExecution;
 import com.cyancoder.bpm.domain.AutomationFailurePolicy;
 import com.cyancoder.bpm.domain.DynamicFlowDefinition;
@@ -103,6 +107,82 @@ public class ObjectFlowService {
         saved.setUpdatedAt(Instant.now());
         saved = managedObjectRepository.save(saved);
         return saved;
+    }
+
+    public ApplicantStatusResponse startApplicant(BpmScope scope, ApplicantStartRequest request, TransitionActorContext actor) {
+        DynamicFlowDefinition definition = flowDefinitionService.getActiveByFlowKey(scope, request.flowKey());
+        ApplicantAccessPolicy policy = applicantPolicy(definition, actor);
+        Map<String, Object> payload = request.payload() == null ? Map.of() : request.payload();
+        if (!payload.keySet().equals(policy.startPayloadFields() == null ? Set.of() : policy.startPayloadFields())) {
+            throw new IllegalArgumentException("applicant start payload has missing or extra fields");
+        }
+        if (policy.objectType() == null || policy.objectType().isBlank()) throw new IllegalStateException("applicant policy requires objectType");
+        ManagedObject object = createAndStart(scope, new CreateManagedObjectRequest(definition.getFlowKey(), policy.objectType(), null, null, payload), actor);
+        object.setApplicantSubject(actor.userId());
+        object.setUpdatedAt(Instant.now());
+        return applicantStatus(managedObjectRepository.save(object), definition, actor);
+    }
+
+    public ApplicantStatusResponse applicantStatus(BpmScope scope, String objectId, TransitionActorContext actor) {
+        ManagedObject object = applicantOwned(scope, objectId, actor);
+        return applicantStatus(object, flowDefinitionService.getActiveByFlowKey(scope, object.getFlowKey()), actor);
+    }
+
+    public ApplicantActiveFormResponse applicantActiveForm(BpmScope scope, String objectId, TransitionActorContext actor) {
+        ManagedObject object = applicantOwned(scope, objectId, actor);
+        DynamicFlowDefinition definition = flowDefinitionService.getActiveByFlowKey(scope, object.getFlowKey());
+        ApplicantAccessPolicy policy = applicantPolicy(definition, actor);
+        if (policy.formStateIds() == null || !policy.formStateIds().contains(object.getState())) throw new IllegalArgumentException("no applicant form is active");
+        ManagedObjectActiveFormResponse form = getActiveForm(scope, objectId);
+        return new ApplicantActiveFormResponse(objectId, object.getState(), form.formKey(), form.rendererDefinition());
+    }
+
+    public ApplicantStatusResponse submitApplicantForm(BpmScope scope, String objectId, Map<String, Object> formData, TransitionActorContext actor) {
+        ManagedObject object = applicantOwned(scope, objectId, actor);
+        DynamicFlowDefinition definition = flowDefinitionService.getActiveByFlowKey(scope, object.getFlowKey());
+        ApplicantAccessPolicy policy = applicantPolicy(definition, actor);
+        String state = object.getState();
+        if (policy.formStateIds() == null || !policy.formStateIds().contains(state)) throw new IllegalArgumentException("active state is not applicant-submittable");
+        String nextState = policy.formNextStates() == null ? null : policy.formNextStates().get(state);
+        if (nextState == null || nextState.isBlank()) throw new IllegalStateException("applicant policy requires server-controlled next state");
+        submitActiveForm(scope, objectId, new SubmitManagedObjectFormRequest(formData, nextState, Map.of()), actor);
+        return applicantStatus(scope, objectId, actor);
+    }
+
+    private ManagedObject applicantOwned(BpmScope scope, String objectId, TransitionActorContext actor) {
+        ManagedObject object = findById(scope, objectId);
+        if (!java.util.Objects.equals(object.getApplicantSubject(), actor.userId())) throw new IllegalArgumentException("applicant object not found");
+        applicantPolicy(flowDefinitionService.getActiveByFlowKey(scope, object.getFlowKey()), actor);
+        return object;
+    }
+
+    private ApplicantAccessPolicy applicantPolicy(DynamicFlowDefinition definition, TransitionActorContext actor) {
+        ApplicantAccessPolicy policy = definition.getApplicantAccess();
+        if (policy == null || !policy.isEnabled()) throw new IllegalArgumentException("flow does not allow applicant access");
+        Set<String> allowed = policy.allowedRoles() == null ? Set.of() : policy.allowedRoles();
+        if (!allowed.isEmpty() && actor.rolesOrEmpty().stream().noneMatch(allowed::contains)) throw new IllegalArgumentException("applicant is not allowed for this flow");
+        return policy;
+    }
+
+    private ApplicantStatusResponse applicantStatus(ManagedObject object, DynamicFlowDefinition definition, TransitionActorContext actor) {
+        ApplicantAccessPolicy policy = applicantPolicy(definition, actor);
+        Map<String, Object> data = new LinkedHashMap<>();
+        for (String field : policy.statusPayloadFields() == null ? Set.<String>of() : policy.statusPayloadFields()) {
+            Object value = ActionPayloadSupport.readPath(object.getPayload(), field);
+            if (value != null) putPath(data, field, value);
+        }
+        FlowState state = findState(definition, object.getState());
+        return new ApplicantStatusResponse(object.getId(), object.getFlowKey(), object.getState(), state.terminal(), data);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void putPath(Map<String, Object> target, String path, Object value) {
+        Map<String, Object> current = target;
+        String[] parts = path.split("\\.");
+        for (int index = 0; index < parts.length - 1; index++) {
+            current = (Map<String, Object>) current.computeIfAbsent(parts[index], ignored -> new LinkedHashMap<String, Object>());
+        }
+        current.put(parts[parts.length - 1], value);
     }
 
     public ManagedObject transit(BpmScope scope, String objectId, String nextState, TransitionActorContext actorContext, Map<String, Object> context) {

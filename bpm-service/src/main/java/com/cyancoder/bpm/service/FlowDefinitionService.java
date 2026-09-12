@@ -2,6 +2,7 @@ package com.cyancoder.bpm.service;
 
 import com.cyancoder.bpm.api.dto.BpmScope;
 import com.cyancoder.bpm.domain.DynamicFlowDefinition;
+import com.cyancoder.bpm.domain.ApplicantAccessPolicy;
 import com.cyancoder.bpm.repo.DynamicFlowDefinitionRepository;
 import org.springframework.stereotype.Service;
 
@@ -78,6 +79,16 @@ public class FlowDefinitionService {
         if (definition.getStartState() == null || !ids.contains(definition.getStartState())) errors.add("startState must reference a state");
         if (definition.getTransitions() != null) definition.getTransitions().forEach(transition -> { if (!ids.contains(transition.fromState()) || !ids.contains(transition.toState())) errors.add("transition " + transition.id() + " references an unknown state"); });
         if (definition.getStates() != null && definition.getStates().stream().noneMatch(com.cyancoder.bpm.domain.FlowState::terminal)) errors.add("at least one terminal state is required");
+        ApplicantAccessPolicy applicant = definition.getApplicantAccess();
+        if (applicant != null && applicant.isEnabled()) {
+            if (applicant.objectType() == null || applicant.objectType().isBlank()) errors.add("applicantAccess.objectType is required");
+            if (applicant.formStateIds() == null || applicant.formStateIds().isEmpty()) errors.add("applicantAccess.formStateIds is required");
+            else for (String state : applicant.formStateIds()) {
+                if (!ids.contains(state)) errors.add("applicantAccess references unknown form state: " + state);
+                String next = applicant.formNextStates() == null ? null : applicant.formNextStates().get(state);
+                if (next == null || !ids.contains(next)) errors.add("applicantAccess requires a valid server-controlled next state: " + state);
+            }
+        }
         if (!errors.isEmpty()) throw new IllegalArgumentException(String.join("; ", errors));
         return errors;
     }

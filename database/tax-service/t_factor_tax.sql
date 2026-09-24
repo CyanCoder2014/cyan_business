@@ -4,6 +4,7 @@ SET CHARACTER SET utf8;
 CREATE TABLE if not exists `t_factor_tax` (
                                          factor_tax_id varchar(36) NOT NULL UNIQUE,
                                          factor_id varchar(128) NOT NULL,
+                                         taxid varchar(128) NULL DEFAULT NULL,
 
                                          tax_api_uid varchar(128) NULL DEFAULT NULL,
                                          tax_api_reference varchar(128) NULL DEFAULT NULL,
@@ -37,5 +38,6 @@ CREATE TABLE if not exists `t_factor_tax` (
 
 
 ALTER TABLE `t_factor_tax`
+    ADD COLUMN if not exists `taxid` varchar(128) NULL DEFAULT NULL,
     ADD KEY if not exists `t_factor_tax_factor_tax_id_index` (`factor_tax_id`),
     ADD KEY if not exists `t_factor_tax_factor_id_index` (`factor_id`)

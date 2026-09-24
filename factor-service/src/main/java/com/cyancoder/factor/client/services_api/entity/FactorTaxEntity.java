@@ -13,6 +13,8 @@ public class FactorTaxEntity {
 
     private String factorId;
 
+    private String taxid;
+
 
     private String taxApiUid;
 

@@ -29,6 +29,9 @@ public class FactorTaxEntity {
     @Column(name = "factor_id")
     private String factorId;
 
+    @Column(name = "taxid")
+    private String taxid;
+
 
     @Column(name = "tax_api_uid")
     private String taxApiUid;

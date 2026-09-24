@@ -210,6 +210,7 @@ public class FactorService {
 
                     factor.setFactorTaxId(UUID.randomUUID().toString());
                     factor.setFactorId(factorModels.get(0).getFactorId());/////////
+                    factor.setTaxid(invoiceList.get(i).getHeader().getTaxid());
                     factor.setTaxApiUid(responseModel.getResult().get(i).getUid());
                     factor.setTaxApiReference(responseModel.getResult().get(i).getReferenceNumber());
                     factor.setTaxApiState("Sent");

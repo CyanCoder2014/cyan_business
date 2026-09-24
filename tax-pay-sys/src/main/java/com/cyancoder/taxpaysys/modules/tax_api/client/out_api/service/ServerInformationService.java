@@ -27,7 +27,7 @@ public class ServerInformationService {
 
 
 //    @Cacheable(value = "serverInfoCache", key = "#privateKey")
-    public ServerInfoResponseModel getServerInformation(String privateKRey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+    public ServerInfoResponseModel getServerInformation(String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
 
         Random rnd = new Random();
         Header header = new Header("2023-cyanbusiness-srv-2320011"+ rnd.nextInt(10));
